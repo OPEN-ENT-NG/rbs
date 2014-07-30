@@ -8,7 +8,7 @@ import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 
 import fr.wseduc.rbs.controllers.ResourceController;
-import fr.wseduc.rbs.controllers.TypeController;
+import fr.wseduc.rbs.controllers.ResourceTypeController;
 
 public class Rbs extends BaseServer {
 	
@@ -16,11 +16,11 @@ public class Rbs extends BaseServer {
 	public void start() {
 		super.start();
 		
-		SqlConf confType = SqlConfs.createConf(TypeController.class.getName());
+		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
 		confType.setTable("resource_type");
 		confType.setSchema(getSchema());
-		confType.setResourceIdLabel("typeId");
-		TypeController typeController = new TypeController();
+		confType.setResourceIdLabel("id");
+		ResourceTypeController typeController = new ResourceTypeController();
 		typeController.setCrudService(new SqlCrudService(getSchema(), "resource_type"));
 		typeController.setShareService(new SqlShareService(getSchema(),"resource_type_shares",
 				getEventBus(vertx), securedActions, null));
@@ -29,7 +29,7 @@ public class Rbs extends BaseServer {
 		SqlConf confResource = SqlConfs.createConf(ResourceController.class.getName());
 		confResource.setTable("resource");
 		confResource.setSchema(getSchema());
-		confResource.setResourceIdLabel("resourceId");
+		confResource.setResourceIdLabel("id");
 		ResourceController resourceController = new ResourceController();
 		resourceController.setCrudService(new SqlCrudService(getSchema(), "resource"));
 		resourceController.setShareService(new SqlShareService(getSchema(),"resource_shares",

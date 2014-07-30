@@ -22,16 +22,16 @@ CREATE TABLE rbs.resource_shares (
 	member_id VARCHAR(36) NOT NULL,
 	resource_id BIGINT NOT NULL,
 	action VARCHAR(255) NOT NULL,
-	CONSTRAINT share PRIMARY KEY (member_id, resource_id, action),
-	CONSTRAINT member_fk FOREIGN KEY(member_id) REFERENCES rbs.members(id) ON UPDATE CASCADE ON DELETE CASCADE
+	CONSTRAINT resource_share PRIMARY KEY (member_id, resource_id, action),
+	CONSTRAINT resource_share_member_fk FOREIGN KEY(member_id) REFERENCES rbs.members(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE rbs.resource_type_shares (
 	member_id VARCHAR(36) NOT NULL,
 	resource_type_id BIGINT NOT NULL,
 	action VARCHAR(255) NOT NULL,
-	CONSTRAINT share PRIMARY KEY (member_id, resource_type_id, action),
-	CONSTRAINT member_fk FOREIGN KEY(member_id) REFERENCES rbs.members(id) ON UPDATE CASCADE ON DELETE CASCADE
+	CONSTRAINT type_share PRIMARY KEY (member_id, resource_type_id, action),
+	CONSTRAINT type_share_member_fk FOREIGN KEY(member_id) REFERENCES rbs.members(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE rbs.scripts (
