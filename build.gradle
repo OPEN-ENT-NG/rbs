@@ -1,0 +1,44 @@
+apply from: "gradle/vertx.gradle"
+
+dependencies {
+	provided "fr.wseduc:processor:$processorVersion"
+	compile "org.entcore:common:$entCoreVersion"
+}
+
+javadoc {
+  options.encoding = 'UTF-8'
+  classpath = configurations.provided
+  classpath += configurations.compile
+}
+
+repositories {
+    maven {
+        url "http://maven.web-education.net/nexus/content/groups/public"
+    }
+}
+
+def configurePom(def pom) {
+	pom.project {
+		description 'RBS'
+		inceptionYear '2014'
+		packaging 'zip'
+		url 'http://code.web-education.net/ong/rbs'
+
+		developers {
+			developer {
+				id 'cverdier'
+				name 'Cyril Verdier'
+				email 'cyril.verdier@atos.net'
+			}
+		}
+
+		scm {
+			url 'git@code.web-education.net:ong/rbs.git'
+		}
+
+		properties {
+			setProperty('project.build.sourceEncoding', 'UTF8')
+		}
+	}
+}
+

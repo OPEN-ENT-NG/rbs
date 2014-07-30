@@ -1,0 +1,11 @@
+{
+	"main" : "fr.wseduc.rbs.Rbs",
+	"port" : 8025,
+	"app-name" : "Rbs",
+	"app-address" : "/rbs",
+	"app-icon" : "rbs-large",
+	"mode": "dev",
+	"integration-mode" : "HTTP",
+	"app-registry.port" : 8012,
+	"entcore.port" : 8090
+}
