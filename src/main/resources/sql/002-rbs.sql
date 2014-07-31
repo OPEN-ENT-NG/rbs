@@ -11,7 +11,7 @@ CREATE TABLE rbs.resource_type(
 	school_id VARCHAR(255) NOT NULL
 );
 
-ALTER TABLE rbs.resource_type_shares ADD CONSTRAINT resource_type_fk FOREIGN KEY(resource_type_id) REFERENCES rbs.resource_type(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE rbs.resource_type_shares ADD CONSTRAINT resource_type_fk FOREIGN KEY(resource_id) REFERENCES rbs.resource_type(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 CREATE TABLE rbs.resource(
