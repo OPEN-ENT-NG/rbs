@@ -28,9 +28,9 @@ CREATE TABLE rbs.resource_shares (
 
 CREATE TABLE rbs.resource_type_shares (
 	member_id VARCHAR(36) NOT NULL,
-	resource_type_id BIGINT NOT NULL,
+	resource_id BIGINT NOT NULL,
 	action VARCHAR(255) NOT NULL,
-	CONSTRAINT type_share PRIMARY KEY (member_id, resource_type_id, action),
+	CONSTRAINT type_share PRIMARY KEY (member_id, resource_id, action),
 	CONSTRAINT type_share_member_fk FOREIGN KEY(member_id) REFERENCES rbs.members(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

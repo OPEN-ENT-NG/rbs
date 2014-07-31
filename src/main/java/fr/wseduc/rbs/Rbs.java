@@ -12,29 +12,34 @@ import fr.wseduc.rbs.controllers.ResourceTypeController;
 
 public class Rbs extends BaseServer {
 	
+	public final static String RESOURCE_TABLE="resource";
+	public final static String RESOURCE_SHARE_TABLE="resource_shares";
+	public final static String RESOURCE_TYPE_TABLE="resource_type";
+	public final static String RESOURCE_TYPE_SHARE_TABLE="resource_type_shares";
+	
 	@Override
 	public void start() {
 		super.start();
 		
 		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
-		confType.setTable("resource_type");
-		confType.setShareTable("resource_type_shares");
+		confType.setTable(RESOURCE_TYPE_TABLE);
+		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE);
 		confType.setSchema(getSchema());
 		confType.setResourceIdLabel("id");
 		ResourceTypeController typeController = new ResourceTypeController();
-		typeController.setCrudService(new SqlCrudService(getSchema(), "resource_type"));
-		typeController.setShareService(new SqlShareService(getSchema(),"resource_type_shares",
+		typeController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE));
+		typeController.setShareService(new SqlShareService(getSchema(),RESOURCE_TYPE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(typeController);
 		
 		SqlConf confResource = SqlConfs.createConf(ResourceController.class.getName());
-		confResource.setTable("resource");
-		confResource.setShareTable("resource_shares");
+		confResource.setTable(RESOURCE_TABLE);
+		confResource.setShareTable(RESOURCE_SHARE_TABLE);
 		confResource.setSchema(getSchema());
 		confResource.setResourceIdLabel("id");
 		ResourceController resourceController = new ResourceController();
-		resourceController.setCrudService(new SqlCrudService(getSchema(), "resource", "resource_shares"));
-		resourceController.setShareService(new SqlShareService(getSchema(),"resource_shares",
+		resourceController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE));
+		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(resourceController);
 		
