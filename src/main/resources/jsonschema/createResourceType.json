@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "validation": {
+      "type": "boolean"
+    },
+    "school_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "validation",
+    "school_id"
+  ]
+}
