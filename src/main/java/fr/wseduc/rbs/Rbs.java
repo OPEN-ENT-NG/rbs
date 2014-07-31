@@ -18,6 +18,7 @@ public class Rbs extends BaseServer {
 		
 		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
 		confType.setTable("resource_type");
+		confType.setShareTable("resource_type_shares");
 		confType.setSchema(getSchema());
 		confType.setResourceIdLabel("id");
 		ResourceTypeController typeController = new ResourceTypeController();
@@ -28,10 +29,11 @@ public class Rbs extends BaseServer {
 		
 		SqlConf confResource = SqlConfs.createConf(ResourceController.class.getName());
 		confResource.setTable("resource");
+		confResource.setShareTable("resource_shares");
 		confResource.setSchema(getSchema());
 		confResource.setResourceIdLabel("id");
 		ResourceController resourceController = new ResourceController();
-		resourceController.setCrudService(new SqlCrudService(getSchema(), "resource"));
+		resourceController.setCrudService(new SqlCrudService(getSchema(), "resource", "resource_shares"));
 		resourceController.setShareService(new SqlShareService(getSchema(),"resource_shares",
 				getEventBus(vertx), securedActions, null));
 		addController(resourceController);

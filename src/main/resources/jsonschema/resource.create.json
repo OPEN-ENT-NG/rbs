@@ -1,0 +1,34 @@
+{
+	"title": "rbs.resource.create",
+	"type": "object",
+	"properties": {
+		"name": {
+			"type": "string"
+		},
+		"description": {
+			"type": "string"
+		},
+		"icon": {
+			"type": "string"
+		},
+		"periodic_booking": {
+			"type": "boolean"
+		},
+		"is_available": {
+			"type": "boolean"
+		},
+		"min_delay": {
+			"type": "integer",
+			"minimum": 0
+		},
+		"max_delay": {
+			"type": "integer",
+			"minimum": 0
+		},
+		"type_id": {
+			"type": "integer"
+		}
+	},
+	"required": ["name", "periodic_booking", "is_available", "type_id"],
+	"additionalProperties" : false
+}
