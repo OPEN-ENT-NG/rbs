@@ -15,8 +15,11 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import fr.wseduc.rbs.BookingStatus;
 import fr.wseduc.rs.ApiDoc;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -78,14 +81,85 @@ public class BookingController extends ControllerHelper {
 	//
 	// }
 
-	// @Put("/booking/:bookingId")
-	// @ApiDoc("Update booking")
-	// @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
-	//
-	// @Put("/booking/:bookingId/process")
-	// @ApiDoc("Validate or refuse booking")
+	 @Put("/booking/:id")
+	 @ApiDoc("Update booking")
+	 // @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	 public void updateBooking(final HttpServerRequest request){
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						RequestUtils.bodyToJson(request, pathPrefix + "updateBooking", new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject object) {
+								String id = request.params().get("id");
+								crudService.update(id, object, user, defaultResponseHandler(request));
+							}
+						});
+					} else {
+						log.debug("User not found in session.");
+						Renders.unauthorized(request);
+					}
+				}
+			});
+	 }
+	 
+	 @Put("/booking/:id/process")
+	 @ApiDoc("Validate or refuse booking")
 	// @SecuredAction(value = "rbs.publish", type= ActionType.RESOURCE)
-	//
+	 public void processBooking(final HttpServerRequest request){
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject object) {
+								String id = request.params().get("id");
+								
+								int newStatus = 0;
+								try {
+									newStatus = (int) object.getValue("status");									
+								} catch (Exception e) {
+									log.error(e.getMessage());
+									Renders.renderError(request);
+								}
+								
+								if (newStatus != BookingStatus.VALIDATED.status() 
+										&& newStatus != BookingStatus.REFUSED.status()) {
+									Renders.badRequest(request, "Invalid status");
+								}
+								
+								crudService.update(id, object, user, defaultResponseHandler(request));
+							}
+						});
+					} else {
+						log.debug("User not found in session.");
+						Renders.unauthorized(request);
+					}
+				}
+			});		 
+	 }
+
+	 @Delete("/booking/:id")
+	 @ApiDoc("Delete booking")
+	 // @SecuredAction(value = "rbs.manager", type= ActionType.RESOURCE)
+	 public void deleteBooking(final HttpServerRequest request){
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						String id = request.params().get("id");
+						crudService.delete(id, user, defaultResponseHandler(request, 204));
+					} else {
+						log.debug("User not found in session.");
+						Renders.unauthorized(request);
+					}
+				}
+			});
+	 }
+
+	 
 	// @Get("/bookings")
 	// @ApiDoc("List all bookings created by current user")
 	// @SecuredAction("resa.booking.list")
