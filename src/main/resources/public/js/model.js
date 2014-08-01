@@ -7,7 +7,11 @@ function Resource() {
 
 }
 
-function ResourceType() {
+function ResourceType(data) {
+	if (data) {
+		this.updateData(data);
+	}
+
 	var resourceType = this;
 
 	this.collection(Resource, {
@@ -30,8 +34,15 @@ function ResourceType() {
 		},
 		behaviours: 'rbs'
 	});
-	return resourceType;
 }
+
+ResourceType.prototype.toJSON = function() {
+	return {
+		name : this.name,
+		validation : this.validation,
+		school_id : this.school_id
+	}
+};
 
 model.build = function(){
 	this.makeModels([ResourceType, Resource, Booking]);
@@ -39,7 +50,11 @@ model.build = function(){
 	this.collection(ResourceType, {
 		sync: function(){
 			// Load the ResourceTypes
-			http().get('/rbs/types').done(function(resourceTypes){
+			http().get('/rbs/types').done(function(rts){
+				var resourceTypes = Array();
+				_.each(rts, function(rt){
+					resourceTypes.push(new ResourceType(rt));
+				});
 				this.load(resourceTypes);
 				// Load the Resources
 				http().get('/rbs/resources').done(function(resources){
@@ -49,7 +64,7 @@ model.build = function(){
 					});
 					_.each(resourceTypes, function(resourceType){
 						if (_.has(groupedResources, resourceType.id)) {
-							resourceType.resources.load(groupedResources[resourceType.id]);
+							resourceType.resources.addRange(groupedResources[resourceType.id]);
 						}
 					});
 				});
