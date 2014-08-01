@@ -9,12 +9,14 @@ Behaviours.register('rbs', {
 	behaviours: rbsBehaviours,
 	resource: function(resource){
 		var rightsContainer = resource;
+		/*
 		if(resource instanceof Subject && resource.category){
 			rightsContainer = resource.category;
 		}
 		if(resource instanceof Message && resource.subject && resource.subject.category){
 			rightsContainer = resource.subject.category;
 		}
+		*/
 		if(!resource.myRights){
 			resource.myRights = {};
 		}

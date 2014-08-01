@@ -7,6 +7,7 @@ import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 
+import fr.wseduc.rbs.controllers.DisplayController;
 import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.rbs.controllers.ResourceTypeController;
 
@@ -20,6 +21,8 @@ public class Rbs extends BaseServer {
 	@Override
 	public void start() {
 		super.start();
+		
+		addController(new DisplayController());
 		
 		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
 		confType.setTable(RESOURCE_TYPE_TABLE);
