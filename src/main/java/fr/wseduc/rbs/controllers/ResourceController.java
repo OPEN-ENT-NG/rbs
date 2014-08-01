@@ -1,35 +1,44 @@
 package fr.wseduc.rbs.controllers;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
+import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceController extends ControllerHelper {
 
-	private static final String SCHEMA_RESOURCE_CREATE = "resource.create";
-	private static final String SCHEMA_RESOURCE_UPDATE = "resource.update";
+	private static final String SCHEMA_RESOURCE_CREATE = "createResource";
+	private static final String SCHEMA_RESOURCE_UPDATE = "updateResource";
 	
 	@Get("/resources")
 	@ApiDoc("List all resources visible by current user")
 	@SecuredAction("rbs.resource.list")
 	public void list(final HttpServerRequest request) {
-		super.list(request);
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				crudService.list(VisibilityFilter.OWNER_AND_SHARED, user, arrayResponseHandler(request));
+			}
+		});
 	}
 
 	/*
@@ -43,6 +52,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Get("/resource/:id")
 	@ApiDoc("Get resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		super.retrieve(request);
@@ -81,6 +91,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Put("/resource/:id")
 	@ApiDoc("Update resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	public void update(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -104,6 +115,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Delete("/resource/:id")
 	@ApiDoc("Delete resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void delete(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -122,6 +134,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Get("/resource/share/json/:id")
 	@ApiDoc("List rights for a given resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void share(final HttpServerRequest request) {
 		super.shareJson(request, false);
@@ -129,6 +142,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Put("/resource/share/json/:id")
 	@ApiDoc("Add rights for a given resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void shareSubmit(final HttpServerRequest request) {
 		super.shareJsonSubmit(request, null, false);
@@ -136,6 +150,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Put("/resource/share/remove/:id")
 	@ApiDoc("Remove rights for a given resource")
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void shareRemove(final HttpServerRequest request) {
 		super.removeShare(request, false);
