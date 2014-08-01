@@ -37,11 +37,10 @@ CREATE TABLE rbs.resource(
 ALTER TABLE rbs.resource_shares ADD CONSTRAINT resource_fk FOREIGN KEY(resource_id) REFERENCES rbs.resource(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
-
 CREATE TABLE rbs.booking(
 	id BIGSERIAL PRIMARY KEY,
 	resource_id BIGSERIAL NOT NULL,
-	booker_id VARCHAR(36) NOT NULL,
+	owner VARCHAR(36) NOT NULL,
 	booking_reason TEXT,
 	created TIMESTAMP NOT NULL DEFAULT NOW(),
 	modified TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -50,9 +49,9 @@ CREATE TABLE rbs.booking(
 	status SMALLINT,
 	moderator_id VARCHAR(36),
 	refusal_reason TEXT,
-	parent_booking_id BIGSERIAL,
+	parent_booking_id BIGINT,
 	CONSTRAINT resource_fk FOREIGN KEY(resource_id) REFERENCES rbs.resource(id) ON UPDATE CASCADE,
-	CONSTRAINT booker_fk FOREIGN KEY(booker_id) REFERENCES rbs.users(id) ON UPDATE CASCADE,
-	CONSTRAINT moderator_fk FOREIGN KEY(booker_id) REFERENCES rbs.users(id) ON UPDATE CASCADE,
+	CONSTRAINT owner_fk FOREIGN KEY(owner) REFERENCES rbs.users(id) ON UPDATE CASCADE,
+	CONSTRAINT moderator_fk FOREIGN KEY(moderator_id) REFERENCES rbs.users(id) ON UPDATE CASCADE,
 	CONSTRAINT parent_booking_fk FOREIGN KEY(parent_booking_id) REFERENCES rbs.booking(id) ON UPDATE CASCADE ON DELETE CASCADE
 );

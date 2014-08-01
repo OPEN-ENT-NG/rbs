@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resource_id": {
+      "type": "integer"
+    },
+    "booking_reason": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "integer"
+    },
+    "end_date": {
+      "type": "integer"
+    }
+  }
+}

@@ -8,11 +8,13 @@ import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 
 import fr.wseduc.rbs.controllers.DisplayController;
+import fr.wseduc.rbs.controllers.BookingController;
 import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.rbs.controllers.ResourceTypeController;
 
 public class Rbs extends BaseServer {
 	
+	public final static String BOOKING_TABLE="booking";
 	public final static String RESOURCE_TABLE="resource";
 	public final static String RESOURCE_SHARE_TABLE="resource_shares";
 	public final static String RESOURCE_TYPE_TABLE="resource_type";
@@ -28,7 +30,6 @@ public class Rbs extends BaseServer {
 		confType.setTable(RESOURCE_TYPE_TABLE);
 		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE);
 		confType.setSchema(getSchema());
-		confType.setResourceIdLabel("id");
 		ResourceTypeController typeController = new ResourceTypeController();
 		typeController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE));
 		typeController.setShareService(new SqlShareService(getSchema(),RESOURCE_TYPE_SHARE_TABLE,
@@ -39,12 +40,18 @@ public class Rbs extends BaseServer {
 		confResource.setTable(RESOURCE_TABLE);
 		confResource.setShareTable(RESOURCE_SHARE_TABLE);
 		confResource.setSchema(getSchema());
-		confResource.setResourceIdLabel("id");
 		ResourceController resourceController = new ResourceController();
 		resourceController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE));
 		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(resourceController);
+		
+		SqlConf confBooking = SqlConfs.createConf(BookingController.class.getName());
+		confBooking.setTable(BOOKING_TABLE);
+		confBooking.setSchema(getSchema());
+		BookingController bookingController = new BookingController();
+		bookingController.setCrudService(new SqlCrudService(getSchema(), BOOKING_TABLE));
+		addController(bookingController);
 		
 		setDefaultResourceFilter(new ShareAndOwner());
 	}
