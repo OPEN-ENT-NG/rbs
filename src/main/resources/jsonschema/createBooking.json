@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "owner": {
+      "type": "string"
+    },
+    "booking_reason": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "integer"
+    },
+    "end_date": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "owner",
+    "start_date",
+    "end_date"
+  ]
+}
