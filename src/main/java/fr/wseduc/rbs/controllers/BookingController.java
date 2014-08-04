@@ -1,7 +1,6 @@
 package fr.wseduc.rbs.controllers;
 
 import static fr.wseduc.rbs.BookingStatus.*;
-
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
@@ -20,6 +19,7 @@ import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -68,7 +68,7 @@ public class BookingController extends ControllerHelper {
 									.append(" AND (")
 									.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
 									.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
-									.append("));");
+									.append(")) RETURNING id;");
 
 							Object startDate = object.getValue("start_date");
 							Object endDate = object.getValue("end_date");
@@ -88,12 +88,32 @@ public class BookingController extends ControllerHelper {
 									.add(startDate)
 									.add(endDate);
 
+							
+							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> event) {
+									if (event.isRight()) {
+										if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+											Renders.renderJson(request, event.right().getValue(), 200);
+										} else {
+											JsonObject error = new JsonObject()
+												.putString("error", "A validated booking overlaps the booking you tried to create.");
+											Renders.renderError(request, error);
+										}
+									} else {
+										JsonObject error = new JsonObject()
+												.putString("error", event.left().getValue());
+										Renders.renderJson(request, error, 400);
+									}
+								}
+							};
+							
 							// Execute
 							Sql.getInstance()
 									.prepared(
 											query.toString(),
 											values,
-											validUniqueResultHandler(defaultResponseHandler(request)));
+											validUniqueResultHandler(handler));
 						}
 					});
 				} else {
