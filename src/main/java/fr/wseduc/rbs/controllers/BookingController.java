@@ -1,10 +1,13 @@
 package fr.wseduc.rbs.controllers;
 
 import static fr.wseduc.rbs.BookingStatus.*;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
+import static org.entcore.common.sql.SqlResult.validResultHandler;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
@@ -17,6 +20,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.Either;
@@ -210,14 +214,45 @@ public class BookingController extends ControllerHelper {
 	 }
 
 	 
-	// @Get("/bookings")
-	// @ApiDoc("List all bookings created by current user")
-	// @SecuredAction("resa.booking.list")
-	//
-	// @Get("/bookings/unprocessed")
-	// @ApiDoc("List all bookings waiting to be processed by current user")
-	// @SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
-	//
+	 @Get("/bookings")
+	 @ApiDoc("List all bookings created by current user")
+	 // @SecuredAction("resa.booking.list")
+	 public void listUserBookings(final HttpServerRequest request) {
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					crudService.list(VisibilityFilter.OWNER, user, arrayResponseHandler(request));
+				}
+			});
+	 }
+	 
+	 @Get("/bookings/unprocessed")
+	 @ApiDoc("List all bookings waiting to be processed by current user")
+	 // @SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
+	 public void listUnprocessedBookings(final HttpServerRequest request){
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
+
+						// TODO : à revoir
+						StringBuilder query = new StringBuilder();
+						query.append("SELECT * FROM ")
+								.append(conf.getSchema())
+								.append(conf.getTable())
+								.append(" WHERE status = " + CREATED.status())
+								.append(";");
+						
+						Sql.getInstance().raw(query.toString(), 
+								validResultHandler(arrayResponseHandler(request)));
+					}
+				}
+			});
+			
+	 }
+	
 	// @Get("/bookings/all")
 	// @ApiDoc("List all bookings")
 	// @SecuredAction(value = "rbs.manage", type = ActionType.RESOURCE)
