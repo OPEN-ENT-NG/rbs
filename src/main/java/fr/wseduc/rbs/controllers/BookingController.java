@@ -1,6 +1,7 @@
 package fr.wseduc.rbs.controllers;
 
-import static fr.wseduc.rbs.BookingStatus.CREATED;
+import static fr.wseduc.rbs.BookingStatus.*;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
@@ -15,7 +16,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rbs.BookingStatus;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Post;
@@ -37,26 +37,56 @@ public class BookingController extends ControllerHelper {
 					RequestUtils.bodyToJson(request, pathPrefix + "createBooking", new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject object) {
-							final String resourceId = request.params().get("resourceId");
+							final String id = request.params().get("resourceId");
+							long resourceId = 0;
+							try {
+								resourceId = Long.parseLong(id);
+							} catch (NumberFormatException e) {
+								log.error("Invalid resourceId", e);
+								Renders.badRequest(request, "Invalid resourceId");
+							}
 
 							object.putNumber("status", CREATED.status());
 							SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
 
-							// Query - unix timestamps are converted into postgresql timestamps
+							/* Query :
+							 * Unix timestamps are converted into postgresql timestamps.
+							 * Check that there does not exist a validated booking that overlaps the new booking.
+							 */
 							StringBuilder query = new StringBuilder();
 							query.append("INSERT INTO ")
 									.append(conf.getSchema())
 									.append(conf.getTable())
 									.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
-									.append(" VALUES ( ?, ?, ?, ?, to_timestamp(?), to_timestamp(?));");
+									.append(" SELECT  ?, ?, ?, ?, to_timestamp(?), to_timestamp(?)");
+							query.append(" WHERE NOT EXISTS (")
+									.append("SELECT id FROM ")
+									.append(conf.getSchema())
+									.append(conf.getTable())
+									.append(" WHERE resource_id = ?")
+									.append(" AND status = " + VALIDATED.status())
+									.append(" AND (")
+									.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
+									.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
+									.append("));");
 
+							Object startDate = object.getValue("start_date");
+							Object endDate = object.getValue("end_date");
+							
 							JsonArray values = new JsonArray();
+							// Values for the INSERT clause
 							values.add(resourceId)
 									.add(object.getValue("owner"))
 									.add(object.getValue("booking_reason"))
 									.add(object.getValue("status"))
-									.add(object.getValue("start_date"))
-									.add(object.getValue("end_date"));
+									.add(startDate)
+									.add(endDate);
+							// Values for the NOT EXISTS clause
+							values.add(resourceId)
+									.add(startDate)
+									.add(endDate)
+									.add(startDate)
+									.add(endDate);
 
 							// Execute
 							Sql.getInstance()
@@ -125,8 +155,8 @@ public class BookingController extends ControllerHelper {
 									Renders.renderError(request);
 								}
 								
-								if (newStatus != BookingStatus.VALIDATED.status() 
-										&& newStatus != BookingStatus.REFUSED.status()) {
+								if (newStatus != VALIDATED.status() 
+										&& newStatus != REFUSED.status()) {
 									Renders.badRequest(request, "Invalid status");
 								}
 								
