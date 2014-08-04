@@ -189,13 +189,17 @@ public class BookingController extends ControllerHelper {
 									log.error(e.getMessage());
 									Renders.renderError(request);
 								}
-								
 								if (newStatus != VALIDATED.status() 
 										&& newStatus != REFUSED.status()) {
 									Renders.badRequest(request, "Invalid status");
 								}
 								
+								object.putString("moderator_id", user.getUserId());
+								// TODO : interdire la validation, s'il existe deja une demande validee
+								
 								crudService.update(bookingId, object, user, defaultResponseHandler(request));
+								
+								// TODO : en cas de validation, refuser les demandes concurrentes
 							}
 						});
 					} else {
