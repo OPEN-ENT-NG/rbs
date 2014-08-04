@@ -6,16 +6,12 @@
     "status": {
       "type": "integer"
     },
-    "moderator_id": {
-      "type": "string"
-    },
     "refusal_reason": {
       "type": "string"
     }
   },
   "required": [
     "status",
-    "moderator_id",
     "refusal_reason"
   ]
 }
