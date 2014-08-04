@@ -1,0 +1,37 @@
+<section class="cell three">
+	<!--<container template="picker"></container>-->
+
+	<button class="cell ten">Mes réservations</button>
+
+	<nav class="vertical row">
+		<ul>
+			<li ng-repeat="resourceType in resourceTypes.all">
+				<a href="#">[[resourceType.name]]</a>
+				<ul>
+					<li ng-repeat="resource in resourceType.resources.all">
+						<a href="#">[[resource.name]]</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+	</nav>
+
+	<h2>A valider</h2>
+
+	<button class="cell ten">Créer un type de ressource</button>
+
+	<button class="cell ten">Créer une ressource</button>
+
+</section>
+
+<section class="cell nine">
+	<div class="row">
+		<div class="display-buttons">
+			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
+			<i class="show-icons" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>
+		</div>
+	</div>
+	<div class="row">
+		<container template="bookings"></container>
+	</div>
+</section>

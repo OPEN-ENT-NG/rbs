@@ -51,27 +51,44 @@ model.build = function(){
 		sync: function(){
 			var collection = this;
 			// Load the ResourceTypes
-			http().get('/rbs/types').done(function(rts){
-				var resourceTypes = Array();
-				_.each(rts, function(rt){
-					resourceTypes.push(new ResourceType(rt));
-				});
-				// Load the Resources
-				http().get('/rbs/resources').done(function(resources){
-					// Load each ResourceType's collection with associated Resources
-					var groupedResources  = _.groupBy(resources, function(resource) {
-						return resource.type_id;
+			http().get('/rbs/types').done(function(resourceTypes){
+				if (model.resources === undefined) {
+					// Load the Resources once
+					this.one('sync', function(){
+						model.buildResources();
 					});
-					var actions = resourceTypes.length;
-					_.each(resourceTypes, function(resourceType){
-						if (_.has(groupedResources, resourceType.id)) {
-							resourceType.resources.addRange(groupedResources[resourceType.id], null, false);
-						}
-						collection.push(resourceType);
-					});
-				});
+				}
+				this.load(resourceTypes);
 			}.bind(this));
 		},
 		behaviours: 'rbs'
-	})
+	});
 };
+
+model.buildResources = function() {
+	this.collection(Resource, {
+		sync: function(){
+			var collection = this;
+			// Load the Resources
+			http().get('/rbs/resources').done(function(resources){
+				collection.load(resources);
+				// Load each ResourceType's collection with associated Resources
+				var groupedResources  = _.groupBy(resources, function(resource) {
+					return resource.type_id;
+				});
+				var actions = model.resourceTypes.length;
+				model.resourceTypes.forEach(function(resourceType){
+					resourceType.resources.all = [];
+					if (_.has(groupedResources, resourceType.id)) {
+						_.each(groupedResources[resourceType.id], function(res){
+							resourceType.resources.push(res, false);
+						});
+					}
+				});
+				model.resourceTypes.trigger('sync');
+			});
+		},
+		behaviours: 'rbs'
+	});
+	this.resources.sync();
+}

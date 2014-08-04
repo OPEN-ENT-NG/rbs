@@ -1,0 +1,18 @@
+<table class="list-view">
+	<thead>
+		<td>Demandeur</td>
+		<td>Ressource</td>
+		<td>Date de début</td>
+		<td>Date de fin</td>
+		<td>Motif</td>
+		<td>Etat</td>
+	</thead>
+	<tr ng-repeat="booking in bookings.all">
+		<td>[[booking.owner.displayName]]</td>
+		<td>[[booking.resource.name]]</td>
+		<td>[[booking.startDate]]</td>
+		<td>[[booking.endDate]]</td>
+		<td>[[booking.bookingReason]]</td>
+		<td>[[booking.status]]</td>
+	</tr>
+</table>
