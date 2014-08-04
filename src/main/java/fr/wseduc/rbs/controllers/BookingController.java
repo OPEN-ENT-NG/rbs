@@ -18,20 +18,25 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.ResourceFilter;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class BookingController extends ControllerHelper {
 
-	@Post("/resource/:resourceId/booking")
+	@Post("/resource/:id/booking")
 	@ApiDoc("Create booking of a given resource")
-	// @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void createBooking(final HttpServerRequest request) {
 
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -41,7 +46,7 @@ public class BookingController extends ControllerHelper {
 					RequestUtils.bodyToJson(request, pathPrefix + "createBooking", new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject object) {
-							final String id = request.params().get("resourceId");
+							final String id = request.params().get("id");
 							long resourceId = 0;
 							try {
 								resourceId = Long.parseLong(id);
@@ -128,16 +133,18 @@ public class BookingController extends ControllerHelper {
 		});
 	}
 
-	// @Post("/resource/:resourceId/booking/periodic")
+	// @Post("/resource/:id/booking/periodic")
 	// @ApiDoc("Create periodic booking of a given resource")
 	// @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	// @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	// public void createPeriodicBooking() {
 	//
 	// }
 
-	 @Put("/booking/:id")
+	 @Put("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Update booking")
-	 // @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void updateBooking(final HttpServerRequest request){
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
@@ -146,8 +153,11 @@ public class BookingController extends ControllerHelper {
 						RequestUtils.bodyToJson(request, pathPrefix + "updateBooking", new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject object) {
-								String id = request.params().get("id");
-								crudService.update(id, object, user, defaultResponseHandler(request));
+								String bookingId = request.params().get("bookingId");
+								
+								// TODO : gérer la maj de start_date et end_date
+								
+								crudService.update(bookingId, object, user, defaultResponseHandler(request));
 							}
 						});
 					} else {
@@ -158,9 +168,10 @@ public class BookingController extends ControllerHelper {
 			});
 	 }
 	 
-	 @Put("/booking/:id/process")
+	 @Put("/resource/:id/booking/:bookingId/process")
 	 @ApiDoc("Validate or refuse booking")
-	// @SecuredAction(value = "rbs.publish", type= ActionType.RESOURCE)
+	 @SecuredAction(value = "rbs.publish", type= ActionType.RESOURCE)
+	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void processBooking(final HttpServerRequest request){
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
@@ -169,7 +180,7 @@ public class BookingController extends ControllerHelper {
 						RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject object) {
-								String id = request.params().get("id");
+								String bookingId = request.params().get("bookingId");
 								
 								int newStatus = 0;
 								try {
@@ -184,7 +195,7 @@ public class BookingController extends ControllerHelper {
 									Renders.badRequest(request, "Invalid status");
 								}
 								
-								crudService.update(id, object, user, defaultResponseHandler(request));
+								crudService.update(bookingId, object, user, defaultResponseHandler(request));
 							}
 						});
 					} else {
@@ -195,16 +206,17 @@ public class BookingController extends ControllerHelper {
 			});		 
 	 }
 
-	 @Delete("/booking/:id")
+	 @Delete("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Delete booking")
-	 // @SecuredAction(value = "rbs.manager", type= ActionType.RESOURCE)
+	 @SecuredAction(value = "rbs.manager", type= ActionType.RESOURCE)
+	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void deleteBooking(final HttpServerRequest request){
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						String id = request.params().get("id");
-						crudService.delete(id, user, defaultResponseHandler(request, 204));
+						String bookingId = request.params().get("bookingId");
+						crudService.delete(bookingId, user, defaultResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
 						Renders.unauthorized(request);
@@ -216,7 +228,7 @@ public class BookingController extends ControllerHelper {
 	 
 	 @Get("/bookings")
 	 @ApiDoc("List all bookings created by current user")
-	 // @SecuredAction("resa.booking.list")
+	 @SecuredAction("rbs.booking.list")
 	 public void listUserBookings(final HttpServerRequest request) {
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
@@ -228,7 +240,7 @@ public class BookingController extends ControllerHelper {
 	 
 	 @Get("/bookings/unprocessed")
 	 @ApiDoc("List all bookings waiting to be processed by current user")
-	 // @SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
+	 @SecuredAction("rbs.booking.list.unprocessed")
 	 public void listUnprocessedBookings(final HttpServerRequest request){
 
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -253,6 +265,7 @@ public class BookingController extends ControllerHelper {
 			
 	 }
 	
+	// Pour afficher l'historique des reservations
 	// @Get("/bookings/all")
 	// @ApiDoc("List all bookings")
 	// @SecuredAction(value = "rbs.manage", type = ActionType.RESOURCE)

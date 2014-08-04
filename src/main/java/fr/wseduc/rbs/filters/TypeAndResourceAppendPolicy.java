@@ -16,13 +16,14 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rbs.Rbs;
+import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.webutils.http.Binding;
 
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 	
 	@Override
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
-		SqlConf conf = SqlConfs.getConf(binding.getServiceMethod().substring(0, binding.getServiceMethod().indexOf('|')));
+		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
 		String id = request.params().get(conf.getResourceIdLabel());
 
 		if (id != null && !id.trim().isEmpty()) {
