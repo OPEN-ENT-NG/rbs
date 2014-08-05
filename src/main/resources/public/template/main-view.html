@@ -1,7 +1,17 @@
 <section class="cell three">
 	<!--<container template="picker"></container>-->
 
-	<button class="cell ten">Mes réservations</button>
+	<h2><i18n>rbs.selector.mine</i18n></h2>
+
+	<nav class="vertical row">
+		<ul>
+			<li>
+				<a><i18n>rbs.selector.mine.button</i18n></a>
+			</li>
+		</ul>
+	</nav>
+
+	<h2><i18n>rbs.selector.resources</i18n></h2>
 
 	<nav class="vertical row">
 		<ul>
@@ -16,16 +26,22 @@
 		</ul>
 	</nav>
 
-	<h2>A valider</h2>
+	<h2><i18n>rbs.selector.tovalidate</i18n></h2>
 
-	<button class="cell ten">Créer un type de ressource</button>
-
-	<button class="cell ten">Créer une ressource</button>
+	<nav class="vertical row">
+		<ul>
+			<li>
+				<a><i18n>rbs.selector.tovalidate.button</i18n></a>
+			</li>
+		</ul>
+	</nav>
 
 </section>
 
 <section class="cell nine">
 	<div class="row">
+		<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
+
 		<div class="display-buttons">
 			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
 			<i class="show-icons" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>
@@ -33,5 +49,20 @@
 	</div>
 	<div class="row">
 		<container template="bookings"></container>
+	</div>
+</section>
+
+<!-- Lightbox -->
+<div ng-if="display.showPanel">
+	<lightbox show="display.showPanel" on-close="display.showPanel = false;">
+		<container template="lightbox"></container>
+	</lightbox>
+</div>
+
+<section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
+	<div class="toggle block-container">
+		<div class="row">
+			<button ng-click="bookings.removeSelection()"><i18n>remove</i18n></button>
+		</div>
 	</div>
 </section>

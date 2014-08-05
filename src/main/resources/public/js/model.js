@@ -7,6 +7,33 @@ function Resource() {
 
 }
 
+Resource.prototype.create = function(cb) {
+	var resource = this;
+	http().postJson('/rbs/resources', this).done(function(r){
+		resource.updateData(r);
+
+		// Update collections
+		model.resources.push(resource);
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+}
+
+Resource.prototype.toJSON = function() {
+	return {
+		name : this.name,
+		description : this.description,
+		icon : this.icon,
+		periodic_booking : this.periodic_booking,
+		is_available : this.is_available,
+		min_delay : this.min_delay,
+		max_delay : this.max_delay,
+		type_id : this.type_id
+	}
+};
+
+
 function ResourceType(data) {
 	if (data) {
 		this.updateData(data);
@@ -15,24 +42,20 @@ function ResourceType(data) {
 	var resourceType = this;
 
 	this.collection(Resource, {
-		sync: function(){
-			http().get('/rbs/type/' + resourceType._id + '/resources').done(function(resources){
-				this.load(resources);
-			}.bind(this))
-		},
-		removeSelection: function(){
-			var counter = this.selection().length;
-			this.selection().forEach(function(item){
-				http().delete('/rbs/resource/' + item._id).done(function(){
-					counter = counter - 1;
-					if (counter === 0) {
-						Collection.prototype.removeSelection.call(this);
-						resourceType.resources.sync();
-					}
-				});
-			});
-		},
 		behaviours: 'rbs'
+	});
+}
+
+ResourceType.prototype.create = function(cb) {
+	var resourceType = this;
+	http().postJson('/rbs/type', this).done(function(t){
+		resourceType.updateData(t);
+
+		// Update collections
+		model.resourceTypes.push(resourceType);
+		if(typeof cb === 'function'){
+			cb();
+		}
 	});
 }
 
@@ -62,6 +85,10 @@ model.build = function(){
 			}.bind(this));
 		},
 		behaviours: 'rbs'
+	});
+
+	this.collection(Booking, {
+		behavious: 'rbs'
 	});
 };
 

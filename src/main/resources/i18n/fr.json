@@ -1,5 +1,33 @@
 {
 	"rbs.title": "Réservation de ressources",
+	"rbs.navigation.manage": "Gérer les ressources",
+
+	"rbs.selector.mine" : "Mes réservations",
+	"rbs.selector.mine.button" : "Afficher mes réservations",
+	"rbs.selector.resources" : "Ressources",
+	"rbs.selector.tovalidate" : "A valider",
+	"rbs.selector.tovalidate.button" : "En attente",
+
+	"rbs.resourcetype.new": "Nouveau Type de ressources",
+	"rbs.resourcetype.edit.name.label": "Nom du type",
+	"rbs.resourcetype.edit.name.placeholder": "Entrez un nom pour le type de ressources",
+	"rbs.resourcetype.edit.validation.label": "Ajouter une étape de validation des demandes",
+	"rbs.resourcetype.edit.validation.true": "Oui",
+	"rbs.resourcetype.edit.validation.false": "Non",
+
+	"rbs.resource.new": "Nouvelle Ressource",
+	"rbs.resource.edit.name.label": "Nom de la ressource",
+	"rbs.resource.edit.name.placeholder": "Entrez un nom pour la ressource",
+	"rbs.resource.edit.description.label": "Description",
+	"rbs.resource.edit.is_available.label": "Rendre la ressource indisponible",
+	"rbs.resource.edit.is_available.false": "Oui",
+	"rbs.resource.edit.is_available.true": "Non",
+	"rbs.resource.edit.periodic_booking.label": "Autoriser les réservations périodiques",
+	"rbs.resource.edit.periodic_booking.true": "Oui",
+	"rbs.resource.edit.periodic_booking.false": "Non",
+
+	"rbs.create": "Créer",
+	"rbs.create.processing": "Création en cours",
 
 	"group.Teacher" : "Tous les enseignants du groupe {0}.",
 	"group.Personnel" : "Tous les personnels du groupe {0}.",

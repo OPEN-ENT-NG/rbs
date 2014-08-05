@@ -1,0 +1,28 @@
+<div class="row">
+	<h2><i18n>rbs.resourcetype.new</i18n></h2>
+	<article class="twelve cell">
+		<div class="row">
+			<label class="two cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
+			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="ten cell" ng-model="editedResourceType.name" required />
+		</div>
+
+		<div class="row">
+			<label class="six cell"><i18n>rbs.resourcetype.edit.validation.label</i18n></label>
+			<label class="two cell">
+				<i18n>rbs.resourcetype.edit.validation.true</i18n>
+				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="true" />
+			</label>
+			<label class="two cell">
+				<i18n>rbs.resourcetype.edit.validation.false</i18n>
+				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="false" />
+			</label>
+		</div>
+
+		<div class="row">
+			<button class="right-magnet" ng-click="saveResourceType()" ng-if="display.processing !== true"><i18n>rbs.create</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResourceType()" ng-if="display.processing !== true"/>
+
+			<button class="right-magnet cancel disabled" ng-if="display.processing === true"><i18n>rbs.create.processing</i18n></button>
+		</div>
+	</article>
+</div>
