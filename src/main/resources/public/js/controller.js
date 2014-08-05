@@ -26,4 +26,13 @@ function RbsController($scope, template, model, date){
 		$scope.display.list === false
 		template.open('bookings', 'main-calendar');
 	};
+
+	$scope.switchSelect = function(resource) {
+		if (resource.selected !== undefined) {
+			resource.selected = undefined;
+		}
+		else {
+			resource.selected = true;
+		}
+	}
 }

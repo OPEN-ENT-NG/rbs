@@ -6,10 +6,10 @@
 	<nav class="vertical row">
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all">
-				<a href="#">[[resourceType.name]]</a>
+				<a>[[resourceType.name]]</a>
 				<ul>
 					<li ng-repeat="resource in resourceType.resources.all">
-						<a href="#">[[resource.name]]</a>
+						<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected === true }">[[resource.name]]</a>
 					</li>
 				</ul>
 			</li>

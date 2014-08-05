@@ -81,7 +81,7 @@ model.buildResources = function() {
 					resourceType.resources.all = [];
 					if (_.has(groupedResources, resourceType.id)) {
 						_.each(groupedResources[resourceType.id], function(res){
-							resourceType.resources.push(res, false);
+							resourceType.resources.all.push(res);
 						});
 					}
 				});
