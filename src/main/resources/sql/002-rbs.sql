@@ -50,8 +50,9 @@ CREATE TABLE rbs.booking(
 	moderator_id VARCHAR(36),
 	refusal_reason TEXT,
 	parent_booking_id BIGINT,
-	CONSTRAINT resource_fk FOREIGN KEY(resource_id) REFERENCES rbs.resource(id) ON UPDATE CASCADE,
+	CONSTRAINT resource_fk FOREIGN KEY(resource_id) REFERENCES rbs.resource(id) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT owner_fk FOREIGN KEY(owner) REFERENCES rbs.users(id) ON UPDATE CASCADE,
 	CONSTRAINT moderator_fk FOREIGN KEY(moderator_id) REFERENCES rbs.users(id) ON UPDATE CASCADE,
-	CONSTRAINT parent_booking_fk FOREIGN KEY(parent_booking_id) REFERENCES rbs.booking(id) ON UPDATE CASCADE ON DELETE CASCADE
+	CONSTRAINT parent_booking_fk FOREIGN KEY(parent_booking_id) REFERENCES rbs.booking(id) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT valid_dates CHECK (end_date > start_date)
 );
