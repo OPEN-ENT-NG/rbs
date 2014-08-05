@@ -1,10 +1,16 @@
 package fr.wseduc.rbs.controllers;
 
 import static fr.wseduc.rbs.BookingStatus.*;
+import static fr.wseduc.rbs.Rbs.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.validRowsResultHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.VisibilityFilter;
@@ -188,7 +194,7 @@ public class BookingController extends ControllerHelper {
 										.prepared(
 												query.toString(),
 												values,
-												validUniqueResultHandler(defaultResponseHandler(request)));
+												validRowsResultHandler(notEmptyResponseHandler(request)));
 							}
 						});
 					} else {
@@ -229,9 +235,9 @@ public class BookingController extends ControllerHelper {
 								object.putString("moderator_id", user.getUserId());
 								// TODO : interdire la validation, s'il existe deja une demande validee
 								
-								crudService.update(bookingId, object, user, defaultResponseHandler(request));
+								crudService.update(bookingId, object, user, notEmptyResponseHandler(request));
 								
-								// TODO : en cas de validation, refuser les demandes concurrentes
+								// TODO : en cas de validation, mettre les demandes concurrentes à l'etat refuse
 							}
 						});
 					} else {
@@ -285,16 +291,53 @@ public class BookingController extends ControllerHelper {
 					if (user != null) {
 						SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
 
-						// TODO : à revoir
-						StringBuilder query = new StringBuilder();
-						query.append("SELECT * FROM ")
-								.append(conf.getSchema())
-								.append(conf.getTable())
-								.append(" WHERE status = " + CREATED.status())
-								.append(";");
+						final List<String> groupsAndUserIds = new ArrayList<>();
+						groupsAndUserIds.add(user.getUserId());
+						if (user.getProfilGroupsIds() != null) {
+							groupsAndUserIds.addAll(user.getProfilGroupsIds());
+						}
 						
-						Sql.getInstance().raw(query.toString(), 
+						// Query
+						StringBuilder query = new StringBuilder();
+						JsonArray values = new JsonArray();
+						query.append("SELECT b.* FROM ")
+								.append(conf.getSchema())
+								.append(conf.getTable() + " AS b")
+								.append(" INNER JOIN " + conf.getSchema() + RESOURCE_TABLE + " AS r")
+								.append("   ON b.resource_id = r.id")
+								.append(" INNER JOIN " + conf.getSchema() + RESOURCE_TYPE_TABLE + " AS t")
+								.append("   ON t.id = r.type_id")
+								.append(" LEFT JOIN " + conf.getSchema() + RESOURCE_TYPE_SHARE_TABLE + " AS ts")
+								.append("   ON t.id = ts.resource_id")
+								.append(" LEFT JOIN " + conf.getSchema() + RESOURCE_SHARE_TABLE + " AS rs")
+								.append("   ON r.id = rs.resource_id")
+								.append(" WHERE b.status = " + CREATED.status());
+						
+						query.append(" AND (ts.member_id IN " + Sql.listPrepared(groupsAndUserIds.toArray()) + "");
+						for (String groupOruser : groupsAndUserIds) {
+							values.add(groupOruser);
+						}
+						
+						query.append("   OR rs.member_id IN "+ Sql.listPrepared(groupsAndUserIds.toArray()));
+						for (String groupOruser : groupsAndUserIds) {
+							values.add(groupOruser);
+						}
+						
+						query.append("   OR t.owner = ?");
+						values.add(user.getUserId());
+						
+						query.append("   OR r.owner = ?");
+						values.add(user.getUserId());
+						
+						query.append(");");
+												
+						// Send query to event bus
+						Sql.getInstance().prepared(query.toString(), values, 
 								validResultHandler(arrayResponseHandler(request)));
+					}
+					else {
+						log.debug("User not found in session.");
+						Renders.unauthorized(request);
 					}
 				}
 			});
