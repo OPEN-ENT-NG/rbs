@@ -1,12 +1,13 @@
 <section class="cell three">
-	<!--<container template="picker"></container>-->
+
+	<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
 
 	<h2><i18n>rbs.selector.mine</i18n></h2>
 
 	<nav class="vertical row">
 		<ul>
 			<li>
-				<a><i18n>rbs.selector.mine.button</i18n></a>
+				<a ng-click="switchMyBookings()"><i18n>rbs.selector.mine.button</i18n></a>
 			</li>
 		</ul>
 	</nav>
@@ -16,8 +17,8 @@
 	<nav class="vertical row">
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all">
-				<a>[[resourceType.name]]</a>
-				<ul>
+				<a ng-click="switchExpand(resourceType)">[[resourceType.name]]</a>
+				<ul ng-if="resourceType.expanded === true">
 					<li ng-repeat="resource in resourceType.resources.all">
 						<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected === true }">[[resource.name]]</a>
 					</li>
@@ -35,13 +36,10 @@
 			</li>
 		</ul>
 	</nav>
-
 </section>
 
 <section class="cell nine">
 	<div class="row">
-		<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
-
 		<div class="display-buttons">
 			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
 			<i class="show-icons" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>

@@ -1,12 +1,17 @@
 {
 	"rbs.title": "Réservation de ressources",
 	"rbs.navigation.manage": "Gérer les ressources",
+	"rbs.navigation.main": "Voir les réservations",
 
 	"rbs.selector.mine" : "Mes réservations",
 	"rbs.selector.mine.button" : "Afficher mes réservations",
 	"rbs.selector.resources" : "Ressources",
 	"rbs.selector.tovalidate" : "A valider",
 	"rbs.selector.tovalidate.button" : "En attente",
+
+	"rbs.manage.types" : "Types de ressources",
+	"rbs.manage.type.create" : "Créer un type de ressources",
+	"rbs.manage.type.edit" : "Editer le type de ressources",
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
 	"rbs.resourcetype.edit.name.label": "Nom du type",

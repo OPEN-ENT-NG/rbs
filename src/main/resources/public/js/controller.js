@@ -12,9 +12,22 @@ function RbsController($scope, template, model, date){
 	$scope.resources = model.resources;
 	$scope.bookings = model.bookings;
 
+	$scope.currentResourceType = {};
+
 	template.open('main', 'main-view');
-	template.open('navigation', 'main-navigation');
 	template.open('bookings', 'main-list');
+
+	$scope.showManage = function() {
+		$scope.currentResourceType = model.resourceTypes.first();
+		template.open('main', 'manage-view');
+		template.open('resources', 'manage-resources');
+	};
+
+	$scope.showMain = function() {
+		$scope.currentResourceType = {};
+		template.open('main', 'main-view');
+		template.open('bookings', 'main-list');
+	};
 
 	$scope.displayList = function() {
 		$scope.display.list === true
@@ -26,6 +39,15 @@ function RbsController($scope, template, model, date){
 		template.open('bookings', 'main-calendar');
 	};
 
+	$scope.switchExpand = function(resourceType) {
+		if (resourceType.expanded !== undefined) {
+			resourceType.expanded = undefined;
+		}
+		else {
+			resourceType.expanded = true;
+		}
+	};
+
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== undefined) {
 			resource.selected = undefined;
@@ -34,6 +56,10 @@ function RbsController($scope, template, model, date){
 			resource.selected = true;
 		}
 	};
+
+	$scope.selectResourceType = function(resourceType) {
+		$scope.currentResourceType = resourceType;
+	}
 
 	$scope.newResourceType = function() {
 		$scope.editedResourceType = new ResourceType();

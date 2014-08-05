@@ -1,0 +1,17 @@
+<h2>[[currentResourecType.name]]</h2>
+<h3>[[currentResourecType.school_id]]</h3>
+
+<table class="list-view">
+	<thead>
+		<td><i18n>rbs.manage.resource.icon</i18n></td>
+		<td><i18n>rbs.manage.resource.name</i18n></td>
+	</thead>
+	<tr ng-repeat="resource in currentResourceType.resources.all">
+		<td>[[resource.icon]]</td>
+		<td>[[resource.name]]</td>
+	</tr>
+</table>
+
+<div class="row">
+	<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>
+</div>

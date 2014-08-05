@@ -1,0 +1,24 @@
+<section class="cell three">
+
+	<button ng-click="showMain()"><i18n>rbs.navigation.main</i18n></button>
+
+	<h2><i18n>rbs.manage.types</i18n></h2>
+
+	<nav class="vertical row">
+		<ul>
+			<li ng-repeat="resourceType in resourceTypes.all">
+				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType }">[[resourceType.name]]</a>
+			</li>
+		</ul>
+	</nav>
+</section>
+
+<section class="cell nine">
+	<div class="row">
+		<button ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></button>
+		<button ng-click="editResourceType()"><i18n>rbs.manage.type.edit</i18n></button>
+	</div>
+	<div class="row">
+		<container template="resources"></container>
+	</div>
+</section>
