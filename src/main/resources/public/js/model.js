@@ -71,21 +71,20 @@ model.buildResources = function() {
 			var collection = this;
 			// Load the Resources
 			http().get('/rbs/resources').done(function(resources){
-				collection.load(resources);
-				// Load each ResourceType's collection with associated Resources
-				var groupedResources  = _.groupBy(resources, function(resource) {
-					return resource.type_id;
-				});
-				var actions = model.resourceTypes.length;
-				model.resourceTypes.forEach(function(resourceType){
-					resourceType.resources.all = [];
-					if (_.has(groupedResources, resourceType.id)) {
-						_.each(groupedResources[resourceType.id], function(res){
-							resourceType.resources.all.push(res);
-						});
+				var actions = (resources !== undefined ? resources.length : 0);
+				collection.load(resources, function(resource){
+					// Load the ResourceType's collection with associated Resource
+					var resourceType = _.find(model.resourceTypes.all, function(rt){
+						return rt.id === resource.type_id;
+					});
+					if (resourceType !== undefined) {
+						resourceType.resources.all.push(resource);
+					}
+					actions--;
+					if (actions === 0) {
+						model.resourceTypes.trigger('sync');
 					}
 				});
-				model.resourceTypes.trigger('sync');
 			});
 		},
 		behaviours: 'rbs'
