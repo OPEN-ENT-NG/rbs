@@ -3,8 +3,8 @@ package fr.wseduc.rbs.controllers;
 import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.VisibilityFilter;
@@ -117,7 +117,7 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 							
-							// Execute
+							// Send query to eventbus
 							Sql.getInstance()
 									.prepared(
 											query.toString(),
@@ -141,11 +141,23 @@ public class BookingController extends ControllerHelper {
 	//
 	// }
 
+	
+	private void addFieldToUpdate(StringBuilder sb, String fieldname, JsonObject object, JsonArray values){
+		if("start_date".equals(fieldname) || "end_date".equals(fieldname)){
+			sb.append(fieldname).append("= to_timestamp(?), ");
+		}
+		else {
+			sb.append(fieldname).append("= ?, ");
+		}
+		values.add(object.getValue(fieldname));
+	}
+	
 	 @Put("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Update booking")
 	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
 	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void updateBooking(final HttpServerRequest request){
+		 
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
@@ -154,10 +166,29 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String bookingId = request.params().get("bookingId");
+								SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
 								
-								// TODO : gérer la maj de start_date et end_date
+								// Query
+								JsonArray values = new JsonArray();
+								StringBuilder sb = new StringBuilder();
+								for (String fieldname : object.getFieldNames()) {
+									addFieldToUpdate(sb, fieldname, object, values);
+								}
 								
-								crudService.update(bookingId, object, user, defaultResponseHandler(request));
+								StringBuilder query = new StringBuilder();
+								query.append("UPDATE ")
+										.append(conf.getSchema())
+										.append(conf.getTable())
+										.append(" SET " + sb.toString() + "modified = NOW()")
+										.append(" WHERE id = ?;");
+								values.add(bookingId);
+								
+								// Send query to eventbus
+								Sql.getInstance()
+										.prepared(
+												query.toString(),
+												values,
+												validUniqueResultHandler(defaultResponseHandler(request)));
 							}
 						});
 					} else {
@@ -166,6 +197,7 @@ public class BookingController extends ControllerHelper {
 					}
 				}
 			});
+		 
 	 }
 	 
 	 @Put("/resource/:id/booking/:bookingId/process")
