@@ -61,9 +61,6 @@ public class BookingController extends ControllerHelper {
 								Renders.badRequest(request, "Invalid resourceId");
 							}
 
-							// TODO : la reservation doit etre automatiquement validee si le demandeur est valideur
-							object.putNumber("status", CREATED.status());
-
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 								@Override
 								public void handle(Either<String, JsonObject> event) {
@@ -83,6 +80,7 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 							
+							// TODO : envoyer une notification aux valideurs
 							bookingService.createBooking(resourceId, object, user, handler);
 						}
 					});
@@ -158,6 +156,7 @@ public class BookingController extends ControllerHelper {
 								object.putString("moderator_id", user.getUserId());
 								// TODO : interdire la validation, s'il existe deja une demande validee
 								
+								// TODO : envoyer une notification au demandeur
 								crudService.update(bookingId, object, user, notEmptyResponseHandler(request));
 								
 								// TODO : en cas de validation, mettre les demandes concurrentes à l'etat refuse

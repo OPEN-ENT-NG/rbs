@@ -21,15 +21,28 @@ public class BookingServiceSqlImpl implements BookingService {
 	@Override
 	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
-		/*
-		 * Query : 
-		 * Unix timestamps are converted into postgresql timestamps.
-		 * Check that there does not exist a validated booking that overlaps the new booking.
-		 */
+
+		// Query
 		StringBuilder query = new StringBuilder();
 		query.append("INSERT INTO rbs.booking")
 				.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
-				.append(" SELECT  ?, ?, ?, ?, to_timestamp(?), to_timestamp(?)");
+				.append(" SELECT  ?, ?, ?,")
+		
+				// If validation is activated, the booking is created with status "created".
+				// Otherwise, it is created with status "validated".
+				// TODO V2 : la reservation doit etre automatiquement validee si le demandeur est valideur
+				.append(" (SELECT CASE ")
+				.append(  " WHEN (t.validation IS true) THEN ").append(CREATED.status())
+				.append(  " ELSE ").append(VALIDATED.status())
+				.append(  " END")
+				.append(  " FROM rbs.resource_type AS t")
+				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(  " WHERE r.id = ?),")
+				
+				// Unix timestamps are converted into postgresql timestamps.
+				.append(" to_timestamp(?), to_timestamp(?)");
+		
+		// Check that there does not exist a validated booking that overlaps the new booking.
 		query.append(" WHERE NOT EXISTS (")
 				.append("SELECT id FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
@@ -39,15 +52,15 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
 				.append(")) RETURNING id;");
 
+		JsonArray values = new JsonArray();
 		Object startDate = data.getValue("start_date");
 		Object endDate = data.getValue("end_date");
 
-		JsonArray values = new JsonArray();
 		// Values for the INSERT clause
 		values.add(resourceId)
 				.add(user.getUserId())
 				.add(data.getValue("booking_reason"))
-				.add(data.getValue("status"))
+				.add(resourceId)
 				.add(startDate)
 				.add(endDate);
 		// Values for the NOT EXISTS clause
@@ -66,6 +79,11 @@ public class BookingServiceSqlImpl implements BookingService {
 	public void updateBooking(final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
+		/*
+		 * TODO : Après modification, une réservation (soumise à un circuit validation) doit à nouveau être validée.
+		 * NB : on peut modifier une demande même si elle est validée ou refusée
+		 */
+		
 		// Query
 		JsonArray values = new JsonArray();
 		StringBuilder sb = new StringBuilder();
