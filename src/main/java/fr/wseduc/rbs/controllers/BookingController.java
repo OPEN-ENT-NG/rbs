@@ -114,8 +114,9 @@ public class BookingController extends ControllerHelper {
 						RequestUtils.bodyToJson(request, pathPrefix + "updateBooking", new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject object) {
+								String resourceId = request.params().get("id");
 								String bookingId = request.params().get("bookingId");
-								bookingService.updateBooking(bookingId, object, notEmptyResponseHandler(request));
+								bookingService.updateBooking(resourceId, bookingId, object, notEmptyResponseHandler(request));
 							}
 						});
 					} else {

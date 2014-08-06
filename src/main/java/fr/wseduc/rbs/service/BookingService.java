@@ -14,7 +14,7 @@ public interface BookingService {
 	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 	
-	public void updateBooking(final String bookingId, final JsonObject data,
+	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler);
 	
 	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user, 

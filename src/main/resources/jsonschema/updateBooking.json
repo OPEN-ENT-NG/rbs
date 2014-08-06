@@ -3,9 +3,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "resource_id": {
-      "type": "integer"
-    },
     "booking_reason": {
       "type": "string"
     },
@@ -15,5 +12,9 @@
     "end_date": {
       "type": "integer"
     }
-  }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
 }

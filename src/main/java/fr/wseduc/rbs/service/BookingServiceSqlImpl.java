@@ -76,14 +76,9 @@ public class BookingServiceSqlImpl implements BookingService {
 	}
 
 	@Override
-	public void updateBooking(final String bookingId, final JsonObject data,
+	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
-		/*
-		 * TODO : Après modification, une réservation (soumise à un circuit validation) doit à nouveau être validée.
-		 * NB : on peut modifier une demande même si elle est validée ou refusée
-		 */
-		
 		// Query
 		JsonArray values = new JsonArray();
 		StringBuilder sb = new StringBuilder();
@@ -95,9 +90,42 @@ public class BookingServiceSqlImpl implements BookingService {
 		query.append("UPDATE rbs.booking")
 				.append(" SET ")
 				.append(sb.toString())
-				.append("modified = NOW()")
-				.append(" WHERE id = ?;");
+				.append("modified = NOW(),");
+			
+		// If validation is activated, the booking status is updated to "created" (the booking must be validated anew).
+		// Otherwise, it is updated to "validated".
+		query.append(" status = (SELECT CASE ")
+				.append(  " WHEN (t.validation IS true) THEN ").append(CREATED.status())
+				.append(  " ELSE ").append(VALIDATED.status())
+				.append(  " END")
+				.append(  " FROM rbs.resource_type AS t")
+				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(  " INNER JOIN rbs.booking AS b on b.resource_id = r.id")
+				.append(  " WHERE b.id = ?)");
 		values.add(bookingId);
+		
+		query.append(" WHERE id = ?");
+		values.add(bookingId);
+				
+		// Check that there does not exist a validated booking that overlaps the updated booking.
+		query.append(" AND NOT EXISTS (")
+				.append("SELECT id FROM rbs.booking")
+				.append(" WHERE resource_id = ?")
+				.append(" AND status = ").append(VALIDATED.status())
+				.append(" AND (")
+				.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
+				.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
+				.append("));");
+
+		Object startDate = data.getValue("start_date");
+		Object endDate = data.getValue("end_date");
+		
+		values.add(resourceId);
+		values.add(startDate);
+		values.add(endDate);
+		values.add(startDate);
+		values.add(endDate);
+		
 
 		// Send query to eventbus
 		Sql.getInstance().prepared(query.toString(), values,
