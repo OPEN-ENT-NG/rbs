@@ -53,11 +53,11 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.switchSelect = function(resource) {
-		if (resource.selected !== undefined) {
-			resource.selected = undefined;
+		if (resource.selected !== true) {
+			resource.selected = true;
 		}
 		else {
-			resource.selected = true;
+			resource.selected = undefined;
 		}
 	};
 
