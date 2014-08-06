@@ -3,9 +3,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "owner": {
-      "type": "string"
-    },
     "booking_reason": {
       "type": "string"
     },
@@ -17,7 +14,6 @@
     }
   },
   "required": [
-    "owner",
     "start_date",
     "end_date"
   ]

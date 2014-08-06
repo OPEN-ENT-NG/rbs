@@ -15,7 +15,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rbs.Rbs;
 import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.webutils.http.Binding;
 
@@ -41,29 +40,32 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
-			query.append("SELECT count(*)");
-			query.append(" FROM " + conf.getSchema() + conf.getTable());
-			query.append(" INNER JOIN "	+ conf.getSchema() + Rbs.RESOURCE_TYPE_TABLE);
-			query.append(	" ON " 		+ conf.getSchema() + conf.getTable() + ".type_id = "	+ conf.getSchema() + Rbs.RESOURCE_TYPE_TABLE + ".id");
-			query.append(" LEFT JOIN "	+ conf.getSchema() + Rbs.RESOURCE_TYPE_SHARE_TABLE);
-			query.append(	" ON "		+ conf.getSchema() + Rbs.RESOURCE_TYPE_TABLE + ".id = "	+ conf.getSchema() + Rbs.RESOURCE_TYPE_SHARE_TABLE + ".resource_id");
-			query.append(" LEFT JOIN "	+ conf.getSchema() + conf.getShareTable());
-			query.append(	" ON "		+ conf.getSchema() + conf.getTable() + ".id = "			+ conf.getSchema() + conf.getShareTable() + ".resource_id");
-			query.append(" WHERE ((" 	+ conf.getSchema() + Rbs.RESOURCE_TYPE_SHARE_TABLE	+ ".member_id IN "	+ Sql.listPrepared(groupsAndUserIds.toArray()) + " AND " + conf.getSchema() + Rbs.RESOURCE_TYPE_SHARE_TABLE + ".action = ?)");
+			query.append("SELECT count(*) FROM rbs.resource AS r")
+					.append(" INNER JOIN rbs.resource_type AS t")
+					.append(	" ON r.type_id = t.id")
+					.append(" LEFT JOIN rbs.resource_type_shares AS ts")
+					.append(	" ON t.id = ts.resource_id")
+					.append(" LEFT JOIN rbs.resource_shares AS rs")
+					.append(	" ON r.id = rs.resource_id")
+					.append(" WHERE ((ts.member_id IN ")
+					.append(Sql.listPrepared(groupsAndUserIds.toArray()))
+					.append(" AND ts.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (" 		+ conf.getSchema() + conf.getShareTable()			+ ".member_id IN "	+ Sql.listPrepared(groupsAndUserIds.toArray()) + " AND " + conf.getSchema() + conf.getShareTable() + ".action = ?)");
+			query.append(" OR (rs.member_id IN ")
+				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
+				.append(" AND rs.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (" 		+ conf.getSchema() + Rbs.RESOURCE_TYPE_TABLE + ".owner = ?)");
+			query.append(" OR (t.owner = ?)");
 			values.add(user.getUserId());
-			query.append(" OR (" 		+ conf.getSchema() + conf.getTable() + ".owner = ?)");
+			query.append(" OR (r.owner = ?)");
 			values.add(user.getUserId());
-			query.append(") AND " 		+ conf.getSchema() + conf.getTable() + ".id = ?");
+			query.append(") AND r.id = ?");
 			values.add(Sql.parseId(id));
 			
 			// Execute

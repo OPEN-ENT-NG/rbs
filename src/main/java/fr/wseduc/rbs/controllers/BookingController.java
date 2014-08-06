@@ -1,7 +1,6 @@
 package fr.wseduc.rbs.controllers;
 
 import static fr.wseduc.rbs.BookingStatus.*;
-import static fr.wseduc.rbs.Rbs.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
@@ -15,8 +14,6 @@ import java.util.List;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlConf;
-import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -62,24 +59,19 @@ public class BookingController extends ControllerHelper {
 							}
 
 							object.putNumber("status", CREATED.status());
-							SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
 
 							/* Query :
 							 * Unix timestamps are converted into postgresql timestamps.
 							 * Check that there does not exist a validated booking that overlaps the new booking.
 							 */
 							StringBuilder query = new StringBuilder();
-							query.append("INSERT INTO ")
-									.append(conf.getSchema())
-									.append(conf.getTable())
+							query.append("INSERT INTO rbs.booking")
 									.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
 									.append(" SELECT  ?, ?, ?, ?, to_timestamp(?), to_timestamp(?)");
 							query.append(" WHERE NOT EXISTS (")
-									.append("SELECT id FROM ")
-									.append(conf.getSchema())
-									.append(conf.getTable())
+									.append("SELECT id FROM rbs.booking")
 									.append(" WHERE resource_id = ?")
-									.append(" AND status = " + VALIDATED.status())
+									.append(" AND status = ").append(VALIDATED.status())
 									.append(" AND (")
 									.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
 									.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
@@ -91,7 +83,7 @@ public class BookingController extends ControllerHelper {
 							JsonArray values = new JsonArray();
 							// Values for the INSERT clause
 							values.add(resourceId)
-									.add(object.getValue("owner"))
+									.add(user.getUserId())
 									.add(object.getValue("booking_reason"))
 									.add(object.getValue("status"))
 									.add(startDate)
@@ -172,7 +164,6 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String bookingId = request.params().get("bookingId");
-								SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
 								
 								// Query
 								JsonArray values = new JsonArray();
@@ -182,10 +173,10 @@ public class BookingController extends ControllerHelper {
 								}
 								
 								StringBuilder query = new StringBuilder();
-								query.append("UPDATE ")
-										.append(conf.getSchema())
-										.append(conf.getTable())
-										.append(" SET " + sb.toString() + "modified = NOW()")
+								query.append("UPDATE rbs.booking")
+										.append(" SET ")
+										.append(sb.toString())
+										.append("modified = NOW()")
 										.append(" WHERE id = ?;");
 								values.add(bookingId);
 								
@@ -289,8 +280,6 @@ public class BookingController extends ControllerHelper {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						SqlConf conf = SqlConfs.getConf(BookingController.class.getName());
-
 						final List<String> groupsAndUserIds = new ArrayList<>();
 						groupsAndUserIds.add(user.getUserId());
 						if (user.getProfilGroupsIds() != null) {
@@ -300,36 +289,30 @@ public class BookingController extends ControllerHelper {
 						// Query
 						StringBuilder query = new StringBuilder();
 						JsonArray values = new JsonArray();
-						query.append("SELECT b.* FROM ")
-								.append(conf.getSchema())
-								.append(conf.getTable() + " AS b")
-								.append(" INNER JOIN " + conf.getSchema() + RESOURCE_TABLE + " AS r")
-								.append("   ON b.resource_id = r.id")
-								.append(" INNER JOIN " + conf.getSchema() + RESOURCE_TYPE_TABLE + " AS t")
-								.append("   ON t.id = r.type_id")
-								.append(" LEFT JOIN " + conf.getSchema() + RESOURCE_TYPE_SHARE_TABLE + " AS ts")
-								.append("   ON t.id = ts.resource_id")
-								.append(" LEFT JOIN " + conf.getSchema() + RESOURCE_SHARE_TABLE + " AS rs")
-								.append("   ON r.id = rs.resource_id")
-								.append(" WHERE b.status = " + CREATED.status());
+						query.append("SELECT DISTINCT b.* FROM rbs.booking AS b ")
+								.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
+								.append(" INNER JOIN rbs.resource_type AS t ON t.id = r.type_id")
+								.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+								.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+								.append(" WHERE b.status = ").append(CREATED.status());
 						
-						query.append(" AND (ts.member_id IN " + Sql.listPrepared(groupsAndUserIds.toArray()) + "");
+						query.append(" AND (ts.member_id IN ")
+								.append(Sql.listPrepared(groupsAndUserIds.toArray()));
 						for (String groupOruser : groupsAndUserIds) {
 							values.add(groupOruser);
 						}
 						
-						query.append("   OR rs.member_id IN "+ Sql.listPrepared(groupsAndUserIds.toArray()));
+						query.append(" OR rs.member_id IN ")
+								.append(Sql.listPrepared(groupsAndUserIds.toArray()));
 						for (String groupOruser : groupsAndUserIds) {
 							values.add(groupOruser);
 						}
 						
-						query.append("   OR t.owner = ?");
+						query.append(" OR t.owner = ?");
 						values.add(user.getUserId());
 						
-						query.append("   OR r.owner = ?");
+						query.append(" OR r.owner = ?);");
 						values.add(user.getUserId());
-						
-						query.append(");");
 												
 						// Send query to event bus
 						Sql.getInstance().prepared(query.toString(), values, 
