@@ -7,12 +7,46 @@ function Resource() {
 
 }
 
+Resource.prototype.save = function(cb) {
+	if(this.id) {
+		this.update(cb);
+	}
+	else {
+		this.create(cb);
+	}
+}
+
+Resource.prototype.update = function(cb) {
+	var resource = this;
+	var originalTypeId = this.type_id;
+	this.type_id = this.type.id;
+
+	http().putJson('/rbs/resource/' + this.id, this).done(function(){
+
+		if (resource.type_id !== originalTypeId) {
+			// Move between types collections
+			var originalType = model.resourceTypes.find(function(t) { return t.id === originalTypeId; });
+			originalType.resources.remove(resource, false);
+			originalType.resources.trigger('sync');
+			resource.type.resources.all.push(resource);
+			resource.type.resources.trigger('sync');		
+		}
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+}
+
 Resource.prototype.create = function(cb) {
 	var resource = this;
+	this.type_id = this.type.id;
+
 	http().postJson('/rbs/resources', this).done(function(r){
 		resource.updateData(r);
 
 		// Update collections
+		resource.type.resources.all.push(resource);
+		resource.type.resources.trigger('sync');
 		model.resources.push(resource);
 		if(typeof cb === 'function'){
 			cb();
@@ -20,17 +54,31 @@ Resource.prototype.create = function(cb) {
 	});
 }
 
+Resource.prototype.delete = function(cb) {
+	var resource = this;
+
+	http().delete('/rbs/resource/' + this.id).done(function(){
+		model.resources.remove(resource);
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+}
+
 Resource.prototype.toJSON = function() {
-	return {
+	var json = {
 		name : this.name,
-		description : this.description,
-		icon : this.icon,
 		periodic_booking : this.periodic_booking,
 		is_available : this.is_available,
-		min_delay : this.min_delay,
-		max_delay : this.max_delay,
 		type_id : this.type_id
 	}
+	if (this.icon) {
+		json.icon = this.icon;
+	}
+	if (this.description) {
+		json.description = this.description;
+	}
+	return json;
 };
 
 
@@ -42,7 +90,36 @@ function ResourceType(data) {
 	var resourceType = this;
 
 	this.collection(Resource, {
+		removeSelection : function() {
+			var counter = this.selection().length;
+			this.selection().forEach(function(item){
+				http().delete('/rbs/resource/' + item.id).done(function(){
+					counter = counter - 1;
+					if (counter === 0) {
+						Collection.prototype.removeSelection.call(this);
+						model.resourceTypes.sync();
+					}
+				});
+			});
+		},
 		behaviours: 'rbs'
+	});
+}
+
+ResourceType.prototype.save = function(cb) {
+	if(this.id) {
+		this.update(cb);
+	}
+	else {
+		this.create(cb);
+	}
+}
+
+ResourceType.prototype.update = function(cb) {
+	http().putJson('/rbs/type/' + this.id, this).done(function(){
+		if(typeof cb === 'function'){
+			cb();
+		}
 	});
 }
 
@@ -57,6 +134,10 @@ ResourceType.prototype.create = function(cb) {
 			cb();
 		}
 	});
+}
+
+ResourceType.prototype.delete = function(cb) {
+
 }
 
 ResourceType.prototype.toJSON = function() {

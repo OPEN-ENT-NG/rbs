@@ -11,7 +11,19 @@
 
 	"rbs.manage.types" : "Types de ressources",
 	"rbs.manage.type.create" : "Créer un type de ressources",
-	"rbs.manage.type.edit" : "Editer le type de ressources",
+	"rbs.manage.type.edit" : "Editer le type",
+	"rbs.manage.type.remove" : "Supprimer le type",
+	"rbs.manage.type.share" : "Partager le type",
+	"rbs.manage.type.action" : "Type de ressources : ",
+	"rbs.manage.resource.icon" : "Vignette",
+	"rbs.manage.resource.name" : "Nom de la ressource",
+	"rbs.manage.resource.create" : "Créer une ressource",
+	"rbs.manage.resource.edit" : "Editer la ressource",
+	"rbs.manage.resource.edits" : "Editer les ressources",
+	"rbs.manage.resource.remove" : "Supprimer la ressource",
+	"rbs.manage.resource.removes" : "Supprimer les ressources",
+	"rbs.manage.resource.action" : "Resource : ",
+	"rbs.manage.resource.actions" : "Resources : ",
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
 	"rbs.resourcetype.edit.name.label": "Nom du type",
@@ -21,6 +33,7 @@
 	"rbs.resourcetype.edit.validation.false": "Non",
 
 	"rbs.resource.new": "Nouvelle Ressource",
+	"rbs.resource.edit.type.label" : "Type de ressource",
 	"rbs.resource.edit.name.label": "Nom de la ressource",
 	"rbs.resource.edit.name.placeholder": "Entrez un nom pour la ressource",
 	"rbs.resource.edit.description.label": "Description",
@@ -31,8 +44,8 @@
 	"rbs.resource.edit.periodic_booking.true": "Oui",
 	"rbs.resource.edit.periodic_booking.false": "Non",
 
-	"rbs.create": "Créer",
-	"rbs.create.processing": "Création en cours",
+	"rbs.save": "Enregistrer",
+	"rbs.save.processing": "Enregistrement en cours",
 
 	"group.Teacher" : "Tous les enseignants du groupe {0}.",
 	"group.Personnel" : "Tous les personnels du groupe {0}.",

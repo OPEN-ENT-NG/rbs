@@ -1,16 +1,23 @@
-<h2>[[currentResourecType.name]]</h2>
-<h3>[[currentResourecType.school_id]]</h3>
+<h3>[[currentResourceType.name]] ([[currentResourceType.school_id]])</h3>
 
-<table class="list-view">
+<table class="list-view twelve">
 	<thead>
-		<td><i18n>rbs.manage.resource.icon</i18n></td>
-		<td><i18n>rbs.manage.resource.name</i18n></td>
+		<tr>
+			<th class="one"><input type="checkbox" ng-model="display.selectAllRessources" ng-change="swicthSelectAllRessources()" /></th>
+			<th class="nine"><i18n>rbs.manage.resource.name</i18n></th>
+			<th class="two"><i18n>rbs.manage.resource.icon</i18n></th>
+		</tr>
 	</thead>
-	<tr ng-repeat="resource in currentResourceType.resources.all">
-		<td>[[resource.icon]]</td>
-		<td>[[resource.name]]</td>
-	</tr>
+	<tbody>
+		<tr ng-repeat="resource in currentResourceType.resources.all">
+			<td class="one"><input type="checkbox" ng-model="resource.selected" /></td>
+			<td class="nine">[[resource.name]]</td>
+			<td class="two">[[resource.icon]]</td>
+		</tr>
+	</tbody>
 </table>
+
+<hr />
 
 <div class="row">
 	<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>

@@ -12,23 +12,27 @@ function RbsController($scope, template, model, date){
 	$scope.resources = model.resources;
 	$scope.bookings = model.bookings;
 
-	$scope.currentResourceType = {};
+	$scope.currentResourceType = undefined;
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
 
+	// Navigation
 	$scope.showManage = function() {
 		$scope.currentResourceType = model.resourceTypes.first();
+		model.resources.deselectAll();
 		template.open('main', 'manage-view');
 		template.open('resources', 'manage-resources');
 	};
 
 	$scope.showMain = function() {
-		$scope.currentResourceType = {};
+		$scope.currentResourceType = undefined;
+		model.resources.deselectAll();
 		template.open('main', 'main-view');
 		template.open('bookings', 'main-list');
 	};
 
+	// Main view interaction
 	$scope.displayList = function() {
 		$scope.display.list === true
 		template.open('bookings', 'main-list');	
@@ -57,20 +61,51 @@ function RbsController($scope, template, model, date){
 		}
 	};
 
+	// Management view interaction
 	$scope.selectResourceType = function(resourceType) {
+		$scope.currentResourceType.resources.deselectAll();
 		$scope.currentResourceType = resourceType;
 	}
 
+	$scope.swicthSelectAllRessources = function() {
+		if ($scope.display.selectAllRessources) {
+			$scope.currentResourceType.resources.selectAll();
+		}
+		else {
+			$scope.currentResourceType.resources.deselectAll();
+		}
+	}
+
+	// Management view edition
 	$scope.newResourceType = function() {
 		$scope.editedResourceType = new ResourceType();
-		$scope.display.showPanel = true;
-		template.open('lightbox', 'edit-resource-type');
+		template.open('resources', 'edit-resource-type');
 	};
 
 	$scope.newResource = function() {
 		$scope.editedResource = new Resource();
-		$scope.display.showPanel = true;
-		template.open('lightbox', 'edit-resource');
+		$scope.editedResource.type = $scope.currentResourceType;
+		template.open('resources', 'edit-resource');
+	};
+
+	$scope.editCurrentResourceType = function() {
+		$scope.editedResourceType = $scope.currentResourceType;
+		template.open('resources', 'edit-resource-type');
+	};
+
+	$scope.editSelectedResource = function() {
+		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
+		$scope.editedResource.type = $scope.currentResourceType;
+		template.open('resources', 'edit-resource');
+	};
+
+	$scope.deleteCurrentResourceType = function() {
+		$scope.currentResourceType.resources.deselectAll();
+		$scope.currentResourceType.delete();
+	};
+
+	$scope.shareCurrentResourceType = function() {
+
 	};
 
 	$scope.saveResourceType = function() {
@@ -78,33 +113,29 @@ function RbsController($scope, template, model, date){
 		$scope.editedResourceType.school_id = model.me.classId;
 
 		$scope.display.processing = true;
-		$scope.editedResourceType.create(function(){
+		$scope.editedResourceType.save(function(){
 			$scope.display.processing = undefined;
+			$scope.currentResourceType = $scope.editedResourceType;
 			$scope.closeResourceType();
 		});
-	}
+	};
 
 	$scope.saveResource = function() {
-		// Resolve typeId
-		$scope.editedResource.type_id = $scope.selectedType.id;
-
 		$scope.display.processing = true;
-		$scope.editedResource.create(function(){
+		$scope.editedResource.save(function(){
 			$scope.display.processing = undefined;
 			$scope.closeResource();
 		});
-	}
+	};
 
 	$scope.closeResourceType = function() {
 		$scope.editedResourceType = undefined;
-		$scope.display.showPanel = undefined;
-		template.close('lightbox');
+		template.open('resources', 'manage-resources');
 	};
 
 	$scope.closeResource = function() {
+		$scope.editedResource.type = undefined;
 		$scope.editedResource = undefined;
-		$scope.selectedType = undefined;
-		$scope.display.showPanel = undefined;
-		template.close('lightbox');
+		template.open('resources', 'manage-resources');
 	};
 }
