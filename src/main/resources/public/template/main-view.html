@@ -7,7 +7,7 @@
 	<nav class="vertical row">
 		<ul>
 			<li>
-				<a ng-click="switchMyBookings()"><i18n>rbs.selector.mine.button</i18n></a>
+				<a ng-click="switchSelectMine()" ng-class="{ selected: mine.selected === true }"><i18n>rbs.selector.mine.button</i18n></a>
 			</li>
 		</ul>
 	</nav>

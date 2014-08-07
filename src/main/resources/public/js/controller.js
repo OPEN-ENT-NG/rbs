@@ -11,11 +11,20 @@ function RbsController($scope, template, model, date){
 	$scope.resourceTypes = model.resourceTypes;
 	$scope.resources = model.resources;
 	$scope.bookings = model.bookings;
+	$scope.mine = model.mine;
+	$scope.unprocessed = model.unprocessed;
 
 	$scope.currentResourceType = undefined;
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
+
+	// Auto-select my bookings
+	$scope.mine.bookings.one('sync', function(){
+		$scope.mine.selected = true;
+		$scope.bookings.pushAll($scope.mine.bookings.all);
+	});
+
 
 	// Navigation
 	$scope.showManage = function() {
@@ -60,6 +69,17 @@ function RbsController($scope, template, model, date){
 			resource.selected = undefined;
 		}
 	};
+
+	$scope.switchSelectMine = function() {
+		if ($scope.mine.selected !== true) {
+			$scope.mine.selected = true;
+			$scope.bookings.pushAll($scope.mine.bookings.all);
+		}
+		else {
+			$scope.mine.selected = undefined;
+			$scope.bookings.pullAll($scope.mine.bookings.all);
+		}
+	}
 
 	// Management view interaction
 	$scope.selectResourceType = function(resourceType) {

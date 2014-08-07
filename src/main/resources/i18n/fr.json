@@ -5,7 +5,7 @@
 
 	"rbs.selector.mine" : "Mes réservations",
 	"rbs.selector.mine.button" : "Afficher mes réservations",
-	"rbs.selector.resources" : "Ressources",
+	"rbs.selector.resources" : "Ressources par type",
 	"rbs.selector.tovalidate" : "A valider",
 	"rbs.selector.tovalidate.button" : "En attente",
 

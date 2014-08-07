@@ -1,18 +1,22 @@
 <table class="list-view">
 	<thead>
-		<td>Demandeur</td>
-		<td>Ressource</td>
-		<td>Date de début</td>
-		<td>Date de fin</td>
-		<td>Motif</td>
-		<td>Etat</td>
+		<tr>
+			<th>Demandeur</th>
+			<th>Ressource</th>
+			<th>Date de début</th>
+			<th>Date de fin</th>
+			<th>Motif</th>
+			<th>Etat</th>
+		</tr>
 	</thead>
-	<tr ng-repeat="booking in bookings.all">
-		<td>[[booking.owner.displayName]]</td>
-		<td>[[booking.resource.name]]</td>
-		<td>[[booking.startDate]]</td>
-		<td>[[booking.endDate]]</td>
-		<td>[[booking.bookingReason]]</td>
-		<td>[[booking.status]]</td>
-	</tr>
+	<tbody>
+		<tr ng-repeat="booking in bookings.all">
+			<td>[[booking.owner.displayName]]</td>
+			<td>[[booking.resource.name]]</td>
+			<td>[[booking.start_date]]</td>
+			<td>[[booking.end_date]]</td>
+			<td>[[booking.booking_reason]]</td>
+			<td>[[booking.status]]</td>
+		</tr>
+	</tbody>
 </table>

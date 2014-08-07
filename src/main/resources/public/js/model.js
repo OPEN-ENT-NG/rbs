@@ -1,10 +1,29 @@
 
+model.colorMine = 'cyan';
+model.colors = ['green', 'pink', 'purple', 'orange'];
+model.STATE_CREATED = 1;
+model.STATE_VALIDATED = 2;
+model.STATE_REFUSED = 3;
+
 function Booking() {
 
 }
 
 function Resource() {
-
+	var resource = this;
+	this.collection(Booking, {
+		sync: function(){
+			// Load the Bookings
+			http().get('/resource/' + resource.id + '/bookings').done(function(bookings){
+				_.each(bookings, function(booking){
+					booking.resource = resource;
+					booking.color = resource.type.color;
+				});
+				this.load(bookings);
+			}.bind(this));
+		},
+		behaviours: 'rbs'
+	});
 }
 
 Resource.prototype.save = function(cb) {
@@ -14,7 +33,7 @@ Resource.prototype.save = function(cb) {
 	else {
 		this.create(cb);
 	}
-}
+};
 
 Resource.prototype.update = function(cb) {
 	var resource = this;
@@ -35,7 +54,7 @@ Resource.prototype.update = function(cb) {
 			cb();
 		}
 	});
-}
+};
 
 Resource.prototype.create = function(cb) {
 	var resource = this;
@@ -52,7 +71,7 @@ Resource.prototype.create = function(cb) {
 			cb();
 		}
 	});
-}
+};
 
 Resource.prototype.delete = function(cb) {
 	var resource = this;
@@ -63,7 +82,7 @@ Resource.prototype.delete = function(cb) {
 			cb();
 		}
 	});
-}
+};
 
 Resource.prototype.toJSON = function() {
 	var json = {
@@ -113,7 +132,7 @@ ResourceType.prototype.save = function(cb) {
 	else {
 		this.create(cb);
 	}
-}
+};
 
 ResourceType.prototype.update = function(cb) {
 	http().putJson('/rbs/type/' + this.id, this).done(function(){
@@ -121,7 +140,7 @@ ResourceType.prototype.update = function(cb) {
 			cb();
 		}
 	});
-}
+};
 
 ResourceType.prototype.create = function(cb) {
 	var resourceType = this;
@@ -134,11 +153,11 @@ ResourceType.prototype.create = function(cb) {
 			cb();
 		}
 	});
-}
+};
 
 ResourceType.prototype.delete = function(cb) {
 
-}
+};
 
 ResourceType.prototype.toJSON = function() {
 	return {
@@ -148,14 +167,43 @@ ResourceType.prototype.toJSON = function() {
 	}
 };
 
+
+function BookingsHolder(url, color) {
+	this.collection(Booking, {
+		sync: function(){
+			// Load the Bookings
+			http().get(url).done(function(bookings){
+				var resourceIndex = {};
+				_.each(model.resources.all, function(resource){
+					resourceIndex[resource.id] = resource;
+				});
+				_.each(bookings, function(booking){
+					booking.resource = resourceIndex[booking.resource_id];
+					if (color) {
+						booking.color = color;
+					}
+				});
+				this.load(bookings);
+			}.bind(this));
+		},
+		behaviours: 'rbs'
+	});
+}
+
+
 model.build = function(){
-	this.makeModels([ResourceType, Resource, Booking]);
+	this.makeModels([ResourceType, Resource, Booking, BookingsHolder]);
 
 	this.collection(ResourceType, {
 		sync: function(){
 			var collection = this;
 			// Load the ResourceTypes
 			http().get('/rbs/types').done(function(resourceTypes){
+				var index = 0;
+				_.each(resourceTypes, function(resourceType){
+					resourceType.color = model.findColor(index);
+					index++;
+				});
 				if (model.resources === undefined) {
 					// Load the Resources once
 					this.one('sync', function(){
@@ -168,7 +216,26 @@ model.build = function(){
 		behaviours: 'rbs'
 	});
 
+	this.mine = new BookingsHolder('/rbs/bookings');
+	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
+
 	this.collection(Booking, {
+		pushAll: function(datas, trigger) {
+			if (datas) {
+				this.all = _.union(this.all, datas);
+				if (trigger) {
+					this.trigger('sync');
+				}
+			}
+		},
+		pullAll: function(datas, trigger) {
+			if (datas) {
+				this.all = _.difference(this.all, datas);
+				if (trigger) {
+					this.trigger('sync');	
+				}
+			}
+		},
 		behavious: 'rbs'
 	});
 };
@@ -180,12 +247,15 @@ model.buildResources = function() {
 			// Load the Resources
 			http().get('/rbs/resources').done(function(resources){
 				var actions = (resources !== undefined ? resources.length : 0);
+				var resourceTypeIndex = {};
+				_.each(model.resourceTypes.all, function(resourceType){
+					resourceTypeIndex[resourceType.id] = resourceType;
+				});
 				collection.load(resources, function(resource){
 					// Load the ResourceType's collection with associated Resource
-					var resourceType = _.find(model.resourceTypes.all, function(rt){
-						return rt.id === resource.type_id;
-					});
+					var resourceType = resourceTypeIndex[resource.type_id];
 					if (resourceType !== undefined) {
+						resource.type = resourceType;
 						resourceType.resources.all.push(resource);
 					}
 					actions--;
@@ -193,9 +263,15 @@ model.buildResources = function() {
 						model.resourceTypes.trigger('sync');
 					}
 				});
+
+				model.mine.bookings.sync();
 			});
 		},
 		behaviours: 'rbs'
 	});
 	this.resources.sync();
-}
+};
+
+model.findColor = function(index) {
+	return model.colors[index % model.colors.length];
+};
