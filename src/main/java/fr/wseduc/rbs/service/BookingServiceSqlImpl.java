@@ -19,13 +19,15 @@ import fr.wseduc.webutils.Either;
 
 public class BookingServiceSqlImpl implements BookingService {
 
+	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
+	
 	@Override
 	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		// Lock query to avoid race condition
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
-		statementsBuilder.raw("LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;");
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 		
 		// Insert query
 		StringBuilder query = new StringBuilder();
@@ -94,7 +96,11 @@ public class BookingServiceSqlImpl implements BookingService {
 	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
-		// Query
+		// Lock query to avoid race condition
+		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
+		
+		// Update query
 		JsonArray values = new JsonArray();
 		StringBuilder sb = new StringBuilder();
 		for (String fieldname : data.getFieldNames()) {
@@ -131,24 +137,33 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" AND id != ?")
 				.append(" AND status = ?")
 				.append(" AND (")
-				.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
-				.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
+				.append("( start_date <= to_timestamp(?) AND to_timestamp(?) < end_date )")
+				.append(" OR ( start_date < to_timestamp(?) AND to_timestamp(?) <= end_date )")
+				.append(" OR ( to_timestamp(?) <= start_date AND start_date < to_timestamp(?) )")
+				.append(" OR ( to_timestamp(?) < end_date AND end_date <= to_timestamp(?) )")
 				.append("));");
 
-		Object startDate = data.getValue("start_date");
-		Object endDate = data.getValue("end_date");
+		Object newStartDate = data.getValue("start_date");
+		Object newEndDate = data.getValue("end_date");
 		
 		values.add(resourceId)
 				.add(bookingId)
 				.add(VALIDATED.status())
-				.add(startDate)
-				.add(endDate)
-				.add(startDate)
-				.add(endDate);
+				.add(newStartDate)
+				.add(newStartDate)
+				.add(newEndDate)
+				.add(newEndDate)
+				.add(newStartDate)
+				.add(newEndDate)
+				.add(newStartDate)
+				.add(newEndDate);
 
-		// Send query to eventbus
-		Sql.getInstance().prepared(query.toString(), values,
+		statementsBuilder.prepared(query.toString(), values);
+		
+		// Send queries to eventbus
+		Sql.getInstance().transaction(statementsBuilder.build(), 
 				validRowsResultHandler(handler));
+		
 	}
 
 	private void addFieldToUpdate(StringBuilder sb, String fieldname,

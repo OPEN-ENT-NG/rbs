@@ -116,7 +116,28 @@ public class BookingController extends ControllerHelper {
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
 								String bookingId = request.params().get("bookingId");
-								bookingService.updateBooking(resourceId, bookingId, object, notEmptyResponseHandler(request));
+								
+								Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isRight()) {
+											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+												Renders.renderJson(request, event.right().getValue(), 200);
+											} else {
+												JsonObject error = new JsonObject()
+													.putString("error", 
+															"No rows were updated. Either a validated booking overlaps the booking you tried to create, or the specified bookingId does not exist.");
+												Renders.renderError(request, error);
+											}
+										} else {
+											JsonObject error = new JsonObject()
+													.putString("error", event.left().getValue());
+											Renders.renderJson(request, error, 400);
+										}
+									}
+								};
+																
+								bookingService.updateBooking(resourceId, bookingId, object, handler);
 							}
 						});
 					} else {
