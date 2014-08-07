@@ -1,0 +1,55 @@
+<div class="row">
+	<h2><i18n>rbs.booking.new</i18n></h2>
+	<article class="twelve cell">
+		<div class="row" ng-if="editedBooking.id === undefined">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
+				<select class="row" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.all" required>
+				</select>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
+				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.all" required>
+				</select>
+			</div>
+		</div>
+		<div class="row" ng-if="editedBooking.id !== undefined">
+			<div class="six cell">
+				<label class="cell"><i18n>rbs.booking.edit.type.label</i18n></label>
+				<input class="cell disabled" type="text" disabled value="[[editedBooking.resource.type.name]]"/>
+			</div>
+			<div class="six cell">
+				<label class="cell"><i18n>rbs.booking.edit.resource.label</i18n></label>
+				<input class="cell disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
+			</div>
+		</div>
+		<hr />
+
+		<div class="row">
+			<label class="two cell"><i18n>rbs.booking.edit.start.label</i18n></label>
+			<date-picker class="two cell" ng-model="editedBooking.start_date" ng-change="showDate = true" required></date-picker>
+			<label class="one cell"><i18n>rbs.booking.edit.start.hour</i18n></label>
+			<select class="one cell" ng-model="editedBooking.start_time" ng-options="hourMinutes.name for hourMinutes in times" required>
+			</select>
+			<label class="two cell"><i18n>rbs.booking.edit.end.label</i18n></label>
+			<date-picker class="two cell" ng-model="editedBooking.end_date" ng-change="showDate = true" required></date-picker>
+			<label class="one cell"><i18n>rbs.booking.edit.end.hour</i18n></label>
+			<select class="one cell" ng-model="editedBooking.end_time" ng-options="hourMinutes.name for hourMinutes in times" required>
+			</select>
+		</div>
+		<hr />
+
+		<div class="row">
+			<label class="twelve cell"><i18n>rbs.booking.edit.reason.label</i18n></label>
+			<textarea ng-model="editedBooking.booking_reason"></textarea>
+		</div>
+		<hr />
+
+		<div class="row">
+			<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking()" ng-if="display.processing !== true" />
+
+			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.create.processing</i18n></button>
+		</div>
+	</article>
+</div>

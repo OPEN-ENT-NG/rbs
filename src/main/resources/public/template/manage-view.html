@@ -28,6 +28,13 @@
 	</div>
 </section>
 
+<!-- Lightbox : Thread share -->
+<div ng-if="display.showPanel">
+	<lightbox show="display.showPanel" on-close="display.showPanel = false;">
+		<share-panel app-prefix="'rbs'" resources="currentResourceType"></share-panel>
+	</lightbox>
+</div>
+
 <section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length !== 0) }">
 	<div class="toggle block-container">
 		<div class="row">

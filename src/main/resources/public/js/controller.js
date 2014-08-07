@@ -9,15 +9,19 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.resourceTypes = model.resourceTypes;
-	$scope.resources = model.resources;
 	$scope.bookings = model.bookings;
 	$scope.mine = model.mine;
 	$scope.unprocessed = model.unprocessed;
+	$scope.times = model.times;
 
 	$scope.currentResourceType = undefined;
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
+
+	model.one('loadResources', function(){
+		$scope.resources = model.resources;
+	});
 
 	// Auto-select my bookings
 	$scope.mine.bookings.one('sync', function(){
@@ -64,9 +68,11 @@ function RbsController($scope, template, model, date){
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== true) {
 			resource.selected = true;
+			$scope.lastSelectedResource = resource;
 		}
 		else {
 			resource.selected = undefined;
+			$scope.lastSelectedResource = undefined;
 		}
 	};
 
@@ -81,11 +87,76 @@ function RbsController($scope, template, model, date){
 		}
 	}
 
+	$scope.viewBooking = function(booking) {
+
+	}
+
+	// Booking edition
+	$scope.newBooking = function() {
+		$scope.editedBooking = new Booking();
+		if ($scope.lastSelectedResource) {
+			$scope.editedBooking.resource = $scope.lastSelectedResource;
+			$scope.editedBooking.type = $scope.lastSelectedResource.type;
+		}
+		else {
+			$scope.editedBooking.resource = $scope.resources.first();
+			$scope.editedBooking.type = $scope.resources.first().type;
+		}
+		$scope.display.showPanel = true;
+		template.open('lightbox', 'edit-booking');
+	};
+
+	$scope.editBooking = function() {
+		$scope.editedBooking = $scope.bookings.selection()[0];
+
+		// dates management
+		var realStartDate = moment.unix($scope.editedBooking.start_date).toDate();
+		var realEndDate = moment.unix($scope.editedBooking.end_date).toDate();
+		$scope.editedBooking.start_date = realStartDate;
+		$scope.editedBooking.end_date = realEndDate;
+
+		$scope.display.showPanel = true;
+		template.open('lightbox', 'edit-booking');
+	};
+
+	$scope.saveBooking = function() {
+		$scope.display.processing = true;
+		
+		// dates management
+		var realStartDate = moment($scope.editedBooking.start_date).add(moment($scope.editedBooking.start_date, 'HH:mm'));
+		var realEndDate = moment($scope.editedBooking.end_date).add(moment($scope.editedBooking.end_date, 'HH:mm'));
+		$scope.editedBooking.start_date = realStartDate.unix();
+		$scope.editedBooking.end_date = realEndDate.unix();
+
+		$scope.editedBooking.save(function(){
+			$scope.display.processing = undefined;
+			$scope.closeBooking();
+		});
+	};
+
+	$scope.closeBooking = function() {
+		$scope.display.showPanel = false;
+		template.close('lightbox');
+	};
+
+	$scope.deleteBooking = function() {
+
+	};
+
+	$scope.validateBooking = function() {
+
+	};
+
+	$scope.refuseBooking = function() {
+
+	};
+
+
 	// Management view interaction
 	$scope.selectResourceType = function(resourceType) {
 		$scope.currentResourceType.resources.deselectAll();
 		$scope.currentResourceType = resourceType;
-	}
+	};
 
 	$scope.swicthSelectAllRessources = function() {
 		if ($scope.display.selectAllRessources) {
@@ -94,7 +165,7 @@ function RbsController($scope, template, model, date){
 		else {
 			$scope.currentResourceType.resources.deselectAll();
 		}
-	}
+	};
 
 	// Management view edition
 	$scope.newResourceType = function() {
@@ -125,7 +196,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.shareCurrentResourceType = function() {
-
+		$scope.display.showPanel = true;
 	};
 
 	$scope.saveResourceType = function() {

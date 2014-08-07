@@ -5,9 +5,80 @@ model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 
+model.times = [];
+model.timeConfig = {
+	interval: 5, // in minutes
+	start_hour: 6,
+	end_hour: 23,
+	default_hour: 8
+};
+
 function Booking() {
 
 }
+
+Booking.prototype.save = function(cb) {
+	if(this.id) {
+		this.update(cb);
+	}
+	else {
+		this.create(cb);
+	}
+};
+
+Booking.prototype.update = function(cb) {
+	var booking = this;
+
+	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id, this).done(function(){
+		this.status = model.STATE_CREATED;
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+};
+
+Booking.prototype.create = function(cb) {
+	var booking = this;
+	this.resource_id = this.resource.id;
+
+	http().postJson('/rbs/resource/' + this.resource_id + '/booking', this).done(function(b){
+		booking.updateData(b);
+
+		// Update collections
+		if (booking.resource.selected) {
+			booking.resource.bookings.push(booking);
+		}
+		model.mine.bookings.push(booking);
+		model.bookings.pushAll([booking]);
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+};
+
+Booking.prototype.validate = function(cb) {
+
+};
+
+Booking.prototype.refuse = function(cb) {
+
+};
+
+Booking.prototype.process = function(cb) {
+
+};
+
+Booking.prototype.toJSON = function() {
+	var json = {
+		start_date : this.start_date,
+		end_date : this.end_date,
+	}
+	if (this.booking_reason) {
+		json.booking_reason = this.booking_reason;
+	}
+	return json;
+};
+
 
 function Resource() {
 	var resource = this;
@@ -216,7 +287,7 @@ model.build = function(){
 		behaviours: 'rbs'
 	});
 
-	this.mine = new BookingsHolder('/rbs/bookings');
+	this.mine = new BookingsHolder('/rbs/bookings', model.colorMine);
 	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
 
 	this.collection(Booking, {
@@ -238,6 +309,8 @@ model.build = function(){
 		},
 		behavious: 'rbs'
 	});
+
+	model.loadTimes();
 };
 
 model.buildResources = function() {
@@ -270,8 +343,20 @@ model.buildResources = function() {
 		behaviours: 'rbs'
 	});
 	this.resources.sync();
+	this.trigger('loadResources');
 };
 
 model.findColor = function(index) {
 	return model.colors[index % model.colors.length];
+};
+
+model.loadTimes = function() {
+	for(hour = model.timeConfig.start_hour; hour <= model.timeConfig.end_hour; hour++) {
+		for (min = 0; min < 60; min = min + model.timeConfig.interval) {
+			model.times.push({
+				name: ' ' + (hour < 10 ? ' ' + hour : hour) + ' h ' + (min < 10 ? '0' + min : min) + ' ',
+				value: '' + (hour < 10 ? '0' + hour : hour) + ':' + (min < 10 ? '0' + min : min)
+			});
+		}
+	}
 };

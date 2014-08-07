@@ -38,8 +38,17 @@
 	</nav>
 </section>
 
+<!-- Lightbox -->
+<div ng-if="display.showPanel">
+	<lightbox show="display.showPanel" on-close="display.showPanel = false;">
+		<container template="lightbox"></container>
+	</lightbox>
+</div>
+
 <section class="cell nine">
 	<div class="row">
+		<button ng-click="newBooking()"><i18n>rbs.booking.create</i18n></button>
+
 		<div class="display-buttons">
 			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
 			<i class="show-icons" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>
@@ -49,13 +58,6 @@
 		<container template="bookings"></container>
 	</div>
 </section>
-
-<!-- Lightbox -->
-<div ng-if="display.showPanel">
-	<lightbox show="display.showPanel" on-close="display.showPanel = false;">
-		<container template="lightbox"></container>
-	</lightbox>
-</div>
 
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
 	<div class="toggle block-container">

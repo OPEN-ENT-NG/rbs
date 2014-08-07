@@ -1,5 +1,17 @@
 var rbsBehaviours = {
 	resources: {
+		contrib: {
+			right: 'fr.wseduc.rbs.controllers.BookingController|createBooking'
+		},
+		publish: {
+			right: 'fr.wseduc.rbs.controllers.BookingController|processBooking'
+		},
+		manage: {
+			right: 'fr.wseduc.rbs.controllers.ResourceTypeController|updateResourceType'
+		},
+		share: {
+			right: 'fr.wseduc.rbs.controllers.ResourceTypeController|shareJson'
+		}
 	},
 	workflow: {
 	}
@@ -9,20 +21,20 @@ Behaviours.register('rbs', {
 	behaviours: rbsBehaviours,
 	resource: function(resource){
 		var rightsContainer = resource;
-		/*
-		if(resource instanceof Subject && resource.category){
-			rightsContainer = resource.category;
+		
+		if(resource instanceof Resource && resource.type){
+			rightsContainer = resource.type;
 		}
-		if(resource instanceof Message && resource.subject && resource.subject.category){
-			rightsContainer = resource.subject.category;
+		if(resource instanceof Booking && resource.resource && resource.resource.type){
+			rightsContainer = resource.resource.type;
 		}
-		*/
+		
 		if(!resource.myRights){
 			resource.myRights = {};
 		}
 
-		for(var behaviour in rbsBehaviours.resources){
-			if(model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour]) || model.me.userId === resource.owner.userId){
+		for(var behaviour in rbsBehaviours.resources){ // resource.owner currently directly contains Id
+			if(model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour]) || model.me.userId === resource.owner){
 				if(resource.myRights[behaviour] !== undefined){
 					resource.myRights[behaviour] = resource.myRights[behaviour] && rbsBehaviours.resources[behaviour];
 				}

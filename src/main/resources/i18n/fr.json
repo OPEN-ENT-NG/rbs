@@ -9,6 +9,17 @@
 	"rbs.selector.tovalidate" : "A valider",
 	"rbs.selector.tovalidate.button" : "En attente",
 
+	"rbs.booking.create" : "Nouvelle réservation",
+	"rbs.booking.new" : "Nouvelle réservation",
+	"rbs.booking.edit" : "Edition : ",
+	"rbs.booking.edit.type.label" : "Type de ressource",
+	"rbs.booking.edit.resource.label" : "Ressource",
+	"rbs.booking.edit.start.label" : "Début le ",
+	"rbs.booking.edit.start.hour" : " à ",
+	"rbs.booking.edit.end.label" : "Fin le ",
+	"rbs.booking.edit.end.hour" : " à ",
+	"rbs.booking.edit.reason.label" : "Motif",
+
 	"rbs.manage.types" : "Types de ressources",
 	"rbs.manage.type.create" : "Créer un type de ressources",
 	"rbs.manage.type.edit" : "Editer le type",
