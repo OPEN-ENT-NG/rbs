@@ -203,6 +203,25 @@ public class BookingController extends ControllerHelper {
 			});
 	 }
 	 
+	@Get("/resource/:id/bookings")
+	@ApiDoc("List all bookings for a given resource")
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	public void listBookingsByResource(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String resourceId = request.params().get("id");
+					bookingService.listBookingsByResource(resourceId, arrayResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
+	 
 	 @Get("/bookings/unprocessed")
 	 @ApiDoc("List all bookings waiting to be processed by current user")
 	 @SecuredAction("rbs.booking.list.unprocessed")

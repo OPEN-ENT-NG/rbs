@@ -144,6 +144,17 @@ public class BookingServiceSqlImpl implements BookingService {
 	}
 	
 	@Override
+	public void listBookingsByResource(final String resourceId, 
+			final Handler<Either<String, JsonArray>> handler){
+		String query = "SELECT * FROM rbs.booking WHERE resource_id = ?;";
+		JsonArray values = new JsonArray();
+		values.add(resourceId);
+		
+		Sql.getInstance().prepared(query, values, 
+				validResultHandler(handler));
+	}
+	
+	@Override
 	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user, 
 			final Handler<Either<String, JsonArray>> handler){
 		

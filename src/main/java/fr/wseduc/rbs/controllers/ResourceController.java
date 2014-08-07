@@ -58,15 +58,6 @@ public class ResourceController extends ControllerHelper {
 		super.retrieve(request);
 	}
 	
-	/*
-	@Get("/resource/:id/booking")
-	@ApiDoc("Get a resource with its associated bookings for a given duration")
-	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
-	public void getBookings(HttpServerRequest request) {
-		
-	}
-	*/
-	
 	@Post("/resources")
 	@ApiDoc("Create resource")
 	@SecuredAction("rbs.resource.create")
