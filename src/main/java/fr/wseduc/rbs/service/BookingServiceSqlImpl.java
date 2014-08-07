@@ -24,47 +24,48 @@ public class BookingServiceSqlImpl implements BookingService {
 
 		// Query
 		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+		Object startDate = data.getValue("start_date");
+		Object endDate = data.getValue("end_date");
+		
 		query.append("INSERT INTO rbs.booking")
 				.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
-				.append(" SELECT  ?, ?, ?,")
+				.append(" SELECT  ?, ?, ?,");
+		values.add(resourceId)
+				.add(user.getUserId())
+				.add(data.getValue("booking_reason"));
 		
-				// If validation is activated, the booking is created with status "created".
-				// Otherwise, it is created with status "validated".
-				// TODO V2 : la reservation doit etre automatiquement validee si le demandeur est valideur
-				.append(" (SELECT CASE ")
-				.append(  " WHEN (t.validation IS true) THEN ").append(CREATED.status())
-				.append(  " ELSE ").append(VALIDATED.status())
+		// If validation is activated, the booking is created with status "created".
+		// Otherwise, it is created with status "validated".
+		// TODO V2 : la reservation doit etre automatiquement validee si le demandeur est valideur
+		query.append(" (SELECT CASE ")
+				.append(  " WHEN (t.validation IS true) THEN ?")
+				.append(  " ELSE ?")
 				.append(  " END")
 				.append(  " FROM rbs.resource_type AS t")
 				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-				.append(  " WHERE r.id = ?),")
-				
-				// Unix timestamps are converted into postgresql timestamps.
-				.append(" to_timestamp(?), to_timestamp(?)");
+				.append(  " WHERE r.id = ?),");
+		values.add(CREATED.status())
+				.add(VALIDATED.status())
+				.add(resourceId);
+		
+		// Unix timestamps are converted into postgresql timestamps.
+		query.append(" to_timestamp(?), to_timestamp(?)");
+		values.add(startDate)
+				.add(endDate);
 		
 		// Check that there does not exist a validated booking that overlaps the new booking.
 		query.append(" WHERE NOT EXISTS (")
 				.append("SELECT id FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
-				.append(" AND status = ").append(VALIDATED.status())
+				.append(" AND status = ?")
 				.append(" AND (")
 				.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
 				.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
 				.append(")) RETURNING id;");
 
-		JsonArray values = new JsonArray();
-		Object startDate = data.getValue("start_date");
-		Object endDate = data.getValue("end_date");
-
-		// Values for the INSERT clause
 		values.add(resourceId)
-				.add(user.getUserId())
-				.add(data.getValue("booking_reason"))
-				.add(resourceId)
-				.add(startDate)
-				.add(endDate);
-		// Values for the NOT EXISTS clause
-		values.add(resourceId)
+				.add(VALIDATED.status())
 				.add(startDate)
 				.add(endDate)
 				.add(startDate)
@@ -95,14 +96,16 @@ public class BookingServiceSqlImpl implements BookingService {
 		// If validation is activated, the booking status is updated to "created" (the booking must be validated anew).
 		// Otherwise, it is updated to "validated".
 		query.append(" status = (SELECT CASE ")
-				.append(  " WHEN (t.validation IS true) THEN ").append(CREATED.status())
-				.append(  " ELSE ").append(VALIDATED.status())
+				.append(  " WHEN (t.validation IS true) THEN ?")
+				.append(  " ELSE ?")
 				.append(  " END")
 				.append(  " FROM rbs.resource_type AS t")
 				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
 				.append(  " INNER JOIN rbs.booking AS b on b.resource_id = r.id")
 				.append(  " WHERE b.id = ?)");
-		values.add(bookingId);
+		values.add(CREATED.status())
+				.add(VALIDATED.status())
+				.add(bookingId);
 		
 		query.append(" WHERE id = ?");
 		values.add(bookingId);
@@ -111,7 +114,8 @@ public class BookingServiceSqlImpl implements BookingService {
 		query.append(" AND NOT EXISTS (")
 				.append("SELECT id FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
-				.append(" AND status = ").append(VALIDATED.status())
+				.append(" AND id != ?")
+				.append(" AND status = ?")
 				.append(" AND (")
 				.append("( start_date >= to_timestamp(?) AND start_date < to_timestamp(?) )")
 				.append(" OR ( end_date > to_timestamp(?) AND end_date <= to_timestamp(?) )")
@@ -120,12 +124,13 @@ public class BookingServiceSqlImpl implements BookingService {
 		Object startDate = data.getValue("start_date");
 		Object endDate = data.getValue("end_date");
 		
-		values.add(resourceId);
-		values.add(startDate);
-		values.add(endDate);
-		values.add(startDate);
-		values.add(endDate);
-		
+		values.add(resourceId)
+				.add(bookingId)
+				.add(VALIDATED.status())
+				.add(startDate)
+				.add(endDate)
+				.add(startDate)
+				.add(endDate);
 
 		// Send query to eventbus
 		Sql.getInstance().prepared(query.toString(), values,
@@ -166,7 +171,8 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" INNER JOIN rbs.resource_type AS t ON t.id = r.type_id")
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 				.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
-				.append(" WHERE b.status = ").append(CREATED.status());
+				.append(" WHERE b.status = ?");
+		values.add(CREATED.status());
 		
 		query.append(" AND (ts.member_id IN ")
 				.append(Sql.listPrepared(groupsAndUserIds.toArray()));
