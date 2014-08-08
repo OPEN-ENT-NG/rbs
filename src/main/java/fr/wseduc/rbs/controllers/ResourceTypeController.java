@@ -106,24 +106,27 @@ public class ResourceTypeController extends ControllerHelper {
 		});
 	}
 	
-	@Get("/type/share/json/:id")
+	@Get("/share/json/:id")
 	@ApiDoc("List rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void shareJson(final HttpServerRequest request){
+		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.shareJson(request, false);
 	}
 
-	@Put("/type/share/json/:id")
+	@Put("/share/json/:id")
 	@ApiDoc("Add rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void shareJsonSubmit(final HttpServerRequest request){
+		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.shareJsonSubmit(request, null, false);
 	}
 
-	@Put("/type/share/remove/:id")
+	@Put("/share/remove/:id")
 	@ApiDoc("Remove rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void removeShare(final HttpServerRequest request){
+		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.removeShare(request, false);
 	}
 	
