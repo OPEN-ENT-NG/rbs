@@ -13,6 +13,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -181,7 +182,7 @@ public class BookingServiceSqlImpl implements BookingService {
 	@Override
 	public void processBooking(final String resourceId, final String bookingId, 
 			final int newStatus, final JsonObject data, 
-			final UserInfos user, final Handler<Either<String, JsonObject>> handler){
+			final UserInfos user, final Handler<Message<JsonObject>> handler){
 		
 		// Query to validate or refuse booking
 		StringBuilder sb = new StringBuilder();
@@ -197,16 +198,16 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append("modified = NOW() ")
 				.append("WHERE id = ?;");
 		values.add(bookingId);
+		// TODO : ne pas valider s'il existe deja une demande validee
 		
 		if(newStatus != VALIDATED.status()){
-			Sql.getInstance().prepared(query.toString(), values, 
-					validRowsResultHandler(handler));
+			Sql.getInstance().prepared(query.toString(), values, handler);
 		}
 		else {
 			SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 			statementsBuilder.prepared(query.toString(), values);
 			
-			// Query to refuse concurrent bookings, since the booking has been validated
+			// Query to refuse potential concurrent bookings of the validated booking
 			StringBuilder rbQuery = new StringBuilder();
 			JsonArray rbValues = new JsonArray();
 
@@ -217,6 +218,7 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" WHERE id = ?)");
 			rbValues.add(bookingId);
 			
+			// TODO : ajouter un motif de refus et le moderator_id
 			rbQuery.append(" UPDATE rbs.booking")
 				.append(" SET status = ?, modified = NOW() ");
 			rbValues.add(REFUSED.status());
@@ -245,7 +247,18 @@ public class BookingServiceSqlImpl implements BookingService {
 			
 			statementsBuilder.prepared(rbQuery.toString(), rbValues);
 			
-			Sql.getInstance().transaction(statementsBuilder.build(), validRowsResultHandler(handler));
+			/* Worker "mod-mysql-postgresql" replies with the result of the last executed query.
+			 * But we're interested in the result of the first query. Hence an additional count query.
+			 */
+			String countQuery = "SELECT count(*) FROM rbs.booking WHERE id = ? and status = ?;";
+			JsonArray countValues = new JsonArray();
+			countValues.add(bookingId)
+				.add(VALIDATED.status());
+			
+			statementsBuilder.prepared(countQuery, countValues);
+			
+			// Send queries to event bus
+			Sql.getInstance().transaction(statementsBuilder.build(), handler);
 		}
 	}
 

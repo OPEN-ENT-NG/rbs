@@ -10,9 +10,11 @@ import java.util.List;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.VisibilityFilter;
+import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
@@ -172,18 +174,42 @@ public class BookingController extends ControllerHelper {
 									renderError(request);
 									return;
 								}
+								
 								if (newStatus != VALIDATED.status() 
 										&& newStatus != REFUSED.status()) {
 									badRequest(request, "Invalid status");
 									return;
 								}
+
 								
+								Handler<Message<JsonObject>> handler = SqlResult
+										.validRowsResultHandler(notEmptyResponseHandler(request));
+
+								if(newStatus == VALIDATED.status()){
+									
+									handler = new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> message) {
+											Long count = SqlResult.countResult(message);
+											if(count != null && count > 0){
+												JsonObject result = new JsonObject();
+												result.putValue("rows", count);
+												renderJson(request, result);
+											}
+											else {
+												JsonObject error = new JsonObject();
+												error.putValue("error", "No rows were updated");
+												renderError(request, error);
+											}
+										}
+									};
+								}
+																
 								object.putString("moderator_id", user.getUserId());
-								// TODO : interdire la validation, s'il existe deja une demande validee
 								// TODO : envoyer une notification au demandeur
 								
 								bookingService.processBooking(resourceId, bookingId, newStatus, 
-										object, user, notEmptyResponseHandler(request));
+										object, user, handler);
 							}
 						});
 					} else {

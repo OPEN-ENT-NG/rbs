@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -19,7 +20,7 @@ public interface BookingService {
 	
 	public void processBooking(final String resourceId, final String bookingId, 
 			final int newStatus, final JsonObject data, 
-			final UserInfos user, final Handler<Either<String, JsonObject>> handler);
+			final UserInfos user, final Handler<Message<JsonObject>> handler);
 	
 	public void listBookingsByResource(final String resourceId, 
 			final Handler<Either<String, JsonArray>> handler);
