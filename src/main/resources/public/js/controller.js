@@ -69,10 +69,14 @@ function RbsController($scope, template, model, date){
 		if (resource.selected !== true) {
 			resource.selected = true;
 			$scope.lastSelectedResource = resource;
+			resource.bookings.sync(function(){
+				$scope.bookings.pushAll(resource.bookings.all);
+			});
 		}
 		else {
 			resource.selected = undefined;
 			$scope.lastSelectedResource = undefined;
+			$scope.bookings.pullAll(resource.bookings.all);
 		}
 	};
 
@@ -89,6 +93,10 @@ function RbsController($scope, template, model, date){
 
 	$scope.viewBooking = function(booking) {
 
+	}
+
+	$scope.formatDate = function(date) {
+		return moment(date).format('DD/MM/YYYY HH[h]mm');
 	}
 
 	// Booking edition
@@ -110,10 +118,12 @@ function RbsController($scope, template, model, date){
 		$scope.editedBooking = $scope.bookings.selection()[0];
 
 		// dates management
-		var realStartDate = moment.unix($scope.editedBooking.start_date).toDate();
-		var realEndDate = moment.unix($scope.editedBooking.end_date).toDate();
-		$scope.editedBooking.start_date = realStartDate;
-		$scope.editedBooking.end_date = realEndDate;
+		$scope.editedBooking.startDate = $scope.editedBooking.startMoment.startOf('day').toDate();
+		$scope.editedBooking.endDate = $scope.editedBooking.endMoment.startOf('day').toDate();
+		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
+			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour() && $scope.editedBooking.startMoment.minute() === hourMinutes.minute()) });
+		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
+			return ($scope.editedBooking.endMoment.hour() === hourMinutes.hour() && $scope.editedBooking.endMoment.minute() === hourMinutes.minute()) });
 
 		$scope.display.showPanel = true;
 		template.open('lightbox', 'edit-booking');
@@ -123,12 +133,12 @@ function RbsController($scope, template, model, date){
 		$scope.display.processing = true;
 		
 		// dates management
-		var realStartDate = moment($scope.editedBooking.start_date).add(moment($scope.editedBooking.start_date, 'HH:mm'));
-		var realEndDate = moment($scope.editedBooking.end_date).add(moment($scope.editedBooking.end_date, 'HH:mm'));
-		$scope.editedBooking.start_date = realStartDate.unix();
-		$scope.editedBooking.end_date = realEndDate.unix();
+		$scope.editedBooking.startMoment = moment($scope.editedBooking.startDate).add($scope.editedBooking.startTime);
+		$scope.editedBooking.endMoment = moment($scope.editedBooking.endDate).add($scope.editedBooking.endTime);
 
 		$scope.editedBooking.save(function(){
+			$scope.editedBooking.start_date = $scope.editedBooking.startTime.toDate();
+			$scope.editedBooking.end_date = $scope.editedBooking.endTime.toDate();
 			$scope.display.processing = undefined;
 			$scope.closeBooking();
 		});

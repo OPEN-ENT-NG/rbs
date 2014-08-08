@@ -9,6 +9,16 @@
 	"rbs.selector.tovalidate" : "A valider",
 	"rbs.selector.tovalidate.button" : "En attente",
 
+	"rbs.booking.headers.owner" : "Demandeur",
+	"rbs.booking.headers.resource" : "Ressource",
+	"rbs.booking.headers.start_date" : "Date de début",
+	"rbs.booking.headers.end_date" : "Date de fin",
+	"rbs.booking.headers.reason" : "Motif",
+	"rbs.booking.headers.status" : "Etat",
+	"rbs.booking.status.1" : "Créée",
+	"rbs.booking.status.2" : "Validée",
+	"rbs.booking.status.3" : "Refusée",
+
 	"rbs.booking.create" : "Nouvelle réservation",
 	"rbs.booking.new" : "Nouvelle réservation",
 	"rbs.booking.edit" : "Edition : ",

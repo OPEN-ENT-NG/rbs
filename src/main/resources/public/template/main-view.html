@@ -40,7 +40,7 @@
 
 <!-- Lightbox -->
 <div ng-if="display.showPanel">
-	<lightbox show="display.showPanel" on-close="display.showPanel = false;">
+	<lightbox show="display.showPanel" on-close="closeBooking()">
 		<container template="lightbox"></container>
 	</lightbox>
 </div>
@@ -62,6 +62,10 @@
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
 	<div class="toggle block-container">
 		<div class="row">
+			<button ng-if="bookings.selection().length === 1"
+					ng-click="editBooking()">
+				<i18n>edit</i18n>
+			</button>
 			<button ng-click="bookings.removeSelection()"><i18n>remove</i18n></button>
 		</div>
 	</div>

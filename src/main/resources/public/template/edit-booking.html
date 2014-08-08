@@ -15,26 +15,26 @@
 		</div>
 		<div class="row" ng-if="editedBooking.id !== undefined">
 			<div class="six cell">
-				<label class="cell"><i18n>rbs.booking.edit.type.label</i18n></label>
-				<input class="cell disabled" type="text" disabled value="[[editedBooking.resource.type.name]]"/>
+				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
+				<input class="row disabled" type="text" disabled value="[[editedBooking.resource.type.name]]"/>
 			</div>
 			<div class="six cell">
-				<label class="cell"><i18n>rbs.booking.edit.resource.label</i18n></label>
-				<input class="cell disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
+				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
+				<input class="row disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
 			</div>
 		</div>
 		<hr />
 
 		<div class="row">
 			<label class="two cell"><i18n>rbs.booking.edit.start.label</i18n></label>
-			<date-picker class="two cell" ng-model="editedBooking.start_date" ng-change="showDate = true" required></date-picker>
+			<date-picker class="two cell" ng-model="editedBooking.startDate" ng-change="showDate = true" required></date-picker>
 			<label class="one cell"><i18n>rbs.booking.edit.start.hour</i18n></label>
-			<select class="one cell" ng-model="editedBooking.start_time" ng-options="hourMinutes.name for hourMinutes in times" required>
+			<select class="one cell" ng-model="editedBooking.startTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 			</select>
 			<label class="two cell"><i18n>rbs.booking.edit.end.label</i18n></label>
-			<date-picker class="two cell" ng-model="editedBooking.end_date" ng-change="showDate = true" required></date-picker>
+			<date-picker class="two cell" ng-model="editedBooking.endDate" ng-change="showDate = true" required></date-picker>
 			<label class="one cell"><i18n>rbs.booking.edit.end.hour</i18n></label>
-			<select class="one cell" ng-model="editedBooking.end_time" ng-options="hourMinutes.name for hourMinutes in times" required>
+			<select class="one cell" ng-model="editedBooking.endTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 			</select>
 		</div>
 		<hr />

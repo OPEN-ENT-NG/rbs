@@ -27,8 +27,10 @@ Booking.prototype.save = function(cb) {
 };
 
 Booking.prototype.update = function(cb) {
-	var booking = this;
+	this.start_date = this.startMoment.unix();
+	this.end_date = this.endMoment.unix();
 
+	var booking = this;
 	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id, this).done(function(){
 		this.status = model.STATE_CREATED;
 		if(typeof cb === 'function'){
@@ -38,9 +40,11 @@ Booking.prototype.update = function(cb) {
 };
 
 Booking.prototype.create = function(cb) {
-	var booking = this;
+	this.start_date = this.startMoment.unix();
+	this.end_date = this.endMoment.unix();
 	this.resource_id = this.resource.id;
 
+	var booking = this;
 	http().postJson('/rbs/resource/' + this.resource_id + '/booking', this).done(function(b){
 		booking.updateData(b);
 
@@ -83,14 +87,19 @@ Booking.prototype.toJSON = function() {
 function Resource() {
 	var resource = this;
 	this.collection(Booking, {
-		sync: function(){
+		sync: function(cb){
 			// Load the Bookings
-			http().get('/resource/' + resource.id + '/bookings').done(function(bookings){
+			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(bookings){
 				_.each(bookings, function(booking){
 					booking.resource = resource;
 					booking.color = resource.type.color;
+					booking.startMoment = moment(booking.start_date);
+					booking.endMoment = moment(booking.end_date);
 				});
 				this.load(bookings);
+				if(typeof cb === 'function'){
+					cb();
+				}
 			}.bind(this));
 		},
 		behaviours: 'rbs'
@@ -217,6 +226,7 @@ ResourceType.prototype.create = function(cb) {
 	var resourceType = this;
 	http().postJson('/rbs/type', this).done(function(t){
 		resourceType.updateData(t);
+		resourceType._id = resourceType.id;
 
 		// Update collections
 		model.resourceTypes.push(resourceType);
@@ -250,6 +260,8 @@ function BookingsHolder(url, color) {
 				});
 				_.each(bookings, function(booking){
 					booking.resource = resourceIndex[booking.resource_id];
+					booking.startMoment = moment(booking.start_date);
+					booking.endMoment = moment(booking.end_date);
 					if (color) {
 						booking.color = color;
 					}
@@ -273,6 +285,7 @@ model.build = function(){
 				var index = 0;
 				_.each(resourceTypes, function(resourceType){
 					resourceType.color = model.findColor(index);
+					resourceType._id = resourceType.id;
 					index++;
 				});
 				if (model.resources === undefined) {
@@ -287,7 +300,7 @@ model.build = function(){
 		behaviours: 'rbs'
 	});
 
-	this.mine = new BookingsHolder('/rbs/bookings', model.colorMine);
+	this.mine = new BookingsHolder('/rbs/bookings', this.colorMine);
 	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
 
 	this.collection(Booking, {
@@ -353,10 +366,9 @@ model.findColor = function(index) {
 model.loadTimes = function() {
 	for(hour = model.timeConfig.start_hour; hour <= model.timeConfig.end_hour; hour++) {
 		for (min = 0; min < 60; min = min + model.timeConfig.interval) {
-			model.times.push({
-				name: ' ' + (hour < 10 ? ' ' + hour : hour) + ' h ' + (min < 10 ? '0' + min : min) + ' ',
-				value: '' + (hour < 10 ? '0' + hour : hour) + ':' + (min < 10 ? '0' + min : min)
-			});
+			var hourMinutes = moment().hours(hour).minutes(min);
+			hourMinutes.name = hourMinutes.format(' HH [h] mm ');
+			model.times.push(hourMinutes);
 		}
 	}
 };
