@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -247,7 +246,12 @@ public class BookingController extends ControllerHelper {
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
-					crudService.list(VisibilityFilter.OWNER, user, arrayResponseHandler(request));
+					if (user != null) {
+						bookingService.listUserBookings(user, arrayResponseHandler(request));
+					} else {
+						log.debug("User not found in session.");
+						unauthorized(request);
+					}
 				}
 			});
 	 }

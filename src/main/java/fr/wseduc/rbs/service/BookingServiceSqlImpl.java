@@ -22,13 +22,19 @@ import fr.wseduc.webutils.Either;
 public class BookingServiceSqlImpl implements BookingService {
 
 	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
+	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
 	
 	@Override
 	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
-		// Lock query to avoid race condition
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		
+		// Upsert current user
+		statementsBuilder.prepared(UPSERT_USER_QUERY, 
+				new JsonArray().add(user.getUserId()).add(user.getUsername()));
+		
+		// Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 		
 		// Insert query
@@ -129,8 +135,11 @@ public class BookingServiceSqlImpl implements BookingService {
 				.add(VALIDATED.status())
 				.add(bookingId);
 		
-		query.append(" WHERE id = ?");
-		values.add(bookingId);
+		query.append(" WHERE id = ?")
+		.append(" AND resource_id = ?");
+		values.add(bookingId)
+			.add(resourceId);
+
 				
 		// Check that there does not exist a validated booking that overlaps the updated booking.
 		query.append(" AND NOT EXISTS (")
@@ -184,6 +193,12 @@ public class BookingServiceSqlImpl implements BookingService {
 			final int newStatus, final JsonObject data, 
 			final UserInfos user, final Handler<Message<JsonObject>> handler){
 		
+		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		
+		// Upsert current user
+		statementsBuilder.prepared(UPSERT_USER_QUERY, 
+				new JsonArray().add(user.getUserId()).add(user.getUsername()));
+		
 		// Query to validate or refuse booking
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
@@ -196,17 +211,16 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" SET ")
 				.append(sb.toString())
 				.append("modified = NOW() ")
-				.append("WHERE id = ?;");
-		values.add(bookingId);
+				.append("WHERE id = ?")
+				.append(" AND resource_id = ?;");
+		values.add(bookingId)
+			.add(resourceId);
+		
 		// TODO : ne pas valider s'il existe deja une demande validee
 		
-		if(newStatus != VALIDATED.status()){
-			Sql.getInstance().prepared(query.toString(), values, handler);
-		}
-		else {
-			SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
-			statementsBuilder.prepared(query.toString(), values);
-			
+		statementsBuilder.prepared(query.toString(), values);
+		
+		if (newStatus == VALIDATED.status()) {
 			// Query to refuse potential concurrent bookings of the validated booking
 			StringBuilder rbQuery = new StringBuilder();
 			JsonArray rbValues = new JsonArray();
@@ -223,7 +237,7 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" SET status = ?, modified = NOW() ");
 			rbValues.add(REFUSED.status());
 			
-			// Check that the previous query has validated the booking
+			// Refuse concurrent bookings if and only if the previous query has validated the booking
 			rbQuery.append(" WHERE EXISTS (")
 				.append(" SELECT 1 FROM rbs.booking")
 				.append(" WHERE id = ?")
@@ -231,7 +245,7 @@ public class BookingServiceSqlImpl implements BookingService {
 			rbValues.add(bookingId)
 				.add(VALIDATED.status());
 						
-			// Get concurrent bookings that must be refused
+			// Get concurrent bookings' ids that must be refused
 			rbQuery.append(" AND id in (")
 				.append(" SELECT id FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
@@ -256,20 +270,44 @@ public class BookingServiceSqlImpl implements BookingService {
 				.add(VALIDATED.status());
 			
 			statementsBuilder.prepared(countQuery, countValues);
-			
-			// Send queries to event bus
-			Sql.getInstance().transaction(statementsBuilder.build(), handler);
 		}
+		
+		// Send queries to event bus
+		Sql.getInstance().transaction(statementsBuilder.build(), handler);
 	}
 
 	@Override
+	public void listUserBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+			.append(" FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
+			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+			.append(" WHERE b.owner = ?")
+			.append(" ORDER BY b.start_date, b.end_date");
+		
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		
+		Sql.getInstance().prepared(query.toString(), values, 
+				validResultHandler(handler));
+	}
+	
+	@Override
 	public void listBookingsByResource(final String resourceId, 
 			final Handler<Either<String, JsonArray>> handler){
-		String query = "SELECT * FROM rbs.booking WHERE resource_id = ?;";
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+			.append(" FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
+			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+			.append(" WHERE b.resource_id = ?")
+			.append(" ORDER BY b.start_date, b.end_date");
+		
 		JsonArray values = new JsonArray();
 		values.add(resourceId);
 		
-		Sql.getInstance().prepared(query, values, 
+		Sql.getInstance().prepared(query.toString(), values, 
 				validResultHandler(handler));
 	}
 	
@@ -280,7 +318,10 @@ public class BookingServiceSqlImpl implements BookingService {
 		// Query
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
-		query.append("SELECT DISTINCT b.* FROM rbs.booking AS b ")
+		
+		query.append("SELECT DISTINCT b.*, u.username AS owner_name")
+				.append(" FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
 				.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
 				.append(" INNER JOIN rbs.resource_type AS t ON t.id = r.type_id")
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
@@ -303,9 +344,11 @@ public class BookingServiceSqlImpl implements BookingService {
 		query.append(" OR t.owner = ?");
 		values.add(user.getUserId());
 		
-		query.append(" OR r.owner = ?);");
+		query.append(" OR r.owner = ?)");
 		values.add(user.getUserId());
-								
+		
+		query.append(" ORDER BY b.start_date, b.end_date;");
+		
 		// Send query to event bus
 		Sql.getInstance().prepared(query.toString(), values, 
 				validResultHandler(handler));

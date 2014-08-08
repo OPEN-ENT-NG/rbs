@@ -22,6 +22,9 @@ public interface BookingService {
 			final int newStatus, final JsonObject data, 
 			final UserInfos user, final Handler<Message<JsonObject>> handler);
 	
+	public void listUserBookings(final UserInfos user, 
+			final Handler<Either<String, JsonArray>> handler);
+	
 	public void listBookingsByResource(final String resourceId, 
 			final Handler<Either<String, JsonArray>> handler);
 	
