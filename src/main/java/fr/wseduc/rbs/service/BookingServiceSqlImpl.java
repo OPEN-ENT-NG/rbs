@@ -25,7 +25,7 @@ public class BookingServiceSqlImpl implements BookingService {
 	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
 	
 	@Override
-	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
+	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
@@ -100,7 +100,7 @@ public class BookingServiceSqlImpl implements BookingService {
 	}
 
 	@Override
-	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
+	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		// Lock query to avoid race condition
@@ -188,7 +188,7 @@ public class BookingServiceSqlImpl implements BookingService {
 	}
 	
 	@Override
-	public void processBooking(final String resourceId, final String bookingId, 
+	public void processBooking(final Object resourceId, final Object bookingId, 
 			final int newStatus, final JsonObject data, 
 			final UserInfos user, final Handler<Message<JsonObject>> handler){
 		
@@ -264,10 +264,11 @@ public class BookingServiceSqlImpl implements BookingService {
 				.append(" WHERE id = ?)");
 			rbValues.add(bookingId);
 			
-			// TODO : ajouter un motif de refus et le moderator_id
 			rbQuery.append(" UPDATE rbs.booking")
-				.append(" SET status = ?, modified = NOW() ");
-			rbValues.add(REFUSED.status());
+				.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
+			rbValues.add(REFUSED.status())
+				.add(user.getUserId())
+				.add("La demande concurrente n°" + bookingId + " a été validée");
 			
 			// Refuse concurrent bookings if and only if the previous query has validated the booking
 			rbQuery.append(" WHERE EXISTS (")
@@ -329,7 +330,7 @@ public class BookingServiceSqlImpl implements BookingService {
 	}
 	
 	@Override
-	public void listBookingsByResource(final String resourceId, 
+	public void listBookingsByResource(final Object resourceId, 
 			final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")

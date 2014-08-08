@@ -12,20 +12,20 @@ import fr.wseduc.webutils.Either;
 
 public interface BookingService {
 
-	public void createBooking(final Long resourceId, final JsonObject data, final UserInfos user,
+	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 	
-	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
+	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler);
 	
-	public void processBooking(final String resourceId, final String bookingId, 
+	public void processBooking(final Object resourceId, final Object bookingId, 
 			final int newStatus, final JsonObject data, 
 			final UserInfos user, final Handler<Message<JsonObject>> handler);
 	
 	public void listUserBookings(final UserInfos user, 
 			final Handler<Either<String, JsonArray>> handler);
 	
-	public void listBookingsByResource(final String resourceId, 
+	public void listBookingsByResource(final Object resourceId, 
 			final Handler<Either<String, JsonArray>> handler);
 	
 	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user, 

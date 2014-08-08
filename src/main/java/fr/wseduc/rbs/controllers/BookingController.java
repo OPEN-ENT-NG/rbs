@@ -4,6 +4,7 @@ import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,14 +54,6 @@ public class BookingController extends ControllerHelper {
 						@Override
 						public void handle(JsonObject object) {
 							final String id = request.params().get("id");
-							Long resourceId = new Long(0);
-							try {
-								resourceId = Long.valueOf(id);
-							} catch (NumberFormatException e) {
-								log.error("Invalid resourceId", e);
-								badRequest(request, "Invalid resourceId");
-								return;
-							}
 
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 								@Override
@@ -82,7 +75,7 @@ public class BookingController extends ControllerHelper {
 							};
 							
 							// TODO : envoyer une notification aux valideurs
-							bookingService.createBooking(resourceId, object, user, handler);
+							bookingService.createBooking(parseId(id), object, user, handler);
 						}
 					});
 				} else {
@@ -138,7 +131,8 @@ public class BookingController extends ControllerHelper {
 									}
 								};
 																
-								bookingService.updateBooking(resourceId, bookingId, object, handler);
+								bookingService.updateBooking(parseId(resourceId), 
+										parseId(bookingId), object, handler);
 							}
 						});
 					} else {
@@ -207,8 +201,8 @@ public class BookingController extends ControllerHelper {
 								object.putString("moderator_id", user.getUserId());
 								// TODO : envoyer une notification au demandeur
 								
-								bookingService.processBooking(resourceId, bookingId, newStatus, 
-										object, user, handler);
+								bookingService.processBooking(parseId(resourceId), 
+										parseId(bookingId), newStatus, object, user, handler);
 							}
 						});
 					} else {
@@ -306,7 +300,7 @@ public class BookingController extends ControllerHelper {
 			});
 			
 	 }
-	
+	 	
 	// Pour afficher l'historique des reservations
 	// @Get("/bookings/all")
 	// @ApiDoc("List all bookings")
