@@ -17,6 +17,10 @@ public interface BookingService {
 	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler);
 	
+	public void processBooking(final String resourceId, final String bookingId, 
+			final int newStatus, final JsonObject data, 
+			final UserInfos user, final Handler<Either<String, JsonObject>> handler);
+	
 	public void listBookingsByResource(final String resourceId, 
 			final Handler<Either<String, JsonArray>> handler);
 	

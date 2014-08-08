@@ -28,7 +28,6 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class BookingController extends ControllerHelper {
@@ -58,7 +57,8 @@ public class BookingController extends ControllerHelper {
 								resourceId = Long.valueOf(id);
 							} catch (NumberFormatException e) {
 								log.error("Invalid resourceId", e);
-								Renders.badRequest(request, "Invalid resourceId");
+								badRequest(request, "Invalid resourceId");
+								return;
 							}
 
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
@@ -66,16 +66,16 @@ public class BookingController extends ControllerHelper {
 								public void handle(Either<String, JsonObject> event) {
 									if (event.isRight()) {
 										if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-											Renders.renderJson(request, event.right().getValue(), 200);
+											renderJson(request, event.right().getValue(), 200);
 										} else {
 											JsonObject error = new JsonObject()
 												.putString("error", "A validated booking overlaps the booking you tried to create.");
-											Renders.renderError(request, error);
+											renderError(request, error);
 										}
 									} else {
 										JsonObject error = new JsonObject()
 												.putString("error", event.left().getValue());
-										Renders.renderJson(request, error, 400);
+										renderJson(request, error, 400);
 									}
 								}
 							};
@@ -86,7 +86,7 @@ public class BookingController extends ControllerHelper {
 					});
 				} else {
 					log.debug("User not found in session.");
-					Renders.unauthorized(request);
+					unauthorized(request);
 				}
 			}
 		});
@@ -122,17 +122,17 @@ public class BookingController extends ControllerHelper {
 									public void handle(Either<String, JsonObject> event) {
 										if (event.isRight()) {
 											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-												Renders.renderJson(request, event.right().getValue(), 200);
+												renderJson(request, event.right().getValue(), 200);
 											} else {
 												JsonObject error = new JsonObject()
 													.putString("error", 
 															"No rows were updated. Either a validated booking overlaps the booking you tried to create, or the specified bookingId does not exist.");
-												Renders.renderError(request, error);
+												renderError(request, error);
 											}
 										} else {
 											JsonObject error = new JsonObject()
 													.putString("error", event.left().getValue());
-											Renders.renderJson(request, error, 400);
+											renderJson(request, error, 400);
 										}
 									}
 								};
@@ -142,7 +142,7 @@ public class BookingController extends ControllerHelper {
 						});
 					} else {
 						log.debug("User not found in session.");
-						Renders.unauthorized(request);
+						unauthorized(request);
 					}
 				}
 			});
@@ -161,6 +161,7 @@ public class BookingController extends ControllerHelper {
 						RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
 							@Override
 							public void handle(JsonObject object) {
+								String resourceId = request.params().get("id");
 								String bookingId = request.params().get("bookingId");
 								
 								int newStatus = 0;
@@ -168,25 +169,26 @@ public class BookingController extends ControllerHelper {
 									newStatus = (int) object.getValue("status");									
 								} catch (Exception e) {
 									log.error(e.getMessage());
-									Renders.renderError(request);
+									renderError(request);
+									return;
 								}
 								if (newStatus != VALIDATED.status() 
 										&& newStatus != REFUSED.status()) {
-									Renders.badRequest(request, "Invalid status");
+									badRequest(request, "Invalid status");
+									return;
 								}
 								
 								object.putString("moderator_id", user.getUserId());
 								// TODO : interdire la validation, s'il existe deja une demande validee
-								
 								// TODO : envoyer une notification au demandeur
-								crudService.update(bookingId, object, user, notEmptyResponseHandler(request));
 								
-								// TODO : en cas de validation, mettre les demandes concurrentes à l'etat refuse
+								bookingService.processBooking(resourceId, bookingId, newStatus, 
+										object, user, notEmptyResponseHandler(request));
 							}
 						});
 					} else {
 						log.debug("User not found in session.");
-						Renders.unauthorized(request);
+						unauthorized(request);
 					}
 				}
 			});		 
@@ -205,7 +207,7 @@ public class BookingController extends ControllerHelper {
 						crudService.delete(bookingId, user, defaultResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
-						Renders.unauthorized(request);
+						unauthorized(request);
 					}
 				}
 			});
@@ -237,7 +239,7 @@ public class BookingController extends ControllerHelper {
 					bookingService.listBookingsByResource(resourceId, arrayResponseHandler(request));
 				} else {
 					log.debug("User not found in session.");
-					Renders.unauthorized(request);
+					unauthorized(request);
 				}
 			}
 		});
@@ -262,7 +264,7 @@ public class BookingController extends ControllerHelper {
 					}
 					else {
 						log.debug("User not found in session.");
-						Renders.unauthorized(request);
+						unauthorized(request);
 					}
 				}
 			});

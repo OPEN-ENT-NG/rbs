@@ -1,6 +1,7 @@
 package fr.wseduc.rbs.service;
 
 import static fr.wseduc.rbs.BookingStatus.CREATED;
+import static fr.wseduc.rbs.BookingStatus.REFUSED;
 import static fr.wseduc.rbs.BookingStatus.VALIDATED;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 import static org.entcore.common.sql.SqlResult.validRowsResultHandler;
@@ -63,7 +64,7 @@ public class BookingServiceSqlImpl implements BookingService {
 		
 		// Check that there does not exist a validated booking that overlaps the new booking.
 		query.append(" WHERE NOT EXISTS (")
-				.append("SELECT id FROM rbs.booking")
+				.append("SELECT 1 FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
 				.append(" AND status = ?")
 				.append(" AND (")
@@ -132,7 +133,7 @@ public class BookingServiceSqlImpl implements BookingService {
 				
 		// Check that there does not exist a validated booking that overlaps the updated booking.
 		query.append(" AND NOT EXISTS (")
-				.append("SELECT id FROM rbs.booking")
+				.append("SELECT 1 FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
 				.append(" AND id != ?")
 				.append(" AND status = ?")
@@ -177,6 +178,77 @@ public class BookingServiceSqlImpl implements BookingService {
 		values.add(object.getValue(fieldname));
 	}
 	
+	@Override
+	public void processBooking(final String resourceId, final String bookingId, 
+			final int newStatus, final JsonObject data, 
+			final UserInfos user, final Handler<Either<String, JsonObject>> handler){
+		
+		// Query to validate or refuse booking
+		StringBuilder sb = new StringBuilder();
+		JsonArray values = new JsonArray();
+		for (String attr : data.getFieldNames()) {
+			sb.append(attr).append(" = ?, ");
+			values.add(data.getValue(attr));
+		}
+		StringBuilder query = new StringBuilder();
+		query.append("UPDATE rbs.booking")
+				.append(" SET ")
+				.append(sb.toString())
+				.append("modified = NOW() ")
+				.append("WHERE id = ?;");
+		values.add(bookingId);
+		
+		if(newStatus != VALIDATED.status()){
+			Sql.getInstance().prepared(query.toString(), values, 
+					validRowsResultHandler(handler));
+		}
+		else {
+			SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+			statementsBuilder.prepared(query.toString(), values);
+			
+			// Query to refuse concurrent bookings, since the booking has been validated
+			StringBuilder rbQuery = new StringBuilder();
+			JsonArray rbValues = new JsonArray();
+
+			// Store start and end dates of validated booking in a temporary table
+			rbQuery.append("WITH validated_booking AS (")
+				.append(" SELECT start_date, end_date")
+				.append(" FROM rbs.booking")
+				.append(" WHERE id = ?)");
+			rbValues.add(bookingId);
+			
+			rbQuery.append(" UPDATE rbs.booking")
+				.append(" SET status = ?, modified = NOW() ");
+			rbValues.add(REFUSED.status());
+			
+			// Check that the previous query has validated the booking
+			rbQuery.append(" WHERE EXISTS (")
+				.append(" SELECT 1 FROM rbs.booking")
+				.append(" WHERE id = ?")
+				.append(" AND status = ?)");
+			rbValues.add(bookingId)
+				.add(VALIDATED.status());
+						
+			// Get concurrent bookings that must be refused
+			rbQuery.append(" AND id in (")
+				.append(" SELECT id FROM rbs.booking")
+				.append(" WHERE resource_id = ?")
+				.append(" AND status = ?")
+				.append(" AND (")
+				.append("( start_date <= (SELECT start_date from validated_booking) AND (SELECT start_date from validated_booking) < end_date )")
+				.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
+				.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
+				.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
+				.append("));");
+			rbValues.add(resourceId)
+				.add(CREATED.status());
+			
+			statementsBuilder.prepared(rbQuery.toString(), rbValues);
+			
+			Sql.getInstance().transaction(statementsBuilder.build(), validRowsResultHandler(handler));
+		}
+	}
+
 	@Override
 	public void listBookingsByResource(final String resourceId, 
 			final Handler<Either<String, JsonArray>> handler){
