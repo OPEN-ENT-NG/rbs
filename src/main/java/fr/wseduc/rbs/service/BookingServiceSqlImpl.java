@@ -90,8 +90,7 @@ public class BookingServiceSqlImpl implements BookingService {
 				.add(newStartDate)
 				.add(newEndDate)
 				.add(newStartDate)
-				.add(newEndDate)
-				;
+				.add(newEndDate);
 
 		statementsBuilder.prepared(query.toString(), values);
 		
@@ -195,33 +194,66 @@ public class BookingServiceSqlImpl implements BookingService {
 		
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		
-		// Upsert current user
+		// 1. Upsert current user
 		statementsBuilder.prepared(UPSERT_USER_QUERY, 
 				new JsonArray().add(user.getUserId()).add(user.getUsername()));
 		
-		// Query to validate or refuse booking
+		// 2. Lock query to avoid race condition
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
+		
+		// 3. Query to validate or refuse booking
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray processValues = new JsonArray();
 		for (String attr : data.getFieldNames()) {
 			sb.append(attr).append(" = ?, ");
-			values.add(data.getValue(attr));
+			processValues.add(data.getValue(attr));
 		}
-		StringBuilder query = new StringBuilder();
-		query.append("UPDATE rbs.booking")
+		StringBuilder processQuery = new StringBuilder();
+		processQuery.append("UPDATE rbs.booking")
 				.append(" SET ")
 				.append(sb.toString())
 				.append("modified = NOW() ")
 				.append("WHERE id = ?")
-				.append(" AND resource_id = ?;");
-		values.add(bookingId)
+				.append(" AND resource_id = ? ");
+		processValues.add(bookingId)
 			.add(resourceId);
 		
-		// TODO : ne pas valider s'il existe deja une demande validee
-		
-		statementsBuilder.prepared(query.toString(), values);
-		
-		if (newStatus == VALIDATED.status()) {
-			// Query to refuse potential concurrent bookings of the validated booking
+		if (newStatus != VALIDATED.status()) {
+			statementsBuilder.prepared(processQuery.toString(), processValues);
+		}
+		else {
+			// 3b. Additional clauses when validating a booking
+			StringBuilder validateQuery = new StringBuilder();
+			validateQuery.append("WITH validated_booking AS (")
+				.append(" SELECT start_date, end_date")
+				.append(" FROM rbs.booking")
+				.append(" WHERE id = ?) ");
+			JsonArray validateValues = new JsonArray();
+			validateValues.add(bookingId);
+			
+			validateQuery.append(processQuery.toString());
+			for (Object pValue : processValues) {
+				validateValues.add(pValue);
+			}
+			
+			// Validate if and only if there does NOT exist a concurrent validated booking
+			validateQuery.append(" AND NOT EXISTS (")
+					.append("SELECT 1 FROM rbs.booking")
+					.append(" WHERE resource_id = ?")
+					.append(" AND status = ?")
+					.append(" AND (")
+					.append("( start_date <= (SELECT start_date from validated_booking) AND (SELECT start_date from validated_booking) < end_date )")
+					.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
+					.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
+					.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
+					.append("));");
+			validateValues.add(resourceId)
+				.add(VALIDATED.status());
+			
+			statementsBuilder.prepared(validateQuery.toString(), validateValues);
+			
+			
+			// 4. Query to refuse potential concurrent bookings of the validated booking
 			StringBuilder rbQuery = new StringBuilder();
 			JsonArray rbValues = new JsonArray();
 
@@ -261,7 +293,10 @@ public class BookingServiceSqlImpl implements BookingService {
 			
 			statementsBuilder.prepared(rbQuery.toString(), rbValues);
 			
-			/* Worker "mod-mysql-postgresql" replies with the result of the last executed query.
+			/* 
+			 * 5. Return number of updated rows by validate query
+			 * 
+			 * Worker "mod-mysql-postgresql" replies with the result of the last executed query.
 			 * But we're interested in the result of the first query. Hence an additional count query.
 			 */
 			String countQuery = "SELECT count(*) FROM rbs.booking WHERE id = ? and status = ?;";

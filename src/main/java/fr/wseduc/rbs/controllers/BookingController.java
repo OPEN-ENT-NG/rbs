@@ -239,6 +239,12 @@ public class BookingController extends ControllerHelper {
 	 }
 
 	 
+	 /*
+	  * TODO : limiter à un créneau horaire donné la liste des réservations retournées.
+	  * Créneau horaire par défaut : la semaine ou le mois actuel
+	  * Permettre de préciser un créneau
+	  */
+	 
 	 @Get("/bookings")
 	 @ApiDoc("List all bookings created by current user")
 	 @SecuredAction("rbs.booking.list")
