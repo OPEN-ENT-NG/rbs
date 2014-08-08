@@ -29,6 +29,7 @@ Booking.prototype.save = function(cb) {
 Booking.prototype.update = function(cb) {
 	this.start_date = this.startMoment.unix();
 	this.end_date = this.endMoment.unix();
+	this.resource_id = this.resource.id;
 
 	var booking = this;
 	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id, this).done(function(){
@@ -61,16 +62,44 @@ Booking.prototype.create = function(cb) {
 };
 
 Booking.prototype.validate = function(cb) {
-
+	this.status = model.STATE_VALIDATED;
+	var data = {
+		status: this.status
+	};
+	this.process(data, cb);
 };
 
 Booking.prototype.refuse = function(cb) {
-
+	this.status = model.STATE_REFUSED;
+	var data = {
+		status: this.status,
+		refusal_reason: this.refusal_reason
+	};
+	this.process(data, cb);
 };
 
-Booking.prototype.process = function(cb) {
+Booking.prototype.process = function(data, cb) {
+	this.resource_id = this.resource.id;
 
+	var booking = this;
+	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id + '/process', data).done(function(){
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
 };
+
+Booking.prototype.isPending = function() {
+	return this.status === model.STATE_CREATED;
+}
+
+Booking.prototype.isValidated = function() {
+	return this.status === model.STATE_VALIDATED;
+}
+
+Booking.prototype.isRefused = function() {
+	return this.status === model.STATE_REFUSED;
+}
 
 Booking.prototype.toJSON = function() {
 	var json = {

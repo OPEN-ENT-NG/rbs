@@ -13,12 +13,14 @@
 	<tbody>
 		<tr ng-repeat="booking in bookings.all">
 			<td><input type="checkbox" ng-model="booking.selected" /></td>
-			<td>[[booking.owner.displayName]]</td>
-			<td>([[booking.color]]) [[booking.resource.name]]</td>
-			<td>[[formatDate(booking.start_date)]]</td>
-			<td>[[formatDate(booking.end_date)]]</td>
-			<td>[[booking.booking_reason]]</td>
-			<td><i18n>rbs.booking.status.[[booking.status]]</i18n></td>
+			<a ng-click="viewBooking(booking)">
+				<td>[[booking.ownerName]]</td>
+				<td>([[booking.color]]) [[booking.resource.name]]</td>
+				<td>[[formatDate(booking.start_date)]]</td>
+				<td>[[formatDate(booking.end_date)]]</td>
+				<td>[[booking.booking_reason]]</td>
+				<td><i18n>rbs.booking.status.[[booking.status]]</i18n></td>
+			</a>
 		</tr>
 	</tbody>
 </table>

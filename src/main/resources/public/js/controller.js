@@ -15,6 +15,8 @@ function RbsController($scope, template, model, date){
 	$scope.times = model.times;
 
 	$scope.currentResourceType = undefined;
+	$scope.selectedBooking = undefined;
+	$scope.editedBooking = undefined;
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
@@ -89,15 +91,38 @@ function RbsController($scope, template, model, date){
 			$scope.mine.selected = undefined;
 			$scope.bookings.pullAll($scope.mine.bookings.all);
 		}
-	}
+	};
+
+	$scope.swicthSelectAllBookings = function() {
+		if ($scope.display.selectAllBookings) {
+			$scope.bookings.selectAll();
+		}
+		else {
+			$scope.bookings.deselectAll();
+		}
+	};
 
 	$scope.viewBooking = function(booking) {
+		$scope.selectedBooking = booking;
 
-	}
+		$scope.display.showPanel = true;
+		template.open('lightbox', 'booking-details');
+	};
+
+	$scope.closeBooking = function() {
+		$scope.selectedBooking = undefined;
+		$scope.display.showPanel = false;
+		template.close('lightbox');
+	};
 
 	$scope.formatDate = function(date) {
 		return moment(date).format('DD/MM/YYYY HH[h]mm');
-	}
+	};
+
+	$scope.formatDateLong = function(date) {
+		return moment(date).format('dddd DD MMMM YYYY - HH[h]mm');
+	};
+
 
 	// Booking edition
 	$scope.newBooking = function() {
@@ -144,21 +169,65 @@ function RbsController($scope, template, model, date){
 		});
 	};
 
-	$scope.closeBooking = function() {
-		$scope.display.showPanel = false;
-		template.close('lightbox');
+	$scope.removeBookingSelection = function() {
+		if ($scope.selectedBooking !== undefined) {
+			$scope.bookings.deselectAll();
+			$scope.selectedBooking.selected = true;
+		}
+
+		// confirm message
 	};
 
-	$scope.deleteBooking = function() {
 
+	// Booking Validation
+	$scope.validateBookingSelection = function() {
+		if ($scope.selectedBooking !== undefined) {
+			$scope.bookings.deselectAll();
+			$scope.selectedBooking.selected = true;
+		}
+
+		$scope.display.showPanel = true;
+		template.open('lightbox', 'validate-booking');
 	};
 
-	$scope.validateBooking = function() {
+	$scope.refuseBookingSelection = function() {
+		if ($scope.selectedBooking !== undefined) {
+			$scope.bookings.deselectAll();
+			$scope.selectedBooking.selected = true;
+		}
 
+		$scope.display.showPanel = true;
+		$scope.refuseReason = "";
+		template.open('lightbox', 'refuse-booking');
 	};
 
-	$scope.refuseBooking = function() {
+	$scope.doValidateBookingSelection = function() {
+		var actions = $scope.bookings.selection().length;
+		_.each($scope.bookings.selection(), function(booking){
+			booking.validate(function(){
+				actions--;
+				if (actions === 0) {
+					$scope.resourceTypes.sync();
+					$scope.bookings.deselectAll();
+					$scope.closeBooking();
+				}
+			});
+		});
+	};
 
+	$scope.doRefuseBookingSelection = function() {
+		var actions = $scope.bookings.selection().length;
+		_.each($scope.bookings.selection(), function(booking){
+			booking.refusal_reason = $scope.refuseReason;
+			booking.refuse(function(){
+				actions--;
+				if (actions === 0) {
+					$scope.resourceTypes.sync();
+					$scope.bookings.deselectAll();
+					$scope.closeBooking();
+				}
+			});
+		});
 	};
 
 

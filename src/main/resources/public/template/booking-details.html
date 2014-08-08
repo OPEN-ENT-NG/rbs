@@ -1,0 +1,100 @@
+<div class="row">
+	<h2><i18n>rbs.booking.title</i18n></h2>
+	<article class="twelve cell">
+
+		<h3>rbs.booking.title.resource</h3>
+
+		<div class="row">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
+				<p>[[selectedBooking.resource.type.name]]</p>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
+				<p>[[selectedBooking.resource.name]]</p>
+			</div>
+		</div>
+		<hr />
+
+		<div class="row">
+			<label class="twelve cell"><i18n>rbs.booking.details.description.label</i18n></label>
+			<p bind-html="selectedBooking.resource.description"></p>
+		</div>
+		<hr />
+
+		<h3>rbs.booking.title.booking</h3>
+
+		<div class="row">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
+				<p>[[formatDateLong(selectedBooking.startMoment)]]</p>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
+				<p>[[formatDateLong(selectedBooking.endMoment)]]</p>
+			</div>
+		</div>
+		<hr />
+
+		<div class="row">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
+				<p>[[selectedBooking.ownerName]]</p>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
+				<p>[[formatDateLong(selectedBooking.created)]]</p>
+			</div>
+		</div>
+		<hr />
+
+		<div class="row" ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
+			<label class="twelve cell"><i18n>rbs.booking.details.reason</i18n></label>
+			<p>[[selectedBooking.booking_reason]]</p>
+		</div>
+		<hr />
+
+		<h3>rbs.booking.title.process</h3>
+
+		<div class="row" ng-if="selectedBooking.isPending()">
+			<p>rbs.booking.details.pending</p>
+		</div>
+
+		<div class="row" ng-if="selectedBooking.isValidated()">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
+				<p>[[selectedBooking.moderatorName]]</p>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
+				<p>[[formatDateLong(selectedBooking.modified)]]</p>
+			</div>
+		</div>
+
+		<div class="row" ng-if="selectedBooking.isRefused()">
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
+				<p>[[selectedBooking.moderatorName]]</p>
+			</div>
+			<div class="six cell">
+				<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
+				<p>[[formatDateLong(selectedBooking.modified)]]</p>
+			</div>
+		</div>
+		<hr />
+
+		<div class="row" ng-if="selectedBooking.isRefused()">
+			<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
+			<p>[[selectedBooking.refusal_reason]]</p>
+		</div>
+		<hr />
+		<hr />
+
+		<div class="row">
+			<button class="right-magnet" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
+			<button class="right-magnet" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
+			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
+			<button class="right-magnet" ng-click="editBooking()"><i18n>edit</i18n></button>
+		</div>
+	</article>
+</div>

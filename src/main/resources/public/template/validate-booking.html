@@ -1,0 +1,13 @@
+<div class="row">
+	<article class="twelve cell">
+		<h2 ng-if="bookings.selection().length === 1"><i18n>rbs.booking.validate.one</i18n></h2>
+		<h2 ng-if="bookings.selection().length > 1"><i18n>rbs.booking.validate.multi.begin</i18n>[[bookings.selection().length]]<i18n>rbs.booking.validate.multi.end</i18n></h2>
+
+		<div class="row">
+			<button class="right-magnet" ng-click="doValidateBookingSelection()" ng-if="display.processing !== true"><i18n>rbs.validate</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking()" ng-if="display.processing !== true" />
+
+			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
+		</div>
+	</article>
+</div>
