@@ -2,15 +2,15 @@ package fr.wseduc.rbs.service;
 
 import java.util.List;
 
+import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
-public interface BookingService {
+public interface BookingService extends CrudService {
 
 	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);

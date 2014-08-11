@@ -1,36 +1,28 @@
 package fr.wseduc.rbs.controllers;
 
-import static fr.wseduc.rbs.BookingStatus.*;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-import static org.entcore.common.sql.Sql.parseId;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.sql.SqlResult;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
-
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rbs.service.BookingService;
 import fr.wseduc.rbs.service.BookingServiceSqlImpl;
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
+import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
+import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static fr.wseduc.rbs.BookingStatus.REFUSED;
+import static fr.wseduc.rbs.BookingStatus.VALIDATED;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.sql.Sql.parseId;
 
 public class BookingController extends ControllerHelper {
 
@@ -158,26 +150,26 @@ public class BookingController extends ControllerHelper {
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
 								String bookingId = request.params().get("bookingId");
-								
+
 								int newStatus = 0;
 								try {
-									newStatus = (int) object.getValue("status");									
+									newStatus = (int) object.getValue("status");
 								} catch (Exception e) {
 									log.error(e.getMessage());
 									renderError(request);
 									return;
 								}
-								
-								if (newStatus != VALIDATED.status() 
+
+								if (newStatus != VALIDATED.status()
 										&& newStatus != REFUSED.status()) {
 									badRequest(request, "Invalid status");
 									return;
 								}
-																
+
 								object.putString("moderator_id", user.getUserId());
 								// TODO : envoyer une notification au demandeur
-								
-								bookingService.processBooking(parseId(resourceId), 
+
+								bookingService.processBooking(parseId(resourceId),
 										parseId(bookingId), newStatus, object, user, notEmptyResponseHandler(request));
 							}
 						});
@@ -199,7 +191,7 @@ public class BookingController extends ControllerHelper {
 				public void handle(final UserInfos user) {
 					if (user != null) {
 						String bookingId = request.params().get("bookingId");
-						crudService.delete(bookingId, user, defaultResponseHandler(request, 204));
+						bookingService.delete(bookingId, user, defaultResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
 						unauthorized(request);

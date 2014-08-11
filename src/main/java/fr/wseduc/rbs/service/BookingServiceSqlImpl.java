@@ -3,27 +3,29 @@ package fr.wseduc.rbs.service;
 import static fr.wseduc.rbs.BookingStatus.CREATED;
 import static fr.wseduc.rbs.BookingStatus.REFUSED;
 import static fr.wseduc.rbs.BookingStatus.VALIDATED;
-import static org.entcore.common.sql.SqlResult.validResultHandler;
-import static org.entcore.common.sql.SqlResult.validRowsResultHandler;
-import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
+import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
 
+import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
-public class BookingServiceSqlImpl implements BookingService {
+public class BookingServiceSqlImpl extends SqlCrudService implements BookingService {
 
 	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
 	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
-	
+
+	public BookingServiceSqlImpl() {
+		super("rbs", "booking");
+	}
+
 	@Override
 	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
