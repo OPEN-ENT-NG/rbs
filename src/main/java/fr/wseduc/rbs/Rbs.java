@@ -9,6 +9,7 @@ import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
+import org.vertx.java.core.json.JsonArray;
 
 public class Rbs extends BaseServer {
 	
@@ -30,7 +31,9 @@ public class Rbs extends BaseServer {
 		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE);
 		confType.setSchema(getSchema());
 		ResourceTypeController typeController = new ResourceTypeController();
-		typeController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE));
+		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE, 
+				new JsonArray().addString("*"), new JsonArray().add(RESOURCE_TYPE_TABLE+".*"));
+		typeController.setCrudService(typeSqlCrudService);
 		typeController.setShareService(new SqlShareService(getSchema(),RESOURCE_TYPE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(typeController);
@@ -40,7 +43,9 @@ public class Rbs extends BaseServer {
 		confResource.setShareTable(RESOURCE_SHARE_TABLE);
 		confResource.setSchema(getSchema());
 		ResourceController resourceController = new ResourceController();
-		resourceController.setCrudService(new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE));
+		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE, 
+				new JsonArray().addString("*"), new JsonArray().add(RESOURCE_TABLE+".*"));
+		resourceController.setCrudService(resourceSqlCrudService);
 		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(resourceController);
