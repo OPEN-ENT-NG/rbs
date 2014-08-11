@@ -1,5 +1,21 @@
 package fr.wseduc.rbs.controllers;
 
+import static fr.wseduc.rbs.BookingStatus.*;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.sql.Sql.parseId;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rbs.service.BookingService;
 import fr.wseduc.rbs.service.BookingServiceSqlImpl;
@@ -9,20 +25,6 @@ import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
-import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static fr.wseduc.rbs.BookingStatus.REFUSED;
-import static fr.wseduc.rbs.BookingStatus.VALIDATED;
-import static org.entcore.common.http.response.DefaultResponseHandler.*;
-import static org.entcore.common.sql.Sql.parseId;
 
 public class BookingController extends ControllerHelper {
 
@@ -101,7 +103,12 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
-								String bookingId = request.params().get("bookingId");
+								String sBookingId = request.params().get("bookingId");
+								Object bookingId = parseId(sBookingId);
+								if (!(bookingId instanceof Integer)) {
+									badRequest(request);
+									return;
+								}
 								
 								Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 									@Override
@@ -124,7 +131,7 @@ public class BookingController extends ControllerHelper {
 								};
 																
 								bookingService.updateBooking(parseId(resourceId), 
-										parseId(bookingId), object, handler);
+										bookingId, object, handler);
 							}
 						});
 					} else {
@@ -149,8 +156,14 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
-								String bookingId = request.params().get("bookingId");
-
+								String sBookingId = request.params().get("bookingId");
+								
+								Object bookingId = parseId(sBookingId);
+								if (!(bookingId instanceof Integer)) {
+									badRequest(request);
+									return;
+								}
+								
 								int newStatus = 0;
 								try {
 									newStatus = (int) object.getValue("status");
@@ -168,9 +181,8 @@ public class BookingController extends ControllerHelper {
 
 								object.putString("moderator_id", user.getUserId());
 								// TODO : envoyer une notification au demandeur
-
-								bookingService.processBooking(parseId(resourceId),
-										parseId(bookingId), newStatus, object, user, notEmptyResponseHandler(request));
+								bookingService.processBooking(parseId(resourceId), 
+										bookingId, newStatus, object, user, notEmptyResponseHandler(request));
 							}
 						});
 					} else {
@@ -191,7 +203,12 @@ public class BookingController extends ControllerHelper {
 				public void handle(final UserInfos user) {
 					if (user != null) {
 						String bookingId = request.params().get("bookingId");
-						bookingService.delete(bookingId, user, defaultResponseHandler(request, 204));
+						if (!(parseId(bookingId) instanceof Integer)) {
+							badRequest(request);
+							return;
+						}
+						
+						crudService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
 						unauthorized(request);

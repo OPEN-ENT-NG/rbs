@@ -1,5 +1,7 @@
 package fr.wseduc.rbs.filters;
 
+import static org.entcore.common.sql.Sql.parseId;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
 		String id = request.params().get(conf.getResourceIdLabel());
 
-		if (id != null && !id.trim().isEmpty()) {
+		if (id != null && !id.trim().isEmpty() && (parseId(id) instanceof Integer)) {
 			request.pause();
 			// Method
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
