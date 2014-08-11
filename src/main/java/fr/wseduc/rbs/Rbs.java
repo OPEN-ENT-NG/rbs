@@ -1,8 +1,10 @@
 package fr.wseduc.rbs;
 
+import fr.wseduc.rbs.controllers.BookingController;
 import fr.wseduc.rbs.controllers.DisplayController;
 import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.rbs.controllers.ResourceTypeController;
+
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.filter.sql.ShareAndOwner;
 import org.entcore.common.service.impl.SqlCrudService;
@@ -49,6 +51,9 @@ public class Rbs extends BaseServer {
 		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
 				getEventBus(vertx), securedActions, null));
 		addController(resourceController);
+		
+		BookingController bookingController = new BookingController();
+		addController(bookingController);
 
 		setDefaultResourceFilter(new ShareAndOwner());
 	}
