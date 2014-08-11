@@ -1,3 +1,10 @@
+<!-- Lightbox -->
+<div ng-if="display.showPanel">
+	<lightbox-plus show="display.showPanel" on-close="closeBooking()">
+		<container template="lightbox"></container>
+	</lightbox-plus>
+</div>
+
 <section class="cell three">
 
 	<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
@@ -27,23 +34,16 @@
 		</ul>
 	</nav>
 
-	<h2><i18n>rbs.selector.tovalidate</i18n></h2>
+	<h2><i18n>rbs.selector.unprocessed</i18n></h2>
 
 	<nav class="vertical row">
 		<ul>
 			<li>
-				<a><i18n>rbs.selector.tovalidate.button</i18n></a>
+				<a ng-click="switchSelectUnprocessed()" ng-class="{ selected: unprocessed.selected === true }"><i18n>rbs.selector.unprocessed.button</i18n></a>
 			</li>
 		</ul>
 	</nav>
 </section>
-
-<!-- Lightbox -->
-<div ng-if="display.showPanel">
-	<lightbox show="display.showPanel" on-close="closeBooking()">
-		<container template="lightbox"></container>
-	</lightbox>
-</div>
 
 <section class="cell nine">
 	<div class="row">

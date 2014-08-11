@@ -1,6 +1,9 @@
 <div class="row">
 	<h2><i18n>rbs.booking.new</i18n></h2>
 	<article class="twelve cell">
+
+		<h3><i18n>rbs.booking.title.resource</i18n></h3>
+
 		<div class="row" ng-if="editedBooking.id === undefined">
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
@@ -24,6 +27,14 @@
 			</div>
 		</div>
 		<hr />
+
+		<div class="row">
+			<label class="twelve cell"><i18n>rbs.booking.edit.description.label</i18n></label>
+			<p bind-html="editedBooking.resource.description"></p>
+		</div>
+		<hr />
+
+		<h3><i18n>rbs.booking.title.booking</i18n></h3>
 
 		<div class="row">
 			<label class="two cell"><i18n>rbs.booking.edit.start.label</i18n></label>

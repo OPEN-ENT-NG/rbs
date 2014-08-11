@@ -13,14 +13,16 @@
 	<tbody>
 		<tr ng-repeat="booking in bookings.all">
 			<td><input type="checkbox" ng-model="booking.selected" /></td>
-			<a ng-click="viewBooking(booking)">
-				<td>[[booking.ownerName]]</td>
-				<td>([[booking.color]]) [[booking.resource.name]]</td>
-				<td>[[formatDate(booking.start_date)]]</td>
-				<td>[[formatDate(booking.end_date)]]</td>
-				<td>[[booking.booking_reason]]</td>
-				<td><i18n>rbs.booking.status.[[booking.status]]</i18n></td>
-			</a>
+			<td><a ng-click="viewBooking(booking)">[[booking.ownerName]]</a></td>
+			<td><a ng-click="viewBooking(booking)">([[booking.color]]) [[booking.resource.name]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.start_date)]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.end_date)]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>
+			<td>
+				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
+				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
+				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_REFUSED"><i18n>rbs.booking.status.refused</i18n></a>
+			</td>
 		</tr>
 	</tbody>
 </table>

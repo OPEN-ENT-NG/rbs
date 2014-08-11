@@ -1,3 +1,6 @@
+// custom loading
+loader.loadFile('/rbs/public/js/additional.js');
+
 
 model.colorMine = 'cyan';
 model.colors = ['green', 'pink', 'purple', 'orange'];
@@ -279,6 +282,8 @@ ResourceType.prototype.toJSON = function() {
 
 
 function BookingsHolder(url, color) {
+	this.color = color;
+	var holder = this;
 	this.collection(Booking, {
 		sync: function(){
 			// Load the Bookings
@@ -292,9 +297,12 @@ function BookingsHolder(url, color) {
 					booking.startMoment = moment(booking.start_date);
 					booking.endMoment = moment(booking.end_date);
 					if (color) {
-						booking.color = color;
+						booking.color = holder.color;
 					}
-				});
+					else {
+						booking.color = booking.resource.type.color;
+					}
+ 				});
 				this.load(bookings);
 			}.bind(this));
 		},
@@ -317,13 +325,13 @@ model.build = function(){
 					resourceType._id = resourceType.id;
 					index++;
 				});
-				if (model.resources === undefined) {
-					// Load the Resources once
-					this.one('sync', function(){
-						model.buildResources();
-					});
-				}
+
 				this.load(resourceTypes);
+
+				this.one('sync', function(){
+					model.buildResources();
+				});
+				
 			}.bind(this));
 		},
 		behaviours: 'rbs'
@@ -349,6 +357,12 @@ model.build = function(){
 				}
 			}
 		},
+		clear: function(trigger) {
+			this.all = [];
+			if (trigger) {
+				this.trigger('sync');	
+			}
+		},
 		behavious: 'rbs'
 	});
 
@@ -356,6 +370,7 @@ model.build = function(){
 };
 
 model.buildResources = function() {
+	model.bookings.clear(true);
 	this.collection(Resource, {
 		sync: function(){
 			var collection = this;
@@ -380,6 +395,7 @@ model.buildResources = function() {
 				});
 
 				model.mine.bookings.sync();
+				model.unprocessed.bookings.sync();
 			});
 		},
 		behaviours: 'rbs'
