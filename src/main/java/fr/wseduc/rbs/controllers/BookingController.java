@@ -173,36 +173,12 @@ public class BookingController extends ControllerHelper {
 									badRequest(request, "Invalid status");
 									return;
 								}
-
-								
-								Handler<Message<JsonObject>> handler = SqlResult
-										.validRowsResultHandler(notEmptyResponseHandler(request));
-
-								if(newStatus == VALIDATED.status()){
-									
-									handler = new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> message) {
-											Long count = SqlResult.countResult(message);
-											if(count != null && count > 0){
-												JsonObject result = new JsonObject();
-												result.putValue("rows", count);
-												renderJson(request, result);
-											}
-											else {
-												JsonObject error = new JsonObject();
-												error.putValue("error", "No rows were updated");
-												renderError(request, error);
-											}
-										}
-									};
-								}
 																
 								object.putString("moderator_id", user.getUserId());
 								// TODO : envoyer une notification au demandeur
 								
 								bookingService.processBooking(parseId(resourceId), 
-										parseId(bookingId), newStatus, object, user, handler);
+										parseId(bookingId), newStatus, object, user, notEmptyResponseHandler(request));
 							}
 						});
 					} else {

@@ -96,7 +96,7 @@ public class BookingServiceSqlImpl implements BookingService {
 		
 		// Send queries to eventbus
 		Sql.getInstance().transaction(statementsBuilder.build(), 
-				validUniqueResultHandler(handler));
+				validUniqueResultHandler(2, handler));
 	}
 
 	@Override
@@ -172,7 +172,7 @@ public class BookingServiceSqlImpl implements BookingService {
 		
 		// Send queries to eventbus
 		Sql.getInstance().transaction(statementsBuilder.build(), 
-				validRowsResultHandler(handler));
+				validRowsResultHandler(1, handler));
 		
 	}
 
@@ -190,12 +190,12 @@ public class BookingServiceSqlImpl implements BookingService {
 	@Override
 	public void processBooking(final Object resourceId, final Object bookingId, 
 			final int newStatus, final JsonObject data, 
-			final UserInfos user, final Handler<Message<JsonObject>> handler){
+			final UserInfos user, final Handler<Either<String, JsonObject>> handler){
 		
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		
 		// 1. Upsert current user
-		statementsBuilder.prepared(UPSERT_USER_QUERY, 
+		statementsBuilder.prepared(UPSERT_USER_QUERY,
 				new JsonArray().add(user.getUserId()).add(user.getUsername()));
 		
 		// 2. Lock query to avoid race condition
@@ -293,23 +293,10 @@ public class BookingServiceSqlImpl implements BookingService {
 				.add(CREATED.status());
 			
 			statementsBuilder.prepared(rbQuery.toString(), rbValues);
-			
-			/* 
-			 * 5. Return number of updated rows by validate query
-			 * 
-			 * Worker "mod-mysql-postgresql" replies with the result of the last executed query.
-			 * But we're interested in the result of the first query. Hence an additional count query.
-			 */
-			String countQuery = "SELECT count(*) FROM rbs.booking WHERE id = ? and status = ?;";
-			JsonArray countValues = new JsonArray();
-			countValues.add(bookingId)
-				.add(VALIDATED.status());
-			
-			statementsBuilder.prepared(countQuery, countValues);
 		}
 		
 		// Send queries to event bus
-		Sql.getInstance().transaction(statementsBuilder.build(), handler);
+		Sql.getInstance().transaction(statementsBuilder.build(), validRowsResultHandler(3, handler));
 	}
 
 	@Override
@@ -325,7 +312,7 @@ public class BookingServiceSqlImpl implements BookingService {
 		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		
-		Sql.getInstance().prepared(query.toString(), values, 
+		Sql.getInstance().prepared(query.toString(), values,
 				validResultHandler(handler));
 	}
 	

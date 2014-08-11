@@ -20,7 +20,7 @@ public interface BookingService {
 	
 	public void processBooking(final Object resourceId, final Object bookingId, 
 			final int newStatus, final JsonObject data, 
-			final UserInfos user, final Handler<Message<JsonObject>> handler);
+			final UserInfos user, final Handler<Either<String, JsonObject>> handler);
 	
 	public void listUserBookings(final UserInfos user, 
 			final Handler<Either<String, JsonArray>> handler);
