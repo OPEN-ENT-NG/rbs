@@ -11,13 +11,14 @@ import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 
 public class Rbs extends BaseServer {
-
-	public final static String BOOKING_TABLE="booking";
-	public final static String RESOURCE_TABLE="resource";
-	public final static String RESOURCE_SHARE_TABLE="resource_shares";
-	public final static String RESOURCE_TYPE_TABLE="resource_type";
-	public final static String RESOURCE_TYPE_SHARE_TABLE="resource_type_shares";
-
+	
+	public final static String RBS_NAME = "RBS";
+	public final static String BOOKING_TABLE = "booking";
+	public final static String RESOURCE_TABLE = "resource";
+	public final static String RESOURCE_SHARE_TABLE = "resource_shares";
+	public final static String RESOURCE_TYPE_TABLE = "resource_type";
+	public final static String RESOURCE_TYPE_SHARE_TABLE = "resource_type_shares";
+	
 	@Override
 	public void start() {
 		super.start();

@@ -1,18 +1,23 @@
 package fr.wseduc.rbs.controllers;
 
+import static fr.wseduc.rbs.Rbs.RBS_NAME;
 import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 
@@ -54,6 +59,7 @@ public class BookingController extends ControllerHelper {
 								public void handle(Either<String, JsonObject> event) {
 									if (event.isRight()) {
 										if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+											notifyBookingCreation(request, user, event.right().getValue());
 											renderJson(request, event.right().getValue(), 200);
 										} else {
 											JsonObject error = new JsonObject()
@@ -68,13 +74,49 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 							
-							// TODO : envoyer une notification aux valideurs
 							bookingService.createBooking(parseId(id), object, user, handler);
 						}
 					});
 				} else {
 					log.debug("User not found in session.");
 					unauthorized(request);
+				}
+			}
+		});
+	}
+	
+	private void notifyBookingCreation(final HttpServerRequest request, final UserInfos user, final JsonObject message){
+		Number id = message.getNumber("id");
+		final String newBookingId = id.toString();
+		final String eventType = RBS_NAME + "_BOOKING_CREATED";
+		
+		// TODO : ne pas envoyer de notification si la validation est desactivee
+		
+		bookingService.getModeratorsIds(newBookingId, user, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isRight()) {
+					Set<String> recipientSet = new HashSet<>();
+					if (event.right().getValue() != null) {
+						Iterator<Object> it = event.right().getValue().iterator();
+						while(it.hasNext()) {
+							JsonObject jo = (JsonObject) it.next();
+							recipientSet.add(jo.getString("member_id"));
+						}
+					}
+					List<String> recipients = new ArrayList<>(recipientSet);
+					
+					JsonObject params = new JsonObject();
+					params.putString("uri", container.config().getString("userbook-host") +
+							"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+					params.putString("id", newBookingId)
+						.putString("username", user.getUsername());
+					
+					notification.notifyTimeline(request, user, RBS_NAME, eventType, 
+							recipients, newBookingId, "notify-booking-created.html", params);
+					
+				} else {
+					log.error("Error when calling service getModeratorsIds. Unable to send timeline " + eventType + " notification.");
 				}
 			}
 		});

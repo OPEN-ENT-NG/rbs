@@ -378,5 +378,48 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().prepared(query.toString(), values, 
 				validResultHandler(handler));
 	}
+	
+	@Override
+	public void getModeratorsIds(final String bookingId, final UserInfos user, 
+			final Handler<Either<String, JsonArray>> handler){
+		
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+		
+		query.append("SELECT r.owner AS member_id FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+			.append(" WHERE b.id = ? AND r.owner != ?");
+		values.add(bookingId)
+			.add(user.getUserId());
+		
+		query.append(" UNION")
+			.append(" SELECT t.owner AS member_id FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
+			.append(" WHERE b.id = ? AND t.owner != ?");
+		values.add(bookingId)
+			.add(user.getUserId());
+		
+		query.append(" UNION")
+			.append(" SELECT DISTINCT rs.member_id FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+			.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+			.append(" WHERE b.id = ? AND rs.member_id != ?");
+		values.add(bookingId)
+			.add(user.getUserId());
+		
+		query.append(" UNION")
+			.append(" SELECT DISTINCT ts.member_id FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
+			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+			.append(" WHERE b.id = ? AND ts.member_id != ?");
+		values.add(bookingId)
+			.add(user.getUserId());
+		
+		Sql.getInstance().prepared(query.toString(), values, 
+				validResultHandler(handler));
+	}
+
 
 }
