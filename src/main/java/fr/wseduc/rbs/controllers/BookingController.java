@@ -8,7 +8,6 @@ import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +37,8 @@ public class BookingController extends ControllerHelper {
 	public BookingController(){
 		bookingService = new BookingServiceSqlImpl();
 	}
+	
+	// TODO : use i18n for messages
 	
 	@Post("/resource/:id/booking")
 	@ApiDoc("Create booking of a given resource")
@@ -97,12 +98,12 @@ public class BookingController extends ControllerHelper {
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
 					Set<String> recipientSet = new HashSet<>();
-					if (event.right().getValue() != null) {
-						Iterator<Object> it = event.right().getValue().iterator();
-						while(it.hasNext()) {
-							JsonObject jo = (JsonObject) it.next();
-							recipientSet.add(jo.getString("member_id"));
+					for(Object o : event.right().getValue()){
+						if(!(o instanceof JsonObject)){
+							continue;
 						}
+						JsonObject jo = (JsonObject) o;
+						recipientSet.add(jo.getString("member_id"));
 					}
 					List<String> recipients = new ArrayList<>(recipientSet);
 					
@@ -206,15 +207,7 @@ public class BookingController extends ControllerHelper {
 									return;
 								}
 								
-								int newStatus = 0;
-								try {
-									newStatus = (int) object.getValue("status");
-								} catch (Exception e) {
-									log.error(e.getMessage());
-									renderError(request);
-									return;
-								}
-
+								int newStatus = object.getInteger("status");
 								if (newStatus != VALIDATED.status()
 										&& newStatus != REFUSED.status()) {
 									badRequest(request, "Invalid status");
