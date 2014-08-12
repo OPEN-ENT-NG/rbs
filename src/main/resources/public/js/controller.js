@@ -29,12 +29,13 @@ function RbsController($scope, template, model, date){
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
 
-	model.on('loadResources', function(){
-		$scope.resources = model.resources;
+	$scope.resourceTypes.on('syncResources', function(){
+		model.mine.bookings.sync();
+		model.unprocessed.bookings.sync();
 	});
 
 	// Auto-select my bookings
-	$scope.mine.bookings.on('sync', function(){
+	$scope.mine.bookings.one('sync', function(){
 		$scope.mine.selected = true;
 		$scope.bookings.pushAll($scope.mine.bookings.all);
 	});
@@ -43,14 +44,14 @@ function RbsController($scope, template, model, date){
 	// Navigation
 	$scope.showManage = function() {
 		$scope.currentResourceType = model.resourceTypes.first();
-		model.resources.deselectAll();
+		$scope.resourceTypes.deselectAllResources();
 		template.open('main', 'manage-view');
 		template.open('resources', 'manage-resources');
 	};
 
 	$scope.showMain = function() {
 		$scope.currentResourceType = undefined;
-		model.resources.deselectAll();
+		$scope.resourceTypes.deselectAllResources();
 		template.open('main', 'main-view');
 		template.open('bookings', 'main-list');
 	};
@@ -120,12 +121,12 @@ function RbsController($scope, template, model, date){
 					$scope.unprocessed.previousTypes.push(resourceType);
 					resourceType.expanded = undefined;
 				}
-			});
-			$scope.resources.forEach(function(resource) {
-				if (resource.selected) {
-					$scope.unprocessed.previousResources.push(resource);
-					$scope.switchSelect(resource);
-				}
+				resourceType.resources.forEach(function(resource) {
+					if (resource.selected) {
+						$scope.unprocessed.previousResources.push(resource);
+						$scope.switchSelect(resource);
+					}
+				});
 			});
 			$scope.bookings.clear();
 			$scope.bookings.pushAll($scope.unprocessed.bookings.all);
@@ -193,8 +194,8 @@ function RbsController($scope, template, model, date){
 			$scope.editedBooking.type = $scope.lastSelectedResource.type;
 		}
 		else {
-			$scope.editedBooking.resource = $scope.resources.first();
-			$scope.editedBooking.type = $scope.resources.first().type;
+			$scope.editedBooking.type = $scope.resourceTypes.first();
+			$scope.editedBooking.resource = $scope.editedBooking.type.resources.first();
 		}
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
@@ -227,6 +228,7 @@ function RbsController($scope, template, model, date){
 			$scope.editedBooking.end_date = $scope.editedBooking.endTime.toDate();
 			$scope.display.processing = undefined;
 			$scope.closeBooking();
+			$scope.resourceTypes.sync();
 		});
 	};
 

@@ -176,9 +176,7 @@ Resource.prototype.create = function(cb) {
 		resource.updateData(r);
 
 		// Update collections
-		resource.type.resources.all.push(resource);
-		resource.type.resources.trigger('sync');
-		model.resources.push(resource);
+		resource.type.resources.push(resource);
 		if(typeof cb === 'function'){
 			cb();
 		}
@@ -189,7 +187,8 @@ Resource.prototype.delete = function(cb) {
 	var resource = this;
 
 	http().delete('/rbs/resource/' + this.id).done(function(){
-		model.resources.remove(resource);
+		var resourceType = resource.type;
+		type.resources.remove(resource);
 		if(typeof cb === 'function'){
 			cb();
 		}
@@ -220,6 +219,7 @@ function ResourceType(data) {
 
 	var resourceType = this;
 
+	// Resource collection embedded, not synced
 	this.collection(Resource, {
 		removeSelection : function() {
 			var counter = this.selection().length;
@@ -289,8 +289,10 @@ function BookingsHolder(url, color) {
 			// Load the Bookings
 			http().get(url).done(function(bookings){
 				var resourceIndex = {};
-				_.each(model.resources.all, function(resource){
-					resourceIndex[resource.id] = resource;
+				model.resourceTypes.forEach(function(resourceType){
+					resourceType.resources.forEach(function(resource){
+						resourceIndex[resource.id] = resource;
+					});
 				});
 				_.each(bookings, function(booking){
 					booking.resource = resourceIndex[booking.resource_id];
@@ -314,6 +316,7 @@ function BookingsHolder(url, color) {
 model.build = function(){
 	this.makeModels([ResourceType, Resource, Booking, BookingsHolder]);
 
+	// ResourceTypes collection with embedded Resources
 	this.collection(ResourceType, {
 		sync: function(){
 			var collection = this;
@@ -328,18 +331,47 @@ model.build = function(){
 
 				this.load(resourceTypes);
 
+				// always Sync the Resources with the ResourceTypes
 				this.one('sync', function(){
-					model.buildResources();
+					collection.syncResources();
 				});
 				
 			}.bind(this));
 		},
+		syncResources: function(){
+			var collection = this;
+			// Prepare ResourceType index and Clear Resources collections
+			var resourceTypeIndex = {};
+			collection.forEach(function(resourceType){
+				resourceType.resources.all = [];
+				resourceTypeIndex[resourceType.id] = resourceType;
+			});
+			// Load the Resources in each ResourceType
+			http().get('/rbs/resources').done(function(resources){
+				var actions = (resources !== undefined ? resources.length : 0);
+				_.each(resources, function(resource){
+					// Load the ResourceType's collection with associated Resource
+					var resourceType = resourceTypeIndex[resource.type_id];
+					if (resourceType !== undefined) {
+						resource.type = resourceType;
+						resourceType.resources.push(resource);
+					}
+					actions--;
+					if (actions === 0) {
+						collection.trigger('syncResources');
+					}
+				});
+			});
+		},
+		deselectAllResources: function(){
+			this.forEach(function(resourceType){
+				resourceType.resources.deselectAll();
+			});
+		},
 		behaviours: 'rbs'
 	});
 
-	this.mine = new BookingsHolder('/rbs/bookings', this.colorMine);
-	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
-
+	// Bookings collection, not auto-synced
 	this.collection(Booking, {
 		pushAll: function(datas, trigger) {
 			if (datas) {
@@ -375,42 +407,11 @@ model.build = function(){
 		behavious: 'rbs'
 	});
 
+	// Holders for special lists of Bookings
+	this.mine = new BookingsHolder('/rbs/bookings', this.colorMine);
+	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
+
 	model.loadTimes();
-};
-
-model.buildResources = function() {
-	model.bookings.clear(true);
-	this.collection(Resource, {
-		sync: function(){
-			var collection = this;
-			// Load the Resources
-			http().get('/rbs/resources').done(function(resources){
-				var actions = (resources !== undefined ? resources.length : 0);
-				var resourceTypeIndex = {};
-				_.each(model.resourceTypes.all, function(resourceType){
-					resourceTypeIndex[resourceType.id] = resourceType;
-				});
-				collection.load(resources, function(resource){
-					// Load the ResourceType's collection with associated Resource
-					var resourceType = resourceTypeIndex[resource.type_id];
-					if (resourceType !== undefined) {
-						resource.type = resourceType;
-						resourceType.resources.all.push(resource);
-					}
-					actions--;
-					if (actions === 0) {
-						model.resourceTypes.trigger('sync');
-					}
-				});
-
-				model.mine.bookings.sync();
-				model.unprocessed.bookings.sync();
-			});
-		},
-		behaviours: 'rbs'
-	});
-	this.resources.sync();
-	this.trigger('loadResources');
 };
 
 model.findColor = function(index) {
