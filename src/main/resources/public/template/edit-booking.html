@@ -57,7 +57,9 @@
 		<hr />
 
 		<div class="row">
-			<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			<behaviour name="contrib" resource="editedBooking.resource">
+				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			</behaviour>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>

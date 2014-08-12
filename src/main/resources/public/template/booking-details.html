@@ -91,10 +91,14 @@
 		<hr />
 
 		<div class="row">
-			<button class="right-magnet" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
-			<button class="right-magnet" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
-			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-			<button class="right-magnet" ng-click="editBooking()"><i18n>edit</i18n></button>
+			<behaviour name="process" resource="selectedBooking.resource">
+				<button class="right-magnet" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
+				<button class="right-magnet" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
+			</behaviour>
+			<behaviour name="manage" resource="selectedBooking">
+				<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
+				<button class="right-magnet" ng-click="editBooking()"><i18n>edit</i18n></button>
+			</behaviour>
 		</div>
 	</article>
 </div>

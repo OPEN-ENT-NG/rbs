@@ -59,3 +59,35 @@ module.directive('lightboxPlus', function($compile){
 		}
 	}
 });
+
+module.directive('behaviours', function($compile){
+	return {
+		restrict: 'E',
+		template: '<div ng-transclude></div>',
+		replace: false,
+		transclude: true,
+		scope: {
+			resources: '='
+		},
+		link: function($scope, $element, $attributes){
+			if(!$attributes.name){
+				throw "Behaviour name is required";
+			}
+			var content = $element.children('div');
+			$scope.$watch('resources', function(newVal){
+				var hide = true;
+				_.each($scope.resources, function(resource){
+					var hide = ($scope.resource instanceof Array && _.find($scope.resource, function(resource){ return !resource.myRights || resource.myRights[$attributes.name] === undefined; }) !== undefined) ||
+					($scope.resource instanceof Model && (!$scope.resource.myRights || !$scope.resource.myRights[$attributes.name]));
+				});
+				if(hide){
+					content.remove();
+				}
+				else{
+					$element.append(content);
+				}
+
+			});
+		}
+	}
+});

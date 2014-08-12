@@ -3,7 +3,7 @@ var rbsBehaviours = {
 		contrib: {
 			right: 'fr.wseduc.rbs.controllers.BookingController|createBooking'
 		},
-		publish: {
+		process: {
 			right: 'fr.wseduc.rbs.controllers.BookingController|processBooking'
 		},
 		manage: {

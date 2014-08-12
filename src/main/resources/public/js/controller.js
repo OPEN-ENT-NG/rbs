@@ -177,7 +177,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.formatDate = function(date) {
-		return moment(date).format('DD/MM/YYYY HH[h]mm');
+		return moment(date).format('DD / MM / YYYY à H [h] mm');
 	};
 
 	$scope.formatDateLong = function(date) {

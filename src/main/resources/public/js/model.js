@@ -363,6 +363,15 @@ model.build = function(){
 				this.trigger('sync');	
 			}
 		},
+		selectionResources : function() {
+			//returning the new array systematically breaks the watcher
+			//due to the reference always being updated
+			var currentResourcesSelection = _.pluck(this.selection(), 'resource') || [];
+			if(!this._selectionResources || this._selectionResources.length !== currentResourcesSelection.length){
+				this._selectionResources = currentResourcesSelection;
+			}
+			return this._selectionResources;
+		},
 		behavious: 'rbs'
 	});
 

@@ -46,7 +46,9 @@
 		<hr />
 
 		<div class="row">
-			<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			<behaviour name="manage" resource="editedResource.type">
+				<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			</behaviour>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
