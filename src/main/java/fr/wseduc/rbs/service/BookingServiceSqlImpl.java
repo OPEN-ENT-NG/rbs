@@ -153,7 +153,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( start_date < to_timestamp(?) AND to_timestamp(?) <= end_date )")
 				.append(" OR ( to_timestamp(?) <= start_date AND start_date < to_timestamp(?) )")
 				.append(" OR ( to_timestamp(?) < end_date AND end_date <= to_timestamp(?) )")
-				.append("));");
+				.append("))")
+				.append(" RETURNING id, status;");
 
 		Object newStartDate = data.getValue("start_date");
 		Object newEndDate = data.getValue("end_date");
@@ -174,8 +175,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Send queries to eventbus
 		Sql.getInstance().transaction(statementsBuilder.build(),
-				validRowsResultHandler(1, handler));
-
+				validUniqueResultHandler(1, handler));
 	}
 
 	private void addFieldToUpdate(StringBuilder sb, String fieldname,
@@ -248,7 +248,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
 					.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
 					.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
-					.append("));");
+					.append("))");
 			validateValues.add(resourceId)
 				.add(VALIDATED.status());
 

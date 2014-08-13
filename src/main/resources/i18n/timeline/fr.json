@@ -1,3 +1,4 @@
 {
- 	"timeline.rbs.booking.created" : "a créé la demande de réservation n°"
+ 	"timeline.rbs.booking.created" : "a créé la demande de réservation n°",
+ 	"timeline.rbs.booking.updated" : "a mis à jour la demande de réservation n°"
 }

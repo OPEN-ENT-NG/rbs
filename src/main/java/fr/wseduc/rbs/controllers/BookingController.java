@@ -33,6 +33,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 public class BookingController extends ControllerHelper {
 
 	private static final String BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_BOOKING_CREATED";
+	private static final String BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_UPDATED";
 
 	private final BookingService bookingService;
 
@@ -62,7 +63,7 @@ public class BookingController extends ControllerHelper {
 								public void handle(Either<String, JsonObject> event) {
 									if (event.isRight()) {
 										if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-											notifyBookingCreation(request, user, event.right().getValue());
+											notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), true);
 											renderJson(request, event.right().getValue(), 200);
 										} else {
 											JsonObject error = new JsonObject()
@@ -88,15 +89,31 @@ public class BookingController extends ControllerHelper {
 		});
 	}
 
-	private void notifyBookingCreation(final HttpServerRequest request, final UserInfos user, final JsonObject message){
+	/**
+	 * Notify moderators that a booking has been created or updated
+	 */
+	private void notifyBookingCreatedOrUpdated(final HttpServerRequest request, final UserInfos user,
+			final JsonObject message, final boolean isCreated){
+
 		Number id = message.getNumber("id");
-		final String newBookingId = id.toString();
+		final String bookingId = id.toString();
+
+		final String eventType;
+		final String template;
+		if (isCreated) {
+			eventType = BOOKING_CREATED_EVENT_TYPE;
+			template = "notify-booking-created.html";
+		}
+		else {
+			eventType = BOOKING_UPDATED_EVENT_TYPE;
+			template = "notify-booking-updated.html";
+		}
 
 		int status = message.getInteger("status");
-		// Do NOT send a notification if the new booking has been automatically validated
+		// Do NOT send a notification if the booking has been automatically validated
         if(CREATED.status() == status){
 
-			bookingService.getModeratorsIds(newBookingId, user, new Handler<Either<String, JsonArray>>() {
+			bookingService.getModeratorsIds(bookingId, user, new Handler<Either<String, JsonArray>>() {
 				@Override
 				public void handle(Either<String, JsonArray> event) {
 					if (event.isRight()) {
@@ -113,15 +130,15 @@ public class BookingController extends ControllerHelper {
 						JsonObject params = new JsonObject();
 						params.putString("uri", container.config().getString("userbook-host") +
 								"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-						params.putString("id", newBookingId)
+						params.putString("id", bookingId)
 							.putString("username", user.getUsername());
 
-						notification.notifyTimeline(request, user, RBS_NAME, BOOKING_CREATED_EVENT_TYPE,
-								recipients, newBookingId, "notify-booking-created.html", params);
+						notification.notifyTimeline(request, user, RBS_NAME, eventType,
+								recipients, bookingId, template, params);
 
 					} else {
 						log.error("Error when calling service getModeratorsIds. Unable to send timeline "
-								+ BOOKING_CREATED_EVENT_TYPE + " notification.");
+								+ eventType + " notification.");
 					}
 				}
     		});
@@ -164,6 +181,7 @@ public class BookingController extends ControllerHelper {
 									public void handle(Either<String, JsonObject> event) {
 										if (event.isRight()) {
 											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+												notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), false);
 												renderJson(request, event.right().getValue(), 200);
 											} else {
 												JsonObject error = new JsonObject()
@@ -179,7 +197,6 @@ public class BookingController extends ControllerHelper {
 									}
 								};
 
-								// TODO : envoyer une notification aux valideurs
 								bookingService.updateBooking(parseId(resourceId),
 										bookingId, object, handler);
 							}
