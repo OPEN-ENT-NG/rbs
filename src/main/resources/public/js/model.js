@@ -299,13 +299,17 @@ ResourceType.prototype.toJSON = function() {
 };
 
 
-function BookingsHolder(url, color) {
-	this.color = color;
+function BookingsHolder(params) {
+	this.url = params.url;
+	if (params.color) {
+		this.color = params.color;
+	}
 	var holder = this;
+
 	this.collection(Booking, {
 		sync: function(cb){
 			// Load the Bookings
-			http().get(url).done(function(bookings){
+			http().get(holder.url).done(function(bookings){
 				var resourceIndex = {};
 				model.resourceTypes.forEach(function(resourceType){
 					resourceType.resources.forEach(function(resource){
@@ -316,7 +320,7 @@ function BookingsHolder(url, color) {
 					booking.resource = resourceIndex[booking.resource_id];
 					booking.startMoment = moment(booking.start_date);
 					booking.endMoment = moment(booking.end_date);
-					if (color) {
+					if (holder.color) {
 						booking.color = holder.color;
 					}
 					else {
@@ -521,8 +525,13 @@ model.build = function(){
 	});
 
 	// Holders for special lists of Bookings
-	this.mine = new BookingsHolder('/rbs/bookings', this.colorMine);
-	this.unprocessed = new BookingsHolder('/rbs/bookings/unprocessed');
+	this.mine = new BookingsHolder({
+		url: '/rbs/bookings', 
+		color: this.colorMine
+	});
+	this.unprocessed = new BookingsHolder({
+		url: '/rbs/bookings/unprocessed'
+	});
 	this.recordedSelections = new SelectionHolder();
 
 	model.loadTimes();

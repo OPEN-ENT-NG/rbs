@@ -270,6 +270,10 @@ function RbsController($scope, template, model, date){
 
 
 	// Booking Validation
+	$scope.canProcessBookingSelection = function() {
+		return _.every(bookings.selection(), function(booking){ booking.status === $scope.status.STATE_CREATED; });
+	};
+
 	$scope.validateBookingSelection = function() {
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
