@@ -92,6 +92,17 @@ Booking.prototype.process = function(data, cb) {
 	});
 };
 
+Booking.prototype.delete = function(cb) {
+	this.resource_id = this.resource.id;
+
+	var booking = this;
+	http().delete('/rbs/resource/' + this.resource_id + '/booking/' + this.id).done(function(){
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
+};
+
 Booking.prototype.isPending = function() {
 	return this.status === model.STATE_CREATED;
 }
@@ -188,7 +199,7 @@ Resource.prototype.delete = function(cb) {
 
 	http().delete('/rbs/resource/' + this.id).done(function(){
 		var resourceType = resource.type;
-		type.resources.remove(resource);
+		resourceType.resources.remove(resource);
 		if(typeof cb === 'function'){
 			cb();
 		}
@@ -221,14 +232,16 @@ function ResourceType(data) {
 
 	// Resource collection embedded, not synced
 	this.collection(Resource, {
-		removeSelection : function() {
+		removeSelection : function(cb) {
 			var counter = this.selection().length;
-			this.selection().forEach(function(item){
-				http().delete('/rbs/resource/' + item.id).done(function(){
+			this.selection().forEach(function(resource){
+				resource.delete(function(){
 					counter = counter - 1;
 					if (counter === 0) {
 						Collection.prototype.removeSelection.call(this);
-						model.resourceTypes.sync();
+						if(typeof cb === 'function'){
+							cb();
+						}
 					}
 				});
 			});
@@ -269,7 +282,12 @@ ResourceType.prototype.create = function(cb) {
 };
 
 ResourceType.prototype.delete = function(cb) {
-
+	var resourceType = this;
+	http().delete('/rbs/type/' + this.id).done(function(){
+		if(typeof cb === 'function'){
+			cb();
+		}
+	});
 };
 
 ResourceType.prototype.toJSON = function() {
@@ -401,8 +419,6 @@ model.build = function(){
 	this.collection(ResourceType, {
 		sync: function(){
 			var collection = this;
-			// Record selections
-			model.recordedSelections.record(model.unprocessed.selected);
 			// Load the ResourceTypes
 			http().get('/rbs/types').done(function(resourceTypes){
 				var index = 0;
@@ -487,6 +503,20 @@ model.build = function(){
 			}
 			return this._selectionResources;
 		},
+		removeSelection : function(cb) {
+			var counter = this.selection().length;
+			this.selection().forEach(function(booking){
+				booking.delete(function(){
+					counter = counter - 1;
+					if (counter === 0) {
+						Collection.prototype.removeSelection.call(this);
+						if(typeof cb === 'function'){
+							cb();
+						}
+					}
+				});
+			});
+		},
 		behavious: 'rbs'
 	});
 
@@ -496,6 +526,15 @@ model.build = function(){
 	this.recordedSelections = new SelectionHolder();
 
 	model.loadTimes();
+};
+
+model.refresh = function() {
+	// Record selections
+	model.recordedSelections.record(model.unprocessed.selected);
+	// Clear bookings
+	model.bookings.clear();
+	// Launch resync
+	model.resourceTypes.sync();
 };
 
 model.findColor = function(index) {

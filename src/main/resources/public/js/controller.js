@@ -72,7 +72,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.showMain = function() {
 		$scope.currentResourceType = undefined;
-		$scope.resourceTypes.deselectAllResources();
+		model.refresh();
 		template.open('main', 'main-view');
 		template.open('bookings', 'main-list');
 	};
@@ -194,7 +194,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.formatDate = function(date) {
-		return moment(date).format('DD / MM / YYYY à H [h] mm');
+		return moment(date).format('DD/MM/YYYY à H[h]mm');
 	};
 
 	$scope.formatDateLong = function(date) {
@@ -244,7 +244,7 @@ function RbsController($scope, template, model, date){
 			$scope.editedBooking.end_date = $scope.editedBooking.endTime.toDate();
 			$scope.display.processing = undefined;
 			$scope.closeBooking();
-			$scope.resourceTypes.sync();
+			model.refresh();
 		});
 	};
 
@@ -255,6 +255,17 @@ function RbsController($scope, template, model, date){
 		}
 
 		// confirm message
+		template.open('lightbox', 'confirm-delete-booking');
+		$scope.display.showPanel = true;
+	};
+
+	$scope.doRemoveBookingSelection = function() {
+		$scope.display.processing = true;
+		$scope.bookings.removeSelection(function(){
+			$scope.display.processing = undefined;
+			$scope.closeBooking();
+			model.refresh();
+		});
 	};
 
 
@@ -286,9 +297,9 @@ function RbsController($scope, template, model, date){
 			booking.validate(function(){
 				actions--;
 				if (actions === 0) {
-					$scope.resourceTypes.sync();
 					$scope.bookings.deselectAll();
 					$scope.closeBooking();
+					model.refresh();
 				}
 			});
 		});
@@ -301,9 +312,9 @@ function RbsController($scope, template, model, date){
 			booking.refuse(function(){
 				actions--;
 				if (actions === 0) {
-					$scope.resourceTypes.sync();
 					$scope.bookings.deselectAll();
 					$scope.closeBooking();
+					model.refresh();
 				}
 			});
 		});
@@ -344,13 +355,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.editSelectedResource = function() {
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
-		$scope.editedResource.type = $scope.currentResourceType;
 		template.open('resources', 'edit-resource');
-	};
-
-	$scope.deleteCurrentResourceType = function() {
-		$scope.currentResourceType.resources.deselectAll();
-		$scope.currentResourceType.delete();
 	};
 
 	$scope.shareCurrentResourceType = function() {
@@ -366,6 +371,7 @@ function RbsController($scope, template, model, date){
 			$scope.display.processing = undefined;
 			$scope.currentResourceType = $scope.editedResourceType;
 			$scope.closeResourceType();
+			model.refresh();
 		});
 	};
 
@@ -374,6 +380,38 @@ function RbsController($scope, template, model, date){
 		$scope.editedResource.save(function(){
 			$scope.display.processing = undefined;
 			$scope.closeResource();
+			model.refresh();
+		});
+	};
+
+	$scope.deleteCurrentResourceType = function() {
+		$scope.editedResourceType = $scope.currentResourceType;
+		template.open('resources', 'confirm-delete-type');
+		//$scope.display.showPanel = true;
+	};
+
+	$scope.deleteResourcesSelection = function() {
+		template.open('resources', 'confirm-delete-resource');
+		//$scope.display.showPanel = true;
+	};
+
+	$scope.doDeleteResourceType = function() {
+		$scope.display.processing = true;
+		$scope.editedResourceType.delete(function(){
+			$scope.display.processing = undefined;
+			$scope.resourceTypes.remove($scope.editedResourceType);
+			$scope.currentResourceType = $scope.resourceTypes.first();
+			$scope.closeResourceType();
+			model.refresh();
+		});
+	};
+
+	$scope.doDeleteResource = function() {
+		$scope.display.processing = true;
+		$scope.currentResourceType.resources.removeSelection(function(){
+			$scope.display.processing = undefined;
+			$scope.closeResource();
+			model.refresh();
 		});
 	};
 
@@ -383,7 +421,6 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.closeResource = function() {
-		$scope.editedResource.type = undefined;
 		$scope.editedResource = undefined;
 		template.open('resources', 'manage-resources');
 	};

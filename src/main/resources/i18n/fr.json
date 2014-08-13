@@ -63,12 +63,21 @@
 	"rbs.booking.refuse.multi.end" : " réservations ?",
 	"rbs.booking.refuse.reason.label" : "Motif de refus",
 
+	"rbs.booking.delete.confirm.one" : "Suppression de la réservation",
+	"rbs.booking.delete.confirm.multi" : "Suppression des réservations sélectionnées",
+	"rbs.booking.delete.details" : "",
+
 	"rbs.manage.types" : "Types de ressources",
 	"rbs.manage.type.create" : "Créer un type de ressources",
 	"rbs.manage.type.edit" : "Editer le type",
 	"rbs.manage.type.remove" : "Supprimer le type",
 	"rbs.manage.type.share" : "Partager le type",
 	"rbs.manage.type.action" : "Type de ressources : ",
+	"rbs.manage.type.delete.confirm" : "Suppression du type de ressources : ",
+	"rbs.manage.type.delete.resources" : "Resources appartenant à ce type :",
+	"rbs.manage.type.delete.details.empty" : "Ce type ne contient aucune ressource. Aucune réservation ne sera impactée.",
+	"rbs.manage.type.delete.details.notempty" : "Toutes les ressources du type seront supprimées, ainsi que les réservations les concernants. Les personnes ayant effectuées des réservations, et les personnes en charge de la validation et de la gestion de ce type seront notifiées des suppressions. Si vous souhaitez conserver les ressources, veuillez modifier leur type de ressource vers un autre type et procéder de nouveau à la suppression.",
+
 	"rbs.manage.resource.icon" : "Vignette",
 	"rbs.manage.resource.name" : "Nom de la ressource",
 	"rbs.manage.resource.create" : "Créer une ressource",
@@ -78,6 +87,9 @@
 	"rbs.manage.resource.removes" : "Supprimer les ressources",
 	"rbs.manage.resource.action" : "Resource : ",
 	"rbs.manage.resource.actions" : "Resources : ",
+	"rbs.manage.resource.delete.confirm.one" : "Suppression de la ressource",
+	"rbs.manage.resource.delete.confirm.multi" : "Suppression des ressources sélectionnées",
+	"rbs.manage.resource.delete.details" : "Les réservations concernant ces ressources seront supprimées. Les personnes ayant effectuées des réservations, et les personnes en charge de la validation et de la gestion de ces ressources seront notifiées des suppressions.",
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
 	"rbs.resourcetype.edit.name.label": "Nom du type",
@@ -101,7 +113,9 @@
 	"rbs.save": "Enregistrer",
 	"rbs.validate" : "Valider",
 	"rbs.refuse" : "Refuser",
+	"rbs.delete" : "Supprimer",
 	"rbs.processing": "Enregistrement en cours",
+	"rbs.deleting" : "Suppression en cours",
 
 	"rbs.read": "Voir",
 	"rbs.contrib": "Réserver",

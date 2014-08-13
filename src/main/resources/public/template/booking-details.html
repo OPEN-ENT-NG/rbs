@@ -39,7 +39,7 @@
 		<div class="row">
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
-				<p>[[selectedBooking.ownerName]]</p>
+				<p>[[selectedBooking.owner_name]]</p>
 			</div>
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
@@ -63,7 +63,7 @@
 		<div class="row" ng-if="selectedBooking.isValidated()">
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
-				<p>[[selectedBooking.moderatorName]]</p>
+				<p>[[selectedBooking.moderator_name]]</p>
 			</div>
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
@@ -74,7 +74,7 @@
 		<div class="row" ng-if="selectedBooking.isRefused()">
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
-				<p>[[selectedBooking.moderatorName]]</p>
+				<p>[[selectedBooking.moderator_name]]</p>
 			</div>
 			<div class="six cell">
 				<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>

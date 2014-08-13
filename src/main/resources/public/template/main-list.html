@@ -13,7 +13,7 @@
 	<tbody>
 		<tr ng-repeat="booking in bookings.all">
 			<td><input type="checkbox" ng-model="booking.selected" /></td>
-			<td><a ng-click="viewBooking(booking)">[[booking.ownerName]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[booking.owner_name]]</a></td>
 			<td><a ng-click="viewBooking(booking)">([[booking.color]]) [[booking.resource.name]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.start_date)]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.end_date)]]</a></td>

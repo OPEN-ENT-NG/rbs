@@ -1,0 +1,24 @@
+<div class="row">
+	<article class="twelve cell">
+		<h2><i18n>rbs.manage.type.delete.confirm</i18n>[[editedResourceType.name]]</h2>
+
+		<div ng-if="! currentResourceType.resources.empty()" class="row">
+			<h3>rbs.manage.type.delete.resources</h3>
+			<ul>
+				<li ng-repeat="resource in currentResourceType.resources.all">[[resource.name]]</li>
+			</ul>
+		</div>
+
+		<div class="row">
+			<p ng-if="! currentResourceType.resources.empty()"><i18n>rbs.manage.type.delete.details.notempty</i18n></p>
+			<p ng-if="currentResourceType.resources.empty()"><i18n>rbs.manage.type.delete.details.empty</i18n></p>
+		</div>
+
+		<div class="row">
+			<button class="right-magnet" ng-click="doDeleteResourceType()" ng-if="display.processing !== true"><i18n>rbs.delete</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResourceType()" ng-if="display.processing !== true" />
+
+			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.deleting</i18n></button>
+		</div>
+	</article>
+</div>

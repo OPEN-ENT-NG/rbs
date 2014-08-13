@@ -54,7 +54,7 @@
 					<i18n>rbs.manage.resource.edit</i18n>
 				</button>
 				<button ng-if="currentResourceType.resources.selection().length === 1"
-						ng-click="resources.removeSelection()">
+						ng-click="deleteResourcesSelection()">
 					<i18n>rbs.manage.resource.remove</i18n>
 				</button>
 				<button ng-if="currentResourceType.resources.selection().length > 1"
@@ -62,7 +62,7 @@
 					<i18n>rbs.manage.resource.edits</i18n>
 				</button>
 				<button ng-if="currentResourceType.resources.selection().length > 1"
-						ng-click="resources.removeSelection()">
+						ng-click="deleteResourcesSelection()">
 					<i18n>rbs.manage.resource.removes</i18n>
 				</button>
 			</div>
