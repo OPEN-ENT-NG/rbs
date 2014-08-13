@@ -29,15 +29,36 @@ function RbsController($scope, template, model, date){
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
 
+	var initialSyncMine = true;
 	$scope.resourceTypes.on('syncResources', function(){
-		model.mine.bookings.sync();
-		model.unprocessed.bookings.sync();
-	});
-
-	// Auto-select my bookings
-	$scope.mine.bookings.one('sync', function(){
-		$scope.mine.selected = true;
-		$scope.bookings.pushAll($scope.mine.bookings.all);
+		if (initialSyncMine === true) {
+			// Auto-select my bookings
+			$scope.mine.bookings.sync(function(){
+				$scope.mine.selected = true;
+				$scope.bookings.pushAll($scope.mine.bookings.all);
+			});
+			initialSyncMine = undefined;
+			return;
+		}
+		
+		// Restore previous selections
+		model.recordedSelections.restore(
+			function(){
+				$scope.mine.bookings.sync(function(){
+					$scope.bookings.pushAll($scope.mine.bookings.all);
+				});
+			},
+			function(){
+				$scope.unprocessed.bookings.sync(function(){
+					$scope.bookings.pushAll($scope.unprocessed.bookings.all);
+				});
+			},
+			function(resource){
+				resource.bookings.sync(function(){
+					$scope.bookings.pushAll(resource.bookings.all);
+				});
+			}
+		);
 	});
 
 
@@ -111,25 +132,22 @@ function RbsController($scope, template, model, date){
 	$scope.switchSelectUnprocessed = function() {
 		if ($scope.unprocessed.selected !== true) {
 			$scope.unprocessed.selected = true;
-			// deselect other cases
-			if ($scope.mine.selected === true) {
-				$scope.unprocessed.previousMine = true;
-				$scope.mine.selected = undefined;
-			}
-			$scope.resourceTypes.forEach(function(resourceType){
-				if (resourceType.expanded === true) {
-					$scope.unprocessed.previousTypes.push(resourceType);
+			// deselect other cases (false: without saving the unprocessed selection)
+			model.recordedSelections.record(
+				false,
+				function(resourceType){
 					resourceType.expanded = undefined;
+				},
+				function(resource){
+					resource.selected = undefined;
 				}
-				resourceType.resources.forEach(function(resource) {
-					if (resource.selected) {
-						$scope.unprocessed.previousResources.push(resource);
-						$scope.switchSelect(resource);
-					}
-				});
-			});
+			);
+			$scope.lastSelectedResource = undefined;
+
 			$scope.bookings.clear();
-			$scope.bookings.pushAll($scope.unprocessed.bookings.all);
+			$scope.unprocessed.bookings.sync(function(){
+				$scope.bookings.pushAll($scope.unprocessed.bookings.all);	
+			});
 		}
 		else {
 			$scope.unprocessedRestoreSelections();
@@ -139,20 +157,18 @@ function RbsController($scope, template, model, date){
 	$scope.unprocessedRestoreSelections = function() {
 		$scope.unprocessed.selected = undefined;
 		$scope.bookings.clear();
-		// reselect other cases
-		if ($scope.unprocessed.previousMine === true) {
-			$scope.mine.selected = true;
-			$scope.bookings.pushAll($scope.mine.bookings.all);
-		}
-		$scope.unprocessed.previousMine = undefined;
-		_.each($scope.unprocessed.previousTypes, function(resourceType){
-			resourceType.expanded = true;
-		});
-		$scope.unprocessed.previousTypes = [];
-		_.each($scope.unprocessed.previousResources, function(resource) {
-			$scope.switchSelect(resource);
-		});
-		$scope.unprocessed.previousResources = [];
+		// restore previous selections
+		model.recordedSelections.restore(
+			function(){
+				$scope.bookings.pushAll($scope.mine.bookings.all);
+			},
+			function(){
+				$scope.bookings.pushAll($scope.unprocessed.bookings.all);
+			},
+			function(resource){
+				$scope.bookings.pushAll(resource.bookings.all);
+			}
+		);
 	}
 
 	$scope.swicthSelectAllBookings = function() {
