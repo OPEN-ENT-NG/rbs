@@ -32,14 +32,16 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 public class BookingController extends ControllerHelper {
 
+	private static final String BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_BOOKING_CREATED";
+
 	private final BookingService bookingService;
-	
+
 	public BookingController(){
 		bookingService = new BookingServiceSqlImpl();
 	}
-	
+
 	// TODO : use i18n for messages
-	
+
 	@Post("/resource/:id/booking")
 	@ApiDoc("Create booking of a given resource")
 	@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
@@ -74,7 +76,7 @@ public class BookingController extends ControllerHelper {
 									}
 								}
 							};
-							
+
 							bookingService.createBooking(parseId(id), object, user, handler);
 						}
 					});
@@ -85,42 +87,46 @@ public class BookingController extends ControllerHelper {
 			}
 		});
 	}
-	
+
 	private void notifyBookingCreation(final HttpServerRequest request, final UserInfos user, final JsonObject message){
 		Number id = message.getNumber("id");
 		final String newBookingId = id.toString();
-		final String eventType = RBS_NAME + "_BOOKING_CREATED";
-		
-		// TODO : ne pas envoyer de notification si la validation est desactivee
-		
-		bookingService.getModeratorsIds(newBookingId, user, new Handler<Either<String, JsonArray>>() {
-			@Override
-			public void handle(Either<String, JsonArray> event) {
-				if (event.isRight()) {
-					Set<String> recipientSet = new HashSet<>();
-					for(Object o : event.right().getValue()){
-						if(!(o instanceof JsonObject)){
-							continue;
+
+		int status = message.getInteger("status");
+		// Do NOT send a notification if the new booking has been automatically validated
+        if(CREATED.status() == status){
+
+			bookingService.getModeratorsIds(newBookingId, user, new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isRight()) {
+						Set<String> recipientSet = new HashSet<>();
+						for(Object o : event.right().getValue()){
+							if(!(o instanceof JsonObject)){
+								continue;
+							}
+							JsonObject jo = (JsonObject) o;
+							recipientSet.add(jo.getString("member_id"));
 						}
-						JsonObject jo = (JsonObject) o;
-						recipientSet.add(jo.getString("member_id"));
+						List<String> recipients = new ArrayList<>(recipientSet);
+
+						JsonObject params = new JsonObject();
+						params.putString("uri", container.config().getString("userbook-host") +
+								"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+						params.putString("id", newBookingId)
+							.putString("username", user.getUsername());
+
+						notification.notifyTimeline(request, user, RBS_NAME, BOOKING_CREATED_EVENT_TYPE,
+								recipients, newBookingId, "notify-booking-created.html", params);
+
+					} else {
+						log.error("Error when calling service getModeratorsIds. Unable to send timeline "
+								+ BOOKING_CREATED_EVENT_TYPE + " notification.");
 					}
-					List<String> recipients = new ArrayList<>(recipientSet);
-					
-					JsonObject params = new JsonObject();
-					params.putString("uri", container.config().getString("userbook-host") +
-							"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-					params.putString("id", newBookingId)
-						.putString("username", user.getUsername());
-					
-					notification.notifyTimeline(request, user, RBS_NAME, eventType, 
-							recipients, newBookingId, "notify-booking-created.html", params);
-					
-				} else {
-					log.error("Error when calling service getModeratorsIds. Unable to send timeline " + eventType + " notification.");
 				}
-			}
-		});
+    		});
+        }
+
 	}
 
 	// @Post("/resource/:id/booking/periodic")
@@ -131,13 +137,13 @@ public class BookingController extends ControllerHelper {
 	//
 	// }
 
-	
+
 	 @Put("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Update booking")
 	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
 	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void updateBooking(final HttpServerRequest request){
-		 
+
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
@@ -152,7 +158,7 @@ public class BookingController extends ControllerHelper {
 									badRequest(request);
 									return;
 								}
-								
+
 								Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 									@Override
 									public void handle(Either<String, JsonObject> event) {
@@ -161,7 +167,7 @@ public class BookingController extends ControllerHelper {
 												renderJson(request, event.right().getValue(), 200);
 											} else {
 												JsonObject error = new JsonObject()
-													.putString("error", 
+													.putString("error",
 															"No rows were updated. Either a validated booking overlaps the booking you tried to create, or the specified bookingId does not exist.");
 												renderError(request, error);
 											}
@@ -172,8 +178,9 @@ public class BookingController extends ControllerHelper {
 										}
 									}
 								};
-																
-								bookingService.updateBooking(parseId(resourceId), 
+
+								// TODO : envoyer une notification aux valideurs
+								bookingService.updateBooking(parseId(resourceId),
 										bookingId, object, handler);
 							}
 						});
@@ -183,9 +190,9 @@ public class BookingController extends ControllerHelper {
 					}
 				}
 			});
-		 
+
 	 }
-	 
+
 	 @Put("/resource/:id/booking/:bookingId/process")
 	 @ApiDoc("Validate or refuse booking")
 	 @SecuredAction(value = "rbs.publish", type= ActionType.RESOURCE)
@@ -200,13 +207,13 @@ public class BookingController extends ControllerHelper {
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
 								String sBookingId = request.params().get("bookingId");
-								
+
 								Object bookingId = parseId(sBookingId);
 								if (!(bookingId instanceof Integer)) {
 									badRequest(request);
 									return;
 								}
-								
+
 								int newStatus = object.getInteger("status");
 								if (newStatus != VALIDATED.status()
 										&& newStatus != REFUSED.status()) {
@@ -216,7 +223,7 @@ public class BookingController extends ControllerHelper {
 
 								object.putString("moderator_id", user.getUserId());
 								// TODO : envoyer une notification au demandeur
-								bookingService.processBooking(parseId(resourceId), 
+								bookingService.processBooking(parseId(resourceId),
 										bookingId, newStatus, object, user, notEmptyResponseHandler(request));
 							}
 						});
@@ -225,7 +232,7 @@ public class BookingController extends ControllerHelper {
 						unauthorized(request);
 					}
 				}
-			});		 
+			});
 	 }
 
 	 @Delete("/resource/:id/booking/:bookingId")
@@ -242,7 +249,7 @@ public class BookingController extends ControllerHelper {
 							badRequest(request);
 							return;
 						}
-						
+
 						crudService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
@@ -252,13 +259,13 @@ public class BookingController extends ControllerHelper {
 			});
 	 }
 
-	 
+
 	 /*
 	  * TODO : limiter à un créneau horaire donné la liste des réservations retournées.
 	  * Créneau horaire par défaut : la semaine ou le mois actuel
 	  * Permettre de préciser un créneau
 	  */
-	 
+
 	 @Get("/bookings")
 	 @ApiDoc("List all bookings created by current user")
 	 @SecuredAction("rbs.booking.list")
@@ -275,7 +282,7 @@ public class BookingController extends ControllerHelper {
 				}
 			});
 	 }
-	 
+
 	@Get("/resource/:id/bookings")
 	@ApiDoc("List all bookings for a given resource")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
@@ -294,7 +301,7 @@ public class BookingController extends ControllerHelper {
 			}
 		});
 	}
-	 
+
 	 @Get("/bookings/unprocessed")
 	 @ApiDoc("List all bookings waiting to be processed by current user")
 	 @SecuredAction("rbs.booking.list.unprocessed")
@@ -309,7 +316,7 @@ public class BookingController extends ControllerHelper {
 						if (user.getProfilGroupsIds() != null) {
 							groupsAndUserIds.addAll(user.getProfilGroupsIds());
 						}
-						
+
 						bookingService.listUnprocessedBookings(groupsAndUserIds, user, arrayResponseHandler(request));
 					}
 					else {
@@ -318,9 +325,9 @@ public class BookingController extends ControllerHelper {
 					}
 				}
 			});
-			
+
 	 }
-	 	
+
 	// Pour afficher l'historique des reservations
 	// @Get("/bookings/all")
 	// @ApiDoc("List all bookings")
