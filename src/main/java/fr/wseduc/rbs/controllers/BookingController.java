@@ -336,7 +336,7 @@ public class BookingController extends ControllerHelper {
 							return;
 						}
 
-						crudService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
+						bookingService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
 						unauthorized(request);
