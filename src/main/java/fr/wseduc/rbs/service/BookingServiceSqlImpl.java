@@ -220,7 +220,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		processValues.add(bookingId)
 			.add(resourceId);
 
+		String returningClause = " RETURNING id, status, owner";
+
 		if (newStatus != VALIDATED.status()) {
+			processQuery.append(returningClause);
 			statementsBuilder.prepared(processQuery.toString(), processValues);
 		}
 		else {
@@ -251,6 +254,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append("))");
 			validateValues.add(resourceId)
 				.add(VALIDATED.status());
+
+			validateQuery.append(returningClause);
 
 			statementsBuilder.prepared(validateQuery.toString(), validateValues);
 
@@ -290,15 +295,17 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
 				.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
 				.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
-				.append("));");
+				.append("))");
 			rbValues.add(resourceId)
 				.add(CREATED.status());
+
+			rbQuery.append(" RETURNING id, status, owner");
 
 			statementsBuilder.prepared(rbQuery.toString(), rbValues);
 		}
 
 		// Send queries to event bus
-		Sql.getInstance().transaction(statementsBuilder.build(), validRowsResultHandler(2, handler));
+		Sql.getInstance().transaction(statementsBuilder.build(), validUniqueResultHandler(2, handler));
 	}
 
 	@Override

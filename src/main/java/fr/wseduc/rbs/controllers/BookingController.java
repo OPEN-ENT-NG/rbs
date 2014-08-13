@@ -19,7 +19,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rbs.service.BookingService;
 import fr.wseduc.rbs.service.BookingServiceSqlImpl;
@@ -34,6 +33,8 @@ public class BookingController extends ControllerHelper {
 
 	private static final String BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_BOOKING_CREATED";
 	private static final String BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_UPDATED";
+	private static final String BOOKING_VALIDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_VALIDATED";
+	private static final String BOOKING_REFUSED_EVENT_TYPE = RBS_NAME + "_BOOKING_REFUSED";
 
 	private final BookingService bookingService;
 
@@ -95,8 +96,8 @@ public class BookingController extends ControllerHelper {
 	private void notifyBookingCreatedOrUpdated(final HttpServerRequest request, final UserInfos user,
 			final JsonObject message, final boolean isCreated){
 
-		Number id = message.getNumber("id");
-		final String bookingId = id.toString();
+		final long id = message.getLong("id", 0L);
+		final int status = message.getInteger("status", 0);
 
 		final String eventType;
 		final String template;
@@ -109,7 +110,12 @@ public class BookingController extends ControllerHelper {
 			template = "notify-booking-updated.html";
 		}
 
-		int status = message.getInteger("status");
+		if (id == 0L || status == 0) {
+			log.error("Could not get bookingId or status from response. Unable to send timeline "+ eventType + " notification.");
+			return;
+		}
+		final String bookingId = Long.toString(id);
+
 		// Do NOT send a notification if the booking has been automatically validated
         if(CREATED.status() == status){
 
@@ -239,9 +245,29 @@ public class BookingController extends ControllerHelper {
 								}
 
 								object.putString("moderator_id", user.getUserId());
-								// TODO : envoyer une notification au demandeur
+
+								Handler<Either<String, JsonObject>> handler =  new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isRight()) {
+											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+												notifyBookingProcessed(request, user, event.right().getValue());
+												// TODO : envoyer une notification aux demandeurs dont la
+												// reservation a ete refusee à cause de la validation d'une demande concurrente
+												renderJson(request, event.right().getValue(), 200);
+											} else {
+												notFound(request);
+											}
+										} else {
+											JsonObject error = new JsonObject()
+													.putString("error", event.left().getValue());
+											renderJson(request, error, 400);
+										}
+									}
+								};
+
 								bookingService.processBooking(parseId(resourceId),
-										bookingId, newStatus, object, user, notEmptyResponseHandler(request));
+										bookingId, newStatus, object, user, handler);
 							}
 						});
 					} else {
@@ -251,6 +277,49 @@ public class BookingController extends ControllerHelper {
 				}
 			});
 	 }
+
+	private void notifyBookingProcessed(final HttpServerRequest request, final UserInfos user,
+			final JsonObject message){
+
+		final long id = message.getLong("id", 0L);
+
+		final int status = message.getInteger("status", 0);
+		final String owner = message.getString("owner", null);
+
+		final String eventType;
+		final String template;
+
+		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0) {
+			log.error("Could not get bookingId or status or owner from response. Unable to send timeline "+
+					BOOKING_VALIDATED_EVENT_TYPE + " or " + BOOKING_REFUSED_EVENT_TYPE + " notification.");
+			return;
+		}
+		final String bookingId = Long.toString(id);
+
+		if(VALIDATED.status() == status){
+			eventType = BOOKING_VALIDATED_EVENT_TYPE;
+			template = "notify-booking-validated.html";
+		}
+		else if(REFUSED.status() == status) {
+			eventType = BOOKING_REFUSED_EVENT_TYPE;
+			template = "notify-booking-refused.html";
+		}
+		else {
+			log.error("Invalid status");
+			return;
+		}
+
+		JsonObject params = new JsonObject();
+		params.putString("id", bookingId)
+			.putString("username", user.getUsername());
+
+		List<String> recipients = new ArrayList<>();
+		recipients.add(owner);
+
+		notification.notifyTimeline(request, user, RBS_NAME, eventType,
+				recipients, bookingId, template, params);
+
+	}
 
 	 @Delete("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Delete booking")

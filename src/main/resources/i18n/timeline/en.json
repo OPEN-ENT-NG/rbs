@@ -1,4 +1,6 @@
 {
  	"timeline.rbs.booking.created" : "has created booking number ",
- 	"timeline.rbs.booking.updated" : "has updated booking number "
+ 	"timeline.rbs.booking.updated" : "has updated booking number ",
+ 	"timeline.rbs.booking.validated" : "has validated your booking ",
+ 	"timeline.rbs.booking.refused" : "has refused your booking "
 }
