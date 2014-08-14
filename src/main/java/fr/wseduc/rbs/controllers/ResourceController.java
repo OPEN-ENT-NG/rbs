@@ -28,7 +28,8 @@ public class ResourceController extends ControllerHelper {
 
 	private static final String SCHEMA_RESOURCE_CREATE = "createResource";
 	private static final String SCHEMA_RESOURCE_UPDATE = "updateResource";
-	
+
+	@Override
 	@Get("/resources")
 	@ApiDoc("List all resources visible by current user")
 	@SecuredAction("rbs.resource.list")
@@ -41,15 +42,6 @@ public class ResourceController extends ControllerHelper {
 		});
 	}
 
-	/*
-	@Get("/resources/:typeId/booking")
-	@ApiDoc("List resources for a given typeId, with their associated bookings for a given duration")
-	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
-	public void listBookings(HttpServerRequest request) {
-		
-	}
-	*/
-
 	@Get("/resource/:id")
 	@ApiDoc("Get resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
@@ -57,7 +49,8 @@ public class ResourceController extends ControllerHelper {
 	public void get(final HttpServerRequest request) {
 		super.retrieve(request);
 	}
-	
+
+	@Override
 	@Post("/resources")
 	@ApiDoc("Create resource")
 	@SecuredAction("rbs.resource.create")
@@ -80,6 +73,7 @@ public class ResourceController extends ControllerHelper {
 		});
 	}
 
+	@Override
 	@Put("/resource/:id")
 	@ApiDoc("Update resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
@@ -104,6 +98,7 @@ public class ResourceController extends ControllerHelper {
 		});
 	}
 
+	@Override
 	@Delete("/resource/:id")
 	@ApiDoc("Delete resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)

@@ -85,7 +85,7 @@
 
 		<div class="row" ng-if="selectedBooking.isRefused()">
 			<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
-			<p>[[selectedBooking.refusal_reason]]</p>
+			<p bind-html="selectedBooking.refusal_reason"></p>
 		</div>
 		<hr />
 		<hr />

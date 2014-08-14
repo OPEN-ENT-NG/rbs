@@ -1,3 +1,7 @@
 {
-	"rbs.title": "Resource Booking System"
+	"rbs.title": "Resource Booking System",
+	
+	"rbs.booking.create.conflict" : "A validated booking overlaps the booking you tried to create.",
+	"rbs.booking.update.conflict" : "A validated booking overlaps the booking you tried to update.",
+	"rbs.booking.automatically.refused.reason" : "Validation of concurrent booking number "
 }

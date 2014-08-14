@@ -278,7 +278,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
 			rbValues.add(REFUSED.status())
 				.add(user.getUserId())
-				.add("La demande concurrente n°" + bookingId + " a été validée");
+				.add("<i18n>rbs.booking.automatically.refused.reason</i18n>"+bookingId);
 
 			// Refuse concurrent bookings if and only if the previous query has validated the booking
 			rbQuery.append(" WHERE EXISTS (")

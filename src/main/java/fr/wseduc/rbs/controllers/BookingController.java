@@ -42,7 +42,11 @@ public class BookingController extends ControllerHelper {
 		bookingService = new BookingServiceSqlImpl();
 	}
 
-	// TODO : use i18n for messages
+	/*
+	 * TODO : améliorer le contenu des notifications
+		- ajouter un lien vers la demande de réservation ou le calendrier correspondant
+		- ajouter le nom de la ressource, la date de début et la date de fin
+	 */
 
 	@Post("/resource/:id/booking")
 	@ApiDoc("Create booking of a given resource")
@@ -68,8 +72,8 @@ public class BookingController extends ControllerHelper {
 											renderJson(request, event.right().getValue(), 200);
 										} else {
 											JsonObject error = new JsonObject()
-												.putString("error", "A validated booking overlaps the booking you tried to create.");
-											renderError(request, error);
+												.putString("error", "rbs.booking.create.conflict");
+											renderJson(request, error, 409);
 										}
 									} else {
 										JsonObject error = new JsonObject()
@@ -191,9 +195,8 @@ public class BookingController extends ControllerHelper {
 												renderJson(request, event.right().getValue(), 200);
 											} else {
 												JsonObject error = new JsonObject()
-													.putString("error",
-															"No rows were updated. Either a validated booking overlaps the booking you tried to create, or the specified bookingId does not exist.");
-												renderError(request, error);
+													.putString("error", "rbs.booking.update.conflict");
+												renderJson(request, error, 409);
 											}
 										} else {
 											JsonObject error = new JsonObject()
