@@ -246,17 +246,35 @@ public class BookingController extends ControllerHelper {
 
 								object.putString("moderator_id", user.getUserId());
 
-								Handler<Either<String, JsonObject>> handler =  new Handler<Either<String, JsonObject>>() {
+								Handler<Either<String, JsonArray>> handler = new Handler<Either<String, JsonArray>>() {
 									@Override
-									public void handle(Either<String, JsonObject> event) {
+									public void handle(Either<String, JsonArray> event) {
 										if (event.isRight()) {
-											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-												notifyBookingProcessed(request, user, event.right().getValue());
-												// TODO : envoyer une notification aux demandeurs dont la
-												// reservation a ete refusee à cause de la validation d'une demande concurrente
-												renderJson(request, event.right().getValue(), 200);
-											} else {
-												notFound(request);
+											if (event.right().getValue() != null && event.right().getValue().size() >= 3) {
+												JsonArray results = event.right().getValue();
+
+												try {
+													JsonObject processedBooking = ((JsonArray) results.get(2)).get(0);
+													notifyBookingProcessed(request, user, processedBooking);
+
+													if (results.size() >= 4) {
+														JsonArray concurrentBookings = results.get(3);
+														for (Object o : concurrentBookings) {
+															JsonObject booking = (JsonObject) o;
+															notifyBookingProcessed(request, user, booking);
+														}
+													}
+
+													renderJson(request, processedBooking);
+												} catch (Exception e) {
+													log.error("Unable to send timeline notification. Error when processing response from worker mod-mysql-postgresql :");
+													log.error(e.getMessage());
+													renderJson(request, event.right().getValue());
+												}
+											}
+											else {
+												log.error("Unable to send timeline notification. Response from worker mod-mysql-postgresql is null or has a size < 3");
+												renderJson(request, new JsonObject());
 											}
 										} else {
 											JsonObject error = new JsonObject()
@@ -279,12 +297,11 @@ public class BookingController extends ControllerHelper {
 	 }
 
 	private void notifyBookingProcessed(final HttpServerRequest request, final UserInfos user,
-			final JsonObject message){
+			final JsonObject booking){
 
-		final long id = message.getLong("id", 0L);
-
-		final int status = message.getInteger("status", 0);
-		final String owner = message.getString("owner", null);
+		final long id = booking.getLong("id", 0L);
+		final int status = booking.getInteger("status", 0);
+		final String owner = booking.getString("owner", null);
 
 		final String eventType;
 		final String template;
@@ -318,7 +335,6 @@ public class BookingController extends ControllerHelper {
 
 		notification.notifyTimeline(request, user, RBS_NAME, eventType,
 				recipients, bookingId, template, params);
-
 	}
 
 	 @Delete("/resource/:id/booking/:bookingId")

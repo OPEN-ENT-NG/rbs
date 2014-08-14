@@ -192,7 +192,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	@Override
 	public void processBooking(final Object resourceId, final Object bookingId,
 			final int newStatus, final JsonObject data,
-			final UserInfos user, final Handler<Either<String, JsonObject>> handler){
+			final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+
+
+
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 
@@ -305,7 +308,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		}
 
 		// Send queries to event bus
-		Sql.getInstance().transaction(statementsBuilder.build(), validUniqueResultHandler(2, handler));
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultsHandler(handler));
 	}
 
 	@Override
