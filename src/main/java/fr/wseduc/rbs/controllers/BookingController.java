@@ -268,7 +268,7 @@ public class BookingController extends ControllerHelper {
 													renderJson(request, processedBooking);
 												} catch (Exception e) {
 													log.error("Unable to send timeline notification. Error when processing response from worker mod-mysql-postgresql :");
-													log.error(e.getMessage());
+													log.error(e.getMessage(), e);
 													renderJson(request, event.right().getValue());
 												}
 											}

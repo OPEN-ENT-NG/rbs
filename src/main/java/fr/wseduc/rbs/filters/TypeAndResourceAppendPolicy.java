@@ -21,31 +21,40 @@ import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.webutils.http.Binding;
 
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
-	
+
 	@Override
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
 		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
 		String id = request.params().get(conf.getResourceIdLabel());
+		String bookingId = request.params().get("bookingId");
+		boolean hasBooking = (bookingId != null && !bookingId.trim().isEmpty());
 
 		if (id != null && !id.trim().isEmpty() && (parseId(id) instanceof Integer)) {
 			request.pause();
 			// Method
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
-			
+
 			// Groups and users
 			final List<String> groupsAndUserIds = new ArrayList<>();
 			groupsAndUserIds.add(user.getUserId());
 			if (user.getProfilGroupsIds() != null) {
 				groupsAndUserIds.addAll(user.getProfilGroupsIds());
 			}
-			
+
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
 			query.append("SELECT count(*) FROM rbs.resource AS r")
 					.append(" INNER JOIN rbs.resource_type AS t")
-					.append(	" ON r.type_id = t.id")
-					.append(" LEFT JOIN rbs.resource_type_shares AS ts")
+					.append(	" ON r.type_id = t.id");
+
+			if (hasBooking) {
+				// Additional join when parameter bookingId is used
+				query.append(" INNER JOIN rbs.booking AS b")
+					.append(    " ON b.resource_id = r.id ");
+			}
+
+			query.append(" LEFT JOIN rbs.resource_type_shares AS ts")
 					.append(	" ON t.id = ts.resource_id")
 					.append(" LEFT JOIN rbs.resource_shares AS rs")
 					.append(	" ON r.id = rs.resource_id")
@@ -69,7 +78,11 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			values.add(user.getUserId());
 			query.append(") AND r.id = ?");
 			values.add(Sql.parseId(id));
-			
+			if (hasBooking) {
+				query.append(" AND b.id = ?");
+				values.add(Sql.parseId(bookingId));
+			}
+
 			// Execute
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
 				@Override
