@@ -16,6 +16,19 @@ model.timeConfig = {
 	default_hour: 8
 };
 
+model.periods = {
+	repeats: [1, 2, 3, 4],
+	days: [1, 2, 3, 4, 5, 6, 7],
+	ends: []
+};
+model.periodsConfig = {
+	ends: {
+		start: 1,
+		end: 52,
+		interval: 1
+	}
+};
+
 function Booking() {
 
 }
@@ -535,6 +548,7 @@ model.build = function(){
 	this.recordedSelections = new SelectionHolder();
 
 	model.loadTimes();
+	model.loadPeriods();
 };
 
 model.refresh = function() {
@@ -559,3 +573,9 @@ model.loadTimes = function() {
 		}
 	}
 };
+
+model.loadPeriods = function() {
+	for (end = model.periodsConfig.ends.start; end <= model.periodsConfig.ends; end = end + model.periodsConfig.ends.interval) {
+		model.periods.ends.push(end);
+	}
+}

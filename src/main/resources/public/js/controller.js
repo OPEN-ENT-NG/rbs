@@ -21,10 +21,12 @@ function RbsController($scope, template, model, date){
 	$scope.unprocessed.previousTypes = new Array();
 	$scope.unprocessed.previousResources = new Array();
 	$scope.times = model.times;
+	$scope.periods = model.periods;
 
 	$scope.currentResourceType = undefined;
 	$scope.selectedBooking = undefined;
 	$scope.editedBooking = undefined;
+	$scope.bookings.refuseReason = undefined;
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
@@ -213,6 +215,14 @@ function RbsController($scope, template, model, date){
 			$scope.editedBooking.type = $scope.resourceTypes.first();
 			$scope.editedBooking.resource = $scope.editedBooking.type.resources.first();
 		}
+
+		// periodic booking
+		$scope.editedBooking.periodic_booking = false; // false by default
+		$scope.editedBooking.period_days = {};
+		_.each($scope.periods.days, function(day){
+			$scope.editedBooking.period_days[day] = false; 
+		});
+
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
 	};
@@ -271,7 +281,7 @@ function RbsController($scope, template, model, date){
 
 	// Booking Validation
 	$scope.canProcessBookingSelection = function() {
-		return _.every(bookings.selection(), function(booking){ booking.status === $scope.status.STATE_CREATED; });
+		return _.every($scope.bookings.selection(), function(booking){ return booking.status === $scope.status.STATE_CREATED; });
 	};
 
 	$scope.validateBookingSelection = function() {
@@ -291,7 +301,7 @@ function RbsController($scope, template, model, date){
 		}
 
 		$scope.display.showPanel = true;
-		$scope.refuseReason = "";
+		$scope.bookings.refuseReason = "";
 		template.open('lightbox', 'refuse-booking');
 	};
 
@@ -312,11 +322,12 @@ function RbsController($scope, template, model, date){
 	$scope.doRefuseBookingSelection = function() {
 		var actions = $scope.bookings.selection().length;
 		_.each($scope.bookings.selection(), function(booking){
-			booking.refusal_reason = $scope.refuseReason;
+			booking.refusal_reason = $scope.bookings.refuseReason;
 			booking.refuse(function(){
 				actions--;
 				if (actions === 0) {
 					$scope.bookings.deselectAll();
+					$scope.bookings.refuseReason = undefined;
 					$scope.closeBooking();
 					model.refresh();
 				}

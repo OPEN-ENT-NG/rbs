@@ -1,4 +1,21 @@
-<h3>[[currentResourceType.name]] ([[currentResourceType.school_id]])</h3>
+<h3>[[currentResourceType.name]]</h3>
+
+<article class="row">
+	<div class="row">
+		<label class="cell four"><i18n>rbs.type.details.school.label</i18n></label>
+		<p class="cell eight">[[currentResourceType.school_id]]</p>
+	</div>
+	<hr />
+
+	<div class="row">
+		<label class="cell four"><i18n>rbs.type.details.validation.label</i18n></label>
+		<p class="cell two" ng-if="currentResourceType.validation === true"><i18n>rbs.type.details.validation.true</i18n></p>
+		<p class="cell two" ng-if="currentResourceType.validation !== true"><i18n>rbs.type.details.validation.false</i18n></p>
+	</div>
+</article>
+<hr />
+
+<h3><i18n>rbs.type.details.resources</i18n></h3>
 
 <table class="list-view twelve">
 	<thead>

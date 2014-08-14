@@ -50,6 +50,66 @@
 		</div>
 		<hr />
 
+		<div class="row" ng-if="editedBooking.resource.periodic_booking === true">
+			<label class="five cell"><i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
+			<label class="one cell">
+				<i18n>rbs.booking.edit.periodic_booking.true</i18n>
+				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.periodic_booking" ng-value="true" />
+			</label>
+			<label class="one cell">
+				<i18n>rbs.booking.edit.periodic_booking.false</i18n>
+				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.periodic_booking" ng-value="false" checked />
+			</label>
+		</div>
+		<hr />
+
+		<div class="row" ng-if="editedBooking.periodic_booking === true">
+			<div class="row">
+				<label class="one cell">&nbsp;</label>
+				<label class="two cell"><i18n>rbs.booking.edit.period.label</i18n></label>
+				<select class="one cell" ng-model="editedBooking.period_repeat" ng-options="repeat for repeat in periods.repeats" required>
+				</select>
+				<label class="two cell"><i18n>rbs.booking.edit.period.unit</i18n></label>
+			</div>
+			<hr />
+
+			<div class="row">
+				<label class="one cell">&nbsp;</label>
+				<label class="cell" ng-repeat="(day_number, day_value) in editedBooking.period_days">
+					<span>
+						<i18n ng-if="day_number == 1">rbs.booking.edit.period.days.1</i18n>
+						<i18n ng-if="day_number == 2">rbs.booking.edit.period.days.2</i18n>
+						<i18n ng-if="day_number == 3">rbs.booking.edit.period.days.3</i18n>
+						<i18n ng-if="day_number == 4">rbs.booking.edit.period.days.4</i18n>
+						<i18n ng-if="day_number == 5">rbs.booking.edit.period.days.5</i18n>
+						<i18n ng-if="day_number == 6">rbs.booking.edit.period.days.6</i18n>
+						<i18n ng-if="day_number == 7">rbs.booking.edit.period.days.7</i18n>
+					</span>
+					<input type="checkbox" ng-model="day_value" name="day_[[day_number]]" value="false">
+				</label>
+			</div>
+			<hr />
+
+			<div class="row">
+				<label class="one cell">&nbsp;</label>
+				<label class="one cell"><i18n>rbs.booking.edit.period.end.label</i18n></label>
+				<input type="radio" name="periodic_after" data-ng-model="editedBooking.period_end_isrepeat" ng-value="true" checked />
+				<label class="one cell"><i18n>rbs.booking.edit.period.end.after</i18n></label>
+				<select class="one cell" ng-model="editedBooking.period_end_repeat" ng-options="end for end in periods.ends">
+				</select>
+				<label class="two cell"><i18n>rbs.booking.edit.period.end.occurences</i18n></label>
+			</div>
+			<hr />
+
+			<div class="row">
+				<label class="two cell">&nbsp;</label>
+				<input type="radio" name="periodic_after" data-ng-model="editedBooking.period_end_isrepeat" ng-value="false" />
+				<label class="one cell"><i18n>rbs.booking.edit.period.end.on</i18n></label>
+				<date-picker class="two cell" ng-model="editedBooking.endPeriodDate" ng-change="showDate = true"></date-picker>
+			</div>
+			<hr />
+		</div>
+
 		<div class="row">
 			<label class="twelve cell"><i18n>rbs.booking.edit.reason.label</i18n></label>
 			<textarea ng-model="editedBooking.booking_reason"></textarea>
