@@ -26,6 +26,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		super("rbs", "booking");
 	}
 
+	// TODO : use OVERLAPS operator to check if two bookings overlap
+
 	@Override
 	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
@@ -100,6 +102,69 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().transaction(statementsBuilder.build(),
 				validUniqueResultHandler(2, handler));
 	}
+
+
+	@Override
+	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
+			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonObject>> handler) {
+
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+		final Object firstSlotStartDate = data.getValue("start_date");
+		final Object firstSlotEndDate = data.getValue("end_date");
+		final String bookingReason = data.getString("booking_reason");
+
+		// WITH clause to insert parent_booking
+		query.append("WITH parent_booking AS (")
+			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, is_periodic)")
+			.append(" VALUES (?, ?, ?, to_timestamp(?), to_timestamp(?), ?)")
+			.append(" RETURNING id)");
+		values.add(resourceId)
+			.add(user.getUserId())
+			.add(bookingReason)
+			.add(firstSlotStartDate)
+			.addNumber(endDate)
+			.add(true);
+
+		// Insert child bookings
+		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status)")
+			.append(" VALUES(?, ?, ?, to_timestamp(?), to_timestamp(?), (select id from parent_booking),");
+		values.add(resourceId)
+			.add(user.getUserId())
+			.add(bookingReason)
+			.add(firstSlotStartDate)
+			.add(firstSlotEndDate);
+
+		/* Subquery to insert proper status :
+		 * refused if there exist a concurrent validated booking.
+		 * Created if validation is activated.
+		 * Validated otherwise
+		 */
+		query.append(" (SELECT CASE")
+			.append(" WHEN (")
+			.append(" EXISTS(SELECT 1 FROM rbs.booking")
+			.append(" WHERE status = ?")
+			.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
+			.append(" AND resource_id = ?")
+			.append(" )) THEN ?");
+		values.add(VALIDATED.status())
+			.add(firstSlotStartDate)
+			.add(firstSlotEndDate)
+			.add(resourceId)
+			.add(REFUSED.status());
+		query.append(" WHEN (t.validation IS true) THEN ?")
+			.append(" ELSE ? END")
+			.append(" FROM rbs.resource_type AS t")
+			.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+			.append(" WHERE r.id = ?")
+			.append("))");
+		values.add(CREATED.status())
+			.add(VALIDATED.status())
+			.add(resourceId);
+
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+	}
+
 
 	@Override
 	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
@@ -193,9 +258,6 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	public void processBooking(final Object resourceId, final Object bookingId,
 			final int newStatus, final JsonObject data,
 			final UserInfos user, final Handler<Either<String, JsonArray>> handler){
-
-
-
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 

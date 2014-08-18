@@ -156,13 +156,41 @@ public class BookingController extends ControllerHelper {
 
 	}
 
-	// @Post("/resource/:id/booking/periodic")
-	// @ApiDoc("Create periodic booking of a given resource")
-	// @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
-	// @ResourceFilter(TypeAndResourceAppendPolicy.class)
-	// public void createPeriodicBooking() {
-	//
-	// }
+	 @Post("/resource/:id/booking/periodic")
+	 @ApiDoc("Create periodic booking of a given resource")
+	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
+	 public void createPeriodicBooking(final HttpServerRequest request) {
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						RequestUtils.bodyToJson(request, pathPrefix + "createPeriodicBooking", new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject object) {
+								final String id = request.params().get("id");
+
+								long endDate = object.getLong("periodic_end_date", 0L);
+								int occurrences = object.getInteger("occurrences", 0);
+								if (endDate == 0L && occurrences < 2){
+									badRequest(request);
+									return;
+								}
+
+								bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
+										object, user, notEmptyResponseHandler(request));
+
+							}
+						});
+					} else {
+						log.debug("User not found in session.");
+						unauthorized(request);
+					}
+				}
+			});
+
+	 }
 
 
 	 @Put("/resource/:id/booking/:bookingId")

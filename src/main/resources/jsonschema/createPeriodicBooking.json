@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "booking_reason": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "integer"
+    },
+    "end_date": {
+      "type": "integer"
+    },
+    "periodic_end_date": {
+      "type": "integer"
+    },
+    "days": {
+      "type": "integer"
+    },
+    "periodicity": {
+      "type": "integer"
+    },
+    "occurrences": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date",
+    "periodic_end_date",
+    "days",
+    "periodicity"
+  ]
+}
