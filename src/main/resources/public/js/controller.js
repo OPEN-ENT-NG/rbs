@@ -217,11 +217,13 @@ function RbsController($scope, template, model, date){
 		}
 
 		// periodic booking
-		$scope.editedBooking.periodic_booking = false; // false by default
-		$scope.editedBooking.period_days = {};
-		_.each($scope.periods.days, function(day){
-			$scope.editedBooking.period_days[day] = false; 
-		});
+		$scope.editedBooking.is_periodic = false; // false by default
+		$scope.editedBooking.periodDays = model.bitMaskToDays(0); // no days selected
+		$scope.editedBooking.byOccurences = true;
+
+		// debug
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /debug
 
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
@@ -231,12 +233,28 @@ function RbsController($scope, template, model, date){
 		$scope.editedBooking = $scope.bookings.selection()[0];
 
 		// dates management
-		$scope.editedBooking.startDate = $scope.editedBooking.startMoment.startOf('day').toDate();
-		$scope.editedBooking.endDate = $scope.editedBooking.endMoment.startOf('day').toDate();
+		$scope.editedBooking.startDate = moment($scope.editedBooking.startMoment).startOf('day').toDate();
+		$scope.editedBooking.endDate = moment($scope.editedBooking.endMoment).startOf('day').toDate();
 		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour() && $scope.editedBooking.startMoment.minute() === hourMinutes.minute()) });
+			return ($scope.editedBooking.startMoment.hour === hourMinutes.hour && $scope.editedBooking.startMoment.min === hourMinutes.min) });
 		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.endMoment.hour() === hourMinutes.hour() && $scope.editedBooking.endMoment.minute() === hourMinutes.minute()) });
+			return ($scope.editedBooking.endMoment.hour === hourMinutes.hour && $scope.editedBooking.endMoment.min === hourMinutes.min) });
+
+		// periodic booking
+		if ($scope.editedBooking.is_periodic !== true) {
+			$scope.editedBooking.periodDays = model.bitMaskToDays(0); // no days selected
+		}
+
+		if ($scope.editedBooking.occurences !== undefined && $scope.editedBooking.occurences > 0) {
+			$scope.editedBooking.byOccurences = true;
+		}
+		else {
+			$scope.editedBooking.byOccurences = false;
+		}
+
+		// debug
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /debug
 
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
@@ -246,12 +264,21 @@ function RbsController($scope, template, model, date){
 		$scope.display.processing = true;
 		
 		// dates management
-		$scope.editedBooking.startMoment = moment($scope.editedBooking.startDate).add($scope.editedBooking.startTime);
-		$scope.editedBooking.endMoment = moment($scope.editedBooking.endDate).add($scope.editedBooking.endTime);
+		$scope.editedBooking.startMoment = moment($scope.editedBooking.startDate).hour($scope.editedBooking.startTime.hour).minute($scope.editedBooking.startTime.min);
+		$scope.editedBooking.endMoment = moment($scope.editedBooking.endDate).hour($scope.editedBooking.endTime.hour).minute($scope.editedBooking.endTime.min);;
+
+		// periodic booking
+		if ($scope.editedBooking.is_periodic === true) {
+			if ($scope.editedBooking.byOccurences !== true) {
+				$scope.editedBooking.periodicEndMoment = moment($scope.editedBooking.periodicEndDate);
+			}
+		}
+
+		// debug
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /debug
 
 		$scope.editedBooking.save(function(){
-			$scope.editedBooking.start_date = $scope.editedBooking.startTime.toDate();
-			$scope.editedBooking.end_date = $scope.editedBooking.endTime.toDate();
 			$scope.display.processing = undefined;
 			$scope.closeBooking();
 			model.refresh();

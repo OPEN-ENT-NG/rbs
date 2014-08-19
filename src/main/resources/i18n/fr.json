@@ -67,7 +67,7 @@
 	"rbs.booking.edit.period.days.4" : "Jeudi",
 	"rbs.booking.edit.period.days.5" : "Vendredi",
 	"rbs.booking.edit.period.days.6" : "Samedi",
-	"rbs.booking.edit.period.days.7" : "Dimanche",
+	"rbs.booking.edit.period.days.0" : "Dimanche",
 
 	"rbs.booking.validate" : "Valider",
 	"rbs.booking.refuse" : "Refuser",

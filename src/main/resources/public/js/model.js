@@ -17,12 +17,21 @@ model.timeConfig = {
 };
 
 model.periods = {
-	repeats: [1, 2, 3, 4],
-	days: [1, 2, 3, 4, 5, 6, 7],
-	ends: []
+	periodicities: [1, 2, 3, 4], // weeks
+	days: [
+		0, // sunday
+		1, // monday
+		2, // tuesday
+		3, // wednesday
+		4, // thursday
+		5, // friday
+		6  // saturday
+	],
+	occurences: [] // loaded by function
 };
+
 model.periodsConfig = {
-	ends: {
+	occurences: {
 		start: 1,
 		end: 52,
 		interval: 1
@@ -43,12 +52,13 @@ Booking.prototype.save = function(cb) {
 };
 
 Booking.prototype.update = function(cb) {
-	this.start_date = this.startMoment.unix();
-	this.end_date = this.endMoment.unix();
-	this.resource_id = this.resource.id;
+	var url = '/rbs/resource/' + this.resource.id + '/booking/' + this.id;
+	if (this.is_periodic === true) {
+		url = url + '/periodic';
+	}
 
 	var booking = this;
-	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id, this).done(function(){
+	http().putJson(url, this).done(function(){
 		this.status = model.STATE_CREATED;
 		if(typeof cb === 'function'){
 			cb();
@@ -57,12 +67,13 @@ Booking.prototype.update = function(cb) {
 };
 
 Booking.prototype.create = function(cb) {
-	this.start_date = this.startMoment.unix();
-	this.end_date = this.endMoment.unix();
-	this.resource_id = this.resource.id;
+	var url = '/rbs/resource/' + this.resource.id + '/booking';
+	if (this.is_periodic === true) {
+		url = url + '/periodic';
+	}
 
 	var booking = this;
-	http().postJson('/rbs/resource/' + this.resource_id + '/booking', this).done(function(b){
+	http().postJson(url, this).done(function(b){
 		booking.updateData(b);
 
 		// Update collections
@@ -95,10 +106,8 @@ Booking.prototype.refuse = function(cb) {
 };
 
 Booking.prototype.process = function(data, cb) {
-	this.resource_id = this.resource.id;
-
 	var booking = this;
-	http().putJson('/rbs/resource/' + this.resource_id + '/booking/' + this.id + '/process', data).done(function(){
+	http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data).done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
@@ -106,10 +115,8 @@ Booking.prototype.process = function(data, cb) {
 };
 
 Booking.prototype.delete = function(cb) {
-	this.resource_id = this.resource.id;
-
 	var booking = this;
-	http().delete('/rbs/resource/' + this.resource_id + '/booking/' + this.id).done(function(){
+	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id).done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
@@ -118,24 +125,48 @@ Booking.prototype.delete = function(cb) {
 
 Booking.prototype.isPending = function() {
 	return this.status === model.STATE_CREATED;
-}
+};
 
 Booking.prototype.isValidated = function() {
 	return this.status === model.STATE_VALIDATED;
-}
+};
 
 Booking.prototype.isRefused = function() {
 	return this.status === model.STATE_REFUSED;
-}
+};
+
+Booking.prototype.daysToBitMask = function() {
+	var bitmask = 0;
+	_.each(this.periodDays, function(periodDay){
+		if (periodDay.value === true) {
+			bitmask = bitmask + Math.pow(2, periodDay.number);
+		}
+	});
+	return bitmask;
+};
 
 Booking.prototype.toJSON = function() {
 	var json = {
-		start_date : this.start_date,
-		end_date : this.end_date,
+		start_date : this.startMoment.unix(),
+		end_date : this.endMoment.unix()
+	};
+
+	if (this.is_periodic === true) {
+		json.periodicity = this.periodicity;
+		json.days = this.daysToBitMask();
+
+		if (this.occurences !== undefined && this.occurences > 0) {
+			json.occurences = this.occurences;
+		}
+		else {
+			json.periodic_end_date = this.periodicEndMoment.unix();
+		}
 	}
+
 	if (this.booking_reason) {
 		json.booking_reason = this.booking_reason;
 	}
+
 	return json;
 };
 
@@ -149,8 +180,7 @@ function Resource() {
 				_.each(bookings, function(booking){
 					booking.resource = resource;
 					booking.color = resource.type.color;
-					booking.startMoment = moment(booking.start_date);
-					booking.endMoment = moment(booking.end_date);
+					model.parseBooking(booking);
 				});
 				this.load(bookings);
 				if(typeof cb === 'function'){
@@ -331,8 +361,7 @@ function BookingsHolder(params) {
 				});
 				_.each(bookings, function(booking){
 					booking.resource = resourceIndex[booking.resource_id];
-					booking.startMoment = moment(booking.start_date);
-					booking.endMoment = moment(booking.end_date);
+					model.parseBooking(booking);
 					if (holder.color) {
 						booking.color = holder.color;
 					}
@@ -564,18 +593,59 @@ model.findColor = function(index) {
 	return model.colors[index % model.colors.length];
 };
 
+model.parseBooking = function(booking) {
+	booking.startMoment = moment(booking.start_date);
+	booking.endMoment = moment(booking.end_date);
+
+	// periodic booking
+	if (booking.is_periodic === true) {
+		// parse bitmask		
+		booking.periodDays = model.bitMaskToDays(booking.days);
+		// date if not by occurences
+		if (booking.occurences === undefined || booking.occurences < 1) {
+			booking.periodicEndMoment =  moment(booking.periodic_end_date);
+		}
+	}
+};
+
+model.bitMaskToDays = function(bitMask) {
+	var periodDays = [];
+	var sunday = undefined;
+	_.each(model.periods.days, function(day){
+		var mask = Math.pow(2, day);
+		var value = false;
+		if ((bitMask & mask) != 0) {
+			value = true;
+		}
+		if (day == 0) {
+			sunday = {number: 0, value: value};
+		}
+		else {
+			periodDays.push({number: day, value: value});
+		}
+	});
+	if (sunday !== undefined) {
+		periodDays.push(sunday);
+	}
+	return periodDays;
+};
+
 model.loadTimes = function() {
 	for(hour = model.timeConfig.start_hour; hour <= model.timeConfig.end_hour; hour++) {
 		for (min = 0; min < 60; min = min + model.timeConfig.interval) {
-			var hourMinutes = moment().hours(hour).minutes(min);
-			hourMinutes.name = hourMinutes.format(' HH [h] mm ');
+			var hourMinutes = {
+				hour: hour,
+				min: min,
+				name: ' ' + (hour < 10 ? ' ' + hour : hour) + ' h ' + (min < 10 ? '0' + min : min)
+
+			};
 			model.times.push(hourMinutes);
 		}
 	}
 };
 
 model.loadPeriods = function() {
-	for (end = model.periodsConfig.ends.start; end <= model.periodsConfig.ends; end = end + model.periodsConfig.ends.interval) {
-		model.periods.ends.push(end);
+	for (occurence = model.periodsConfig.occurences.start; occurence <= model.periodsConfig.occurences.end; occurence = occurence + model.periodsConfig.occurences.interval) {
+		model.periods.occurences.push(occurence);
 	}
 }

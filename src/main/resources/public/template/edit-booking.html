@@ -5,112 +5,114 @@
 		<h3><i18n>rbs.booking.title.resource</i18n></h3>
 
 		<div class="row" ng-if="editedBooking.id === undefined">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
 				<select class="row" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.all" required>
 				</select>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
 				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.all" required>
 				</select>
 			</div>
 		</div>
 		<div class="row" ng-if="editedBooking.id !== undefined">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
 				<input class="row disabled" type="text" disabled value="[[editedBooking.resource.type.name]]"/>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
 				<input class="row disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
 			</div>
 		</div>
 		<hr />
 
-		<div class="row">
+		<div class="row form-element">
 			<label class="twelve cell"><i18n>rbs.booking.edit.description.label</i18n></label>
-			<p bind-html="editedBooking.resource.description"></p>
+			<div bind-html="editedBooking.resource.description" class="twelve cell uneditable form-element"></div>
 		</div>
 		<hr />
 
 		<h3><i18n>rbs.booking.title.booking</i18n></h3>
 
-		<div class="row">
-			<label class="two cell"><i18n>rbs.booking.edit.start.label</i18n></label>
-			<date-picker class="two cell" ng-model="editedBooking.startDate" ng-change="showDate = true" required></date-picker>
-			<label class="one cell"><i18n>rbs.booking.edit.start.hour</i18n></label>
-			<select class="one cell" ng-model="editedBooking.startTime" ng-options="hourMinutes.name for hourMinutes in times" required>
+		<div class="six cell">
+			<label class="three cell form-label"><i18n>rbs.booking.edit.start.label</i18n></label>
+			<date-picker class="four cell" ng-model="editedBooking.startDate" ng-change="showDate = true" required></date-picker>
+			<label class="one cell form-label"><i18n>rbs.booking.edit.start.hour</i18n></label>
+			<select class="three cell" ng-model="editedBooking.startTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 			</select>
-			<label class="two cell"><i18n>rbs.booking.edit.end.label</i18n></label>
-			<date-picker class="two cell" ng-model="editedBooking.endDate" ng-change="showDate = true" required></date-picker>
-			<label class="one cell"><i18n>rbs.booking.edit.end.hour</i18n></label>
-			<select class="one cell" ng-model="editedBooking.endTime" ng-options="hourMinutes.name for hourMinutes in times" required>
+		</div>
+		<div class="six cell">
+			<label class="two cell form-label"><i18n>rbs.booking.edit.end.label</i18n></label>
+			<date-picker class="four cell" ng-model="editedBooking.endDate" ng-change="showDate = true" required></date-picker>
+			<label class="one cell form-label"><i18n>rbs.booking.edit.end.hour</i18n></label>
+			<select class="three cell" ng-model="editedBooking.endTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 			</select>
 		</div>
 		<hr />
 
 		<div class="row" ng-if="editedBooking.resource.periodic_booking === true">
-			<label class="five cell"><i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
-			<label class="one cell">
+			<label class="three cell form-element"><i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
+			<label class="cell form-element">
 				<i18n>rbs.booking.edit.periodic_booking.true</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.periodic_booking" ng-value="true" />
+				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.is_periodic" ng-value="true" />
 			</label>
-			<label class="one cell">
+			<label class="cell form-element">
 				<i18n>rbs.booking.edit.periodic_booking.false</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.periodic_booking" ng-value="false" checked />
+				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.is_periodic" ng-value="false" checked />
 			</label>
 		</div>
 		<hr />
 
-		<div class="row" ng-if="editedBooking.periodic_booking === true">
+		<div class="row" ng-if="editedBooking.is_periodic === true">
 			<div class="row">
 				<label class="one cell">&nbsp;</label>
-				<label class="two cell"><i18n>rbs.booking.edit.period.label</i18n></label>
-				<select class="one cell" ng-model="editedBooking.period_repeat" ng-options="repeat for repeat in periods.repeats" required>
+				<label class="two cell form-label"><i18n>rbs.booking.edit.period.label</i18n></label>
+				<select class="one cell" ng-model="editedBooking.periodicity" ng-options="periodicity for periodicity in periods.periodicities" required>
 				</select>
-				<label class="two cell"><i18n>rbs.booking.edit.period.unit</i18n></label>
+				<label class="two cell form-label"><i18n>rbs.booking.edit.period.unit</i18n></label>
 			</div>
 			<hr />
 
 			<div class="row">
 				<label class="one cell">&nbsp;</label>
-				<label class="cell" ng-repeat="(day_number, day_value) in editedBooking.period_days">
+				<label class="cell form-element" ng-repeat="periodDay in editedBooking.periodDays">
 					<span>
-						<i18n ng-if="day_number == 1">rbs.booking.edit.period.days.1</i18n>
-						<i18n ng-if="day_number == 2">rbs.booking.edit.period.days.2</i18n>
-						<i18n ng-if="day_number == 3">rbs.booking.edit.period.days.3</i18n>
-						<i18n ng-if="day_number == 4">rbs.booking.edit.period.days.4</i18n>
-						<i18n ng-if="day_number == 5">rbs.booking.edit.period.days.5</i18n>
-						<i18n ng-if="day_number == 6">rbs.booking.edit.period.days.6</i18n>
-						<i18n ng-if="day_number == 7">rbs.booking.edit.period.days.7</i18n>
+						<i18n ng-if="periodDay.number == 1">rbs.booking.edit.period.days.1</i18n>
+						<i18n ng-if="periodDay.number == 2">rbs.booking.edit.period.days.2</i18n>
+						<i18n ng-if="periodDay.number == 3">rbs.booking.edit.period.days.3</i18n>
+						<i18n ng-if="periodDay.number == 4">rbs.booking.edit.period.days.4</i18n>
+						<i18n ng-if="periodDay.number == 5">rbs.booking.edit.period.days.5</i18n>
+						<i18n ng-if="periodDay.number == 6">rbs.booking.edit.period.days.6</i18n>
+						<i18n ng-if="periodDay.number == 0">rbs.booking.edit.period.days.0</i18n>
 					</span>
-					<input type="checkbox" ng-model="day_value" name="day_[[day_number]]" value="false">
+					<input type="checkbox" ng-model="periodDay.value" name="day_[[periodDay.number]]" value="false">
 				</label>
 			</div>
 			<hr />
 
 			<div class="row">
 				<label class="one cell">&nbsp;</label>
-				<label class="one cell"><i18n>rbs.booking.edit.period.end.label</i18n></label>
-				<input type="radio" name="periodic_after" data-ng-model="editedBooking.period_end_isrepeat" ng-value="true" checked />
-				<label class="one cell"><i18n>rbs.booking.edit.period.end.after</i18n></label>
-				<select class="one cell" ng-model="editedBooking.period_end_repeat" ng-options="end for end in periods.ends">
+				<label class="one cell form-label"><i18n>rbs.booking.edit.period.end.label</i18n></label>
+				<input class="cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurences" ng-value="true" checked />
+				<label class="one cell form-label"><i18n>rbs.booking.edit.period.end.after</i18n></label>
+				<select class="one cell" ng-model="editedBooking.occurences" ng-options="occurence for occurence in periods.occurences">
 				</select>
-				<label class="two cell"><i18n>rbs.booking.edit.period.end.occurences</i18n></label>
+				<label class="two cell form-label"><i18n>rbs.booking.edit.period.end.occurences</i18n></label>
 			</div>
 			<hr />
 
 			<div class="row">
 				<label class="two cell">&nbsp;</label>
-				<input type="radio" name="periodic_after" data-ng-model="editedBooking.period_end_isrepeat" ng-value="false" />
-				<label class="one cell"><i18n>rbs.booking.edit.period.end.on</i18n></label>
-				<date-picker class="two cell" ng-model="editedBooking.endPeriodDate" ng-change="showDate = true"></date-picker>
+				<input class="cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurences" ng-value="false" />
+				<label class="one cell form-label"><i18n>rbs.booking.edit.period.end.on</i18n></label>
+				<date-picker class="two cell" ng-model="editedBooking.periodicEndDate" ng-change="showDate = true"></date-picker>
 			</div>
 			<hr />
 		</div>
 
-		<div class="row">
+		<div class="row form-element">
 			<label class="twelve cell"><i18n>rbs.booking.edit.reason.label</i18n></label>
 			<textarea ng-model="editedBooking.booking_reason"></textarea>
 		</div>
