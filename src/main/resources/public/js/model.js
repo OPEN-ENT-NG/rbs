@@ -9,7 +9,7 @@ model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 
 model.times = [];
-model.timeConfig = {
+model.timeConfig = { // 5min slots from 6h00 to 23h55, default 8h00
 	interval: 5, // in minutes
 	start_hour: 6,
 	end_hour: 23,
@@ -37,6 +37,7 @@ model.periodsConfig = {
 		interval: 1
 	}
 };
+
 
 function Booking() {
 
@@ -123,6 +124,14 @@ Booking.prototype.delete = function(cb) {
 	});
 };
 
+Booking.prototype.showSlots = function() {
+	this.slots = this._slots;
+};
+
+Booking.prototype.hideSlots = function() {
+	this.slots = [];
+};
+
 Booking.prototype.isPending = function() {
 	return this.status === model.STATE_CREATED;
 };
@@ -176,13 +185,15 @@ function Resource() {
 	this.collection(Booking, {
 		sync: function(cb){
 			// Load the Bookings
-			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(bookings){
-				_.each(bookings, function(booking){
-					booking.resource = resource;
-					booking.color = resource.type.color;
-					model.parseBooking(booking);
-				});
-				this.load(bookings);
+			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(rows){
+				// Resource
+				var resourceIndex = {};
+				resourceIndex[resource.id] = resource;
+
+				// Parse
+				var bookingIndex = model.parseBookingsAndSlots(rows, resourceIndex);
+				// Load
+				this.load(_.toArray(bookingIndex.bookings));
 				if(typeof cb === 'function'){
 					cb();
 				}
@@ -359,24 +370,19 @@ function BookingsHolder(params) {
 	this.collection(Booking, {
 		sync: function(cb){
 			// Load the Bookings
-			http().get(holder.url).done(function(bookings){
+			http().get(holder.url).done(function(rows){
+				// Prepare ressources
 				var resourceIndex = {};
 				model.resourceTypes.forEach(function(resourceType){
 					resourceType.resources.forEach(function(resource){
 						resourceIndex[resource.id] = resource;
 					});
 				});
-				_.each(bookings, function(booking){
-					booking.resource = resourceIndex[booking.resource_id];
-					model.parseBooking(booking);
-					if (holder.color) {
-						booking.color = holder.color;
-					}
-					else {
-						booking.color = booking.resource.type.color;
-					}
- 				});
-				this.load(bookings);
+
+				// Parse
+				var bookingIndex = model.parseBookingsAndSlots(rows, resourceIndex, holder.color !== undefined ? holder.color : undefined);
+				// Load
+				this.load(_.toArray(bookingIndex.bookings));
 				if(typeof cb === 'function'){
 					cb();
 				}
@@ -600,7 +606,43 @@ model.findColor = function(index) {
 	return model.colors[index % model.colors.length];
 };
 
-model.parseBooking = function(booking) {
+model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
+	// Prepare bookings and slots
+	var bookingIndex = {
+		bookings: {},
+		slots: {}
+	};
+
+	// Process
+	_.each(rows, function(row) {
+		if (row.parent_booking_id === null) {
+			// Is a Booking
+			bookingIndex.bookings[row.id] = row;
+			row.resource = resourceIndex[row.resource_id];
+			model.parseBooking(row, color !== undefined ? color :  row.resource.type.color);
+		}
+		else {
+			// Is a Slot
+			if (bookingIndex.slots[row.parent_booking_id] === undefined) {
+				bookingIndex.slots[row.parent_booking_id] = [];
+			}
+			bookingIndex.slots[row.parent_booking_id].push(row);
+			model.parseSlot(row);
+		}
+	});
+
+	// Link bookings and slots
+	_.each(bookingIndex.bookings, function(booking){
+		if (booking.is_periodic === true) {
+			booking._slots = bookingIndex.slots[booking.id];
+		}
+	});
+
+	return bookingIndex;
+};
+
+model.parseBooking = function(booking, color) {
+	booking.color = color;
 	booking.startMoment = moment(booking.start_date);
 	booking.endMoment = moment(booking.end_date);
 
@@ -613,6 +655,11 @@ model.parseBooking = function(booking) {
 			booking.periodicEndMoment =  moment(booking.periodic_end_date);
 		}
 	}
+};
+
+model.parseSlot = function(slot) {
+	slot.startMoment = moment(slot.start_date);
+	slot.endMoment = moment(slot.end_date);
 };
 
 model.bitMaskToDays = function(bitMask) {

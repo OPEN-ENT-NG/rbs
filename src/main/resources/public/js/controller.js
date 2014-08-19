@@ -182,6 +182,7 @@ function RbsController($scope, template, model, date){
 		}
 	};
 
+	// Bookings
 	$scope.viewBooking = function(booking) {
 		$scope.selectedBooking = booking;
 
@@ -195,6 +196,18 @@ function RbsController($scope, template, model, date){
 		template.close('lightbox');
 	};
 
+	$scope.expandPeriodicBooking = function(booking) {
+		booking.expanded = true;
+		booking.showSlots();
+	};
+
+	$scope.collapsePeriodicBooking = function(booking) {
+		booking.expanded = undefined;
+		booking.hideSlots();
+	};
+
+
+	// General
 	$scope.formatDate = function(date) {
 		return moment(date).format('DD/MM/YYYY à H[h]mm');
 	};

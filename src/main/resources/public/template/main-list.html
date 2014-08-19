@@ -2,6 +2,7 @@
 	<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="swicthSelectAllBookings()" /></th>
+			<th></th>
 			<th><i18n>rbs.booking.headers.owner</i18n></th>
 			<th><i18n>rbs.booking.headers.resource</i18n></th>
 			<th><i18n>rbs.booking.headers.start_date</i18n></th>
@@ -10,9 +11,13 @@
 			<th><i18n>rbs.booking.headers.status</i18n></th>
 		</tr>
 	</thead>
-	<tbody>
-		<tr ng-repeat="booking in bookings.all">
+	<tbody ng-repeat="booking in bookings.all">
+		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" /></td>
+			<td>
+				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)">+</a>
+				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)">-</a>
+			</td>
 			<td><a ng-click="viewBooking(booking)">[[booking.owner_name]]</a></td>
 			<td><a ng-click="viewBooking(booking)">([[booking.color]]) [[booking.resource.name]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.start_date)]]</a></td>
@@ -22,6 +27,20 @@
 				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
 				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
 				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_REFUSED"><i18n>rbs.booking.status.refused</i18n></a>
+			</td>
+		</tr>
+		<tr ng-repeat="slot in bookings.slots">
+			<td></td>
+			<td><input type="checkbox" ng-model="slot.selected" /></td>
+			<td></td>
+			<td></td>
+			<td><a ng-click="viewBooking(booking)">[[formatDate(slot.start_date)]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[formatDate(slot.end_date)]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>
+			<td>
+				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
+				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
+				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_REFUSED"><i18n>rbs.booking.status.refused</i18n></a>
 			</td>
 		</tr>
 	</tbody>
