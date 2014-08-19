@@ -277,7 +277,7 @@ function ResourceType(data) {
 	this.collection(Resource, {
 		removeSelection : function(cb) {
 			var counter = this.selection().length;
-			this.selection().forEach(function(resource){
+			_.each(this.selection, function(resource){
 				resource.delete(function(){
 					counter = counter - 1;
 					if (counter === 0) {
@@ -287,6 +287,13 @@ function ResourceType(data) {
 						}
 					}
 				});
+			});
+		},
+		collapseAll : function() {
+			this.forEach(function(resource){
+				if (resource.expanded === true) {
+					resource.expanded = undefined;
+				}
 			});
 		},
 		behaviours: 'rbs'

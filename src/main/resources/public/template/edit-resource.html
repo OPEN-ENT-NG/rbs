@@ -1,5 +1,7 @@
 <div class="row">
-	<h2><i18n>rbs.resource.new</i18n></h2>
+	<h2 ng-if="editedResource.id === undefined"><i18n>rbs.resource.new</i18n></h2>
+	<h2 ng-if="editedResource.id !== undefined"><i18n>rbs.resource.edit</i18n>[[editedResource.name]]</h2>
+
 	<article class="twelve cell">
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.type.label</i18n></label>

@@ -5,95 +5,95 @@
 		<h3><i18n>rbs.booking.title.resource</i18n></h3>
 
 		<div class="row">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
-				<p>[[selectedBooking.resource.type.name]]</p>
+				<p class="uneditable">[[selectedBooking.resource.type.name]]</p>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
-				<p>[[selectedBooking.resource.name]]</p>
+				<p class="uneditable">[[selectedBooking.resource.name]]</p>
 			</div>
 		</div>
 		<hr />
 
-		<div class="row">
+		<div class="row form-element">
 			<label class="twelve cell"><i18n>rbs.booking.details.description.label</i18n></label>
-			<p bind-html="selectedBooking.resource.description"></p>
+			<p class="twelve cell uneditable" bind-html="selectedBooking.resource.description"></p>
 		</div>
 		<hr />
 
 		<h3><i18n>rbs.booking.title.booking</i18n></h3>
 
 		<div class="row">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
-				<p>[[formatDateLong(selectedBooking.startMoment)]]</p>
+				<p class="uneditable">[[formatDateLong(selectedBooking.startMoment)]]</p>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
-				<p>[[formatDateLong(selectedBooking.endMoment)]]</p>
+				<p class="uneditable">[[formatDateLong(selectedBooking.endMoment)]]</p>
 			</div>
 		</div>
 		<hr />
 
 		<div class="row">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
-				<p>[[selectedBooking.owner_name]]</p>
+				<p class="uneditable">[[selectedBooking.owner_name]]</p>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
-				<p>[[formatDateLong(selectedBooking.created)]]</p>
+				<p class="uneditable">[[formatDateLong(selectedBooking.created)]]</p>
 			</div>
 		</div>
 		<hr />
 
-		<div class="row" ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
+		<div class="row form-element" ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
 			<label class="twelve cell"><i18n>rbs.booking.details.reason</i18n></label>
-			<p>[[selectedBooking.booking_reason]]</p>
+			<p class="twelve cell uneditable">[[selectedBooking.booking_reason]]</p>
 		</div>
 		<hr />
 
 		<h3><i18n>rbs.booking.title.process</i18n></h3>
 
-		<div class="row" ng-if="selectedBooking.isPending()">
-			<p>rbs.booking.details.pending</p>
+		<div class="row form-element" ng-if="selectedBooking.isPending()">
+			<p class="four cell uneditable"><i18n>rbs.booking.details.pending</i18n></p>
 		</div>
 
 		<div class="row" ng-if="selectedBooking.isValidated()">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
-				<p>[[selectedBooking.moderator_name]]</p>
+				<p class="uneditable">[[selectedBooking.moderator_name]]</p>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
-				<p>[[formatDateLong(selectedBooking.modified)]]</p>
+				<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
 			</div>
 		</div>
 
 		<div class="row" ng-if="selectedBooking.isRefused()">
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
-				<p>[[selectedBooking.moderator_name]]</p>
+				<p class="uneditable">[[selectedBooking.moderator_name]]</p>
 			</div>
-			<div class="six cell">
+			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
-				<p>[[formatDateLong(selectedBooking.modified)]]</p>
+				<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
 			</div>
 		</div>
 		<hr />
 
-		<div class="row" ng-if="selectedBooking.isRefused()">
+		<div class="row form-element" ng-if="selectedBooking.isRefused()">
 			<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
-			<p bind-html="selectedBooking.refusal_reason"></p>
+			<p class="twelve cell uneditable" bind-html="selectedBooking.refusal_reason"></p>
 		</div>
 		<hr />
 		<hr />
 
 		<div class="row">
 			<behaviour name="process" resource="selectedBooking.resource">
-				<button class="right-magnet" ng-if="canProcessBookingSelection()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
-				<button class="right-magnet" ng-if="canProcessBookingSelection()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
+				<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
+				<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
 			</behaviour>
 			<behaviour name="manage" resource="selectedBooking">
 				<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>

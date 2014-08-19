@@ -1,11 +1,12 @@
 <div class="row">
-	<h2><i18n>rbs.resourcetype.new</i18n></h2>
+	<h2 ng-if="editedResourceType.id === undefined"><i18n>rbs.resourcetype.new</i18n></h2>
+	<h2 ng-if="editedResourceType.id !== undefined"><i18n>rbs.resourcetype.edit</i18n>[[editedResourceType.name]]</h2>
+
 	<article class="twelve cell">
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
 			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="eight cell" ng-model="editedResourceType.name" required />
 		</div>
-
 		<hr />
 
 		<div class="row">
@@ -19,7 +20,11 @@
 				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="false" />
 			</label>
 		</div>
+		<hr />
 
+		<div class="row">
+			<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
+		</div>
 		<hr />
 
 		<div class="row">

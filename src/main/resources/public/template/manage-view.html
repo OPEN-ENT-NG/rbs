@@ -36,16 +36,6 @@
 </div>
 
 <behaviour name="manage" resource="currentResourceType">
-	<section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length !== 0) }">
-		<div class="toggle block-container">
-			<div class="row">
-				<button ng-click="editCurrentResourceType()"><i18n>rbs.manage.type.edit</i18n></button>
-				<button ng-click="deleteCurrentResourceType()"><i18n>rbs.manage.type.remove</i18n></button>
-				<button ng-click="shareCurrentResourceType()"><i18n>rbs.manage.type.share</i18n></button>
-			</div>
-		</div>
-	</section>
-
 	<section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length === 0) }">
 		<div class="toggle block-container">
 			<div class="row">

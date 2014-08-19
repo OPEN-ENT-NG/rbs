@@ -19,13 +19,26 @@
 	margin-bottom: 5px;
 }
 
+.form-article {
+	margin-bottom: 0;
+}
+
 .uneditable {
 	background: rgba(0, 0, 0, 0.1);
 	padding: 5px;
 	font-size: 14px;
 	line-height: 20px;
+	margin: 3px 0;
 }
 
 .uneditable p {
 	margin: 5px 0;
+}
+
+tr.minor td {
+	background: rgba(48, 48, 48, 0.6);
+}
+
+td.invisible {
+	background: transparent;	
 }

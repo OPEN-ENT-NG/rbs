@@ -96,6 +96,12 @@
 
 	"rbs.manage.resource.icon" : "Vignette",
 	"rbs.manage.resource.name" : "Nom de la ressource",
+	"rbs.manage.resource.is_available" : "Disponibilité",
+	"rbs.manage.resource.is_available.true" : "Disponible",
+	"rbs.manage.resource.is_available.false" : "Indisponible",
+	"rbs.manage.resource.periodic_booking" : "Réservations périodiques",
+	"rbs.manage.resource.periodic_booking.true" : "Autorisées",
+	"rbs.manage.resource.periodic_booking.false" : "Interdites",
 	"rbs.manage.resource.create" : "Créer une ressource",
 	"rbs.manage.resource.edit" : "Editer la ressource",
 	"rbs.manage.resource.edits" : "Editer les ressources",
@@ -114,6 +120,7 @@
 	"rbs.type.details.resources" : "Resssources",
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
+	"rbs.resourcetype.edit": "Edition du Type de ressources : ",
 	"rbs.resourcetype.edit.name.label": "Nom du type",
 	"rbs.resourcetype.edit.name.placeholder": "Entrez un nom pour le type de ressources",
 	"rbs.resourcetype.edit.validation.label": "Ajouter une étape de validation des demandes",
@@ -121,6 +128,7 @@
 	"rbs.resourcetype.edit.validation.false": "Non",
 
 	"rbs.resource.new": "Nouvelle Ressource",
+	"rbs.resource.edit": "Edition de la Ressource : ",
 	"rbs.resource.edit.type.label" : "Type de ressource",
 	"rbs.resource.edit.name.label": "Nom de la ressource",
 	"rbs.resource.edit.name.placeholder": "Entrez un nom pour la ressource",

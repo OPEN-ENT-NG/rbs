@@ -230,7 +230,12 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.editBooking = function() {
-		$scope.editedBooking = $scope.bookings.selection()[0];
+		if ($scope.selectedBooking !== undefined) {
+			$scope.editedBooking = $scope.selectedBooking;
+		}
+		else {
+			$scope.editedBooking = $scope.bookings.selection()[0];
+		}
 
 		// dates management
 		$scope.editedBooking.startDate = moment($scope.editedBooking.startMoment).startOf('day').toDate();
@@ -308,7 +313,7 @@ function RbsController($scope, template, model, date){
 
 	// Booking Validation
 	$scope.canProcessBookingSelection = function() {
-		return _.every($scope.bookings.selection(), function(booking){ return booking.status === $scope.status.STATE_CREATED; });
+		return _.every($scope.bookings.selection(), function(booking){ return booking.isPending(); });
 	};
 
 	$scope.validateBookingSelection = function() {
@@ -366,7 +371,11 @@ function RbsController($scope, template, model, date){
 	// Management view interaction
 	$scope.selectResourceType = function(resourceType) {
 		$scope.currentResourceType.resources.deselectAll();
+		$scope.currentResourceType.resources.collapseAll();
 		$scope.currentResourceType = resourceType;
+		if ($scope.editedResourceType !== undefined) {
+			$scope.closeResourceType();
+		}
 	};
 
 	$scope.swicthSelectAllRessources = function() {
@@ -377,6 +386,15 @@ function RbsController($scope, template, model, date){
 			$scope.currentResourceType.resources.deselectAll();
 		}
 	};
+
+	$scope.switchExpandResource = function(resource) {
+		if (resource.expanded === true) {
+			resource.expanded = undefined;
+		}
+		else {
+			resource.expanded = true;
+		}
+	}
 
 	// Management view edition
 	$scope.newResourceType = function() {
