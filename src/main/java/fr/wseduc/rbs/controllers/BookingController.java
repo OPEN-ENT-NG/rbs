@@ -173,13 +173,26 @@ public class BookingController extends ControllerHelper {
 
 								long endDate = object.getLong("periodic_end_date", 0L);
 								int occurrences = object.getInteger("occurrences", 0);
-								if (endDate == 0L && occurrences < 2){
+								if (endDate == 0L && occurrences == 0){
 									badRequest(request);
 									return;
 								}
 
+								// Store boolean array (selected days) as a bit string
+								StringBuilder selectedDays = new StringBuilder();
+								try {
+									for (Object day : object.getArray("days")) {
+										int isSelectedDay = ((Boolean)day) ? 1 : 0;
+										selectedDays.append(isSelectedDay);
+									}
+								} catch (Exception e) {
+									log.error("Error during processing of array 'days'", e);
+									renderError(request);
+									return;
+								}
+
 								bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
-										object, user, notEmptyResponseHandler(request));
+										selectedDays.toString(), object, user, notEmptyResponseHandler(request));
 
 							}
 						});

@@ -106,27 +106,47 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
-			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonObject>> handler) {
+			final String selectedDays, final JsonObject data, final UserInfos user,
+			final Handler<Either<String, JsonObject>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 		final Object firstSlotStartDate = data.getValue("start_date");
 		final Object firstSlotEndDate = data.getValue("end_date");
 		final String bookingReason = data.getString("booking_reason");
+		final int periodicity = data.getInteger("periodicity");
 
-		// WITH clause to insert parent_booking
+		// 1. WITH clause to insert parent booking
 		query.append("WITH parent_booking AS (")
-			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, is_periodic)")
-			.append(" VALUES (?, ?, ?, to_timestamp(?), to_timestamp(?), ?)")
-			.append(" RETURNING id)");
+			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
+			.append(" is_periodic, periodicity, occurrences, days)")
+			.append(" VALUES (?, ?, ?, to_timestamp(?),");
 		values.add(resourceId)
 			.add(user.getUserId())
 			.add(bookingReason)
-			.add(firstSlotStartDate)
-			.addNumber(endDate)
-			.add(true);
+			.add(firstSlotStartDate);
 
-		// Insert child bookings
+		query.append(" to_timestamp(?),");
+		if(endDate > 0L) {
+			values.add(endDate);
+		}
+		else {
+			// TODO : valoriser la date de fin de la resa periodique avec la date de fin du dernier creneau
+			values.add(firstSlotEndDate);
+		}
+
+		query.append(" ?, ?, ?,");
+		values.add(true)
+			.add(periodicity)
+			.add(occurrences);
+
+		// Bit string type cannot be used in a preparedStatement
+		query.append(" B'")
+			.append(selectedDays)
+			.append("') RETURNING id)");;
+
+
+		// 2. Insert child bookings for the first week
 		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status)")
 			.append(" VALUES(?, ?, ?, to_timestamp(?), to_timestamp(?), (select id from parent_booking),");
 		values.add(resourceId)
@@ -162,7 +182,63 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.add(VALIDATED.status())
 			.add(resourceId);
 
+		// TODO : creer une reservation pour les autres jours de la semaine selectionnee
+
+
+		// 3. Insert child bookings for the other weeks
+		if(endDate > 0) {
+			// TODO
+		}
+		else if(occurrences > 1) {
+			for (int i = 1; i <= (occurrences - 1); i++) {
+				int j = i * periodicity;
+
+				query.append(", (?, ?, ?, to_timestamp(?) + interval '")
+					.append(j) // "interval '? week'" is not properly computed by prepared statement
+					.append(" week', ");
+				query.append("to_timestamp(?) + interval '")
+					.append(j)
+					.append(" week', (select id from parent_booking),");
+				values.add(resourceId)
+					.add(user.getUserId())
+					.add(bookingReason)
+					.add(firstSlotStartDate)
+					.add(firstSlotEndDate);
+
+				query.append(" (SELECT CASE")
+					.append(" WHEN (")
+					.append(" EXISTS(SELECT 1 FROM rbs.booking")
+					.append(" WHERE status = ?");
+				query.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) + interval '")
+					.append(j)
+					.append(" week', ")
+					.append("to_timestamp(?) + interval '")
+					.append(j)
+					.append(" week')");
+				query.append(" AND resource_id = ?")
+					.append(" )) THEN ?");
+				values.add(VALIDATED.status())
+					.add(firstSlotStartDate)
+					.add(firstSlotEndDate)
+					.add(resourceId)
+					.add(REFUSED.status());
+				query.append(" WHEN (t.validation IS true) THEN ?")
+					.append(" ELSE ? END")
+					.append(" FROM rbs.resource_type AS t")
+					.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+					.append(" WHERE r.id = ?")
+					.append("))");
+				values.add(CREATED.status())
+					.add(VALIDATED.status())
+					.add(resourceId);
+
+				// TODO : creer une reservation pour les autres jours de la semaine selectionnee
+			}
+
+		}
+
 		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+
 	}
 
 
