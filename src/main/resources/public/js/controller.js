@@ -11,7 +11,8 @@ function RbsController($scope, template, model, date){
 	$scope.status = {
 		STATE_CREATED: model.STATE_CREATED,
 		STATE_VALIDATED: model.STATE_VALIDATED,
-		STATE_REFUSED: model.STATE_REFUSED
+		STATE_REFUSED: model.STATE_REFUSED,
+		STATE_PARTIAL: model.STATE_PARTIAL
 	};
 
 	$scope.resourceTypes = model.resourceTypes;
@@ -184,6 +185,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.closeBooking = function() {
 		$scope.selectedBooking = undefined;
+		$scope.editedBooking = undefined;
 		$scope.display.showPanel = false;
 		template.close('lightbox');
 	};
@@ -198,16 +200,20 @@ function RbsController($scope, template, model, date){
 		booking.hideSlots();
 	};
 
-	$scope.swicthSelectAllBookings = function() {
+	$scope.filterList = function(booking) {
+		return booking.isBooking();
+	}
+
+	$scope.switchSelectAllBookings = function() {
 		if ($scope.display.selectAllBookings) {
-			$scope.bookings.selectAll();
+			$scope.bookings.selectAllBookings();
 		}
 		else {
 			$scope.bookings.deselectAll();
 		}
 	};
 
-	$scope.swicthSelectAllSlots = function(booking) {
+	$scope.switchSelectAllSlots = function(booking) {
 		if (booking.expanded === true && booking.selected === true) {
 			_.each(booking.slots, function(slot){
 				slot.selected = true;
@@ -262,6 +268,9 @@ function RbsController($scope, template, model, date){
 		}
 		else {
 			$scope.editedBooking = $scope.bookings.selection()[0];
+			if (! $scope.editedBooking.isBooking()) {
+				$scope.editedBooking = $scope.editedBooking.booking;
+			}
 		}
 
 		// dates management
@@ -346,7 +355,13 @@ function RbsController($scope, template, model, date){
 	$scope.validateBookingSelection = function() {
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
-			$scope.selectedBooking.selected = true;
+			if ($scope.selectedBooking.is_periodic === true) {
+				$scope.selectedBooking.selectAllSlots();
+				$scope.selectedBooking.selected = undefined;
+			}
+			else {
+				$scope.selectedBooking.selected = true;
+			}
 		}
 
 		$scope.display.showPanel = true;
@@ -356,7 +371,13 @@ function RbsController($scope, template, model, date){
 	$scope.refuseBookingSelection = function() {
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
-			$scope.selectedBooking.selected = true;
+			if ($scope.selectedBooking.is_periodic === true) {
+				$scope.selectedBooking.selectAllSlots();
+				$scope.selectedBooking.selected = undefined;
+			}
+			else {
+				$scope.selectedBooking.selected = true;
+			}
 		}
 
 		$scope.display.showPanel = true;

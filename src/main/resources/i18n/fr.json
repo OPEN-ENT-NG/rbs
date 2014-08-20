@@ -9,15 +9,19 @@
 	"rbs.selector.unprocessed" : "A valider",
 	"rbs.selector.unprocessed.button" : "En attente",
 
+	"rbs.booking.headers.nb" : "Créneau",
 	"rbs.booking.headers.owner" : "Demandeur",
 	"rbs.booking.headers.resource" : "Ressource",
 	"rbs.booking.headers.start_date" : "Date de début",
 	"rbs.booking.headers.end_date" : "Date de fin",
 	"rbs.booking.headers.reason" : "Motif",
 	"rbs.booking.headers.status" : "Etat",
+	"rbs.booking.headers.moderator" : "Traité par",
+
 	"rbs.booking.status.created" : "Créée",
 	"rbs.booking.status.validated" : "Validée",
 	"rbs.booking.status.refused" : "Refusée",
+	"rbs.booking.status.partial" : "Partielle",
 
 	"rbs.booking.create" : "Nouvelle réservation",
 	"rbs.booking.new" : "Nouvelle réservation",
@@ -28,6 +32,8 @@
 	"rbs.booking.title.resource" : "Ressource concernée",
 	"rbs.booking.title.booking" : "Détails de la demande",
 	"rbs.booking.title.process" : "Traitement de la demande",
+	"rbs.booking.title.periodic" : "Créneaux réservés",
+
 	"rbs.booking.details.type.label" : "Type de ressource",
 	"rbs.booking.details.resource.label" : "Ressource",
 	"rbs.booking.details.description.label" : "Description de la ressource",

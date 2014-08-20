@@ -54,40 +54,84 @@
 		</div>
 		<hr />
 
-		<h3><i18n>rbs.booking.title.process</i18n></h3>
+		<div ng-if="selectedBooking.is_periodic === true" class="row">
+			<h3><i18n>rbs.booking.title.periodic</i18n></h3>
 
-		<div class="row form-element" ng-if="selectedBooking.isPending()">
-			<p class="four cell uneditable"><i18n>rbs.booking.details.pending</i18n></p>
+			<table class="list-view twelve">
+				<thead>
+					<tr>
+						<th><i18n>rbs.booking.headers.nb</i18n></th>
+						<th><i18n>rbs.booking.headers.start_date</i18n></th>
+						<th><i18n>rbs.booking.headers.end_date</i18n></th>
+						<th><i18n>rbs.booking.headers.moderator</i18n></th>
+						<th><i18n>rbs.booking.headers.status</i18n></th>
+					</tr>
+				</thead>
+				<tbody ng-repeat="slot in selectedBooking._slots">
+					<tr>
+						<td></td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.start_date)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatDate(slot.start_date)]]</td>
+
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.end_date)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatDate(slot.end_date)]]</td>
+
+						<td ng-if="slot.isPending()"></td>
+						<td ng-if="slot.isValidated()">[[formatDate(slot.moderator_name)]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.moderator_name)]]</a></td>
+
+						<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
+						<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)"><i18n>rbs.booking.status.refused</i18n></a></td>
+					</tr>
+					<tr ng-if="slot.expanded === true" class="minor">
+						<td></td>
+						<td colspan="4">
+							<div class="row form-element">
+								<p class="twelve cell uneditable" bind-html="slot.refusal_reason"></p>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 
-		<div class="row" ng-if="selectedBooking.isValidated()">
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
-				<p class="uneditable">[[selectedBooking.moderator_name]]</p>
-			</div>
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
-				<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
-			</div>
-		</div>
+		<div ng-if="selectedBooking.is_periodic !== true" class="row">
+			<h3><i18n>rbs.booking.title.process</i18n></h3>
 
-		<div class="row" ng-if="selectedBooking.isRefused()">
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
-				<p class="uneditable">[[selectedBooking.moderator_name]]</p>
+			<div class="row form-element" ng-if="selectedBooking.isPending()">
+				<p class="four cell uneditable"><i18n>rbs.booking.details.pending</i18n></p>
 			</div>
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
-				<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
-			</div>
-		</div>
-		<hr />
 
-		<div class="row form-element" ng-if="selectedBooking.isRefused()">
-			<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
-			<p class="twelve cell uneditable" bind-html="selectedBooking.refusal_reason"></p>
+			<div class="row" ng-if="selectedBooking.isValidated()">
+				<div class="six cell form-element">
+					<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
+					<p class="uneditable">[[selectedBooking.moderator_name]]</p>
+				</div>
+				<div class="six cell form-element">
+					<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
+					<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+				</div>
+			</div>
+
+			<div class="row" ng-if="selectedBooking.isRefused()">
+				<div class="six cell form-element">
+					<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
+					<p class="uneditable">[[selectedBooking.moderator_name]]</p>
+				</div>
+				<div class="six cell form-element">
+					<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
+					<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+				</div>
+			</div>
+			<hr />
+
+			<div class="row form-element" ng-if="selectedBooking.isRefused()">
+				<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
+				<p class="twelve cell uneditable" bind-html="selectedBooking.refusal_reason"></p>
+			</div>
+			<hr />
 		</div>
-		<hr />
 		<hr />
 
 		<div class="row">

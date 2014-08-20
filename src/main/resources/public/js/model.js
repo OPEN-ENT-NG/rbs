@@ -7,6 +7,7 @@ model.colors = ['green', 'pink', 'purple', 'orange'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
+model.STATE_PARTIAL = 4;
 
 model.times = [];
 model.timeConfig = { // 5min slots from 6h00 to 23h55, default 8h00
@@ -128,11 +129,31 @@ Booking.prototype.showSlots = function() {
 	this.slots = this._slots;
 };
 
+Booking.prototype.selectAllSlots = function() {
+	_.each(this._slots, function(slot){
+		slot.selected = true;
+	});
+};
+
+Booking.prototype.deselectAllSlots = function() {
+	_.each(this._slots, function(slot){
+		slot.selected = undefined;
+	});
+};
+
 Booking.prototype.hideSlots = function() {
 	this.slots = [];
 	_.each(this._slots, function(slot){
 		slot.selected = undefined;
 	});
+};
+
+Booking.prototype.isSlot = function() {
+	return this.parent_booking_id !== null;
+};
+
+Booking.prototype.isBooking = function() {
+	return this.parent_booking_id === null;
 };
 
 Booking.prototype.isPending = function() {
@@ -145,6 +166,10 @@ Booking.prototype.isValidated = function() {
 
 Booking.prototype.isRefused = function() {
 	return this.status === model.STATE_REFUSED;
+};
+
+Booking.prototype.isPartial = function() {
+	return this.status === model.STATE_PARTIAL;
 };
 
 Booking.prototype.daysToBitMask = function() {
@@ -189,14 +214,14 @@ function Resource() {
 		sync: function(cb){
 			// Load the Bookings
 			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(rows){
+				// Load
+				this.load(rows);
 				// Resource
 				var resourceIndex = {};
 				resourceIndex[resource.id] = resource;
-
 				// Parse
-				var bookingIndex = model.parseBookingsAndSlots(rows, resourceIndex);
-				// Load
-				this.load(_.toArray(bookingIndex.bookings));
+				var bookingIndex = model.parseBookingsAndSlots(this.all, resourceIndex);
+				// Callback
 				if(typeof cb === 'function'){
 					cb();
 				}
@@ -374,6 +399,8 @@ function BookingsHolder(params) {
 		sync: function(cb){
 			// Load the Bookings
 			http().get(holder.url).done(function(rows){
+				// Load
+				this.load(rows);
 				// Prepare ressources
 				var resourceIndex = {};
 				model.resourceTypes.forEach(function(resourceType){
@@ -381,11 +408,9 @@ function BookingsHolder(params) {
 						resourceIndex[resource.id] = resource;
 					});
 				});
-
 				// Parse
-				var bookingIndex = model.parseBookingsAndSlots(rows, resourceIndex, holder.color !== undefined ? holder.color : undefined);
-				// Load
-				this.load(_.toArray(bookingIndex.bookings));
+				var bookingIndex = model.parseBookingsAndSlots(this.all, resourceIndex, holder.color !== undefined ? holder.color : undefined);
+				// Callback
 				if(typeof cb === 'function'){
 					cb();
 				}
@@ -534,6 +559,16 @@ model.build = function(){
 
 	// Bookings collection, not auto-synced
 	this.collection(Booking, {
+		selectAllBookings: function() {
+			this.forEach(function(booking){
+				if (booking.isBooking()) {
+					booking.selected = true;
+				}
+				if (booking.expanded === true) {
+					booking.selectAllSlots();
+				}
+			});
+		},
 		pushAll: function(datas, trigger) {
 			if (datas) {
 				this.all = _.union(this.all, datas);
@@ -618,10 +653,12 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 	// Process
 	_.each(rows, function(row) {
+		// Resource
+		row.resource = resourceIndex[row.resource_id];
+
 		if (row.parent_booking_id === null) {
 			// Is a Booking
 			bookingIndex.bookings[row.id] = row;
-			row.resource = resourceIndex[row.resource_id];
 			model.parseBooking(row, color !== undefined ? color :  row.resource.type.color);
 		}
 		else {
@@ -637,7 +674,23 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 	// Link bookings and slots
 	_.each(bookingIndex.bookings, function(booking){
 		if (booking.is_periodic === true) {
-			booking._slots = bookingIndex.slots[booking.id];
+			booking._slots = bookingIndex.slots[booking.id] || [];
+			// Resolve booking status
+			var status = _.countBy(booking._slots, function(slot) {
+				return slot.status;
+			});
+			if (booking._slots.length === status[model.STATE_VALIDATED]) {
+				booking.status = model.STATE_VALIDATED;
+			}
+			else if (booking._slots.length === status[model.STATE_REFUSED]) {
+				booking.status = model.STATE_REFUSED;
+			}
+			else if (booking._slots.length === status[model.STATE_CREATED]) {
+				booking.status = model.STATE_CREATED;
+			}
+			else {
+				booking.status = model.STATE_PARTIAL;
+			}
 		}
 	});
 
