@@ -6,6 +6,7 @@ import static fr.wseduc.rbs.BookingStatus.VALIDATED;
 import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
@@ -103,23 +104,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				validUniqueResultHandler(2, handler));
 	}
 
-
-	@Override
 	/**
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
+	@Override
 	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
-			final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
-			final Handler<Either<String, JsonObject>> handler) {
+			final long firstSlotEndDate, final String selectedDays, final int firstSelectedDay,
+			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonObject>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 		final Object firstSlotStartDate = data.getValue("start_date");
-		final Object firstSlotEndDate = data.getValue("end_date");
 		final String bookingReason = data.getString("booking_reason");
 		final int periodicity = data.getInteger("periodicity");
 
-		// 1. WITH clause to insert parent booking
+		// 1. WITH clause to insert the "parent" booking (i.e. the periodic booking)
 		query.append("WITH parent_booking AS (")
 			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
 			.append(" is_periodic, periodicity, occurrences, days)")
@@ -185,18 +184,22 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.add(VALIDATED.status())
 			.add(resourceId);
 
-		// TODO : creer une reservation pour les autres jours de la semaine selectionnee
-
-
 		// 3. Insert other child bookings
+		final int nbOccurences;
+		// Either the endDate of the periodic booking is supplied, or occurrences is supplied
 		if(endDate > 0) {
-			// TODO
+			long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
+			nbOccurences = getOccurrences(firstSelectedDay, selectedDays, durationInDays);
 		}
-		else if(occurrences > 1) {
+		else {
+			nbOccurences = occurrences;
+		}
+
+		if(nbOccurences > 1) {
 
 			int selectedDay = firstSelectedDay;
 			int intervalFromFirstDay = 0;
-			for (int i = 1; i <= (occurrences - 1); i++) {
+			for (int i = 1; i <= (nbOccurences - 1); i++) {
 
 				int interval = getNextInterval(selectedDay, selectedDays, periodicity);
 				intervalFromFirstDay += interval;
@@ -277,6 +280,32 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			}
 			count++;
 		} while (selectedDays.charAt(k) != '1');
+
+		return count;
+	}
+
+	/**
+	 *
+	 * @param firstSelectedDay : index of the first slot's day
+	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
+	 * @param durationInDays : difference in days between the first slot's end date and the end date of the periodic booking
+	 * @return Number of occurrences
+	 *
+	 * @throws IndexOutOfBoundsException
+	 */
+	private int getOccurrences(final int firstSelectedDay, final String selectedDays, final long durationInDays) {
+		int count = 0;
+		int k = firstSelectedDay;
+
+		for (int i=0; i<=durationInDays; i++) {
+			if(k >= 7) {
+				k = k % 7;
+			}
+			if(selectedDays.charAt(k) == '1') {
+				count++;
+			}
+			k++;
+		}
 
 		return count;
 	}

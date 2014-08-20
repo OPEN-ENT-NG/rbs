@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
@@ -187,12 +188,15 @@ public class BookingController extends ControllerHelper {
 									return;
 								}
 								Calendar startCal = Calendar.getInstance();
-								startCal.setTimeInMillis(toMillis(firstSlotStartDate));
+
+								startCal.setTimeInMillis(
+										TimeUnit.MILLISECONDS.convert(firstSlotStartDate, TimeUnit.SECONDS));
 								// "- 1", so that sunday is 0, monday is 1, etc
 								int firstSlotStartDay = startCal.get(Calendar.DAY_OF_WEEK) - 1;
 
 								Calendar endCal = Calendar.getInstance();
-								endCal.setTimeInMillis(toMillis(firstSlotEndDate));
+								endCal.setTimeInMillis(
+										TimeUnit.MILLISECONDS.convert(firstSlotEndDate, TimeUnit.SECONDS));
 								int firstSlotEndDay = endCal.get(Calendar.DAY_OF_WEEK) - 1;
 
 								// The first slot must begin and end on the same day
@@ -234,8 +238,8 @@ public class BookingController extends ControllerHelper {
 
 								try {
 									bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
-											selectedDays.toString(), firstSlotStartDay, object,
-											user, notEmptyResponseHandler(request));
+											firstSlotEndDate, selectedDays.toString(), firstSlotStartDay,
+											object, user, notEmptyResponseHandler(request));
 								} catch (Exception e) {
 									log.error("Error during service createPeriodicBooking", e);
 									renderError(request);
@@ -251,14 +255,6 @@ public class BookingController extends ControllerHelper {
 			});
 
 	 }
-
-	/**
-	 * @param timestamp in seconds
-	 * @return timestamp in milliseconds
-	 */
-	private long toMillis(long timestamp) {
-		return timestamp*1000L;
-	}
 
 	 @Put("/resource/:id/booking/:bookingId")
 	 @ApiDoc("Update booking")
