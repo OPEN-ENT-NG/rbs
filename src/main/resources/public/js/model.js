@@ -130,6 +130,9 @@ Booking.prototype.showSlots = function() {
 
 Booking.prototype.hideSlots = function() {
 	this.slots = [];
+	_.each(this._slots, function(slot){
+		slot.selected = undefined;
+	});
 };
 
 Booking.prototype.isPending = function() {

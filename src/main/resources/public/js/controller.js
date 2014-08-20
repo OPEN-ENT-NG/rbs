@@ -173,14 +173,6 @@ function RbsController($scope, template, model, date){
 		);
 	}
 
-	$scope.swicthSelectAllBookings = function() {
-		if ($scope.display.selectAllBookings) {
-			$scope.bookings.selectAll();
-		}
-		else {
-			$scope.bookings.deselectAll();
-		}
-	};
 
 	// Bookings
 	$scope.viewBooking = function(booking) {
@@ -204,6 +196,28 @@ function RbsController($scope, template, model, date){
 	$scope.collapsePeriodicBooking = function(booking) {
 		booking.expanded = undefined;
 		booking.hideSlots();
+	};
+
+	$scope.swicthSelectAllBookings = function() {
+		if ($scope.display.selectAllBookings) {
+			$scope.bookings.selectAll();
+		}
+		else {
+			$scope.bookings.deselectAll();
+		}
+	};
+
+	$scope.swicthSelectAllSlots = function(booking) {
+		if (booking.expanded === true && booking.selected === true) {
+			_.each(booking.slots, function(slot){
+				slot.selected = true;
+			});
+		}
+		else if (booking.expanded === true && booking.selected !== true) {
+			_.each(booking.slots, function(slot){
+				slot.selected = undefined;
+			});
+		}
 	};
 
 
