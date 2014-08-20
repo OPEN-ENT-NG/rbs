@@ -16,7 +16,7 @@ public interface BookingService extends CrudService {
 			final Handler<Either<String, JsonObject>> handler);
 
 	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
-			final String selectedDays, final JsonObject data, final UserInfos user,
+			final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 
 	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,

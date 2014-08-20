@@ -105,8 +105,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 	@Override
+	/**
+	 * @throws IllegalArgumentException, IndexOutOfBoundsException
+	 */
 	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
-			final String selectedDays, final JsonObject data, final UserInfos user,
+			final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		StringBuilder query = new StringBuilder();
@@ -146,7 +149,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append("') RETURNING id)");;
 
 
-		// 2. Insert child bookings for the first week
+		// 2. Insert the first child booking
 		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status)")
 			.append(" VALUES(?, ?, ?, to_timestamp(?), to_timestamp(?), (select id from parent_booking),");
 		values.add(resourceId)
@@ -185,20 +188,26 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// TODO : creer une reservation pour les autres jours de la semaine selectionnee
 
 
-		// 3. Insert child bookings for the other weeks
+		// 3. Insert other child bookings
 		if(endDate > 0) {
 			// TODO
 		}
 		else if(occurrences > 1) {
+
+			int selectedDay = firstSelectedDay;
+			int intervalFromFirstDay = 0;
 			for (int i = 1; i <= (occurrences - 1); i++) {
-				int j = i * periodicity;
+
+				int interval = getNextInterval(selectedDay, selectedDays, periodicity);
+				intervalFromFirstDay += interval;
+				selectedDay = (selectedDay + interval) % 7;
 
 				query.append(", (?, ?, ?, to_timestamp(?) + interval '")
-					.append(j) // "interval '? week'" is not properly computed by prepared statement
-					.append(" week', ");
+					.append(intervalFromFirstDay) // "interval '? day'" is not properly computed by prepared statement
+					.append(" day', ");
 				query.append("to_timestamp(?) + interval '")
-					.append(j)
-					.append(" week', (select id from parent_booking),");
+					.append(intervalFromFirstDay)
+					.append(" day', (select id from parent_booking),");
 				values.add(resourceId)
 					.add(user.getUserId())
 					.add(bookingReason)
@@ -210,11 +219,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" EXISTS(SELECT 1 FROM rbs.booking")
 					.append(" WHERE status = ?");
 				query.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) + interval '")
-					.append(j)
-					.append(" week', ")
+					.append(intervalFromFirstDay)
+					.append(" day', ")
 					.append("to_timestamp(?) + interval '")
-					.append(j)
-					.append(" week')");
+					.append(intervalFromFirstDay)
+					.append(" day')");
 				query.append(" AND resource_id = ?")
 					.append(" )) THEN ?");
 				values.add(VALIDATED.status())
@@ -232,13 +241,44 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.add(VALIDATED.status())
 					.add(resourceId);
 
-				// TODO : creer une reservation pour les autres jours de la semaine selectionnee
 			}
 
 		}
 
 		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
 
+	}
+
+	/**
+	 *
+	 * @param lastSelectedDay : index of last selected day
+	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
+	 * @param periodicity : slots are repeated every "periodicity" week
+	 * @return Number of days until next slot
+	 *
+	 * @throws IllegalArgumentException, IndexOutOfBoundsException
+	 */
+	private int getNextInterval(final int lastSelectedDay, final String selectedDays, final int periodicity) {
+		if (!selectedDays.contains("1")) {
+			throw new IllegalArgumentException("Argument selectedDays must contain char '1'");
+		}
+
+		int count = 0;
+		int k = lastSelectedDay;
+
+		do {
+			k++;
+			if (k == 1) {
+				// On monday, go to next week
+				count += (periodicity - 1) * 7;
+			}
+			else if (k >= 7) {
+				k = k % 7;
+			}
+			count++;
+		} while (selectedDays.charAt(k) != '1');
+
+		return count;
 	}
 
 
