@@ -156,6 +156,10 @@ Booking.prototype.isBooking = function() {
 	return this.parent_booking_id === null;
 };
 
+Booking.prototype.isNotPeriodicRoot = function() {
+	return this.is_periodic !== true;
+};
+
 Booking.prototype.isPending = function() {
 	return this.status === model.STATE_CREATED;
 };
@@ -559,6 +563,15 @@ model.build = function(){
 
 	// Bookings collection, not auto-synced
 	this.collection(Booking, {
+		processSelection: function() {
+			var currentProcessSelection = _.filter(this.selection(), function(booking){
+				return booking.isNotPeriodicRoot();
+			});
+			if(!this._processSelection || this._processSelection.length !== currentProcessSelection.length){
+				this._processSelection = currentProcessSelection;
+			}
+			return this._processSelection;
+		},
 		selectAllBookings: function() {
 			this.forEach(function(booking){
 				if (booking.isBooking()) {
@@ -603,6 +616,10 @@ model.build = function(){
 		removeSelection : function(cb) {
 			var counter = this.selection().length;
 			this.selection().forEach(function(booking){
+				if (! booking.isBooking()) {
+					counter = counter - 1;
+					return;
+				}
 				booking.delete(function(){
 					counter = counter - 1;
 					if (counter === 0) {
@@ -674,9 +691,14 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 	// Link bookings and slots
 	_.each(bookingIndex.bookings, function(booking){
 		if (booking.is_periodic === true) {
+			// Link
 			booking._slots = bookingIndex.slots[booking.id] || [];
 			// Resolve booking status
 			var status = _.countBy(booking._slots, function(slot) {
+				// link (here to avoid another loop)
+				slot.booking = booking;
+				slot.color = booking.color;
+				// index status
 				return slot.status;
 			});
 			if (booking._slots.length === status[model.STATE_VALIDATED]) {

@@ -238,6 +238,14 @@ function RbsController($scope, template, model, date){
 
 
 	// Booking edition
+	$scope.canEditBookingSelection = function() {
+		return _.filter($scope.bookings.selection(), function(booking) { return booking.isBooking(); }).length === 1;
+	};
+
+	$scope.canDeleteBookingSelection = function() {
+		return _.filter($scope.bookings.selection(), function(booking){ return booking.isBooking(); }).length > 0;
+	};
+
 	$scope.newBooking = function() {
 		$scope.editedBooking = new Booking();
 		if ($scope.lastSelectedResource) {

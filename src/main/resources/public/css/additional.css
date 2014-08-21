@@ -42,3 +42,17 @@ tr.minor td {
 td.invisible {
 	background: transparent;	
 }
+
+button.disabled,
+a.button.disabled,
+input[type=button].disabled {
+	background: #646464;
+	color: #ccc;
+}
+
+button.disabled:hover,
+a.button.disabled:hover,
+input[type=button].disabled:hover {
+	background: #646464;
+	color: #373737;
+}
