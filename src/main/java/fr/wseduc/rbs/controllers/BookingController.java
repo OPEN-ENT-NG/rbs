@@ -163,112 +163,146 @@ public class BookingController extends ControllerHelper {
 	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
 	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void createPeriodicBooking(final HttpServerRequest request) {
-		 // TODO : ajouter des messages d'erreur pour les bad request
-
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						RequestUtils.bodyToJson(request, pathPrefix + "createPeriodicBooking", new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject object) {
-								final String id = request.params().get("id");
-
-								long endDate = object.getLong("periodic_end_date", 0L);
-								int occurrences = object.getInteger("occurrences", 0);
-								if (endDate == 0L && occurrences == 0){
-									badRequest(request);
-									return;
-								}
-
-								long firstSlotStartDate = object.getLong("start_date", 0L);
-								long firstSlotEndDate = object.getLong("end_date", 0L);
-								if (firstSlotStartDate == 0L || firstSlotEndDate == 0L) {
-									badRequest(request);
-									return;
-								}
-								Calendar firstSlotStartCal = Calendar.getInstance();
-								firstSlotStartCal.setTimeInMillis(
-										TimeUnit.MILLISECONDS.convert(firstSlotStartDate, TimeUnit.SECONDS));
-								// "- 1", so that sunday is 0, monday is 1, etc
-								int firstSlotStartDay = firstSlotStartCal.get(Calendar.DAY_OF_WEEK) - 1;
-
-								Calendar firstSlotEndCal = Calendar.getInstance();
-								firstSlotEndCal.setTimeInMillis(
-										TimeUnit.MILLISECONDS.convert(firstSlotEndDate, TimeUnit.SECONDS));
-								int firstSlotEndDay = firstSlotEndCal.get(Calendar.DAY_OF_WEEK) - 1;
-
-								// The first slot must begin and end on the same day
-								if (firstSlotStartDay != firstSlotEndDay) {
-									badRequest(request);
-									return;
-								}
-
-								JsonArray selectedDaysArray = object.getArray("days", null);
-								if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
-									badRequest(request);
-									return;
-								}
-								try {
-									Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotStartDay);
-									// The day of the first slot must be a selected day
-									if(!(Boolean) firstSlotDayIsSelected) {
-										badRequest(request);
-										return;
-									}
-								} catch (Exception e) {
-									log.error("Error when checking that the day of the first slot is selected", e);
-									renderError(request);
-									return;
-								}
-
-								// The first and last slot must end at the same hour
-								if (endDate > 0L) {
-									final Calendar lastSlotEndCal = Calendar.getInstance();
-									lastSlotEndCal.setTimeInMillis(
-											TimeUnit.MILLISECONDS.convert(endDate, TimeUnit.SECONDS));
-
-									if(!haveSameTime(lastSlotEndCal, firstSlotEndCal)) {
-										badRequest(request);
-										return;
-									}
-								}
-
-								// Store boolean array (selected days) as a bit string
-								StringBuilder selectedDays = new StringBuilder();
-								try {
-									for (Object day : selectedDaysArray) {
-										int isSelectedDay = ((Boolean)day) ? 1 : 0;
-										selectedDays.append(isSelectedDay);
-									}
-								} catch (Exception e) {
-									log.error("Error during processing of array 'days'", e);
-									renderError(request);
-									return;
-								}
-
-								try {
-									bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
-											firstSlotEndDate, selectedDays.toString(), firstSlotStartDay,
-											object, user, arrayResponseHandler(request));
-									// TODO : notifier les valideurs
-								} catch (Exception e) {
-									log.error("Error during service createPeriodicBooking", e);
-									renderError(request);
-								}
-
-							}
-						});
+						RequestUtils.bodyToJson(request, pathPrefix + "createPeriodicBooking",
+								getPeriodicBookingHandler(user, request, true));
 					} else {
 						log.debug("User not found in session.");
 						unauthorized(request);
 					}
 				}
 			});
-
 	 }
 
-	 private boolean haveSameTime(Calendar thisCal, Calendar thatCal) {
+	private Handler<JsonObject> getPeriodicBookingHandler(final UserInfos user,
+			final HttpServerRequest request, final boolean isCreation) {
+		// TODO : ajouter des messages d'erreur pour les bad request
+
+		return new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject object) {
+				final String id = request.params().get("id");
+				final String bookingId = request.params().get("bookingId");
+
+				long endDate = object.getLong("periodic_end_date", 0L);
+				int occurrences = object.getInteger("occurrences", 0);
+				if (endDate == 0L && occurrences == 0){
+					badRequest(request);
+					return;
+				}
+
+				long firstSlotStartDate = object.getLong("start_date", 0L);
+				long firstSlotEndDate = object.getLong("end_date", 0L);
+				if (firstSlotStartDate == 0L || firstSlotEndDate == 0L) {
+					badRequest(request);
+					return;
+				}
+
+				// The first slot must begin and end on the same day
+				final int firstSlotStartDay = getDayFromTimestamp(firstSlotStartDate);
+				if (firstSlotStartDay != getDayFromTimestamp(firstSlotEndDate)) {
+					badRequest(request);
+					return;
+				}
+
+				JsonArray selectedDaysArray = object.getArray("days", null);
+				if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
+					badRequest(request);
+					return;
+				}
+				try {
+					Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotStartDay);
+					// The day of the first slot must be a selected day
+					if(!(Boolean) firstSlotDayIsSelected) {
+						badRequest(request);
+						return;
+					}
+				} catch (Exception e) {
+					log.error("Error when checking that the day of the first slot is selected", e);
+					renderError(request);
+					return;
+				}
+
+				// The first and last slot must end at the same hour
+				if (endDate > 0L && !haveSameTime(endDate, firstSlotEndDate)) {
+						badRequest(request);
+						return;
+				}
+
+				// Store boolean array (selected days) as a bit string
+				String selectedDays;
+				try {
+					selectedDays = booleanArrayToBitString(selectedDaysArray);
+				} catch (Exception e) {
+					log.error("Error during processing of array 'days'", e);
+					renderError(request);
+					return;
+				}
+
+				if (isCreation) {
+					try {
+						bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
+								firstSlotEndDate, selectedDays, firstSlotStartDay,
+								object, user, arrayResponseHandler(request));
+						// TODO : notifier les valideurs
+					} catch (Exception e) {
+						log.error("Error during service createPeriodicBooking", e);
+						renderError(request);
+					}
+				}
+				else {
+					try {
+						bookingService.updatePeriodicBooking(parseId(id), parseId(bookingId), occurrences, endDate,
+								firstSlotEndDate, selectedDays, firstSlotStartDay,
+								object, user, arrayResponseHandler(request));
+						// TODO notifier les valideurs
+					} catch (Exception e) {
+						log.error("Error during service updatePeriodicBooking", e);
+						renderError(request);
+					}
+				}
+
+			}
+		};
+	}
+
+	 /**
+	  *
+	  * @param unixTimestamp in seconds
+	  * @return
+	  */
+	 private int getDayFromTimestamp(final long unixTimestamp) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(
+					TimeUnit.MILLISECONDS.convert(unixTimestamp, TimeUnit.SECONDS));
+			// "- 1", so that sunday is 0, monday is 1, etc
+			int day = cal.get(Calendar.DAY_OF_WEEK) - 1;
+
+			return day;
+	 }
+
+	 private String booleanArrayToBitString(JsonArray selectedDaysArray) {
+		 StringBuilder selectedDays = new StringBuilder();
+			for (Object day : selectedDaysArray) {
+				int isSelectedDay = ((Boolean)day) ? 1 : 0;
+				selectedDays.append(isSelectedDay);
+			}
+		 return selectedDays.toString();
+	 }
+
+	 private boolean haveSameTime(final long thisTimestamp, final long thatTimestamp) {
+
+		Calendar thisCal = Calendar.getInstance();
+		thisCal.setTimeInMillis(
+				TimeUnit.MILLISECONDS.convert(thisTimestamp, TimeUnit.SECONDS));
+
+		Calendar thatCal = Calendar.getInstance();
+		thatCal.setTimeInMillis(
+				TimeUnit.MILLISECONDS.convert(thatTimestamp, TimeUnit.SECONDS));
+
 		 return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
 				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
 				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
@@ -327,6 +361,25 @@ public class BookingController extends ControllerHelper {
 			});
 
 	 }
+
+		@Put("/resource/:id/booking/:bookingId/periodic")
+		@ApiDoc("Update periodic booking")
+		@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+		@ResourceFilter(TypeAndResourceAppendPolicy.class)
+		public void updatePeriodicBooking(final HttpServerRequest request){
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						RequestUtils.bodyToJson(request, pathPrefix + "updatePeriodicBooking",
+								getPeriodicBookingHandler(user, request, false));
+					} else {
+						log.debug("User not found in session.");
+						unauthorized(request);
+					}
+				}
+			});
+		}
 
 	 @Put("/resource/:id/booking/:bookingId/process")
 	 @ApiDoc("Validate or refuse booking")

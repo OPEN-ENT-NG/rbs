@@ -140,7 +140,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// Bit string type cannot be used in a preparedStatement
 		query.append(" B'")
 			.append(selectedDays)
-			.append("') RETURNING id)");;
+			.append("') RETURNING id)");
 
 
 		// 2. Insert clause for the first child booking
@@ -334,8 +334,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
-		// Lock query to avoid race condition
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+
+		// Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
 		// Update query
@@ -417,6 +418,53 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		}
 		values.add(object.getValue(fieldname));
 	}
+
+	@Override
+	public void updatePeriodicBooking(final Object resourceId, final Object bookingId, final int occurrences,
+			final long endDate, final long firstSlotEndDate, final String selectedDays, final int firstSelectedDay,
+			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler) {
+
+		final Object firstSlotStartDate = data.getValue("start_date");
+		final String bookingReason = data.getString("booking_reason");
+		final int periodicity = data.getInteger("periodicity");
+
+		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+
+		// Lock query to avoid race condition
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
+
+		// Update parent booking
+		StringBuilder parentQuery = new StringBuilder();
+		JsonArray parentValues = new JsonArray();
+		parentQuery.append("UPDATE rbs.booking")
+				.append(" SET booking_reason = ?, start_date = to_timestamp(?), end_date = to_timestamp(?),");
+		parentValues.add(bookingReason)
+			.add(firstSlotStartDate)
+			.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot end date
+		final int endDateIndex = parentValues.size() - 1;
+
+		parentQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");
+		parentValues.add(periodicity)
+					.add(occurrences!=0 ? occurrences : null);
+
+		parentQuery.append(" days = B'")
+			.append(selectedDays)
+			.append("')")
+			.append(" WHERE resource_id = ?")
+			.append(" AND id = ?")
+			.append(" AND is_periodic = ?");
+		parentValues.add(resourceId)
+			.add(bookingId)
+			.add(true);
+
+		// Delete child bookings
+
+		// Create child bookings
+
+		// Send queries to event bus
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(handler));
+	}
+
 
 	@Override
 	public void processBooking(final Object resourceId, final Object bookingId,
