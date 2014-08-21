@@ -7,19 +7,24 @@
       "type": "string"
     },
     "start_date": {
+      "description": "Unix timestamp representing the start date of the first slot",
       "type": "integer"
     },
     "end_date": {
+      "description": "Unix timestamp representing the end date of the first slot. Either end_date or occurrences must be filled",
       "type": "integer"
     },
     "periodic_end_date": {
+      "description": "Unix timestamp representing the end date of the periodic booking",
       "type": "integer"
     },
     "periodicity": {
+      "description" : "Bookings are repeated every periodicity week",
       "type": "integer",
       "minimum": 1
     },
     "occurrences": {
+      "description" : "The periodic booking ends after n occurrences",
       "type": "integer",
       "minimum": 1
     },

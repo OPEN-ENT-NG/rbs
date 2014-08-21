@@ -7,9 +7,11 @@
       "type": "string"
     },
     "start_date": {
+      "description": "Unix timestamp representing the start date of the booking",
       "type": "integer"
     },
     "end_date": {
+      "description": "Unix timestamp representing the end date of the booking",
       "type": "integer"
     }
   },

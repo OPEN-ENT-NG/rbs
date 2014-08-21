@@ -7,6 +7,7 @@
       "type": "string"
     },
     "validation": {
+      "description": "If true, bookings must be validated by moderators. Otherwise, they are automatically validated",
       "type": "boolean"
     },
     "school_id": {
