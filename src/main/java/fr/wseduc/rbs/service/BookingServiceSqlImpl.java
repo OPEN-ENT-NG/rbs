@@ -184,7 +184,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// Either the endDate of the periodic booking is supplied, or occurrences is supplied
 		if(endDate > 0) {
 			long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
-			nbOccurences = getOccurrences(firstSelectedDay, selectedDays, durationInDays);
+			nbOccurences = getOccurrences(firstSelectedDay, selectedDays, durationInDays, periodicity);
 		}
 		else {
 			nbOccurences = occurrences;
@@ -300,15 +300,18 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @param firstSelectedDay : index of the first slot's day
 	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
 	 * @param durationInDays : difference in days between the first slot's end date and the end date of the periodic booking
+	 * @param periodicity : slots are repeated every "periodicity" week
 	 * @return Number of occurrences
 	 *
 	 * @throws IndexOutOfBoundsException
 	 */
-	private int getOccurrences(final int firstSelectedDay, final String selectedDays, final long durationInDays) {
+	private int getOccurrences(final int firstSelectedDay, final String selectedDays,
+			final long durationInDays, final int periodicity) {
 		int count = 0;
 		int k = firstSelectedDay;
+		int i = 0;
 
-		for (int i=0; i<=durationInDays; i++) {
+		while(i <= durationInDays) {
 			if(k >= 7) {
 				k = k % 7;
 			}
@@ -316,6 +319,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				count++;
 			}
 			k++;
+			if (k == 1) {
+				// On monday, go to next week
+				i += (periodicity - 1) * 7;
+			}
+			i++;
 		}
 
 		return count;
