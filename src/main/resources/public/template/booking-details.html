@@ -70,15 +70,15 @@
 				<tbody ng-repeat="slot in selectedBooking._slots">
 					<tr>
 						<td></td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.start_date)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatDate(slot.start_date)]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.startMoment)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatDate(slot.startMoment)]]</td>
 
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.end_date)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatDate(slot.end_date)]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.endMoment)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatDate(slot.endMoment)]]</td>
 
 						<td ng-if="slot.isPending()"></td>
-						<td ng-if="slot.isValidated()">[[formatDate(slot.moderator_name)]]</td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.moderator_name)]]</a></td>
+						<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
 
 						<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
 						<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>

@@ -20,19 +20,19 @@ model.timeConfig = { // 5min slots from 6h00 to 23h55, default 8h00
 model.periods = {
 	periodicities: [1, 2, 3, 4], // weeks
 	days: [
-		0, // sunday
 		1, // monday
 		2, // tuesday
 		3, // wednesday
 		4, // thursday
 		5, // friday
-		6  // saturday
+		6,  // saturday
+		0 // sunday
 	],
-	occurences: [] // loaded by function
+	occurrences: [] // loaded by function
 };
 
 model.periodsConfig = {
-	occurences: {
+	occurrences: {
 		start: 1,
 		end: 52,
 		interval: 1
@@ -176,16 +176,6 @@ Booking.prototype.isPartial = function() {
 	return this.status === model.STATE_PARTIAL;
 };
 
-Booking.prototype.daysToBitMask = function() {
-	var bitmask = 0;
-	_.each(this.periodDays, function(periodDay){
-		if (periodDay.value === true) {
-			bitmask = bitmask + Math.pow(2, periodDay.number);
-		}
-	});
-	return bitmask;
-};
-
 Booking.prototype.toJSON = function() {
 	var json = {
 		start_date : this.startMoment.unix(),
@@ -194,10 +184,10 @@ Booking.prototype.toJSON = function() {
 
 	if (this.is_periodic === true) {
 		json.periodicity = this.periodicity;
-		json.days = this.daysToBitMask();
+		json.days = _.pluck(_.sortBy(this.periodDays, function(day){ return day.number; }), 'value');
 
-		if (this.occurences !== undefined && this.occurences > 0) {
-			json.occurences = this.occurences;
+		if (this.occurrences !== undefined && this.occurrences > 0) {
+			json.occurrences = this.occurrences;
 		}
 		else {
 			json.periodic_end_date = this.periodicEndMoment.unix();
@@ -721,44 +711,39 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 model.parseBooking = function(booking, color) {
 	booking.color = color;
-	booking.startMoment = moment(booking.start_date);
-	booking.endMoment = moment(booking.end_date);
+	booking.startMoment = moment(booking.start_date + 'Z');
+	booking.endMoment = moment(booking.end_date + 'Z');
 
 	// periodic booking
 	if (booking.is_periodic === true) {
 		// parse bitmask		
 		booking.periodDays = model.bitMaskToDays(booking.days);
-		// date if not by occurences
-		if (booking.occurences === undefined || booking.occurences < 1) {
-			booking.periodicEndMoment =  moment(booking.periodic_end_date);
+		// date if not by occurrences
+		if (booking.occurrences === undefined || booking.occurrences < 1) {
+			booking.periodicEndMoment =  moment(booking.periodic_end_date + 'Z');
 		}
 	}
 };
 
 model.parseSlot = function(slot) {
-	slot.startMoment = moment(slot.start_date);
-	slot.endMoment = moment(slot.end_date);
+	slot.startMoment = moment(slot.start_date + 'Z');
+	slot.endMoment = moment(slot.end_date + 'Z');
 };
 
 model.bitMaskToDays = function(bitMask) {
 	var periodDays = [];
-	var sunday = undefined;
+	var bits = [];
+	if (bitMask !== undefined) {
+		var bits = (bitMask + '').split("");
+	}
 	_.each(model.periods.days, function(day){
-		var mask = Math.pow(2, day);
-		var value = false;
-		if ((bitMask & mask) != 0) {
-			value = true;
-		}
-		if (day == 0) {
-			sunday = {number: 0, value: value};
+		if (bits[day] === '1') {
+			periodDays.push({number: day, value: true});
 		}
 		else {
-			periodDays.push({number: day, value: value});
+			periodDays.push({number: day, value: false});	
 		}
 	});
-	if (sunday !== undefined) {
-		periodDays.push(sunday);
-	}
 	return periodDays;
 };
 
@@ -777,7 +762,7 @@ model.loadTimes = function() {
 };
 
 model.loadPeriods = function() {
-	for (occurence = model.periodsConfig.occurences.start; occurence <= model.periodsConfig.occurences.end; occurence = occurence + model.periodsConfig.occurences.interval) {
-		model.periods.occurences.push(occurence);
+	for (occurrence = model.periodsConfig.occurrences.start; occurrence <= model.periodsConfig.occurrences.end; occurrence = occurrence + model.periodsConfig.occurrences.interval) {
+		model.periods.occurrences.push(occurrence);
 	}
 }
