@@ -187,17 +187,16 @@ public class BookingController extends ControllerHelper {
 									badRequest(request);
 									return;
 								}
-								Calendar startCal = Calendar.getInstance();
-
-								startCal.setTimeInMillis(
+								Calendar firstSlotStartCal = Calendar.getInstance();
+								firstSlotStartCal.setTimeInMillis(
 										TimeUnit.MILLISECONDS.convert(firstSlotStartDate, TimeUnit.SECONDS));
 								// "- 1", so that sunday is 0, monday is 1, etc
-								int firstSlotStartDay = startCal.get(Calendar.DAY_OF_WEEK) - 1;
+								int firstSlotStartDay = firstSlotStartCal.get(Calendar.DAY_OF_WEEK) - 1;
 
-								Calendar endCal = Calendar.getInstance();
-								endCal.setTimeInMillis(
+								Calendar firstSlotEndCal = Calendar.getInstance();
+								firstSlotEndCal.setTimeInMillis(
 										TimeUnit.MILLISECONDS.convert(firstSlotEndDate, TimeUnit.SECONDS));
-								int firstSlotEndDay = endCal.get(Calendar.DAY_OF_WEEK) - 1;
+								int firstSlotEndDay = firstSlotEndCal.get(Calendar.DAY_OF_WEEK) - 1;
 
 								// The first slot must begin and end on the same day
 								if (firstSlotStartDay != firstSlotEndDay) {
@@ -223,6 +222,18 @@ public class BookingController extends ControllerHelper {
 									return;
 								}
 
+								// The first and last slot must end at the same hour
+								if (endDate > 0L) {
+									final Calendar lastSlotEndCal = Calendar.getInstance();
+									lastSlotEndCal.setTimeInMillis(
+											TimeUnit.MILLISECONDS.convert(endDate, TimeUnit.SECONDS));
+
+									if(!haveSameTime(lastSlotEndCal, firstSlotEndCal)) {
+										badRequest(request);
+										return;
+									}
+								}
+
 								// Store boolean array (selected days) as a bit string
 								StringBuilder selectedDays = new StringBuilder();
 								try {
@@ -239,7 +250,8 @@ public class BookingController extends ControllerHelper {
 								try {
 									bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
 											firstSlotEndDate, selectedDays.toString(), firstSlotStartDay,
-											object, user, notEmptyResponseHandler(request));
+											object, user, arrayResponseHandler(request));
+									// TODO : notifier les valideurs
 								} catch (Exception e) {
 									log.error("Error during service createPeriodicBooking", e);
 									renderError(request);
@@ -254,6 +266,12 @@ public class BookingController extends ControllerHelper {
 				}
 			});
 
+	 }
+
+	 private boolean haveSameTime(Calendar thisCal, Calendar thatCal) {
+		 return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
+				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
+				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
 	 }
 
 	 @Put("/resource/:id/booking/:bookingId")

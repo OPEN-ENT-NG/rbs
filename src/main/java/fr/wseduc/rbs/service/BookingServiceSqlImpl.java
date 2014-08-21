@@ -110,7 +110,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	@Override
 	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
 			final long firstSlotEndDate, final String selectedDays, final int firstSelectedDay,
-			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonObject>> handler) {
+			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
@@ -129,18 +129,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.add(firstSlotStartDate);
 
 		query.append(" to_timestamp(?),");
-		if(endDate > 0L) {
-			values.add(endDate);
-		}
-		else {
-			// TODO : valoriser la date de fin de la resa periodique avec la date de fin du dernier creneau
-			values.add(firstSlotEndDate);
-		}
+		values.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot end date
+		final int endDateIndex = values.size() - 1;
 
 		query.append(" ?, ?, ?,");
 		values.add(true)
 			.add(periodicity)
-			.add(occurrences);
+			.add(occurrences!=0 ? occurrences : null);
 
 		// Bit string type cannot be used in a preparedStatement
 		query.append(" B'")
@@ -148,7 +143,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append("') RETURNING id)");;
 
 
-		// 2. Insert the first child booking
+		// 2. Insert clause for the first child booking
 		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status)")
 			.append(" VALUES(?, ?, ?, to_timestamp(?), to_timestamp(?), (select id from parent_booking),");
 		values.add(resourceId)
@@ -184,7 +179,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.add(VALIDATED.status())
 			.add(resourceId);
 
-		// 3. Insert other child bookings
+		// 3. Additional values for other child bookings
 		final int nbOccurences;
 		// Either the endDate of the periodic booking is supplied, or occurrences is supplied
 		if(endDate > 0) {
@@ -196,11 +191,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		}
 
 		if(nbOccurences > 1) {
-
 			int selectedDay = firstSelectedDay;
 			int intervalFromFirstDay = 0;
-			for (int i = 1; i <= (nbOccurences - 1); i++) {
 
+			for (int i = 1; i <= (nbOccurences - 1); i++) {
 				int interval = getNextInterval(selectedDay, selectedDays, periodicity);
 				intervalFromFirstDay += interval;
 				selectedDay = (selectedDay + interval) % 7;
@@ -243,12 +237,29 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				values.add(CREATED.status())
 					.add(VALIDATED.status())
 					.add(resourceId);
-
 			}
 
+			if (endDate <= 0) {
+				// In JsonArray "values", replace endDate with the last slot end date
+				JsonArray newValues = new JsonArray();
+				int i = 0;
+				for (Object object : values) {
+					if (i == endDateIndex) {
+						newValues.add(firstSlotEndDate +
+								TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS));
+					}
+					else {
+						newValues.add(object);
+					}
+					i++;
+				}
+				values = newValues;
+			}
 		}
 
-		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+		query.append(" RETURNING id, status");
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 
 	}
 

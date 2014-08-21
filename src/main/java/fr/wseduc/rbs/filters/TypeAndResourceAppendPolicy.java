@@ -83,6 +83,12 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(Sql.parseId(bookingId));
 			}
 
+			// When a user creates a periodic booking, check that the resource allows it
+			if ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/periodic")) {
+				query.append(" AND r.periodic_booking = ?");
+				values.add(true);
+			}
+
 			// Execute
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
 				@Override
