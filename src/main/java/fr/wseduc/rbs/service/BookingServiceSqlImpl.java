@@ -531,7 +531,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		statementsBuilder.prepared(insertQuery.toString(), insertValues);
 
 		// Send queries to event bus
-		Sql.getInstance().transaction(statementsBuilder.build(), validResultsHandler(handler));
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(3, handler));
 	}
 
 

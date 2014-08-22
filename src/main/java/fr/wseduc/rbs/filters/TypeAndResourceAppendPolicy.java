@@ -83,9 +83,15 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(Sql.parseId(bookingId));
 			}
 
-			// When a user creates a periodic booking, check that the resource allows it
-			if ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/periodic")) {
-				query.append(" AND r.periodic_booking = ?");
+			if (isCreatePeriodicBooking(request)) {
+				// Check that the resource allows periodic_booking and that it is available
+				query.append(" AND r.periodic_booking = ?")
+					.append(" AND r.is_available = ?");
+				values.add(true).add(true);
+			}
+			else if(isCreateBooking(request) || isUpdateBooking(request) || isUpdatePeriodicBooking(request)) {
+				// Check that the resource is available
+				query.append(" AND r.is_available = ?");
 				values.add(true);
 			}
 
@@ -101,6 +107,22 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private boolean isCreateBooking(final HttpServerRequest request) {
+		return ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking"));
+	}
+
+	private boolean isCreatePeriodicBooking(final HttpServerRequest request) {
+		return ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/periodic"));
+	}
+
+	private boolean isUpdateBooking(final HttpServerRequest request) {
+		return ("PUT".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/\\d+"));
+	}
+
+	private boolean isUpdatePeriodicBooking(final HttpServerRequest request) {
+		return ("PUT".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/\\d+/periodic"));
 	}
 
 }
