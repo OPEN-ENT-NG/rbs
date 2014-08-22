@@ -553,14 +553,15 @@ model.build = function(){
 
 	// Bookings collection, not auto-synced
 	this.collection(Booking, {
-		processSelection: function() {
-			var currentProcessSelection = _.filter(this.selection(), function(booking){
+		selectionForProcess: function() {
+			return _.filter(this.selection(), function(booking){
 				return booking.isNotPeriodicRoot();
 			});
-			if(!this._processSelection || this._processSelection.length !== currentProcessSelection.length){
-				this._processSelection = currentProcessSelection;
-			}
-			return this._processSelection;
+		},
+		selectionForDelete: function() {
+			return _.filter(this.selection(), function(booking){
+				return booking.isBooking();
+			});
 		},
 		selectAllBookings: function() {
 			this.forEach(function(booking){
@@ -602,24 +603,6 @@ model.build = function(){
 				this._selectionResources = currentResourcesSelection;
 			}
 			return this._selectionResources;
-		},
-		removeSelection : function(cb) {
-			var counter = this.selection().length;
-			this.selection().forEach(function(booking){
-				if (! booking.isBooking()) {
-					counter = counter - 1;
-					return;
-				}
-				booking.delete(function(){
-					counter = counter - 1;
-					if (counter === 0) {
-						Collection.prototype.removeSelection.call(this);
-						if(typeof cb === 'function'){
-							cb();
-						}
-					}
-				});
-			});
 		},
 		behavious: 'rbs'
 	});

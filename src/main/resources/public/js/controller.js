@@ -19,8 +19,6 @@ function RbsController($scope, template, model, date){
 	$scope.bookings = model.bookings;
 	$scope.mine = model.mine;
 	$scope.unprocessed = model.unprocessed;
-	$scope.unprocessed.previousTypes = new Array();
-	$scope.unprocessed.previousResources = new Array();
 	$scope.times = model.times;
 	$scope.periods = model.periods;
 
@@ -28,6 +26,7 @@ function RbsController($scope, template, model, date){
 	$scope.selectedBooking = undefined;
 	$scope.editedBooking = undefined;
 	$scope.bookings.refuseReason = undefined;
+	$scope.processBookings = [];
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
@@ -191,6 +190,7 @@ function RbsController($scope, template, model, date){
 		}
 		$scope.selectedBooking = undefined;
 		$scope.editedBooking = undefined;
+		$scope.processBookings = [];
 		$scope.display.showPanel = false;
 		template.close('lightbox');
 	};
@@ -257,7 +257,9 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.canDeleteBookingSelection = function() {
-		return _.filter($scope.bookings.selection(), function(booking){ return booking.isBooking(); }).length > 0;
+		return _.every($scope.bookings.selection(), function(booking){ 
+			return booking.isBooking() || (booking.isSlot() && booking.booking.selected === true); 
+		});
 	};
 
 	$scope.newBooking = function() {
@@ -364,16 +366,24 @@ function RbsController($scope, template, model, date){
 		}
 
 		// confirm message
+		$scope.processBookings = $scope.bookings.selectionForDelete();
 		template.open('lightbox', 'confirm-delete-booking');
 		$scope.display.showPanel = true;
 	};
 
 	$scope.doRemoveBookingSelection = function() {
 		$scope.display.processing = true;
-		$scope.bookings.removeSelection(function(){
-			$scope.display.processing = undefined;
-			$scope.closeBooking();
-			model.refresh();
+		var actions = $scope.processBookings.length;
+		_.each($scope.processBookings, function(booking){
+			booking.delete(function(){
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.bookings.deselectAll();
+					$scope.closeBooking();
+					model.refresh();
+				}
+			});
 		});
 	};
 
@@ -395,6 +405,7 @@ function RbsController($scope, template, model, date){
 			}
 		}
 
+		$scope.processBookings = $scope.bookings.selectionForProcess();
 		$scope.display.showPanel = true;
 		template.open('lightbox', 'validate-booking');
 	};
@@ -411,17 +422,20 @@ function RbsController($scope, template, model, date){
 			}
 		}
 
+		$scope.processBookings = $scope.bookings.selectionForProcess();
 		$scope.display.showPanel = true;
 		$scope.bookings.refuseReason = "";
 		template.open('lightbox', 'refuse-booking');
 	};
 
 	$scope.doValidateBookingSelection = function() {
-		var actions = $scope.bookings.selection().length;
-		_.each($scope.bookings.selection(), function(booking){
+		$scope.display.processing = true;
+		var actions = $scope.processBookings.length;
+		_.each($scope.processBookings, function(booking){
 			booking.validate(function(){
 				actions--;
 				if (actions === 0) {
+					$scope.display.processing = undefined;
 					$scope.bookings.deselectAll();
 					$scope.closeBooking();
 					model.refresh();
@@ -431,12 +445,14 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.doRefuseBookingSelection = function() {
-		var actions = $scope.bookings.selection().length;
-		_.each($scope.bookings.selection(), function(booking){
+		$scope.display.processing = true;
+		var actions = processBookings.length;
+		_.each($scope.processBookings, function(booking){
 			booking.refusal_reason = $scope.bookings.refuseReason;
 			booking.refuse(function(){
 				actions--;
 				if (actions === 0) {
+					$scope.display.processing = undefined;
 					$scope.bookings.deselectAll();
 					$scope.bookings.refuseReason = undefined;
 					$scope.closeBooking();
