@@ -15,16 +15,15 @@ public interface BookingService extends CrudService {
 	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public void createPeriodicBooking(final Object resourceId, final int occurrences, final long endDate,
-			final long firstSlotEndDate, final String selectedDays, final int firstSelectedDay,
+	public void createPeriodicBooking(final Object resourceId, final String selectedDays, final int firstSelectedDay,
 			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
 	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public void updatePeriodicBooking(final Object resourceId, final Object bookingId, final int occurrences,
-			final long endDate, final long firstSlotEndDate, final String selectedDays, final int firstSelectedDay,
-			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
+	public void updatePeriodicBooking(final Object resourceId, final Object bookingId, final String selectedDays,
+			final int firstSelectedDay, final JsonObject data, final UserInfos user,
+			final Handler<Either<String, JsonArray>> handler);
 
 	public void processBooking(final Object resourceId, final Object bookingId,
 			final int newStatus, final JsonObject data,

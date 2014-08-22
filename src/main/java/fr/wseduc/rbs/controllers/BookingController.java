@@ -244,9 +244,8 @@ public class BookingController extends ControllerHelper {
 
 				if (isCreation) {
 					try {
-						bookingService.createPeriodicBooking(parseId(id), occurrences, endDate,
-								firstSlotEndDate, selectedDays, firstSlotStartDay,
-								object, user, arrayResponseHandler(request));
+						bookingService.createPeriodicBooking(parseId(id), selectedDays,
+								firstSlotStartDay, object, user, arrayResponseHandler(request));
 						// TODO : notifier les valideurs
 					} catch (Exception e) {
 						log.error("Error during service createPeriodicBooking", e);
@@ -255,9 +254,8 @@ public class BookingController extends ControllerHelper {
 				}
 				else {
 					try {
-						bookingService.updatePeriodicBooking(parseId(id), parseId(bookingId), occurrences, endDate,
-								firstSlotEndDate, selectedDays, firstSlotStartDay,
-								object, user, arrayResponseHandler(request));
+						bookingService.updatePeriodicBooking(parseId(id), parseId(bookingId), selectedDays,
+								firstSlotStartDay, object, user, arrayResponseHandler(request));
 						// TODO notifier les valideurs
 					} catch (Exception e) {
 						log.error("Error during service updatePeriodicBooking", e);
