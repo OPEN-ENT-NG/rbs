@@ -1,8 +1,14 @@
 package fr.wseduc.rbs.controllers;
 
+import static fr.wseduc.rbs.Rbs.RBS_NAME;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.VisibilityFilter;
@@ -10,6 +16,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
@@ -23,10 +30,14 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceController extends ControllerHelper {
+
+	private static final String RESOURCE_AVAILABLE_EVENT_TYPE = RBS_NAME + "_RESOURCE_AVAILABLE";
+	private static final String RESOURCE_UNAVAILABLE_EVENT_TYPE = RBS_NAME + "_RESOURCE_UNAVAILABLE";
 
 	private static final String SCHEMA_RESOURCE_CREATE = "createResource";
 	private static final String SCHEMA_RESOURCE_UPDATE = "updateResource";
@@ -96,9 +107,25 @@ public class ResourceController extends ControllerHelper {
 						@Override
 						public void handle(JsonObject object) {
 							String id = request.params().get("id");
-							resourceService.updateResource(id, object, defaultResponseHandler(request));
+							final boolean isAvailable = object.getBoolean("is_available");
+							final boolean wasAvailable = object.getBoolean("was_available");
 
-							// TODO : si was_available != is_available, notifier les demandeurs
+							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> event) {
+									if (event.isRight()) {
+										Renders.renderJson(request, event.right().getValue(), 200);
+										notifyResourceAvailability(request, user, event.right().getValue(),
+												isAvailable, wasAvailable);
+									} else {
+										JsonObject error = new JsonObject()
+												.putString("error", event.left().getValue());
+										Renders.renderJson(request, error, 400);
+									}
+								}
+							};
+
+							resourceService.updateResource(id, object, handler);
 						}
 					});
 				} else {
@@ -107,6 +134,62 @@ public class ResourceController extends ControllerHelper {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Notify booking owners that a resource is now (un)available
+	 */
+	private void notifyResourceAvailability(final HttpServerRequest request, final UserInfos user,
+			final JsonObject message, final boolean isAvailable, final boolean wasAvailable){
+
+		// Notify only if the availability has been changed
+		if(wasAvailable != isAvailable) {
+			final long resourceId = message.getLong("id", 0L);
+			final String resourceName = message.getString("name", null);
+
+			final String eventType;
+			final String template;
+			if (isAvailable) {
+				eventType = RESOURCE_AVAILABLE_EVENT_TYPE;
+				template = "notify-resource-available.html";
+			}
+			else {
+				eventType = RESOURCE_UNAVAILABLE_EVENT_TYPE;
+				template = "notify-resource-unavailable.html";
+			}
+
+			if (resourceId == 0L || resourceName == null) {
+				log.error("Could not get resourceId or resourceName from response. Unable to send timeline "+ eventType + " notification.");
+				return;
+			}
+
+			resourceService.getBookingOwnersIds(resourceId, new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isRight()) {
+						Set<String> recipientSet = new HashSet<>();
+						for(Object o : event.right().getValue()){
+							if(!(o instanceof JsonObject)){
+								continue;
+							}
+							JsonObject jo = (JsonObject) o;
+							recipientSet.add(jo.getString("owner"));
+						}
+						List<String> recipients = new ArrayList<>(recipientSet);
+
+						JsonObject params = new JsonObject();
+						params.putString("resource_name", resourceName);
+
+						notification.notifyTimeline(request, user, RBS_NAME, eventType,
+								recipients, String.valueOf(resourceId), template, params);
+
+					} else {
+						log.error("Error when calling service getBookingOwnersIds. Unable to send timeline "
+								+ eventType + " notification.");
+					}
+				}
+			});
+		}
 	}
 
 	@Override

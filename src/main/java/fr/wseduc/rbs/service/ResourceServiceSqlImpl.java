@@ -1,7 +1,9 @@
 package fr.wseduc.rbs.service;
 
 import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.validRowsResultHandler;
+import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
+import static fr.wseduc.rbs.BookingStatus.*;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
@@ -30,11 +32,36 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			sb.append(attr).append(" = ?, ");
 			values.add(data.getValue(attr));
 		}
-		String query =
-				"UPDATE rbs.resource" +
-				" SET " + sb.toString() + "modified = NOW() " +
-				"WHERE id = ? ";
-		Sql.getInstance().prepared(query, values.add(parseId(id)), validRowsResultHandler(handler));
+
+		StringBuilder query = new StringBuilder();
+		query.append("UPDATE rbs.resource")
+			.append(" SET ")
+			.append(sb.toString())
+			.append("modified = NOW()")
+			.append(" WHERE id = ?")
+			.append(" RETURNING id, name");
+		values.add(parseId(id));
+
+		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void getBookingOwnersIds(long resourceId, Handler<Either<String, JsonArray>> handler) {
+
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT DISTINCT owner FROM rbs.booking ")
+			.append(" WHERE resource_id = ?")
+			.append(" AND status IN (?, ?)")
+			.append(" AND start_date >= now()")
+			.append(" AND is_periodic = ?");
+
+		JsonArray values = new JsonArray();
+		values.add(resourceId)
+			.add(CREATED.status())
+			.add(VALIDATED.status())
+			.add(false);
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
 }
