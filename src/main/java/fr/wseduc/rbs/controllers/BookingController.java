@@ -360,24 +360,24 @@ public class BookingController extends ControllerHelper {
 
 	 }
 
-		@Put("/resource/:id/booking/:bookingId/periodic")
-		@ApiDoc("Update periodic booking")
-		@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
-		@ResourceFilter(TypeAndResourceAppendPolicy.class)
-		public void updatePeriodicBooking(final HttpServerRequest request){
-			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-				@Override
-				public void handle(final UserInfos user) {
-					if (user != null) {
-						RequestUtils.bodyToJson(request, pathPrefix + "updatePeriodicBooking",
-								getPeriodicBookingHandler(user, request, false));
-					} else {
-						log.debug("User not found in session.");
-						unauthorized(request);
-					}
+	@Put("/resource/:id/booking/:bookingId/periodic")
+	@ApiDoc("Update periodic booking")
+	@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	public void updatePeriodicBooking(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					RequestUtils.bodyToJson(request, pathPrefix + "updatePeriodicBooking",
+							getPeriodicBookingHandler(user, request, false));
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
 				}
-			});
-		}
+			}
+		});
+	}
 
 	 @Put("/resource/:id/booking/:bookingId/process")
 	 @ApiDoc("Validate or refuse booking")

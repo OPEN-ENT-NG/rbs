@@ -13,6 +13,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
+import fr.wseduc.rbs.service.ResourceService;
+import fr.wseduc.rbs.service.ResourceServiceSqlImpl;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -28,6 +30,13 @@ public class ResourceController extends ControllerHelper {
 
 	private static final String SCHEMA_RESOURCE_CREATE = "createResource";
 	private static final String SCHEMA_RESOURCE_UPDATE = "updateResource";
+
+	private final ResourceService resourceService;
+
+	public ResourceController() {
+		resourceService = new ResourceServiceSqlImpl();
+	}
+	// TODO : refactor ResourceController to use resourceService instead of crudService
 
 	@Override
 	@Get("/resources")
@@ -87,7 +96,9 @@ public class ResourceController extends ControllerHelper {
 						@Override
 						public void handle(JsonObject object) {
 							String id = request.params().get("id");
-							crudService.update(id, object, user, defaultResponseHandler(request));
+							resourceService.updateResource(id, object, defaultResponseHandler(request));
+
+							// TODO : si was_available != is_available, notifier les demandeurs
 						}
 					});
 				} else {

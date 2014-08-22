@@ -17,6 +17,10 @@
 		"is_available": {
 			"type": "boolean"
 		},
+		"was_available": {
+			"description" : "Previous value of is_available" ,
+			"type": "boolean"
+		},
 		"min_delay": {
 			"type": "integer",
 			"minimum": -1
