@@ -36,6 +36,7 @@
 
 	"rbs.booking.details.type.label" : "Type de ressource",
 	"rbs.booking.details.resource.label" : "Ressource",
+	"rbs.booking.details.resource.unavailable" : "La ressource est indisponible. Vous serez notifé lorsqu'elle sera rendue à nouveau disponible.",
 	"rbs.booking.details.description.label" : "Description de la ressource",
 	"rbs.booking.details.start.label" : "Date et heure de début",
 	"rbs.booking.details.end.label" : "Date et heure de fin",
@@ -146,6 +147,7 @@
 	"rbs.resource.edit.periodic_booking.label": "Autoriser les réservations périodiques",
 	"rbs.resource.edit.periodic_booking.true": "Oui",
 	"rbs.resource.edit.periodic_booking.false": "Non",
+	"rbs.resource.unavailable.flag" : "(HS)",
 
 	"rbs.save": "Enregistrer",
 	"rbs.validate" : "Valider",

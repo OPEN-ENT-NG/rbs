@@ -39,10 +39,6 @@ tr.minor td {
 	background: rgba(48, 48, 48, 0.6);
 }
 
-td.invisible {
-	background: transparent;	
-}
-
 button.disabled,
 a.button.disabled,
 input[type=button].disabled {
@@ -55,4 +51,148 @@ a.button.disabled:hover,
 input[type=button].disabled:hover {
 	background: #646464;
 	color: #373737;
+}
+
+
+table.colored, table.colored a {
+	color: #e7e7e7;
+}
+
+table.colored tr:hover td {
+	background: rgba(48, 48, 48, 0.6);
+}
+
+table.colored tr:hover a {
+	color: #fff;
+}
+
+table.colored td.cyan {
+	background: rgba(35, 163, 219, 0.75);
+}
+
+table.colored tr:hover td.cyan {
+	background: rgba(35, 163, 219, 0.6);
+}
+
+table.colored td.green {
+	background: rgba(177, 210, 53, 0.75);
+}
+
+table.colored tr:hover td.green {
+	background: rgba(177, 210, 53, 0.6);
+}
+
+table.colored td.orange {
+	background: rgba(242, 80, 31, 0.75);
+}
+
+table.colored tr:hover td.orange {
+	background: rgba(242, 80, 31, 0.6);
+}
+
+table.colored td.pink {
+	background: rgba(240, 84, 122, 0.75);
+}
+
+table.colored tr:hover td.pink {
+	background: rgba(240, 84, 122, 0.6);
+}
+
+table.colored td.yellow {
+	background: rgba(252, 191, 20, 0.75);
+}
+
+table.colored tr:hover td.yellow {
+	background: rgba(252, 191, 20, 0.6);
+}
+
+table.colored td.purple {
+	background: rgba(191, 20, 252, 0.75);
+}
+
+table.colored tr:hover td.purple {
+	background: rgba(191, 20, 252, 0.6);
+}
+
+table.colored td.grey {
+	background: rgba(100, 100, 100, 0.75);
+}
+
+table.colored tr:hover td.grey {
+	background: rgba(100, 100, 100, 0.6);
+}
+
+table.colored span.badge {
+	line-height: 19px;
+	color: #000;
+}
+
+
+ul.colored, ul.colored a {
+	color: #fff;
+}
+
+ul.colored a:hover {
+	color: #000;
+	font-weight: bold;
+}
+
+ul.colored a.cyan, ul.colored a.cyan:hover, ul.colored ul.cyan a, ul.colored ul.cyan a:hover {
+	color: rgb(35, 163, 219);
+}
+
+ul.colored ul.cyan a.selected {
+	background: rgb(35, 163, 219);
+}
+
+ul.colored a.green, ul.colored a.green:hover, ul.colored ul.green a, ul.colored ul.green a:hover {
+	color: rgb(177, 210, 53);
+}
+
+ul.colored ul.green a.selected {
+	background: rgb(177, 210, 53);
+}
+
+ul.colored a.orange, ul.colored a.orange:hover, ul.colored ul.orange a, ul.colored ul.orange a:hover {
+	color: rgb(242, 80, 31);
+}
+
+ul.colored ul.orange a.selected {
+	background: rgb(242, 80, 31);
+}
+
+ul.colored a.pink, ul.colored a.pink:hover, ul.colored ul.pink a, ul.colored ul.pink a:hover {
+	color: rgb(240, 84, 122);
+}
+
+ul.colored ul.pink a.selected {
+	background: rgb(240, 84, 122);
+}
+
+ul.colored a.yellow, ul.colored a.yellow:hover, ul.colored ul.yellow a, ul.colored ul.yellow a:hover {
+	color: rgb(252, 191, 20);
+}
+
+ul.colored ul.yellow a.selected {
+	background: rgb(252, 191, 20);
+}
+
+ul.colored a.purple, ul.colored a.purple:hover, ul.colored ul.purple a, ul.colored ul.purple a:hover {
+	color: rgb(191, 20, 252);
+}
+
+ul.colored ul.purple a.selected {
+	background: rgb(191, 20, 252);
+}
+
+ul.colored a.grey, ul.colored a.grey:hover, ul.colored ul.grey a, ul.colored ul.grey a:hover {
+	color: rgb(100, 100, 100);
+}
+
+ul.colored ul.grey a.selected {
+	background: rgb(100, 100, 100);
+}
+
+td.invisible, tr:hover td.invisible {
+	background: transparent;	
 }

@@ -1,4 +1,4 @@
-<table class="list-view">
+<table class="list-view colored">
 	<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
@@ -15,14 +15,14 @@
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
 			<td>
-				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)">+</a>
-				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)">-</a>
+				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)"><span class="badge">+</span></a>
+				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)"><span class="badge">-</span></a>
 			</td>
 			<td><a ng-click="viewBooking(booking)">[[booking.owner_name]]</a></td>
-			<td><a ng-click="viewBooking(booking)">([[booking.color]]) [[booking.resource.name]]</a></td>
+			<td ng-class="booking.color"><a ng-click="viewBooking(booking)">[[booking.resource.name]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.startMoment)]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(booking.endMoment)]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>
+			<td><a ng-click="viewBooking(booking)">[[trimReason(booking.booking_reason)]]</a></td>
 			<td>
 				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
 				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
@@ -34,7 +34,7 @@
 			<td class="invisible"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
 			<td></td>
-			<td></td>
+			<td ng-class="booking.color"></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(slot.startMoment)]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[formatDate(slot.endMoment)]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>

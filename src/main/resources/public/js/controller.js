@@ -105,14 +105,18 @@ function RbsController($scope, template, model, date){
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== true) {
 			resource.selected = true;
-			$scope.lastSelectedResource = resource;
+			if (resource.is_available !== true) {
+				$scope.lastSelectedResource = resource;	
+			}
 			resource.bookings.sync(function(){
 				$scope.bookings.pushAll(resource.bookings.all);
 			});
 		}
 		else {
 			resource.selected = undefined;
-			$scope.lastSelectedResource = undefined;
+			if (resource.is_available !== true) {
+				$scope.lastSelectedResource = undefined;
+			}
 			$scope.bookings.pullAll(resource.bookings.all);
 		}
 	};
@@ -243,17 +247,22 @@ function RbsController($scope, template, model, date){
 
 	// General
 	$scope.formatDate = function(date) {
-		return (typeof(date) === 'string' ? moment(date + 'Z') : date).format('DD/MM/YYYY à H[h]mm');
+		return (_.isString(date) ? moment(date + 'Z') : date).format('DD/MM/YYYY à H[h]mm');
 	};
 
 	$scope.formatDateLong = function(date) {
-		return (typeof(date) === 'string' ? moment(date + 'Z') : date).format('dddd DD MMMM YYYY - HH[h]mm');
+		return (_.isString(date) ? moment(date + 'Z') : date).format('dddd DD MMMM YYYY - HH[h]mm');
+	};
+
+	$scope.trimReason = function(reason) {
+		return _.isString(reason) ? (reason.trim().length > 23 ? reason.substring(0, 20) + '...' : reason.trim()) : "";
 	};
 
 
 	// Booking edition
 	$scope.canEditBookingSelection = function() {
-		return _.filter($scope.bookings.selection(), function(booking) { return booking.isBooking(); }).length === 1;
+		var localSelection = _.filter($scope.bookings.selection(), function(booking) { return booking.isBooking(); });
+		return (localSelection.length === 1 && localSelection[0].resource.is_available === true);
 	};
 
 	$scope.canDeleteBookingSelection = function() {
@@ -269,8 +278,8 @@ function RbsController($scope, template, model, date){
 			$scope.editedBooking.type = $scope.lastSelectedResource.type;
 		}
 		else {
-			$scope.editedBooking.type = $scope.resourceTypes.first();
-			$scope.editedBooking.resource = $scope.editedBooking.type.resources.first();
+			$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
+			$scope.autoSelectResource();
 		}
 
 		// periodic booking
@@ -328,6 +337,10 @@ function RbsController($scope, template, model, date){
 
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
+	};
+
+	$scope.autoSelectResource = function() {
+		$scope.editedBooking.resource = _.first($scope.editedBooking.type.resources.filterAvailable());
 	};
 
 	$scope.saveBooking = function() {
@@ -510,6 +523,10 @@ function RbsController($scope, template, model, date){
 
 	$scope.editSelectedResource = function() {
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
+		// Field to track Resource availability change
+		if ($scope.editedResource.was_available === undefined) {
+			$scope.editedResource.was_available = $scope.editedResource.is_available;
+		}
 		template.open('resources', 'edit-resource');
 	};
 

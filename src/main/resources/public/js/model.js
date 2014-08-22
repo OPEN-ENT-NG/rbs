@@ -3,7 +3,8 @@ loader.loadFile('/rbs/public/js/additional.js');
 
 
 model.colorMine = 'cyan';
-model.colors = ['green', 'pink', 'purple', 'orange'];
+model.colors = ['green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
+
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
@@ -194,7 +195,7 @@ Booking.prototype.toJSON = function() {
 		}
 	}
 
-	if (this.booking_reason) {
+	if (_.isString(this.booking_reason)) {
 		json.booking_reason = this.booking_reason;
 	}
 
@@ -258,6 +259,7 @@ Resource.prototype.update = function(cb) {
 Resource.prototype.create = function(cb) {
 	var resource = this;
 	this.type_id = this.type.id;
+	this.was_available = undefined;
 
 	http().postJson('/rbs/resources', this).done(function(r){
 		resource.updateData(r);
@@ -289,10 +291,10 @@ Resource.prototype.toJSON = function() {
 		is_available : this.is_available,
 		type_id : this.type_id
 	}
-	if (this.icon) {
-		json.icon = this.icon;
+	if (this.was_available !== undefined) {
+		json.was_available = this.was_available;
 	}
-	if (this.description) {
+	if (_.isString(this.description)) {
 		json.description = this.description;
 	}
 	return json;
@@ -308,6 +310,11 @@ function ResourceType(data) {
 
 	// Resource collection embedded, not synced
 	this.collection(Resource, {
+		filterAvailable: function() {
+			return this.filter(function(resource){
+				return resource.is_available === true;
+			});
+		},
 		removeSelection : function(cb) {
 			var counter = this.selection().length;
 			_.each(this.selection, function(resource){
@@ -540,6 +547,13 @@ model.build = function(){
 					if (actions === 0) {
 						collection.trigger('syncResources');
 					}
+				});
+			});
+		},
+		filterAvailable: function() {
+			return this.filter(function(resourceType){
+				return resourceType.resources.some(function(resource){ 
+					return resource.is_available === true;
 				});
 			});
 		},

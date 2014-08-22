@@ -14,6 +14,10 @@
 				<p class="uneditable">[[selectedBooking.resource.name]]</p>
 			</div>
 		</div>
+
+		<div class="warning form-element" ng-if="selectedBooking.resource.is_available !== true">
+			<i18n>rbs.booking.details.resource.unavailable</i18n>
+		</div>
 		<hr />
 
 		<div class="row form-element">
@@ -141,7 +145,8 @@
 			</behaviour>
 			<behaviour name="manage" resource="selectedBooking">
 				<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-				<button class="right-magnet" ng-click="editBooking()"><i18n>edit</i18n></button>
+				<button class="right-magnet" ng-if="selectedBooking.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
+				<button class="right-magnet" ng-if="selectedBooking.is_available !== true" class="disabled" disabled><i18n>edit</i18n></button>
 			</behaviour>
 		</div>
 	</article>

@@ -3,7 +3,7 @@
 		<h2 ng-if="processBookings.length === 1"><i18n>rbs.booking.validate.one</i18n></h2>
 		<h2 ng-if="processBookings.length > 1"><i18n>rbs.booking.validate.multi.begin</i18n>[[processBookings.length]]<i18n>rbs.booking.validate.multi.end</i18n></h2>
 
-		<table class="list-view twelve">
+		<table class="list-view twelve colored">
 			<thead>
 				<tr>
 					<th><i18n>rbs.booking.headers.owner</i18n></th>
@@ -15,7 +15,7 @@
 			<tbody>
 				<tr ng-repeat="booking in processBookings">
 					<td>[[booking.owner_name]]</td>
-					<td>([[booking.color]]) [[booking.resource.name]]</td>
+					<td ng-class="booking.color">[[booking.resource.name]]</td>
 					<td>[[formatDate(booking.startMoment)]]</td>
 					<td>[[formatDate(booking.endMoment)]]</td>
 				</tr>

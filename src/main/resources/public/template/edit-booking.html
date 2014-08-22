@@ -7,12 +7,12 @@
 		<div class="row" ng-if="editedBooking.id === undefined">
 			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.type.label</i18n></label>
-				<select class="row" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.all" required>
+				<select class="row" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.filterAvailable()" ng-change="autoSelectResource()" required>
 				</select>
 			</div>
 			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
-				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.all" required>
+				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable()" required>
 				</select>
 			</div>
 		</div>

@@ -4,7 +4,7 @@
 		<h2 ng-if="processBookings.length > 1"><i18n>rbs.booking.delete.confirm.multi</i18n></h2>
 
 		<div class="row">
-			<table class="list-view">
+			<table class="list-view colored">
 				<thead>
 					<tr>
 						<th><i18n>rbs.booking.headers.owner</i18n></th>
@@ -18,10 +18,10 @@
 				<tbody>
 					<tr ng-repeat="booking in processBookings">
 						<td>[[booking.owner_name]]</td>
-						<td>([[booking.color]]) [[booking.resource.name]]</td>
+						<td ng-class="booking.color">[[booking.resource.name]]</td>
 						<td>[[formatDate(booking.startMoment)]]</td>
 						<td>[[formatDate(booking.endMoment)]]</td>
-						<td>[[booking.booking_reason]]</td>
+						<td>[[formatReason(booking.booking_reason)]]</td>
 						<td>
 							<i18n ng-if="booking.status === status.STATE_CREATED">rbs.booking.status.created</i18n>
 							<i18n ng-if="booking.status === status.STATE_VALIDATED">rbs.booking.status.validated</i18n>
