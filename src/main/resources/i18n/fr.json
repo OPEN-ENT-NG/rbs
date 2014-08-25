@@ -17,6 +17,7 @@
 	"rbs.booking.headers.reason" : "Motif",
 	"rbs.booking.headers.status" : "Etat",
 	"rbs.booking.headers.moderator" : "Traité par",
+	"rbs.booking.resource.unavailable" : "HS",
 
 	"rbs.booking.status.created" : "Créée",
 	"rbs.booking.status.validated" : "Validée",

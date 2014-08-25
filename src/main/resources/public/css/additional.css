@@ -35,6 +35,21 @@
 	margin: 5px 0;
 }
 
+.long-badge {
+	border-radius: 10px;
+	background: #ccc;
+	font-weight: bold;
+	font-size: 12px;
+	padding: 1px 4px;
+	display: inline-block;
+	height: 15px;
+	text-align: center;
+	line-height: 19px;
+	color: #000;
+	margin-top: 2px;
+}
+
+
 tr.minor td {
 	background: rgba(48, 48, 48, 0.6);
 }
@@ -54,7 +69,8 @@ input[type=button].disabled:hover {
 }
 
 
-table.colored, table.colored a {
+table.colored, 
+table.colored a {
 	color: #e7e7e7;
 }
 
@@ -137,7 +153,10 @@ ul.colored a:hover {
 	font-weight: bold;
 }
 
-ul.colored a.cyan, ul.colored a.cyan:hover, ul.colored ul.cyan a, ul.colored ul.cyan a:hover {
+ul.colored a.cyan, 
+ul.colored a.cyan:hover, 
+ul.colored ul.cyan a, 
+ul.colored ul.cyan a:hover {
 	color: rgb(35, 163, 219);
 }
 
@@ -145,7 +164,10 @@ ul.colored ul.cyan a.selected {
 	background: rgb(35, 163, 219);
 }
 
-ul.colored a.green, ul.colored a.green:hover, ul.colored ul.green a, ul.colored ul.green a:hover {
+ul.colored a.green, 
+ul.colored a.green:hover, 
+ul.colored ul.green a, 
+ul.colored ul.green a:hover {
 	color: rgb(177, 210, 53);
 }
 
@@ -153,7 +175,10 @@ ul.colored ul.green a.selected {
 	background: rgb(177, 210, 53);
 }
 
-ul.colored a.orange, ul.colored a.orange:hover, ul.colored ul.orange a, ul.colored ul.orange a:hover {
+ul.colored a.orange, 
+ul.colored a.orange:hover, 
+ul.colored ul.orange a, 
+ul.colored ul.orange a:hover {
 	color: rgb(242, 80, 31);
 }
 
@@ -161,7 +186,10 @@ ul.colored ul.orange a.selected {
 	background: rgb(242, 80, 31);
 }
 
-ul.colored a.pink, ul.colored a.pink:hover, ul.colored ul.pink a, ul.colored ul.pink a:hover {
+ul.colored a.pink, 
+ul.colored a.pink:hover, 
+ul.colored ul.pink a, 
+ul.colored ul.pink a:hover {
 	color: rgb(240, 84, 122);
 }
 
@@ -169,7 +197,10 @@ ul.colored ul.pink a.selected {
 	background: rgb(240, 84, 122);
 }
 
-ul.colored a.yellow, ul.colored a.yellow:hover, ul.colored ul.yellow a, ul.colored ul.yellow a:hover {
+ul.colored a.yellow, 
+ul.colored a.yellow:hover, 
+ul.colored ul.yellow a, 
+ul.colored ul.yellow a:hover {
 	color: rgb(252, 191, 20);
 }
 
@@ -177,7 +208,10 @@ ul.colored ul.yellow a.selected {
 	background: rgb(252, 191, 20);
 }
 
-ul.colored a.purple, ul.colored a.purple:hover, ul.colored ul.purple a, ul.colored ul.purple a:hover {
+ul.colored a.purple, 
+ul.colored a.purple:hover, 
+ul.colored ul.purple a, 
+ul.colored ul.purple a:hover {
 	color: rgb(191, 20, 252);
 }
 
@@ -185,7 +219,10 @@ ul.colored ul.purple a.selected {
 	background: rgb(191, 20, 252);
 }
 
-ul.colored a.grey, ul.colored a.grey:hover, ul.colored ul.grey a, ul.colored ul.grey a:hover {
+ul.colored a.grey, 
+ul.colored a.grey:hover, 
+ul.colored ul.grey a, 
+ul.colored ul.grey a:hover {
 	color: rgb(100, 100, 100);
 }
 
@@ -193,6 +230,7 @@ ul.colored ul.grey a.selected {
 	background: rgb(100, 100, 100);
 }
 
-td.invisible, tr:hover td.invisible {
-	background: transparent;	
+td.invisible, 
+tr:hover td.invisible {
+	background: transparent !important;	
 }
