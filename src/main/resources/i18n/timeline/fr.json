@@ -1,6 +1,10 @@
 {
  	"timeline.rbs.booking.created" : "a créé la demande de réservation n°",
  	"timeline.rbs.booking.updated" : "a mis à jour la demande de réservation n°",
+ 	"timeline.rbs.booking.on.resource" : " sur la ressource ",
+ 	"timeline.rbs.booking.from" : "du",
+ 	"timeline.rbs.booking.to" : " au",
+ 	
  	"timeline.rbs.booking.validated" : "a validé votre demande de réservation n°",
  	"timeline.rbs.booking.refused" : "a refusé votre demande de réservation n°",
  	

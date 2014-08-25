@@ -45,9 +45,7 @@ public class BookingController extends ControllerHelper {
 	}
 
 	/*
-	 * TODO : améliorer le contenu des notifications
-		- ajouter un lien vers la demande de réservation ou le calendrier correspondant
-		- ajouter le nom de la ressource, la date de début et la date de fin
+	 * TODO : contenu des notifications : ajouter un lien vers la demande de réservation ou le calendrier correspondant
 	 */
 
 	@Post("/resource/:id/booking")
@@ -104,6 +102,8 @@ public class BookingController extends ControllerHelper {
 
 		final long id = message.getLong("id", 0L);
 		final int status = message.getInteger("status", 0);
+		final String startDate = message.getString("start_date", null);
+		final String endDate = message.getString("end_date", null);
 
 		final String eventType;
 		final String template;
@@ -116,8 +116,8 @@ public class BookingController extends ControllerHelper {
 			template = "notify-booking-updated.html";
 		}
 
-		if (id == 0L || status == 0) {
-			log.error("Could not get bookingId or status from response. Unable to send timeline "+ eventType + " notification.");
+		if (id == 0L || status == 0 || startDate == null || endDate == null) {
+			log.error("Could not get bookingId, status, start_date or end_date from response. Unable to send timeline "+ eventType + " notification.");
 			return;
 		}
 		final String bookingId = Long.toString(id);
@@ -125,35 +125,52 @@ public class BookingController extends ControllerHelper {
 		// Do NOT send a notification if the booking has been automatically validated
         if(CREATED.status() == status){
 
-			bookingService.getModeratorsIds(bookingId, user, new Handler<Either<String, JsonArray>>() {
+        	bookingService.getResourceName(bookingId, user, new Handler<Either<String, JsonObject>>() {
 				@Override
-				public void handle(Either<String, JsonArray> event) {
-					if (event.isRight()) {
-						Set<String> recipientSet = new HashSet<>();
-						for(Object o : event.right().getValue()){
-							if(!(o instanceof JsonObject)){
-								continue;
+				public void handle(Either<String, JsonObject> event) {
+					if (event.isRight() && event.right().getValue() != null
+							&& event.right().getValue().size() > 0) {
+
+						final String resourceName = event.right().getValue().getString("resource_name");
+
+						bookingService.getModeratorsIds(bookingId, user, new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								if (event.isRight()) {
+									Set<String> recipientSet = new HashSet<>();
+									for(Object o : event.right().getValue()){
+										if(!(o instanceof JsonObject)){
+											continue;
+										}
+										JsonObject jo = (JsonObject) o;
+										recipientSet.add(jo.getString("member_id"));
+									}
+									List<String> recipients = new ArrayList<>(recipientSet);
+
+									JsonObject params = new JsonObject();
+									params.putString("uri", container.config().getString("userbook-host") +
+											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+									params.putString("id", bookingId)
+										.putString("username", user.getUsername())
+										.putString("startdate", startDate)
+										.putString("enddate", endDate)
+										.putString("resourcename", resourceName);
+
+									notification.notifyTimeline(request, user, RBS_NAME, eventType,
+											recipients, bookingId, template, params);
+								} else {
+									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
+											+ eventType + " notification.");
+								}
 							}
-							JsonObject jo = (JsonObject) o;
-							recipientSet.add(jo.getString("member_id"));
-						}
-						List<String> recipients = new ArrayList<>(recipientSet);
-
-						JsonObject params = new JsonObject();
-						params.putString("uri", container.config().getString("userbook-host") +
-								"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-						params.putString("id", bookingId)
-							.putString("username", user.getUsername());
-
-						notification.notifyTimeline(request, user, RBS_NAME, eventType,
-								recipients, bookingId, template, params);
+			    		});
 
 					} else {
-						log.error("Error when calling service getModeratorsIds. Unable to send timeline "
-								+ eventType + " notification.");
+						log.error("Error when calling service getResourceName. Unable to send timeline "
+											+ eventType + " notification.");
 					}
 				}
-    		});
+        	});
         }
 
 	}

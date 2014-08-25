@@ -84,7 +84,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( start_date < to_timestamp(?) AND to_timestamp(?) <= end_date )")
 				.append(" OR ( to_timestamp(?) <= start_date AND start_date < to_timestamp(?) )")
 				.append(" OR ( to_timestamp(?) < end_date AND end_date <= to_timestamp(?) )")
-				.append(")) RETURNING id, status;");
+				.append(")) RETURNING id, status,")
+				.append(" to_char(start_date, 'DD/MM/YY HH24:MI') AS start_date, to_char(end_date, 'DD/MM/YY HH24:MI') AS end_date");
 
 		values.add(resourceId)
 				.add(VALIDATED.status())
@@ -440,7 +441,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( to_timestamp(?) <= start_date AND start_date < to_timestamp(?) )")
 				.append(" OR ( to_timestamp(?) < end_date AND end_date <= to_timestamp(?) )")
 				.append("))")
-				.append(" RETURNING id, status;");
+				.append(" RETURNING id, status,")
+				.append(" to_char(start_date, 'DD/MM/YY HH24:MI') AS start_date, to_char(end_date, 'DD/MM/YY HH24:MI') AS end_date");
 
 		Object newStartDate = data.getValue("start_date");
 		Object newEndDate = data.getValue("end_date");
@@ -774,5 +776,17 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				validResultHandler(handler));
 	}
 
+	@Override
+	public void getResourceName(final String bookingId, final UserInfos user,
+			final Handler<Either<String, JsonObject>> handler) {
+
+		String query = "SELECT r.name AS resource_name"
+						+ " FROM rbs.resource AS r"
+						+ " INNER JOIN rbs.booking AS b on r.id = b.resource_id"
+						+ " WHERE b.id = ?";
+
+		Sql.getInstance().prepared(query, new JsonArray().add(bookingId),
+				validUniqueResultHandler(handler));
+	}
 
 }
