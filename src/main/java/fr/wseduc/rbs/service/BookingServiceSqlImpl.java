@@ -777,8 +777,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void getResourceName(final String bookingId, final UserInfos user,
-			final Handler<Either<String, JsonObject>> handler) {
+	public void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
 
 		String query = "SELECT r.name AS resource_name"
 						+ " FROM rbs.resource AS r"
@@ -786,6 +785,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 						+ " WHERE b.id = ?";
 
 		Sql.getInstance().prepared(query, new JsonArray().add(bookingId),
+				validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder();
+
+		query.append("SELECT DISTINCT p.id, r.name as resource_name, to_char(p.start_date, 'DD/MM/YY HH24:MI') as start_date,")
+			.append(" to_char(p.end_date, 'DD/MM/YY HH24:MI') as end_date")
+			.append(" FROM rbs.booking AS b")
+			.append(" INNER JOIN rbs.booking AS p ON b.parent_booking_id = p.id")
+			.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
+			.append(" WHERE b.id = ?");
+
+		Sql.getInstance().prepared(query.toString(), new JsonArray().add(bookingId),
 				validUniqueResultHandler(handler));
 	}
 

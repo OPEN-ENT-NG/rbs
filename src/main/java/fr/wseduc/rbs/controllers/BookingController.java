@@ -29,6 +29,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.ResourceFilter;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class BookingController extends ControllerHelper {
@@ -37,6 +38,9 @@ public class BookingController extends ControllerHelper {
 	private static final String BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_UPDATED";
 	private static final String BOOKING_VALIDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_VALIDATED";
 	private static final String BOOKING_REFUSED_EVENT_TYPE = RBS_NAME + "_BOOKING_REFUSED";
+	private static final String PERIODIC_BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_CREATED";
+	private static final String PERIODIC_BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_PEROIDIC_BOOKING_UPDATED";
+
 
 	private final BookingService bookingService;
 
@@ -125,7 +129,7 @@ public class BookingController extends ControllerHelper {
 		// Do NOT send a notification if the booking has been automatically validated
         if(CREATED.status() == status){
 
-        	bookingService.getResourceName(bookingId, user, new Handler<Either<String, JsonObject>>() {
+			bookingService.getResourceName(bookingId, new Handler<Either<String, JsonObject>>() {
 				@Override
 				public void handle(Either<String, JsonObject> event) {
 					if (event.isRight() && event.right().getValue() != null
@@ -136,16 +140,8 @@ public class BookingController extends ControllerHelper {
 						bookingService.getModeratorsIds(bookingId, user, new Handler<Either<String, JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
-								if (event.isRight()) {
-									Set<String> recipientSet = new HashSet<>();
-									for(Object o : event.right().getValue()){
-										if(!(o instanceof JsonObject)){
-											continue;
-										}
-										JsonObject jo = (JsonObject) o;
-										recipientSet.add(jo.getString("member_id"));
-									}
-									List<String> recipients = new ArrayList<>(recipientSet);
+								if (event.isRight() && event.right() != null) {
+									List<String> recipients = getModeratorsList(event.right().getValue());
 
 									JsonObject params = new JsonObject();
 									params.putString("uri", container.config().getString("userbook-host") +
@@ -262,8 +258,9 @@ public class BookingController extends ControllerHelper {
 				if (isCreation) {
 					try {
 						bookingService.createPeriodicBooking(parseId(id), selectedDays,
-								firstSlotStartDay, object, user, arrayResponseHandler(request));
-						// TODO : notifier les valideurs
+								firstSlotStartDay, object, user,
+								getHandlerForPeriodicNotification(user, request, isCreation));
+
 					} catch (Exception e) {
 						log.error("Error during service createPeriodicBooking", e);
 						renderError(request);
@@ -272,8 +269,9 @@ public class BookingController extends ControllerHelper {
 				else {
 					try {
 						bookingService.updatePeriodicBooking(parseId(id), parseId(bookingId), selectedDays,
-								firstSlotStartDay, object, user, arrayResponseHandler(request));
-						// TODO notifier les valideurs
+								firstSlotStartDay, object, user,
+								getHandlerForPeriodicNotification(user, request, isCreation));
+
 					} catch (Exception e) {
 						log.error("Error during service updatePeriodicBooking", e);
 						renderError(request);
@@ -282,6 +280,128 @@ public class BookingController extends ControllerHelper {
 
 			}
 		};
+	}
+
+	private Handler<Either<String, JsonArray>> getHandlerForPeriodicNotification(final UserInfos user,
+			final HttpServerRequest request, final boolean isCreation) {
+		return new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isRight()) {
+					notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
+					Renders.renderJson(request, event.right().getValue());
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					Renders.renderJson(request, error, 400);
+				}
+			}
+		};
+	}
+
+	private void notifyPeriodicBookingCreatedOrUpdated(final HttpServerRequest request, final UserInfos user,
+			final JsonArray childBookings, final boolean isCreation) {
+
+		// Send a notification if if there is at least one child booking with status "created"
+		boolean sendNotification = false;
+		try {
+			for (Object booking : childBookings) {
+				int status = ((JsonObject) booking).getInteger("status", 0);
+				if(CREATED.status() == status) {
+					sendNotification = true;
+					break;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error in method notifyPeriodicBookingCreatedOrUpdated");
+			return;
+		}
+
+		if(sendNotification && childBookings!=null && childBookings.get(0)!=null) {
+			JsonObject firstBooking = (JsonObject) childBookings.get(0);
+			final long id = firstBooking.getLong("id", 0L);
+
+			final String eventType;
+			final String template;
+			if (isCreation) {
+				eventType = PERIODIC_BOOKING_CREATED_EVENT_TYPE;
+				template = "notify-periodic-booking-created.html";
+			}
+			else {
+				eventType = PERIODIC_BOOKING_UPDATED_EVENT_TYPE;
+				template = "notify-periodic-booking-updated.html";
+			}
+
+			if (id == 0L) {
+				log.error("Could not get bookingId from response. Unable to send timeline "+ eventType + " notification.");
+				return;
+			}
+			final String bookingId = Long.toString(id);
+
+			bookingService.getParentBooking(bookingId, new Handler<Either<String, JsonObject>>() {
+				@Override
+				public void handle(Either<String, JsonObject> event) {
+					if (event.isRight() && event.right().getValue() != null
+							&& event.right().getValue().size() > 0) {
+
+						JsonObject parentBooking = event.right().getValue();
+						final long pId = parentBooking.getLong("id", 0L);
+						final String startDate = parentBooking.getString("start_date", null);
+						final String endDate = parentBooking.getString("end_date", null);
+						final String resourceName = parentBooking.getString("resource_name", null);
+
+						if (pId == 0L || startDate == null || endDate == null || resourceName == null) {
+							log.error("Could not get bookingId, start_date, end_date or resource_name from response. Unable to send timeline "+
+									PERIODIC_BOOKING_CREATED_EVENT_TYPE + " or " + PERIODIC_BOOKING_UPDATED_EVENT_TYPE + " notification.");
+							return;
+						}
+						final String periodicBookingId = Long.toString(pId);
+
+						bookingService.getModeratorsIds(periodicBookingId, user,
+								new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								if (event.isRight() && event.right() != null) {
+									List<String> recipients = getModeratorsList(event.right().getValue());
+
+									JsonObject params = new JsonObject();
+									params.putString("uri", container.config().getString("userbook-host") +
+											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+									params.putString("id", periodicBookingId)
+										.putString("username", user.getUsername())
+										.putString("startdate", startDate)
+										.putString("enddate", endDate)
+										.putString("resourcename", resourceName);
+
+									notification.notifyTimeline(request, user, RBS_NAME, eventType,
+											recipients, periodicBookingId, template, params);
+								} else {
+									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
+											+ eventType + " notification.");
+								}
+							}
+						});
+					} else {
+						log.error("Error when calling service getParentBooking. Unable to send timeline "
+								+ eventType + " notification.");
+					}
+				}
+			});
+		}
+
+	}
+
+	private List<String> getModeratorsList(JsonArray moderators) {
+		Set<String> recipientSet = new HashSet<>();
+		for(Object o : moderators){
+			if(!(o instanceof JsonObject)){
+				continue;
+			}
+			JsonObject jo = (JsonObject) o;
+			recipientSet.add(jo.getString("member_id"));
+		}
+
+		return new ArrayList<String>(recipientSet);
 	}
 
 	 /**
