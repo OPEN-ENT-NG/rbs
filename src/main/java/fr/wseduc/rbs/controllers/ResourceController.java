@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -57,7 +56,20 @@ public class ResourceController extends ControllerHelper {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
-				crudService.list(VisibilityFilter.OWNER_AND_SHARED, user, arrayResponseHandler(request));
+				if (user != null) {
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getProfilGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getProfilGroupsIds());
+					}
+
+					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
+				}
+				else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+
 			}
 		});
 	}

@@ -5,8 +5,11 @@ import static org.entcore.common.sql.SqlResult.validResultHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 import static fr.wseduc.rbs.BookingStatus.*;
 
+import java.util.List;
+
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -17,6 +20,41 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 
 	public ResourceServiceSqlImpl() {
 		super("rbs", "resource");
+	}
+
+	@Override
+	public void listResources(final List<String> groupsAndUserIds, final UserInfos user,
+			final Handler<Either<String, JsonArray>> handler) {
+
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		query.append("SELECT DISTINCT r.*")
+			.append(" FROM rbs.resource AS r")
+			.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
+			.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id");
+
+		query.append(" WHERE rs.member_id IN ")
+			.append(Sql.listPrepared(groupsAndUserIds.toArray()));
+		for (String groupOruser : groupsAndUserIds) {
+			values.add(groupOruser);
+		}
+
+		query.append(" OR r.owner = ? ");
+		values.add(user.getUserId());
+
+		query.append(" OR ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
+		for (String groupOruser : groupsAndUserIds) {
+			values.add(groupOruser);
+		}
+
+		query.append(" OR t.owner = ?");
+		values.add(user.getUserId());
+
+		query.append(" ORDER BY modified DESC");
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
 	@Override
