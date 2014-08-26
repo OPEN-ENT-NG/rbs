@@ -3,15 +3,15 @@
 		<tr>
 			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
 			<th></th>
-			<th><i18n>rbs.booking.headers.owner</i18n></th>
-			<th><i18n>rbs.booking.headers.resource</i18n></th>
-			<th><i18n>rbs.booking.headers.start_date</i18n></th>
-			<th><i18n>rbs.booking.headers.end_date</i18n></th>
-			<th><i18n>rbs.booking.headers.reason</i18n></th>
-			<th colspan="2"><i18n>rbs.booking.headers.status</i18n></th>
+			<th><a ng-click="switchSortBy('owner_name')" ng-class="{selected: sort.predicate === 'owner_name'}"><i18n>rbs.booking.headers.owner</i18n></a></th>
+			<th><a ng-click="switchSortBy('resource.name')" ng-class="{selected: sort.predicate === 'resource.name'}"><i18n>rbs.booking.headers.resource</i18n></a></th>
+			<th><a ng-click="switchSortBy('start_date')" ng-class="{selected: sort.predicate === 'start_date'}"><i18n>rbs.booking.headers.start_date</i18n></a></th>
+			<th><a ng-click="switchSortBy('end_date')" ng-class="{selected: sort.predicate === 'end_date'}"><i18n>rbs.booking.headers.end_date</i18n></a></th>
+			<th><a ng-click="switchSortBy('booking_reason')" ng-class="{selected: sort.predicate === 'booking_reason'}"><i18n>rbs.booking.headers.reason</i18n></a></th>
+			<th colspan="2"><a ng-click="switchSortBy('status')" ng-class="{selected: sort.predicate === 'status'}"><i18n>rbs.booking.headers.status</i18n></a></th>
 		</tr>
 	</thead>
-	<tbody ng-repeat="booking in bookings.filter(filterList)">
+	<tbody ng-repeat="booking in bookings.filter(filterList) | orderBy:sort.predicate:sort.reverse">
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
 			<td>

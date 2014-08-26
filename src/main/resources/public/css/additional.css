@@ -74,11 +74,23 @@ table.colored a {
 	color: #e7e7e7;
 }
 
-table.colored tr:hover td {
+table.colored thead a {
+	color: #000;
+}
+
+table.colored thead a:hover {
+	color: #ee532f;
+}
+
+table.colored thead a.selected {
+	color: #22a4dd;
+}
+
+table.colored tbody tr:hover td {
 	background: rgba(48, 48, 48, 0.6);
 }
 
-table.colored tr:hover a {
+table.colored tbody tr:hover a {
 	color: #fff;
 }
 

@@ -8,6 +8,11 @@ function RbsController($scope, template, model, date){
 		list: true
 	};
 
+	$scope.sort = {
+		predicate: 'start_date',
+		reverse: false
+	}
+
 	$scope.status = {
 		STATE_CREATED: model.STATE_CREATED,
 		STATE_VALIDATED: model.STATE_VALIDATED,
@@ -74,6 +79,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.showMain = function() {
 		$scope.currentResourceType = undefined;
+		$scope.resetSort();
 		model.refresh();
 		template.open('main', 'main-view');
 		template.open('bookings', 'main-list');
@@ -243,6 +249,22 @@ function RbsController($scope, template, model, date){
 			slot.expanded = undefined;
 		}
 	};
+
+	// Sort
+	$scope.switchSortBy = function(predicate) {
+		if (predicate === $scope.sort.predicate) {
+			$scope.sort.reverse = ! $scope.sort.reverse;
+		}
+		else {
+			$scope.sort.predicate = predicate;
+			$scope.sort.reverse = false;
+		}
+	}
+
+	$scope.resetSort = function() {
+		$scope.sort.predicate = 'start_date';
+		$scope.sort.reverse = false;
+	}
 
 
 	// General
@@ -459,7 +481,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.doRefuseBookingSelection = function() {
 		$scope.display.processing = true;
-		var actions = processBookings.length;
+		var actions = $scope.processBookings.length;
 		_.each($scope.processBookings, function(booking){
 			booking.refusal_reason = $scope.bookings.refuseReason;
 			booking.refuse(function(){
