@@ -22,8 +22,11 @@
 		</div>
 		<hr />
 
-		<div class="row">
+		<div ng-if="editedResourceType.id !== undefined" class="row">
 			<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
+		</div>
+		<div ng-if="editedResourceType.id === undefined" class="row info">
+			<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
 		</div>
 		<hr />
 

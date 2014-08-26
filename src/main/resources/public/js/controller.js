@@ -560,12 +560,15 @@ function RbsController($scope, template, model, date){
 	// Management view edition
 	$scope.newResourceType = function() {
 		$scope.editedResourceType = new ResourceType();
+		$scope.editedResourceType.validation = false;
 		template.open('resources', 'edit-resource-type');
 	};
 
 	$scope.newResource = function() {
 		$scope.editedResource = new Resource();
 		$scope.editedResource.type = $scope.currentResourceType;
+		$scope.editedResource.is_available = true;
+		$scope.editedResource.periodic_booking = true;
 		template.open('resources', 'edit-resource');
 	};
 
@@ -589,7 +592,9 @@ function RbsController($scope, template, model, date){
 
 	$scope.saveResourceType = function() {
 		// Default to user's classId
-		$scope.editedResourceType.school_id = model.me.classId;
+		if ($scope.editedResourceType.school_id === undefined) {
+			$scope.editedResourceType.school_id = model.me.classId;			
+		}
 
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
