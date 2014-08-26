@@ -67,6 +67,13 @@ public class BookingController extends ControllerHelper {
 						public void handle(JsonObject object) {
 							final String id = request.params().get("id");
 
+							long startDate = object.getLong("start_date", 0L);
+							long endDate = object.getLong("end_date", 0L);
+							if (!isValidDates(startDate, endDate)) {
+								badRequest(request, "rbs.booking.bad.request.invalid.dates");
+								return;
+							}
+
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 								@Override
 								public void handle(Either<String, JsonObject> event) {
@@ -192,7 +199,6 @@ public class BookingController extends ControllerHelper {
 
 	private Handler<JsonObject> getPeriodicBookingHandler(final UserInfos user,
 			final HttpServerRequest request, final boolean isCreation) {
-		// TODO : ajouter des messages d'erreur pour les bad request
 
 		return new Handler<JsonObject>() {
 			@Override
@@ -203,34 +209,34 @@ public class BookingController extends ControllerHelper {
 				long endDate = object.getLong("periodic_end_date", 0L);
 				int occurrences = object.getInteger("occurrences", 0);
 				if (endDate == 0L && occurrences == 0){
-					badRequest(request);
+					badRequest(request, "rbs.booking.bad.request.enddate.or.occurrences");
 					return;
 				}
 
 				long firstSlotStartDate = object.getLong("start_date", 0L);
 				long firstSlotEndDate = object.getLong("end_date", 0L);
-				if (firstSlotStartDate == 0L || firstSlotEndDate == 0L) {
-					badRequest(request);
+				if (!isValidDates(firstSlotStartDate, firstSlotEndDate)) {
+					badRequest(request, "rbs.booking.bad.request.invalid.dates");
 					return;
 				}
 
 				// The first slot must begin and end on the same day
 				final int firstSlotStartDay = getDayFromTimestamp(firstSlotStartDate);
 				if (firstSlotStartDay != getDayFromTimestamp(firstSlotEndDate)) {
-					badRequest(request);
+					badRequest(request, "rbs.booking.bad.request.invalid.first.slot");
 					return;
 				}
 
 				JsonArray selectedDaysArray = object.getArray("days", null);
 				if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
-					badRequest(request);
+					badRequest(request, "rbs.booking.bad.request.invalid.days");
 					return;
 				}
 				try {
 					Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotStartDay);
 					// The day of the first slot must be a selected day
 					if(!(Boolean) firstSlotDayIsSelected) {
-						badRequest(request);
+						badRequest(request, "rbs.booking.bad.request.first.day.not.selected");
 						return;
 					}
 				} catch (Exception e) {
@@ -241,7 +247,7 @@ public class BookingController extends ControllerHelper {
 
 				// The first and last slot must end at the same hour
 				if (endDate > 0L && !haveSameTime(endDate, firstSlotEndDate)) {
-						badRequest(request);
+						badRequest(request, "rbs.booking.bad.request.invalid.enddates");
 						return;
 				}
 
@@ -280,6 +286,13 @@ public class BookingController extends ControllerHelper {
 
 			}
 		};
+	}
+
+	private boolean isValidDates(long startDate, long endDate) {
+		long now = Calendar.getInstance().getTimeInMillis();
+		now = TimeUnit.SECONDS.convert(now, TimeUnit.MILLISECONDS);
+
+		return (startDate > now && endDate > startDate);
 	}
 
 	private Handler<Either<String, JsonArray>> getHandlerForPeriodicNotification(final UserInfos user,
@@ -461,6 +474,13 @@ public class BookingController extends ControllerHelper {
 								Object bookingId = parseId(sBookingId);
 								if (!(bookingId instanceof Integer)) {
 									badRequest(request);
+									return;
+								}
+
+								long startDate = object.getLong("start_date", 0L);
+								long endDate = object.getLong("end_date", 0L);
+								if (!isValidDates(startDate, endDate)) {
+									badRequest(request, "rbs.booking.bad.request.invalid.dates");
 									return;
 								}
 

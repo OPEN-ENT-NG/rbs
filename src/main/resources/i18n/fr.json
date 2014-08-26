@@ -177,5 +177,12 @@
 	
 	"rbs.booking.create.conflict" : "Votre demande de réservation n'a pas pu être enregistrée, car il existe une demande concurrente validée.",
 	"rbs.booking.update.conflict" : "Votre demande de réservation n'a pas pu être mise à jour, car il existe une demande concurrente validée.",
-	"rbs.booking.automatically.refused.reason" : "Validation de la demande concurrente n°"
+	"rbs.booking.automatically.refused.reason" : "Validation de la demande concurrente n°",
+	"rbs.booking.bad.request.invalid.dates" : "La date de début doit être supérieure à la date actuelle, et la date de fin doit être supérieure à la date de début",
+	"rbs.booking.bad.request.enddate.or.occurrences" : "La date de fin de la réservation périodique ou son nombre d'occurrences doit être renseigné",
+	"rbs.booking.bad.request.invalid.first.slot" : "Le 1er créneau de réservation doit commencer et se terminer le même jour",
+	"rbs.booking.bad.request.first.day.not.selected" : "Le 1er créneau de réservation doit porter sur un jour de la semaine sélectionné",
+	"rbs.booking.bad.request.invalid.enddates" : "Le 1er et le dernier créneau de réservation doivent se terminer à la même heure",
+	"rbs.booking.bad.request.invalid.days" : "Le tableau des jours sélectionnés n'a pas pu être récupéré, ou sa taille est différente de 7"
+	
 }
