@@ -298,6 +298,10 @@ function RbsController($scope, template, model, date){
 			$scope.autoSelectResource();
 		}
 
+		// default hours
+		$scope.editedBooking.startTime = model.times[0];
+		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { return $scope.editedBooking.startTime.hour < hourMinutes.hour });
+
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
 		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
@@ -326,9 +330,9 @@ function RbsController($scope, template, model, date){
 		$scope.editedBooking.startDate = moment($scope.editedBooking.startMoment).startOf('day').toDate();
 		$scope.editedBooking.endDate = moment($scope.editedBooking.endMoment).startOf('day').toDate();
 		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.startMoment.hour === hourMinutes.hour && $scope.editedBooking.startMoment.min === hourMinutes.min) });
+			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour && $scope.editedBooking.startMoment.minutes() === hourMinutes.min) });
 		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.endMoment.hour === hourMinutes.hour && $scope.editedBooking.endMoment.min === hourMinutes.min) });
+			return ($scope.editedBooking.endMoment.hour() === hourMinutes.hour && $scope.editedBooking.endMoment.minutes() === hourMinutes.min) });
 
 		// periodic booking
 		if ($scope.editedBooking.is_periodic === true) {
