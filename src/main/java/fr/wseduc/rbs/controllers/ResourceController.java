@@ -57,13 +57,16 @@ public class ResourceController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					final List<String> groupsAndUserIds = new ArrayList<>();
-					groupsAndUserIds.add(user.getUserId());
-					if (user.getProfilGroupsIds() != null) {
-						groupsAndUserIds.addAll(user.getProfilGroupsIds());
-					}
+//					final List<String> groupsAndUserIds = new ArrayList<>();
+//					groupsAndUserIds.add(user.getUserId());
+//					if (user.getProfilGroupsIds() != null) {
+//						groupsAndUserIds.addAll(user.getProfilGroupsIds());
+//					}
+//
+//					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
 
-					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
+					// TODO : modifier le service listResources pour qu'il renvoie shared
+					crudService.list(arrayResponseHandler(request));
 				}
 				else {
 					log.debug("User not found in session.");
@@ -79,7 +82,13 @@ public class ResourceController extends ControllerHelper {
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
-		super.retrieve(request);
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				String id = request.params().get("id");
+				crudService.retrieve(id, notEmptyResponseHandler(request));
+			}
+		});
 	}
 
 	@Override

@@ -5,7 +5,6 @@ import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyRe
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -31,18 +30,24 @@ public class ResourceTypeController extends ControllerHelper {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
-				crudService.list(VisibilityFilter.OWNER_AND_SHARED, user, arrayResponseHandler(request));
+				crudService.list(arrayResponseHandler(request));
 			}
 		});
 	}
-	
+
 	@Get("/type/:id")
 	@ApiDoc("Get resource type")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void getResourceType(final HttpServerRequest request){
-		super.retrieve(request);
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				String id = request.params().get("id");
+				crudService.retrieve(id, notEmptyResponseHandler(request));
+			}
+		});
 	}
-	
+
 	@Post("/type")
 	@ApiDoc("Create resource type")
 	@SecuredAction("rbs.type.create")
@@ -64,7 +69,7 @@ public class ResourceTypeController extends ControllerHelper {
 			}
 		});
 	}
-	
+
 	@Put("/type/:id")
 	@ApiDoc("Update resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
@@ -105,7 +110,8 @@ public class ResourceTypeController extends ControllerHelper {
 			}
 		});
 	}
-	
+
+	@Override
 	@Get("/share/json/:id")
 	@ApiDoc("List rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
@@ -122,6 +128,7 @@ public class ResourceTypeController extends ControllerHelper {
 		super.shareJsonSubmit(request, null, false);
 	}
 
+	@Override
 	@Put("/share/remove/:id")
 	@ApiDoc("Remove rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
@@ -129,5 +136,5 @@ public class ResourceTypeController extends ControllerHelper {
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.removeShare(request, false);
 	}
-	
+
 }
