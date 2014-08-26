@@ -57,16 +57,13 @@ public class ResourceController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-//					final List<String> groupsAndUserIds = new ArrayList<>();
-//					groupsAndUserIds.add(user.getUserId());
-//					if (user.getProfilGroupsIds() != null) {
-//						groupsAndUserIds.addAll(user.getProfilGroupsIds());
-//					}
-//
-//					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getProfilGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getProfilGroupsIds());
+					}
 
-					// TODO : modifier le service listResources pour qu'il renvoie shared
-					crudService.list(arrayResponseHandler(request));
+					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
 				}
 				else {
 					log.debug("User not found in session.");

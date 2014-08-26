@@ -1,16 +1,16 @@
 var rbsBehaviours = {
 	resources: {
 		contrib: {
-			right: 'fr.wseduc.rbs.controllers.BookingController|createBooking'
+			right: 'fr-wseduc-rbs-controllers-BookingController|createBooking'
 		},
 		process: {
-			right: 'fr.wseduc.rbs.controllers.BookingController|processBooking'
+			right: 'fr-wseduc-rbs-controllers-BookingController|processBooking'
 		},
 		manage: {
-			right: 'fr.wseduc.rbs.controllers.ResourceTypeController|updateResourceType'
+			right: 'fr-wseduc-rbs-controllers-ResourceTypeController|updateResourceType'
 		},
 		share: {
-			right: 'fr.wseduc.rbs.controllers.ResourceTypeController|shareJson'
+			right: 'fr-wseduc-rbs-controllers-ResourceTypeController|shareJson'
 		}
 	},
 	workflow: {
