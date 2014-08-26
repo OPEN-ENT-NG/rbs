@@ -705,10 +705,19 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
 				.append(" INNER JOIN rbs.resource_type AS t ON t.id = r.type_id")
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-				.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
-				.append(" WHERE b.status = ?");
-		values.add(CREATED.status());
+				.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id");
 
+		// Get child bookings with status "created" and parent bookings that have at least one child booking with status "created"
+		query.append(" WHERE (b.status = ?")
+				.append(" OR (b.is_periodic = ? AND EXISTS(")
+				.append(" SELECT 1 FROM rbs.booking AS c")
+				.append(" WHERE c.parent_booking_id = b.id")
+				.append(" AND c.status = ?)))");;
+		values.add(CREATED.status())
+			.add(true)
+			.add(CREATED.status());
+
+		// Restrict results to bookings visible by current user
 		query.append(" AND (ts.member_id IN ")
 				.append(Sql.listPrepared(groupsAndUserIds.toArray()));
 		for (String groupOruser : groupsAndUserIds) {
