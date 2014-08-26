@@ -32,22 +32,15 @@ function RbsController($scope, template, model, date){
 	$scope.editedBooking = undefined;
 	$scope.bookings.refuseReason = undefined;
 	$scope.processBookings = [];
+	$scope.currentErrors = [];
 
 	template.open('main', 'main-view');
 	template.open('bookings', 'main-list');
 
-	var initialSyncMine = true;
-	$scope.resourceTypes.on('syncResources', function(){
-		if (initialSyncMine === true) {
-			// Auto-select my bookings
-			$scope.mine.bookings.sync(function(){
-				$scope.mine.selected = true;
-				$scope.bookings.pushAll($scope.mine.bookings.all);
-			});
-			initialSyncMine = undefined;
-			return;
-		}
-		
+	// Will auto-select "Mine" bookings by default
+	model.recordedSelections.mine = true;
+
+	$scope.resourceTypes.on('sync', function(){
 		// Restore previous selections
 		model.recordedSelections.restore(
 			function(){
@@ -201,6 +194,7 @@ function RbsController($scope, template, model, date){
 		$scope.selectedBooking = undefined;
 		$scope.editedBooking = undefined;
 		$scope.processBookings = [];
+		$scope.currentErrors = [];
 		$scope.display.showPanel = false;
 		template.close('lightbox');
 	};
@@ -375,6 +369,7 @@ function RbsController($scope, template, model, date){
 			// periodic booking
 			$scope.editedBooking.endMoment = moment($scope.editedBooking.startDate).hour($scope.editedBooking.endTime.hour).minute($scope.editedBooking.endTime.min);
 			if ($scope.editedBooking.byOccurrences !== true) {
+				$scope.editedBooking.occurrences = undefined;
 				$scope.editedBooking.periodicEndMoment = moment($scope.editedBooking.periodicEndDate).hour($scope.editedBooking.endTime.hour).minute($scope.editedBooking.endTime.min);;
 			}
 		}
@@ -387,10 +382,15 @@ function RbsController($scope, template, model, date){
 		var DEBUG_editedBooking = $scope.editedBooking;
 		// /debug
 
+		$scope.currentErrors = [];
 		$scope.editedBooking.save(function(){
 			$scope.display.processing = undefined;
 			$scope.closeBooking();
 			model.refresh();
+		}, function(e){
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push(e);
+			$scope.$apply();
 		});
 	};
 
@@ -408,6 +408,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.doRemoveBookingSelection = function() {
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		var actions = $scope.processBookings.length;
 		_.each($scope.processBookings, function(booking){
 			booking.delete(function(){
@@ -416,6 +417,14 @@ function RbsController($scope, template, model, date){
 					$scope.display.processing = undefined;
 					$scope.bookings.deselectAll();
 					$scope.closeBooking();
+					model.refresh();
+				}
+			}, function(e){
+				$scope.currentErrors.push(e);
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.showActionErrors()
 					model.refresh();
 				}
 			});
@@ -465,6 +474,7 @@ function RbsController($scope, template, model, date){
 
 	$scope.doValidateBookingSelection = function() {
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		var actions = $scope.processBookings.length;
 		_.each($scope.processBookings, function(booking){
 			booking.validate(function(){
@@ -475,12 +485,21 @@ function RbsController($scope, template, model, date){
 					$scope.closeBooking();
 					model.refresh();
 				}
+			}, function(e){
+				$scope.currentErrors.push(e);
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.showActionErrors();
+					model.refresh();
+				}
 			});
 		});
 	};
 
 	$scope.doRefuseBookingSelection = function() {
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		var actions = $scope.processBookings.length;
 		_.each($scope.processBookings, function(booking){
 			booking.refusal_reason = $scope.bookings.refuseReason;
@@ -491,6 +510,14 @@ function RbsController($scope, template, model, date){
 					$scope.bookings.deselectAll();
 					$scope.bookings.refuseReason = undefined;
 					$scope.closeBooking();
+					model.refresh();
+				}
+			}, function(e){
+				$scope.currentErrors.push(e);
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.showActionErrors();
 					model.refresh();
 				}
 			});
@@ -561,20 +588,30 @@ function RbsController($scope, template, model, date){
 		$scope.editedResourceType.school_id = model.me.classId;
 
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		$scope.editedResourceType.save(function(){
 			$scope.display.processing = undefined;
 			$scope.currentResourceType = $scope.editedResourceType;
 			$scope.closeResourceType();
 			model.refresh();
+		}, function(e){
+			$scope.currentErrors.push(e);
+			$scope.display.processing = undefined;
+			$scope.$apply();
 		});
 	};
 
 	$scope.saveResource = function() {
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		$scope.editedResource.save(function(){
 			$scope.display.processing = undefined;
 			$scope.closeResource();
 			model.refresh();
+		}, function(e){
+			$scope.currentErrors.push(e);
+			$scope.display.processing = undefined;
+			$scope.$apply();
 		});
 	};
 
@@ -591,31 +628,66 @@ function RbsController($scope, template, model, date){
 
 	$scope.doDeleteResourceType = function() {
 		$scope.display.processing = true;
+		$scope.currentErrors = [];
 		$scope.editedResourceType.delete(function(){
 			$scope.display.processing = undefined;
 			$scope.resourceTypes.remove($scope.editedResourceType);
 			$scope.currentResourceType = $scope.resourceTypes.first();
 			$scope.closeResourceType();
 			model.refresh();
+		}, function(e){
+			$scope.currentErrors.push(e);
+			$scope.display.processing = undefined;
 		});
 	};
 
 	$scope.doDeleteResource = function() {
 		$scope.display.processing = true;
-		$scope.currentResourceType.resources.removeSelection(function(){
-			$scope.display.processing = undefined;
-			$scope.closeResource();
-			model.refresh();
+		$scope.currentErrors = [];
+		var actions = $scope.currentResourceType.resources.selection().length;
+		_.each($scope.currentResourceType.resources.selection(), function(resource){
+			resource.delete(function(){
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.closeResource();
+					model.refresh();
+				}
+			}, function(e){
+				$scope.currentErrors.push(e);
+				actions--;
+				if (actions === 0) {
+					$scope.display.processing = undefined;
+					$scope.showActionErrors();
+					model.refresh();
+				}
+			});
 		});
 	};
 
 	$scope.closeResourceType = function() {
 		$scope.editedResourceType = undefined;
+		$scope.currentErrors = [];
+		if ($scope.display.showPanel === true) {
+			$scope.display.showPanel = false;
+			template.close('lightbox');
+		}
 		template.open('resources', 'manage-resources');
 	};
 
 	$scope.closeResource = function() {
 		$scope.editedResource = undefined;
+		$scope.currentErrors = [];
+		if ($scope.display.showPanel === true) {
+			$scope.display.showPanel = false;
+			template.close('lightbox');
+		}
 		template.open('resources', 'manage-resources');
 	};
+
+	// Errors
+	$scope.showActionErrors = function() {
+		$scope.display.showPanel = true;
+		template.open('lightbox', 'action-errors');
+	}
 }

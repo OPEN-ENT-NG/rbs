@@ -136,6 +136,11 @@
 		</div>
 		<hr />
 
+		<div class="warning form-element" ng-repeat="actionError in currentErrors">
+			<i18n>[[actionError.error]]</i18n>
+		</div>
+		<hr />
+
 		<div class="row">
 			<behaviour name="contrib" resource="editedBooking.resource">
 				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>

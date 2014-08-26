@@ -1,0 +1,47 @@
+<div class="row">
+	<article class="twelve cell">
+		<h2 ng-if="currentErrors.length === 1"><i18n>rbs.errors.title.one</i18n></h2>
+		<h2 ng-if="currentErrors.length > 1"><i18n>rbs.errors.title.multi</i18n></h2>
+
+		<div class="row">
+			<table class="list-view colored">
+				<thead>
+					<tr>
+						<th><i18n>rbs.errors.headers.action</i18n></th>
+						<th colspan="3"><i18n>rbs.errors.headers.object</i18n></th>
+						<th><i18n>rbs.errors.headers.error</i18n></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="actionError in currentErrors" class="warning">
+						<td>
+							<i18n ng-if="actionError.action === 'create'">rbs.errors.actions.create</i18n>
+							<i18n ng-if="actionError.action === 'update'">rbs.errors.actions.update</i18n>
+							<i18n ng-if="actionError.action === 'delete'">rbs.errors.actions.delete</i18n>
+							<i18n ng-if="actionError.action === 'validate'">rbs.errors.actions.validate</i18n>
+							<i18n ng-if="actionError.action === 'refuse'">rbs.errors.actions.refuse</i18n>
+						</td>
+						<td>
+							<i18n ng-if="actionError.object instanceof ResourceType">rbs.errors.objects.resourceType</i18n>
+							<i18n ng-if="actionError.object instanceof Resource">rbs.errors.objects.resource</i18n>
+							<i18n ng-if="actionError.object instanceof Booking">rbs.errors.objects.booking</i18n>
+						</td>
+
+						<td ng-if="actionError.object instanceof ResourceType" colspan="2">[[actionError.object.name]]</td>
+						<td ng-if="actionError.object instanceof Resource" colspan="2">[[actionError.object.name]]</td>
+						<td ng-if="actionError.object instanceof Booking">[[actionError.object.owner_name]]</td>
+						<td ng-if="actionError.object instanceof Booking">[[actionError.object.resource.name]]</td>
+
+						<td>
+							<span i18n-value="[[actionError.error]]"></span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="row">
+			<input type="button" class="cancel right-magnet" i18n-value="close" ng-click="closeActionErrors()" />
+		</div>
+	</article>
+</div>

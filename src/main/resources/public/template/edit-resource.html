@@ -47,6 +47,11 @@
 		</div>
 		<hr />
 
+		<div class="warning" ng-repeat="actionError in currentErrors">
+			<i18n>[[actionError.error]]</i18n>
+		</div>
+		<hr />
+
 		<div class="row">
 			<behaviour name="manage" resource="editedResource.type">
 				<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>

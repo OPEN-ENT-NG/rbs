@@ -1,3 +1,10 @@
+<!-- Lightbox -->
+<div ng-if="display.showPanel">
+	<lightbox-plus show="display.showPanel" on-close="closeActionErrors()">
+		<container template="lightbox"></container>
+	</lightbox-plus>
+</div>
+
 <section class="cell four">
 
 	<button ng-click="showMain()"><i18n>rbs.navigation.main</i18n></button>

@@ -45,38 +45,45 @@ function Booking() {
 
 }
 
-Booking.prototype.save = function(cb) {
+Booking.prototype.save = function(cb, cbe) {
 	if(this.id) {
-		this.update(cb);
+		this.update(cb, cbe);
 	}
 	else {
-		this.create(cb);
+		this.create(cb, cbe);
 	}
 };
 
-Booking.prototype.update = function(cb) {
+Booking.prototype.update = function(cb, cbe) {
 	var url = '/rbs/resource/' + this.resource.id + '/booking/' + this.id;
 	if (this.is_periodic === true) {
 		url = url + '/periodic';
 	}
 
 	var booking = this;
-	http().putJson(url, this).done(function(){
+	http().putJson(url, this)
+	.done(function(){
 		this.status = model.STATE_CREATED;
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, booking, 'update'));
+		}	
 	});
 };
 
-Booking.prototype.create = function(cb) {
+Booking.prototype.create = function(cb, cbe) {
 	var url = '/rbs/resource/' + this.resource.id + '/booking';
 	if (this.is_periodic === true) {
 		url = url + '/periodic';
 	}
 
 	var booking = this;
-	http().postJson(url, this).done(function(b){
+	http().postJson(url, this)
+	.done(function(b){
 		booking.updateData(b);
 
 		// Update collections
@@ -88,41 +95,58 @@ Booking.prototype.create = function(cb) {
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, booking, 'create'));
+		}	
 	});
 };
 
-Booking.prototype.validate = function(cb) {
+Booking.prototype.validate = function(cb, cbe) {
 	this.status = model.STATE_VALIDATED;
 	var data = {
 		status: this.status
 	};
-	this.process(data, cb);
+	this.process(data, cb, cbe, 'validate');
 };
 
-Booking.prototype.refuse = function(cb) {
+Booking.prototype.refuse = function(cb, cbe) {
 	this.status = model.STATE_REFUSED;
 	var data = {
 		status: this.status,
 		refusal_reason: this.refusal_reason
 	};
-	this.process(data, cb);
+	this.process(data, cb, cbe, 'refuse');
 };
 
-Booking.prototype.process = function(data, cb) {
+Booking.prototype.process = function(data, cb, cbe, context) {
 	var booking = this;
-	http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data).done(function(){
+	http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data)
+	.done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, booking, context));
+		}	
 	});
 };
 
-Booking.prototype.delete = function(cb) {
+Booking.prototype.delete = function(cb, cbe) {
 	var booking = this;
-	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id).done(function(){
+	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id)
+	.done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, booking, 'delete'));
+		}	
 	});
 };
 
@@ -226,61 +250,67 @@ function Resource() {
 	});
 }
 
-Resource.prototype.save = function(cb) {
+Resource.prototype.save = function(cb, cbe) {
 	if(this.id) {
-		this.update(cb);
+		this.update(cb, cbe);
 	}
 	else {
-		this.create(cb);
+		this.create(cb, cbe);
 	}
 };
 
-Resource.prototype.update = function(cb) {
+Resource.prototype.update = function(cb, cbe) {
 	var resource = this;
 	var originalTypeId = this.type_id;
 	this.type_id = this.type.id;
 
-	http().putJson('/rbs/resource/' + this.id, this).done(function(){
-
-		if (resource.type_id !== originalTypeId) {
-			// Move between types collections
-			var originalType = model.resourceTypes.find(function(t) { return t.id === originalTypeId; });
-			originalType.resources.remove(resource, false);
-			originalType.resources.trigger('sync');
-			resource.type.resources.all.push(resource);
-			resource.type.resources.trigger('sync');		
-		}
+	http().putJson('/rbs/resource/' + this.id, this)
+	.done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resource, 'update'));
+		}	
 	});
 };
 
-Resource.prototype.create = function(cb) {
+Resource.prototype.create = function(cb, cbe) {
 	var resource = this;
 	this.type_id = this.type.id;
 	this.was_available = undefined;
 
-	http().postJson('/rbs/resources', this).done(function(r){
-		resource.updateData(r);
-
+	http().postJson('/rbs/resources', this)
+	.done(function(r){
 		// Update collections
-		resource.type.resources.push(resource);
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resource, 'create'));
+		}	
 	});
 };
 
-Resource.prototype.delete = function(cb) {
+Resource.prototype.delete = function(cb, cbe) {
 	var resource = this;
 
-	http().delete('/rbs/resource/' + this.id).done(function(){
+	http().delete('/rbs/resource/' + this.id)
+	.done(function(){
 		var resourceType = resource.type;
 		resourceType.resources.remove(resource);
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resource, 'delete'));
+		}	
 	});
 };
 
@@ -315,20 +345,6 @@ function ResourceType(data) {
 				return resource.is_available === true;
 			});
 		},
-		removeSelection : function(cb) {
-			var counter = this.selection().length;
-			_.each(this.selection, function(resource){
-				resource.delete(function(){
-					counter = counter - 1;
-					if (counter === 0) {
-						Collection.prototype.removeSelection.call(this);
-						if(typeof cb === 'function'){
-							cb();
-						}
-					}
-				});
-			});
-		},
 		collapseAll : function() {
 			this.forEach(function(resource){
 				if (resource.expanded === true) {
@@ -340,26 +356,34 @@ function ResourceType(data) {
 	});
 }
 
-ResourceType.prototype.save = function(cb) {
+ResourceType.prototype.save = function(cb, cbe) {
 	if(this.id) {
-		this.update(cb);
+		this.update(cb, cbe);
 	}
 	else {
-		this.create(cb);
+		this.create(cb, cbe);
 	}
 };
 
-ResourceType.prototype.update = function(cb) {
-	http().putJson('/rbs/type/' + this.id, this).done(function(){
+ResourceType.prototype.update = function(cb, cbe) {
+	var resourceType = this;
+	http().putJson('/rbs/type/' + this.id, this)
+	.done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resourceType, 'update'));
+		}	
 	});
 };
 
-ResourceType.prototype.create = function(cb) {
+ResourceType.prototype.create = function(cb, cbe) {
 	var resourceType = this;
-	http().postJson('/rbs/type', this).done(function(t){
+	http().postJson('/rbs/type', this)
+	.done(function(t){
 		resourceType.updateData(t);
 		resourceType._id = resourceType.id;
 
@@ -368,15 +392,26 @@ ResourceType.prototype.create = function(cb) {
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resourceType, 'create'));
+		}	
 	});
 };
 
-ResourceType.prototype.delete = function(cb) {
+ResourceType.prototype.delete = function(cb, cbe) {
 	var resourceType = this;
-	http().delete('/rbs/type/' + this.id).done(function(){
+	http().delete('/rbs/type/' + this.id)
+	.done(function(){
 		if(typeof cb === 'function'){
 			cb();
 		}
+	})
+	.error(function(e){
+		if(typeof cbe === 'function'){
+			cbe(model.parseError(e, resourceType, 'delete'));
+		}	
 	});
 };
 
@@ -423,8 +458,6 @@ function BookingsHolder(params) {
 
 
 function SelectionHolder() {
-	resourceTypes: {};
-	resources: {};
 }
 
 SelectionHolder.prototype.record = function(restoreUnprocessed, resourceTypeCallback, resourceCallback) {
@@ -456,6 +489,9 @@ SelectionHolder.prototype.record = function(restoreUnprocessed, resourceTypeCall
 };
 
 SelectionHolder.prototype.restore = function(mineCallback, unprocessedCallback, resourceCallback) {
+	var typeRecords = this.resourceTypes || {};
+	var resourceRecords = this.resources || {};
+
 	if (this.restoreUnprocessed === true) {
 		// Restore unprocessed only, and keep record
 		model.unprocessed.selected === true;
@@ -477,9 +513,6 @@ SelectionHolder.prototype.restore = function(mineCallback, unprocessedCallback, 
 		}
 		this.mine = undefined;
 	}
-
-	var typeRecords = this.resourceTypes;
-	var resourceRecords = this.resources;
 
 	model.resourceTypes.forEach(function(resourceType){
 		if (typeRecords[resourceType.id]) {
@@ -510,45 +543,39 @@ model.build = function(){
 			// Load the ResourceTypes
 			http().get('/rbs/types').done(function(resourceTypes){
 				var index = 0;
+				// Auto-associate colors to Types
 				_.each(resourceTypes, function(resourceType){
 					resourceType.color = model.findColor(index);
 					resourceType._id = resourceType.id;
 					index++;
 				});
 
-				this.load(resourceTypes);
+				// Fill the ResourceType collection and prepare the index
+				this.all = [];
+				var resourceTypeIndex = {};
+				this.addRange(resourceTypes, function(resourceType){
+					resourceType.resources.all = [];
+					resourceTypeIndex[resourceType.id] = resourceType;
+				});
 
-				// always Sync the Resources with the ResourceTypes
-				this.one('sync', function(){
-					collection.syncResources();
+				// Load the Resources in each ResourceType
+				http().get('/rbs/resources').done(function(resources){
+					var actions = (resources !== undefined ? resources.length : 0);
+					_.each(resources, function(resource){
+						// Load the ResourceType's collection with associated Resource
+						var resourceType = resourceTypeIndex[resource.type_id];
+						if (resourceType !== undefined) {
+							resource.type = resourceType;
+							resourceType.resources.push(resource);
+						}
+						actions--;
+						if (actions === 0) {
+							collection.trigger('sync');
+						}
+					});
 				});
 				
 			}.bind(this));
-		},
-		syncResources: function(){
-			var collection = this;
-			// Prepare ResourceType index and Clear Resources collections
-			var resourceTypeIndex = {};
-			collection.forEach(function(resourceType){
-				resourceType.resources.all = [];
-				resourceTypeIndex[resourceType.id] = resourceType;
-			});
-			// Load the Resources in each ResourceType
-			http().get('/rbs/resources').done(function(resources){
-				var actions = (resources !== undefined ? resources.length : 0);
-				_.each(resources, function(resource){
-					// Load the ResourceType's collection with associated Resource
-					var resourceType = resourceTypeIndex[resource.type_id];
-					if (resourceType !== undefined) {
-						resource.type = resourceType;
-						resourceType.resources.push(resource);
-					}
-					actions--;
-					if (actions === 0) {
-						collection.trigger('syncResources');
-					}
-				});
-			});
 		},
 		filterAvailable: function() {
 			return this.filter(function(resourceType){
@@ -762,4 +789,18 @@ model.loadPeriods = function() {
 	for (occurrence = model.periodsConfig.occurrences.start; occurrence <= model.periodsConfig.occurrences.end; occurrence = occurrence + model.periodsConfig.occurrences.interval) {
 		model.periods.occurrences.push(occurrence);
 	}
+}
+
+model.parseError = function(e, object, context) {
+	var error = {};
+	try {
+		error = JSON.parse(e.responseText);
+	}
+	catch (err) {
+		error.error = "rbs.error.unknown";
+	}
+	error.status = e.status;	
+	error.object = object;
+	error.context = context;
+	return error;
 }
