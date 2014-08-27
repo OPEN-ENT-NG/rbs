@@ -3,6 +3,7 @@ package fr.wseduc.rbs.service;
 import static fr.wseduc.rbs.BookingStatus.CREATED;
 import static fr.wseduc.rbs.BookingStatus.REFUSED;
 import static fr.wseduc.rbs.BookingStatus.VALIDATED;
+import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
@@ -30,10 +31,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	// TODO : use OVERLAPS operator to check if two bookings overlap
 
 	@Override
-	public void createBooking(final Object resourceId, final JsonObject data, final UserInfos user,
+	public void createBooking(final String resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		Object rId = parseId(resourceId);
 
 		// Upsert current user
 		statementsBuilder.prepared(UPSERT_USER_QUERY,
@@ -51,7 +53,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		query.append("INSERT INTO rbs.booking")
 				.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
 				.append(" SELECT  ?, ?, ?,");
-		values.add(resourceId)
+		values.add(rId)
 				.add(user.getUserId())
 				.add(data.getValue("booking_reason"));
 
@@ -67,7 +69,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(  " WHERE r.id = ?),");
 		values.add(CREATED.status())
 				.add(VALIDATED.status())
-				.add(resourceId);
+				.add(rId);
 
 		// Unix timestamps are converted into postgresql timestamps.
 		query.append(" to_timestamp(?), to_timestamp(?)");
@@ -87,7 +89,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(")) RETURNING id, status,")
 				.append(" to_char(start_date, 'DD/MM/YY HH24:MI') AS start_date, to_char(end_date, 'DD/MM/YY HH24:MI') AS end_date");
 
-		values.add(resourceId)
+		values.add(rId)
 				.add(VALIDATED.status())
 				.add(newStartDate)
 				.add(newStartDate)
@@ -109,13 +111,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
 	@Override
-	public void createPeriodicBooking(final Object resourceId, final String selectedDays,
+	public void createPeriodicBooking(final String resourceId, final String selectedDays,
 			final int firstSelectedDay, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
+		Object rId = parseId(resourceId);
 		final long endDate = data.getLong("periodic_end_date", 0L);
 		final int occurrences = data.getInteger("occurrences", 0);
 
@@ -124,7 +127,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
 			.append(" is_periodic, periodicity, occurrences, days)")
 			.append(" VALUES (?, ?, ?, to_timestamp(?),");
-		values.add(resourceId)
+		values.add(rId)
 			.add(user.getUserId())
 			.add(data.getString("booking_reason"))
 			.add(data.getValue("start_date"));
@@ -145,7 +148,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 		// 2. Insert clause for the child bookings
-		final long lastSlotEndDate = appendInsertChildBookingsQuery(query, values, resourceId,
+		final long lastSlotEndDate = appendInsertChildBookingsQuery(query, values, rId,
 				selectedDays, firstSelectedDay, data, user, null);
 
 		// Update end_date value in JsonArray values
@@ -388,10 +391,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 	@Override
-	public void updateBooking(final Object resourceId, final Object bookingId, final JsonObject data,
+	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
 			final Handler<Either<String, JsonObject>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		Object rId = parseId(resourceId);
+		Object bId = parseId(bookingId);
 
 		// Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
@@ -421,12 +426,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(  " WHERE b.id = ?)");
 		values.add(CREATED.status())
 				.add(VALIDATED.status())
-				.add(bookingId);
+				.add(bId);
 
 		query.append(" WHERE id = ?")
 		.append(" AND resource_id = ?");
-		values.add(bookingId)
-			.add(resourceId);
+		values.add(bId)
+			.add(rId);
 
 
 		// Check that there does not exist a validated booking that overlaps the updated booking.
@@ -447,8 +452,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Object newStartDate = data.getValue("start_date");
 		Object newEndDate = data.getValue("end_date");
 
-		values.add(resourceId)
-				.add(bookingId)
+		values.add(rId)
+				.add(bId)
 				.add(VALIDATED.status())
 				.add(newStartDate)
 				.add(newStartDate)
@@ -478,7 +483,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void updatePeriodicBooking(final Object resourceId, final Object bookingId, final String selectedDays,
+	public void updatePeriodicBooking(final String resourceId, final String bookingId, final String selectedDays,
 			final int firstSelectedDay, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler) {
 
@@ -486,6 +491,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		final int occurrences = data.getInteger("occurrences", 0);
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		Object rId = parseId(resourceId);
+		Object bId = parseId(bookingId);
 
 		// 1. Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
@@ -509,8 +516,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append("' WHERE resource_id = ?")
 			.append(" AND id = ?")
 			.append(" AND is_periodic = ?");
-		parentValues.add(resourceId)
-			.add(bookingId)
+		parentValues.add(rId)
+			.add(bId)
 			.add(true);
 
 		// 3. Delete child bookings
@@ -519,8 +526,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// 4. Create new child bookings
 		StringBuilder insertQuery = new StringBuilder();
 		JsonArray insertValues = new JsonArray();
-		final long lastSlotEndDate = appendInsertChildBookingsQuery(insertQuery, insertValues, resourceId,
-				selectedDays, firstSelectedDay, data, user, bookingId);
+		final long lastSlotEndDate = appendInsertChildBookingsQuery(insertQuery, insertValues, rId,
+				selectedDays, firstSelectedDay, data, user, bId);
 
 		// Update end_date value in JsonArray parentValues
 		if (endDate <= 0L) {
@@ -529,7 +536,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Add queries to SqlStatementsBuilder
 		statementsBuilder.prepared(parentQuery.toString(), parentValues);
-		statementsBuilder.prepared(deleteQuery, new JsonArray().add(bookingId));
+		statementsBuilder.prepared(deleteQuery, new JsonArray().add(bId));
 		statementsBuilder.prepared(insertQuery.toString(), insertValues);
 
 		// Send queries to event bus
@@ -538,11 +545,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 	@Override
-	public void processBooking(final Object resourceId, final Object bookingId,
+	public void processBooking(final String resourceId, final String bookingId,
 			final int newStatus, final JsonObject data,
 			final UserInfos user, final Handler<Either<String, JsonArray>> handler){
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		Object rId = parseId(resourceId);
+		Object bId = parseId(bookingId);
 
 		// 1. Upsert current user
 		statementsBuilder.prepared(UPSERT_USER_QUERY,
@@ -565,8 +574,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append("modified = NOW() ")
 				.append("WHERE id = ?")
 				.append(" AND resource_id = ? ");
-		processValues.add(bookingId)
-			.add(resourceId);
+		processValues.add(bId)
+			.add(rId);
 
 		String returningClause = " RETURNING id, status, owner";
 
@@ -582,7 +591,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" FROM rbs.booking")
 				.append(" WHERE id = ?) ");
 			JsonArray validateValues = new JsonArray();
-			validateValues.add(bookingId);
+			validateValues.add(bId);
 
 			validateQuery.append(processQuery.toString());
 			for (Object pValue : processValues) {
@@ -600,7 +609,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
 					.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
 					.append("))");
-			validateValues.add(resourceId)
+			validateValues.add(rId)
 				.add(VALIDATED.status());
 
 			validateQuery.append(returningClause);
@@ -617,20 +626,20 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" SELECT start_date, end_date")
 				.append(" FROM rbs.booking")
 				.append(" WHERE id = ?)");
-			rbValues.add(bookingId);
+			rbValues.add(bId);
 
 			rbQuery.append(" UPDATE rbs.booking")
 				.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
 			rbValues.add(REFUSED.status())
 				.add(user.getUserId())
-				.add("<i18n>rbs.booking.automatically.refused.reason</i18n>"+bookingId);
+				.add("<i18n>rbs.booking.automatically.refused.reason</i18n>"+bId);
 
 			// Refuse concurrent bookings if and only if the previous query has validated the booking
 			rbQuery.append(" WHERE EXISTS (")
 				.append(" SELECT 1 FROM rbs.booking")
 				.append(" WHERE id = ?")
 				.append(" AND status = ?)");
-			rbValues.add(bookingId)
+			rbValues.add(bId)
 				.add(VALIDATED.status());
 
 			// Get concurrent bookings' ids that must be refused
@@ -644,7 +653,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
 				.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
 				.append("))");
-			rbValues.add(resourceId)
+			rbValues.add(rId)
 				.add(CREATED.status());
 
 			rbQuery.append(" RETURNING id, status, owner");
@@ -674,7 +683,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listBookingsByResource(final Object resourceId,
+	public void listBookingsByResource(final String resourceId,
 			final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
@@ -749,11 +758,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
+		Object bId = parseId(bookingId);
 
 		query.append("SELECT r.owner AS member_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" WHERE b.id = ? AND r.owner != ?");
-		values.add(bookingId)
+		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
@@ -761,7 +771,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
 			.append(" WHERE b.id = ? AND t.owner != ?");
-		values.add(bookingId)
+		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
@@ -769,7 +779,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
 			.append(" WHERE b.id = ? AND rs.member_id != ?");
-		values.add(bookingId)
+		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
@@ -778,7 +788,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
 			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 			.append(" WHERE b.id = ? AND ts.member_id != ?");
-		values.add(bookingId)
+		values.add(bId)
 			.add(user.getUserId());
 
 		Sql.getInstance().prepared(query.toString(), values,
@@ -793,7 +803,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 						+ " INNER JOIN rbs.booking AS b on r.id = b.resource_id"
 						+ " WHERE b.id = ?";
 
-		Sql.getInstance().prepared(query, new JsonArray().add(bookingId),
+		Sql.getInstance().prepared(query, new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 
@@ -808,7 +818,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
 			.append(" WHERE b.id = ?");
 
-		Sql.getInstance().prepared(query.toString(), new JsonArray().add(bookingId),
+		Sql.getInstance().prepared(query.toString(), new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 

@@ -4,7 +4,6 @@ import static fr.wseduc.rbs.Rbs.RBS_NAME;
 import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,7 +93,7 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 
-							bookingService.createBooking(parseId(id), object, user, handler);
+							bookingService.createBooking(id, object, user, handler);
 						}
 					});
 				} else {
@@ -263,7 +262,7 @@ public class BookingController extends ControllerHelper {
 
 				if (isCreation) {
 					try {
-						bookingService.createPeriodicBooking(parseId(id), selectedDays,
+						bookingService.createPeriodicBooking(id, selectedDays,
 								firstSlotStartDay, object, user,
 								getHandlerForPeriodicNotification(user, request, isCreation));
 
@@ -274,7 +273,7 @@ public class BookingController extends ControllerHelper {
 				}
 				else {
 					try {
-						bookingService.updatePeriodicBooking(parseId(id), parseId(bookingId), selectedDays,
+						bookingService.updatePeriodicBooking(id, bookingId, selectedDays,
 								firstSlotStartDay, object, user,
 								getHandlerForPeriodicNotification(user, request, isCreation));
 
@@ -470,12 +469,7 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
-								String sBookingId = request.params().get("bookingId");
-								Object bookingId = parseId(sBookingId);
-								if (!(bookingId instanceof Integer)) {
-									badRequest(request);
-									return;
-								}
+								String bookingId = request.params().get("bookingId");
 
 								long startDate = object.getLong("start_date", 0L);
 								long endDate = object.getLong("end_date", 0L);
@@ -504,8 +498,7 @@ public class BookingController extends ControllerHelper {
 									}
 								};
 
-								bookingService.updateBooking(parseId(resourceId),
-										bookingId, object, handler);
+								bookingService.updateBooking(resourceId, bookingId, object, handler);
 							}
 						});
 					} else {
@@ -549,13 +542,7 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
-								String sBookingId = request.params().get("bookingId");
-
-								Object bookingId = parseId(sBookingId);
-								if (!(bookingId instanceof Integer)) {
-									badRequest(request);
-									return;
-								}
+								String bookingId = request.params().get("bookingId");
 
 								int newStatus = object.getInteger("status");
 								if (newStatus != VALIDATED.status()
@@ -604,7 +591,7 @@ public class BookingController extends ControllerHelper {
 									}
 								};
 
-								bookingService.processBooking(parseId(resourceId),
+								bookingService.processBooking(resourceId,
 										bookingId, newStatus, object, user, handler);
 							}
 						});
@@ -667,11 +654,6 @@ public class BookingController extends ControllerHelper {
 				public void handle(final UserInfos user) {
 					if (user != null) {
 						String bookingId = request.params().get("bookingId");
-						if (!(parseId(bookingId) instanceof Integer)) {
-							badRequest(request);
-							return;
-						}
-
 						bookingService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
 					} else {
 						log.debug("User not found in session.");
