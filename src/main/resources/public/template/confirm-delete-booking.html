@@ -19,8 +19,8 @@
 					<tr ng-repeat="booking in processBookings">
 						<td>[[booking.owner_name]]</td>
 						<td ng-class="booking.color">[[booking.resource.name]]</td>
-						<td>[[formatDate(booking.startMoment)]]</td>
-						<td>[[formatDate(booking.endMoment)]]</td>
+						<td>[[formatMoment(booking.startMoment)]]</td>
+						<td>[[formatMoment(booking.endMoment)]]</td>
 						<td>[[formatReason(booking.booking_reason)]]</td>
 						<td>
 							<i18n ng-if="booking.status === status.STATE_CREATED">rbs.booking.status.created</i18n>

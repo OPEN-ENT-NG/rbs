@@ -735,8 +735,8 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 model.parseBooking = function(booking, color) {
 	booking.color = color;
-	booking.startMoment = moment(booking.start_date + 'Z');
-	booking.endMoment = moment(booking.end_date + 'Z');
+	booking.startMoment = moment.utc(booking.start_date);
+	booking.endMoment = moment.utc(booking.end_date);
 
 	// periodic booking
 	if (booking.is_periodic === true) {
@@ -744,14 +744,14 @@ model.parseBooking = function(booking, color) {
 		booking.periodDays = model.bitMaskToDays(booking.days);
 		// date if not by occurrences
 		if (booking.occurrences === undefined || booking.occurrences < 1) {
-			booking.periodicEndMoment =  moment(booking.periodic_end_date + 'Z');
+			booking.periodicEndMoment =  moment.utc(booking.periodic_end_date);
 		}
 	}
 };
 
 model.parseSlot = function(slot) {
-	slot.startMoment = moment(slot.start_date + 'Z');
-	slot.endMoment = moment(slot.end_date + 'Z');
+	slot.startMoment = moment.utc(slot.start_date);
+	slot.endMoment = moment.utc(slot.end_date);
 };
 
 model.bitMaskToDays = function(bitMask) {

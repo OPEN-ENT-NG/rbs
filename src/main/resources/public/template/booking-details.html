@@ -31,11 +31,11 @@
 		<div class="row">
 			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
-				<p class="uneditable">[[formatDateLong(selectedBooking.startMoment)]]</p>
+				<p class="uneditable">[[formatMomentLong(selectedBooking.startMoment)]]</p>
 			</div>
 			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
-				<p class="uneditable">[[formatDateLong(selectedBooking.endMoment)]]</p>
+				<p class="uneditable">[[formatMomentLong(selectedBooking.endMoment)]]</p>
 			</div>
 		</div>
 		<hr />
@@ -74,11 +74,11 @@
 				<tbody ng-repeat="slot in selectedBooking._slots">
 					<tr>
 						<td></td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.startMoment)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatDate(slot.startMoment)]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
 
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatDate(slot.endMoment)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatDate(slot.endMoment)]]</td>
+						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a></td>
+						<td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
 
 						<td ng-if="slot.isPending()"></td>
 						<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
