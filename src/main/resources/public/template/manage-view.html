@@ -23,7 +23,7 @@
 
 	<hr />
 
-	<div class="row">
+	<div workflow="rbs.typemanage" class="row">
 		<button ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></button>
 	</div>
 </section>
@@ -42,27 +42,29 @@
 	</lightbox>
 </div>
 
-<behaviour name="manage" resource="currentResourceType">
-	<section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length === 0) }">
-		<div class="toggle block-container">
-			<div class="row">
+<section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length === 0) }">
+	<div class="toggle block-container">
+		<div class="row">
+			<behaviour name="process" resource="currentResourceType">
 				<button ng-if="currentResourceType.resources.selection().length === 1"
 						ng-click="editSelectedResource()">
 					<i18n>rbs.manage.resource.edit</i18n>
-				</button>
-				<button ng-if="currentResourceType.resources.selection().length === 1"
-						ng-click="deleteResourcesSelection()">
-					<i18n>rbs.manage.resource.remove</i18n>
 				</button>
 				<button ng-if="currentResourceType.resources.selection().length > 1"
 						disabled class="disabled">
 					<i18n>rbs.manage.resource.edits</i18n>
 				</button>
+			</behaviour>
+			<behaviour name="manage" resource="currentResourceType">
+				<button ng-if="currentResourceType.resources.selection().length === 1"
+						ng-click="deleteResourcesSelection()">
+					<i18n>rbs.manage.resource.remove</i18n>
+				</button>
 				<button ng-if="currentResourceType.resources.selection().length > 1"
 						ng-click="deleteResourcesSelection()">
 					<i18n>rbs.manage.resource.removes</i18n>
 				</button>
-			</div>
+			</behaviour>
 		</div>
-	</section>
-</behaviour>
+	</div>
+</section>

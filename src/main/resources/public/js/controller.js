@@ -749,4 +749,15 @@ function RbsController($scope, template, model, date){
 		$scope.display.showPanel = true;
 		template.open('lightbox', 'action-errors');
 	}
+
+	// Special Workflow and Behaviours
+	$scope.hasWorkflowOrAnyResourceHasBehaviour = function(workflowRight, ressourceRight) {
+		var workflowRights = workflowRight.split('.');
+		return (model.me.workflow[workflowRights[0]] !== undefined && model.me.workflow[workflowRights[0]][workflowRights[1]] === true)
+			|| resourceTypes.find(function(resourceType){
+				return (resourceType.resources.find(function(resource){
+					return resource.myRights !== undefined && resource.myRights[ressourceRight] !== undefined;
+				}) !== undefined);
+			});
+	};
 }

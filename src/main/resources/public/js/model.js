@@ -534,6 +534,7 @@ SelectionHolder.prototype.restore = function(mineCallback, unprocessedCallback, 
 
 
 model.build = function(){
+	model.me.workflow.load(['rbs']);
 	this.makeModels([ResourceType, Resource, Booking, BookingsHolder, SelectionHolder]);
 
 	// ResourceTypes collection with embedded Resources

@@ -14,6 +14,9 @@ var rbsBehaviours = {
 		}
 	},
 	workflow: {
+		typemanage: 'fr.wseduc.rbs.controllers.ResourceTypeController|createResourceType',
+		ressourcemanage: 'fr.wseduc.rbs.controllers.ResourceController|create',
+		validator: 'fr.wseduc.rbs.controllers.BookingController|listUnprocessedBookings',
 	}
 };
 

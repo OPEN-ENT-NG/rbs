@@ -7,8 +7,10 @@
 
 <section class="cell three">
 
-	<button workflow="rbs.resource.create" ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
-	<hr />
+	<div ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')">
+		<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
+		<hr />
+	</div>
 
 	<h2><i18n>rbs.selector.mine</i18n></h2>
 
@@ -41,7 +43,7 @@
 	</nav>
 	<hr />
 
-	<div workflow="rbs.booking.list.unprocessed">
+	<div workflow="rbs.validator">
 		<h2><i18n>rbs.selector.unprocessed</i18n></h2>
 
 		<nav class="vertical row">
