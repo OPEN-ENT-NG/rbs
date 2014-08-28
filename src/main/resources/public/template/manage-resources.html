@@ -1,11 +1,11 @@
-<h3>[[currentResourceType.name]]</h3>
+<article class="twelve cell form-article" ng-if="resourceTypes.empty() !== true">
+	<h3><i18n>rbs.type.details.type</i18n></h3>
 
-<article class="twelve cell form-article">
 	<div class="cell three form-label">
-		<label><i18n>rbs.type.details.school.label</i18n></label>
+		<label><i18n>rbs.type.details.name.label</i18n></label>
 	</div>
 	<div class="cell nine form-element">
-		<p class="uneditable">[[currentResourceType.school_id]]</p>
+		<p class="uneditable">[[currentResourceType.name]]</p>
 	</div>
 	<hr />
 
@@ -24,52 +24,58 @@
 			<button class="right-magnet" ng-click="editCurrentResourceType()"><i18n>rbs.manage.type.edit</i18n></button>
 		</div>
 	</behaviour>
+	<hr />
+
+	<h3><i18n>rbs.type.details.resources</i18n></h3>
+
+	<table class="list-view twelve">
+		<thead>
+			<tr>
+				<th><input type="checkbox" ng-model="display.selectAllRessources" ng-change="swicthSelectAllRessources()" /></th>
+				<th class="six"><i18n>rbs.manage.resource.name</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
+				<th class="three"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
+			</tr>
+		</thead>
+		<tbody ng-repeat="resource in currentResourceType.resources.all">
+			<tr>
+				<td><input type="checkbox" ng-model="resource.selected" /></td>
+				<td class="six">
+					<a ng-click="switchExpandResource(resource)">[[resource.name]]</a>
+				</td>
+				<td class="two">
+					<a ng-click="switchExpandResource(resource)">
+						<i18n ng-if="resource.is_available === true">rbs.manage.resource.is_available.true</i18n>
+						<i18n ng-if="resource.is_available !== true">rbs.manage.resource.is_available.false</i18n>
+					</a>
+				</td>
+				<td class="three">
+					<a ng-click="switchExpandResource(resource)">
+						<i18n ng-if="resource.periodic_booking === true">rbs.manage.resource.periodic_booking.true</i18n>
+						<i18n ng-if="resource.periodic_booking !== true">rbs.manage.resource.periodic_booking.false</i18n>
+					</a>
+				</td>
+			</tr>
+			<tr ng-if="resource.expanded === true" class="minor">
+				<td class="invisible"></td>
+				<td colspan="3">
+					<div class="row form-element">
+						<p class="twelve cell uneditable" bind-html="resource.description"></p>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+		<tbody ng-if="currentResourceType.resources.empty() === true">
+			<tr><td colspan="4" class="invisible"><i18n>rbs.manage.resources.empty</i18n></td></tr>
+		</tbody>
+	</table>
+	<hr />
+
+	<div class="row">
+		<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>
+	</div>
 </article>
-<hr />
 
-<h3><i18n>rbs.type.details.resources</i18n></h3>
-
-<table class="list-view twelve">
-	<thead>
-		<tr>
-			<th><input type="checkbox" ng-model="display.selectAllRessources" ng-change="swicthSelectAllRessources()" /></th>
-			<th class="six"><i18n>rbs.manage.resource.name</i18n></th>
-			<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
-			<th class="three"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
-		</tr>
-	</thead>
-	<tbody ng-repeat="resource in currentResourceType.resources.all">
-		<tr>
-			<td><input type="checkbox" ng-model="resource.selected" /></td>
-			<td class="six">
-				<a ng-click="switchExpandResource(resource)">[[resource.name]]</a>
-			</td>
-			<td class="two">
-				<a ng-click="switchExpandResource(resource)">
-					<i18n ng-if="resource.is_available === true">rbs.manage.resource.is_available.true</i18n>
-					<i18n ng-if="resource.is_available !== true">rbs.manage.resource.is_available.false</i18n>
-				</a>
-			</td>
-			<td class="three">
-				<a ng-click="switchExpandResource(resource)">
-					<i18n ng-if="resource.periodic_booking === true">rbs.manage.resource.periodic_booking.true</i18n>
-					<i18n ng-if="resource.periodic_booking !== true">rbs.manage.resource.periodic_booking.false</i18n>
-				</a>
-			</td>
-		</tr>
-		<tr ng-if="resource.expanded === true" class="minor">
-			<td class="invisible"></td>
-			<td colspan="3">
-				<div class="row form-element">
-					<p class="twelve cell uneditable" bind-html="resource.description"></p>
-				</div>
-			</td>
-		</tr>
-	</tbody>
-</table>
-
-<hr />
-
-<div class="row">
-	<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>
-</div>
+<article class="twelve cell form-article" ng-if="resourceTypes.empty() === true">
+	<i18n>rbs.manage.types.empty</i18n>
+</article>

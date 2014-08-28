@@ -29,6 +29,7 @@
 							<i18n ng-if="booking.status === status.STATE_PARTIAL">rbs.booking.status.partial</i18n>
 						</td>
 					</tr>
+					<tr ng-if="processBookings.length === 0"><td colspan="6" class="invisible"><i18n>rbs.bookings.selected.empty</i18n></td></tr>
 				</tbody>
 			</table>
 		</div>

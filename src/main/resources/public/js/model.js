@@ -3,7 +3,7 @@ loader.loadFile('/rbs/public/js/additional.js');
 
 
 model.colorMine = 'cyan';
-model.colors = ['green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
+model.colors = ['green', 'orange', 'yellow', 'pink', 'purple', 'grey'];
 
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
