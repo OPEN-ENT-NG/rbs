@@ -301,6 +301,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.newBooking = function() {
+		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
 		if ($scope.lastSelectedResource) {
 			$scope.editedBooking.resource = $scope.lastSelectedResource;
@@ -314,15 +315,14 @@ function RbsController($scope, template, model, date){
 		// default hours
 		$scope.editedBooking.startTime = model.times[0];
 		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { return $scope.editedBooking.startTime.hour < hourMinutes.hour });
-		var now = new Date();
-		var now_utc = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-		$scope.editedBooking.startDate = now_utc;
-		$scope.editedBooking.endDate = now_utc;
+		$scope.editedBooking.startDate = undefined;
+		$scope.editedBooking.endDate = undefined;
 
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
 		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
 		$scope.editedBooking.byOccurrences = true;
+		$scope.editedBooking.periodicEndDate = undefined;
 
 		// debug
 		var DEBUG_editedBooking = $scope.editedBooking;
@@ -333,6 +333,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.editBooking = function() {
+		$scope.display.processing = undefined;
 		if ($scope.selectedBooking !== undefined) {
 			$scope.editedBooking = $scope.selectedBooking;
 		}
@@ -344,8 +345,15 @@ function RbsController($scope, template, model, date){
 		}
 
 		// dates management
-		$scope.editedBooking.startDate = new Date($scope.editedBooking.startMoment.years(), $scope.editedBooking.startMoment.months(), $scope.editedBooking.startMoment.date());
-		$scope.editedBooking.endDate = new Date($scope.editedBooking.endMoment.years(), $scope.editedBooking.endMoment.months(), $scope.editedBooking.endMoment.date());
+		$scope.editedBooking.startDate = $scope.editedBooking.startMoment.toDate();
+		$scope.editedBooking.startDate.setFullYear($scope.editedBooking.startMoment.years());
+		$scope.editedBooking.startDate.setMonth($scope.editedBooking.startMoment.months());
+		$scope.editedBooking.startDate.setDate($scope.editedBooking.startMoment.date());
+		$scope.editedBooking.endDate = $scope.editedBooking.endMoment.toDate();
+		$scope.editedBooking.endDate.setFullYear($scope.editedBooking.endMoment.years());
+		$scope.editedBooking.endDate.setMonth($scope.editedBooking.endMoment.months());
+		$scope.editedBooking.endDate.setDate($scope.editedBooking.endMoment.date());
+
 		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
 			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour && $scope.editedBooking.startMoment.minutes() === hourMinutes.min) });
 		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
@@ -420,23 +428,21 @@ function RbsController($scope, template, model, date){
 				$scope.editedBooking.endTime.min]);		
 		}
 
-		// debug
-		var DEBUG_editedBooking = $scope.editedBooking;
-		// /debug
-
 		$scope.currentErrors = [];
 		$scope.editedBooking.save(function(){
 			$scope.display.processing = undefined;
+			$scope.$apply('editedBooking')
 			$scope.closeBooking();
 			model.refresh();
 		}, function(e){
 			$scope.display.processing = undefined;
 			$scope.currentErrors.push(e);
-			$scope.$apply();
+			$scope.$apply('editedBooking');
 		});
 	};
 
 	$scope.removeBookingSelection = function() {
+		$scope.display.processing = undefined;
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
 			$scope.selectedBooking.selected = true;
@@ -480,6 +486,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.validateBookingSelection = function() {
+		$scope.display.processing = undefined;
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
 			if ($scope.selectedBooking.is_periodic === true) {
@@ -497,6 +504,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.refuseBookingSelection = function() {
+		$scope.display.processing = undefined;
 		if ($scope.selectedBooking !== undefined) {
 			$scope.bookings.deselectAll();
 			if ($scope.selectedBooking.is_periodic === true) {
@@ -597,12 +605,14 @@ function RbsController($scope, template, model, date){
 
 	// Management view edition
 	$scope.newResourceType = function() {
+		$scope.display.processing = undefined;
 		$scope.editedResourceType = new ResourceType();
 		$scope.editedResourceType.validation = false;
 		template.open('resources', 'edit-resource-type');
 	};
 
 	$scope.newResource = function() {
+		$scope.display.processing = undefined;
 		$scope.editedResource = new Resource();
 		$scope.editedResource.type = $scope.currentResourceType;
 		$scope.editedResource.is_available = true;
@@ -611,11 +621,13 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.editCurrentResourceType = function() {
+		$scope.display.processing = undefined;
 		$scope.editedResourceType = $scope.currentResourceType;
 		template.open('resources', 'edit-resource-type');
 	};
 
 	$scope.editSelectedResource = function() {
+		$scope.display.processing = undefined;
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
 		// Field to track Resource availability change
 		if ($scope.editedResource.was_available === undefined) {
