@@ -4,6 +4,9 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -11,6 +14,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
+import fr.wseduc.rbs.service.ResourceTypeService;
+import fr.wseduc.rbs.service.ResourceTypeServiceSqlImpl;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -23,6 +28,13 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceTypeController extends ControllerHelper {
 
+	private final ResourceTypeService resourceTypeService;
+
+	public ResourceTypeController() {
+		resourceTypeService = new ResourceTypeServiceSqlImpl();
+	}
+	// TODO : refactor ResourceTypeController to use resourceService instead of crudService
+
 	@Get("/types")
 	@ApiDoc("List resource types")
 	@SecuredAction("rbs.type.list")
@@ -30,7 +42,13 @@ public class ResourceTypeController extends ControllerHelper {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
-				crudService.list(arrayResponseHandler(request));
+				final List<String> groupsAndUserIds = new ArrayList<>();
+				groupsAndUserIds.add(user.getUserId());
+				if (user.getProfilGroupsIds() != null) {
+					groupsAndUserIds.addAll(user.getProfilGroupsIds());
+				}
+
+				resourceTypeService.list(groupsAndUserIds, user, arrayResponseHandler(request));
 			}
 		});
 	}
