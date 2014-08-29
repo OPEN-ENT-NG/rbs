@@ -33,5 +33,10 @@
 			"type": "integer"
 		}
 	},
+	"required": [
+		"type_id",
+		"is_available",
+		"was_available"
+	],
 	"additionalProperties" : false
 }
