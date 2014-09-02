@@ -11,21 +11,17 @@
 		<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
 		<hr />
 	</div>
-
-	<h2><i18n>rbs.selector.mine</i18n></h2>
-
 	<nav class="vertical row">
+	<h2><i18n>rbs.selector.mine</i18n></h2>
 		<ul class="colored">
 			<li>
 				<a ng-click="switchSelectMine()" ng-class="{ selected: mine.selected === true }"><i18n>rbs.selector.mine.button</i18n></a>
 			</li>
 		</ul>
-	</nav>
 	<hr />
 
 	<h2><i18n>rbs.selector.resources</i18n></h2>
 
-	<nav class="vertical row">
 		<ul class="colored">
 			<li ng-repeat="resourceType in resourceTypes.all">
 				<a ng-class="resourceType.color" ng-click="switchExpand(resourceType)">[[resourceType.name]]</a>
@@ -40,20 +36,20 @@
 			</li>
 			<div ng-if="resourceTypes.empty() === true"><i18n>rbs.types.empty</i18n></div>
 		</ul>
-	</nav>
+
 	<hr />
 
 	<div workflow="rbs.validator">
 		<h2><i18n>rbs.selector.unprocessed</i18n></h2>
 
-		<nav class="vertical row">
 			<ul>
 				<li>
 					<a ng-click="switchSelectUnprocessed()" ng-class="{ selected: unprocessed.selected === true }"><i18n>rbs.selector.unprocessed.button</i18n></a>
 				</li>
 			</ul>
-		</nav>
+
 	</div>
+	</nav>
 </section>
 
 <section class="cell nine">
