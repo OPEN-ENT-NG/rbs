@@ -60,14 +60,14 @@ Booking.prototype.update = function(cb, cbe) {
 		url = url + '/periodic';
 	}
 
-	var booking = this;
 	http().putJson(url, this)
 	.done(function(){
 		this.status = model.STATE_CREATED;
 		if(typeof cb === 'function'){
 			cb();
 		}
-	})
+		this.trigger('change');
+	}.bind(this))
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, booking, 'update'));
