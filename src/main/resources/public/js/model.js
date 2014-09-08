@@ -202,10 +202,20 @@ Booking.prototype.isPartial = function() {
 };
 
 Booking.prototype.toJSON = function() {
-	var json = {
-		start_date : this.startMoment.unix(),
-		end_date : this.endMoment.unix()
-	};
+	var json = {};
+	if(this.beginning){
+		json = {
+			start_date : this.beginning.unix(),
+			end_date : this.end.unix()
+		};
+	}
+	else{
+		json = {
+			start_date : this.startMoment.unix(),
+			end_date : this.endMoment.unix()
+		};
+	}
+
 
 	if (this.is_periodic === true) {
 		json.periodicity = this.periodicity;
