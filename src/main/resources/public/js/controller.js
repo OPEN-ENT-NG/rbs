@@ -35,7 +35,7 @@ function RbsController($scope, template, model, date){
 	$scope.currentErrors = [];
 
 	template.open('main', 'main-view');
-	template.open('bookings', 'main-list');
+	template.open('bookings', 'main-calendar');
 
 	// Will auto-select "Mine" bookings by default
 	model.recordedSelections.mine = true;

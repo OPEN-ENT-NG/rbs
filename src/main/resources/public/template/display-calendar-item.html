@@ -1,4 +1,7 @@
 <div class="schedule-item-content [[item.color]]">
+	<i ng-if="item.status === 1" class="pending-status"></i>
+	<i ng-if="item.status === 2" class="validated-status"></i>
+	<i ng-if="item.status === 3" class="refused-status"></i>
 	[[item.resource.name]]
 	<br />[[item.owner_name]]
 	<br />[[trimReason(item.booking_reason)]]
