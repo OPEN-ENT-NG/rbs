@@ -101,11 +101,6 @@ table.colored span.badge {
 	color: #000;
 }
 
-
-ul.colored, ul.colored a {
-	color: #fff;
-}
-
 ul.colored a:hover {
 	color: #000;
 	font-weight: bold;

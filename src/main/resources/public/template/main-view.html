@@ -6,19 +6,7 @@
 </div>
 
 <section class="cell three">
-
-	<div ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')">
-		<button ng-click="showManage()"><i18n>rbs.navigation.manage</i18n></button>
-		<hr />
-	</div>
 	<nav class="vertical row">
-	<h2><i18n>rbs.selector.mine</i18n></h2>
-		<ul class="colored">
-			<li>
-				<a ng-click="switchSelectMine()" ng-class="{ selected: mine.selected === true }"><i18n>rbs.selector.mine.button</i18n></a>
-			</li>
-		</ul>
-	<hr />
 
 	<h2><i18n>rbs.selector.resources</i18n></h2>
 
@@ -38,17 +26,6 @@
 		</ul>
 
 	<hr />
-
-	<div workflow="rbs.validator">
-		<h2><i18n>rbs.selector.unprocessed</i18n></h2>
-
-			<ul>
-				<li>
-					<a ng-click="switchSelectUnprocessed()" ng-class="{ selected: unprocessed.selected === true }"><i18n>rbs.selector.unprocessed.button</i18n></a>
-				</li>
-			</ul>
-
-	</div>
 	</nav>
 </section>
 
@@ -59,8 +36,25 @@
 		<div class="display-buttons">
 			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
 			<i class="show-icons" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>
+			<i class="show-admin" ng-click="showManage()" ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')"></i>
 		</div>
 	</div>
+	<filters>
+		<li ng-class="{ selected: mine.selected }">
+			<label>
+				<i class="mine type"></i>
+				<input type="checkbox" ng-model="mine.selected" ng-change="switchSelectMine()" />
+				<p><i18n>rbs.selector.mine</i18n></p>
+			</label>
+		</li>
+		<li ng-class="{ selected: unprocessed.selected }" workflow="rbs.validator">
+			<label>
+				<i class="submitted type"></i>
+				<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
+				<p><i18n>rbs.selector.unprocessed</i18n></p>
+			</label>
+		</li>
+	</filters>
 	<div class="row">
 		<container template="bookings"></container>
 	</div>

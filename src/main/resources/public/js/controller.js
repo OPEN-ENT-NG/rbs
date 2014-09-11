@@ -130,11 +130,9 @@ function RbsController($scope, template, model, date){
 			$scope.unprocessedRestoreSelections();
 		}
 		if ($scope.mine.selected !== true) {
-			$scope.mine.selected = true;
 			$scope.bookings.pushAll($scope.mine.bookings.all);
 		}
 		else {
-			$scope.mine.selected = undefined;
 			$scope.bookings.pullAll($scope.mine.bookings.all);
 		}
 	};
