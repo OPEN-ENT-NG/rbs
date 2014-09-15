@@ -5,15 +5,10 @@
 	</lightbox-plus>
 </div>
 
-<section class="cell four">
-
-	<button ng-click="showMain()"><i18n>rbs.navigation.main</i18n></button>
-
-	<hr />
-
-	<h2><i18n>rbs.manage.types</i18n></h2>
-
+<section class="cell three">
+	<h1>Réservation de ressources</h1>
 	<nav class="vertical row">
+		<h2><i18n>rbs.manage.types</i18n></h2>
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all">
 				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType }">[[resourceType.name]]</a>
@@ -23,13 +18,20 @@
 
 	<hr />
 
-	<div workflow="rbs.typemanage" class="row">
-		<button ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></button>
-	</div>
 </section>
 
-<section class="cell eight">
-	
+<section class="cell nine">
+	<div class="row">
+		<div workflow="rbs.typemanage" class="row">
+			<button ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></button>
+		</div>
+
+		<div class="display-buttons">
+			<i class="show-list" ng-click="showMain()"></i>
+			<i class="show-icons" ng-click="showMain()"></i>
+			<i class="show-admin selected" ng-click="showManage()" ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')"></i>
+		</div>
+	</div>
 	<div class="row">
 		<container template="resources"></container>
 	</div>
