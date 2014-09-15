@@ -3,6 +3,7 @@
 		<tr>
 			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
 			<th></th>
+			<th></th>
 			<th><a ng-click="switchSortBy('owner_name')" ng-class="{selected: sort.predicate === 'owner_name'}"><i18n>rbs.booking.headers.owner</i18n></a></th>
 			<th><a ng-click="switchSortBy('resource.name')" ng-class="{selected: sort.predicate === 'resource.name'}"><i18n>rbs.booking.headers.resource</i18n></a></th>
 			<th><a ng-click="switchSortBy('start_date')" ng-class="{selected: sort.predicate === 'start_date'}"><i18n>rbs.booking.headers.start_date</i18n></a></th>
@@ -14,22 +15,22 @@
 	<tbody ng-repeat="booking in bookings.filter(filterList) | orderBy:sort.predicate:sort.reverse">
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
-			<td>
+			<td class="icon [[booking.color]]" ng-click="viewBooking(booking)"></td>
+			<td ng-click="viewBooking(booking)">
 				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)"><span class="badge">+</span></a>
 				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)"><span class="badge">-</span></a>
 			</td>
-			<td><a ng-click="viewBooking(booking)">[[booking.owner_name]]</a></td>
-			<td ng-class="booking.color"><a ng-click="viewBooking(booking)">[[booking.resource.name]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[formatMoment(booking.startMoment)]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[formatMoment(booking.endMoment)]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[trimReason(booking.booking_reason)]]</a></td>
-			<td>
-				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
-				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
-				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_REFUSED"><i18n>rbs.booking.status.refused</i18n></a>
-				<a ng-click="viewBooking(booking)" ng-if="booking.status === status.STATE_PARTIAL"><i18n>rbs.booking.status.partial</i18n></a>
+			<td ng-click="viewBooking(booking)">[[booking.owner_name]]</td>
+			<td ng-click="viewBooking(booking)">[[booking.resource.name]]</td>
+			<td ng-click="viewBooking(booking)">[[formatMoment(booking.startMoment)]]</td>
+			<td ng-click="viewBooking(booking)">[[formatMoment(booking.endMoment)]]</td>
+			<td ng-click="viewBooking(booking)">[[trimReason(booking.booking_reason)]]</td>
+			<td ng-click="viewBooking(booking)">
+				<i ng-if="item.status === 1" class="pending-status"></i>
+				<i ng-if="item.status === 2" class="validated-status"></i>
+				<i ng-if="item.status === 3" class="refused-status"></i>
 			</td>
-			<td><span ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></span></td>
+			<td ng-click="viewBooking(booking)"><span ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></span></td>
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
 			<td class="invisible"></td>
@@ -40,9 +41,9 @@
 			<td><a ng-click="viewBooking(booking)">[[formatMoment(slot.endMoment)]]</a></td>
 			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>
 			<td>
-				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_CREATED"><i18n>rbs.booking.status.created</i18n></a>
-				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_VALIDATED"><i18n>rbs.booking.status.validated</i18n></a>
-				<a ng-click="viewBooking(booking)" ng-if="slot.status === status.STATE_REFUSED"><i18n>rbs.booking.status.refused</i18n></a>
+				<i ng-if="item.status === 1" class="pending-status"></i>
+				<i ng-if="item.status === 2" class="validated-status"></i>
+				<i ng-if="item.status === 3" class="refused-status"></i>
 			</td>
 			<td></td>
 		</tr>

@@ -62,7 +62,7 @@
 </section>
 
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
-	<div class="toggle block-container">
+	<div class="toggle">
 		<div class="row">
 			<behaviour name="manage" resource="bookings.selection()" class="cell">
 				<button ng-if="canEditBookingSelection()" ng-click="editBooking()"><i18n>edit</i18n></button>

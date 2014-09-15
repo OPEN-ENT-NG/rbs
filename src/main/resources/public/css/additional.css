@@ -68,22 +68,6 @@ input[type=button].disabled:hover {
 	color: #373737;
 }
 
-table.colored thead a {
-	color: #000;
-}
-
-table.colored thead a:hover {
-	color: #ee532f;
-}
-
-table.colored thead a.selected {
-	color: #22a4dd;
-}
-
-table.colored tbody tr:hover td {
-	background: rgba(48, 48, 48, 0.6);
-}
-
 table.colored tbody tr:hover a {
 	color: #fff;
 }

@@ -126,8 +126,7 @@
 	"rbs.type.details.name.label" : "Nom du type : ",
 	"rbs.type.details.school.label" : "Etablissement : ",
 	"rbs.type.details.validation.label" : "Etape de validation : ",
-	"rbs.type.details.validation.true" : "Oui",
-	"rbs.type.details.validation.false" : "Non",
+	"rbs.type.details.validation.true" : "Un valideur doit accepter les demandes de réservation pour les ressources dans [[currentResourceType.name]].",
 	"rbs.type.details.resources" : "Ressources",
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
