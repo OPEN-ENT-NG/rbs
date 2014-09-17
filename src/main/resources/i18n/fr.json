@@ -195,5 +195,8 @@
 	"rbs.booking.bad.request.invalid.enddates" : "Le 1er et le dernier créneau de réservation doivent se terminer à la même heure",
 	"rbs.booking.bad.request.invalid.days" : "Le tableau des jours sélectionnés n'a pas pu être récupéré, ou sa taille est différente de 7",
 	
-	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement..."
+	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
+	"to": "à",
+	"header.period.pick": "Sélectionner une période",
+	"type.form.validation.required": "Les demandes de réservation doivent être validées"
 }
