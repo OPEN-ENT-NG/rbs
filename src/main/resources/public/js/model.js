@@ -11,10 +11,10 @@ model.STATE_REFUSED = 3;
 model.STATE_PARTIAL = 4;
 
 model.times = [];
-model.timeConfig = { // 5min slots from 6h00 to 23h55, default 8h00
+model.timeConfig = { // 5min slots from 7h00 to 19h55, default 8h00
 	interval: 5, // in minutes
-	start_hour: 6,
-	end_hour: 23,
+	start_hour: 7,
+	end_hour: 19,
 	default_hour: 8
 };
 
@@ -350,9 +350,9 @@ function ResourceType(data) {
 
 	// Resource collection embedded, not synced
 	this.collection(Resource, {
-		filterAvailable: function() {
+		filterAvailable: function(periodic) {
 			return this.filter(function(resource){
-				return resource.is_available === true;
+				return resource.is_available === true && (!periodic || resource.periodic_booking);
 			});
 		},
 		collapseAll : function() {

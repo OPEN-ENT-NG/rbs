@@ -8,10 +8,28 @@
 <section class="cell three">
 	<h1>Réservation de ressources</h1>
 	<nav class="vertical row">
-		<h2><i18n>rbs.manage.types</i18n></h2>
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all">
-				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType }">[[resourceType.name]]</a>
+				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">[[resourceType.name]]</a>
+
+				<ul ng-if="resourceType === currentResourceType">
+					<li>
+						<behaviour name="manage" resource="currentResourceType">
+							<a ng-click="editCurrentResourceType()" ng-class="{ selected: resourceType === currentResourceType && resourceType === editedResourceType
+							&& !template.contains('resources', 'confirm-delete-type') }">
+								<i18n>edit</i18n>
+							</a>
+						</behaviour>
+					</li>
+					<li>
+						<behaviour name="manage" resource="currentResourceType">
+							<a ng-click="deleteCurrentResourceType()" ng-class="{ selected: resourceType === currentResourceType && resourceType === editedResourceType
+							&& template.contains('resources', 'confirm-delete-type') }">
+								<i18n>remove</i18n>
+							</a>
+						</behaviour>
+					</li>
+				</ul>
 			</li>
 		</ul>
 		<a class="classic-link" workflow="rbs.typemanage" ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></a>

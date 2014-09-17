@@ -9,8 +9,6 @@
 	<h1>Réservation de ressources</h1>
 	<nav class="vertical row">
 
-	<h2><i18n>rbs.selector.resources</i18n></h2>
-
 		<ul class="colored">
 			<li ng-repeat="resourceType in resourceTypes.all">
 				<a ng-class="resourceType.color" ng-click="switchExpand(resourceType)">[[resourceType.name]]</a>
@@ -20,7 +18,7 @@
 							[[resource.name]] <span ng-if="resource.is_available !== true" class="long-badge right-magnet"><i18n>rbs.booking.resource.unavailable</i18n></span>
 						</a>
 					</li>
-					<div ng-if="resourceType.resources.empty() === true"><i18n>rbs.resources.empty</i18n></div>
+					<li ng-if="resourceType.resources.empty() === true"><i18n>rbs.resources.empty</i18n></li>
 				</ul>
 			</li>
 			<div ng-if="resourceTypes.empty() === true"><i18n>rbs.types.empty</i18n></div>
@@ -32,7 +30,13 @@
 
 <section class="cell nine">
 	<div class="row">
-		<button ng-click="newBooking()"><i18n>rbs.booking.create</i18n></button>
+		<drop-down-button class="cell">
+			<label class="opener"><i18n>rbs.booking.create</i18n></label>
+			<opts>
+				<li ng-click="newBooking()"><i18n>Réservation ponctuelle</i18n></li>
+				<li ng-click="newBooking('periodic')"><i18n>Réservation périodique</i18n></li>
+			</opts>
+		</drop-down-button>
 
 		<div class="display-buttons">
 			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>

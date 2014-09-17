@@ -1,6 +1,6 @@
 <div class="row">
 	<h2><i18n>rbs.booking.new</i18n></h2>
-	<article class="twelve cell">
+	<section class="twelve cell">
 
 		<h3><i18n>rbs.booking.title.resource</i18n></h3>
 
@@ -12,7 +12,7 @@
 			</div>
 			<div class="six cell form-element">
 				<label class="row"><i18n>rbs.booking.edit.resource.label</i18n></label>
-				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable()" required>
+				<select class="row" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable(editedBooking.is_periodic)" required>
 				</select>
 			</div>
 		</div>
@@ -26,42 +26,24 @@
 				<input class="row disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
 			</div>
 		</div>
-		<hr />
 
-		<div class="row form-element">
-			<label class="twelve cell"><i18n>rbs.booking.edit.description.label</i18n></label>
-			<div bind-html="editedBooking.resource.description" class="twelve cell uneditable form-element"></div>
+		<div class="row">
+			<div bind-html="editedBooking.resource.description" class="twelve cell"></div>
 		</div>
-		<hr />
 
 		<h3><i18n>rbs.booking.title.booking</i18n></h3>
-
-		<div class="row" ng-if="editedBooking.resource.periodic_booking === true">
-			<label class="three cell form-element"><i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
-			<label class="cell form-element">
-				<i18n>rbs.booking.edit.periodic_booking.true</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.is_periodic" ng-value="true" />
-			</label>
-			<label class="cell form-element">
-				<i18n>rbs.booking.edit.periodic_booking.false</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedBooking.is_periodic" ng-value="false" checked />
-			</label>
-		</div>
-		<hr />
 
 		<!-- Non Periodic Booking dates and hours -->
 		<div class="row" ng-if="editedBooking.is_periodic !== true">
 			<div class="six cell">
 				<label class="three cell form-label"><i18n>rbs.booking.edit.start.label</i18n></label>
 				<date-picker class="four cell" ng-model="editedBooking.startDate" ng-change="showDate = true" required></date-picker>
-				<label class="one cell form-label"><i18n>rbs.booking.edit.start.hour</i18n></label>
 				<select class="three cell" ng-model="editedBooking.startTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 				</select>
 			</div>
 			<div class="six cell">
 				<label class="two cell form-label"><i18n>rbs.booking.edit.end.label</i18n></label>
 				<date-picker class="four cell" ng-model="editedBooking.endDate" ng-change="showDate = true" required></date-picker>
-				<label class="one cell form-label"><i18n>rbs.booking.edit.end.hour</i18n></label>
 				<select class="three cell" ng-model="editedBooking.endTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 				</select>
 			</div>
@@ -131,14 +113,11 @@
 		<hr />
 
 		<div class="row form-element">
-			<label class="twelve cell"><i18n>rbs.booking.edit.reason.label</i18n></label>
-			<textarea ng-model="editedBooking.booking_reason"></textarea>
+			<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 		</div>
-		<hr />
 
 		<div class="warning form-element" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
-		<hr />
 
 		<div class="row">
 			<behaviour name="contrib" resource="editedBooking.resource">
@@ -148,5 +127,5 @@
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
 		</div>
-	</article>
+	</section>
 </div>

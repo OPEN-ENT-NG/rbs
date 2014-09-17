@@ -298,7 +298,7 @@ function RbsController($scope, template, model, date){
 		});
 	};
 
-	$scope.newBooking = function() {
+	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
 		if ($scope.lastSelectedResource) {
@@ -318,6 +318,10 @@ function RbsController($scope, template, model, date){
 
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
+		if(periodic === 'periodic'){
+			$scope.editedBooking.is_periodic = true;
+		}
+
 		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
 		$scope.editedBooking.byOccurrences = true;
 		$scope.editedBooking.periodicEndDate = undefined;
@@ -383,7 +387,7 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.autoSelectResource = function() {
-		$scope.editedBooking.resource = _.first($scope.editedBooking.type.resources.filterAvailable());
+		$scope.editedBooking.resource = _.first($scope.editedBooking.type.resources.filterAvailable($scope.editedBooking.is_periodic));
 	};
 
 	$scope.saveBooking = function() {

@@ -4,13 +4,11 @@
 
 	<article class="twelve cell">
 		<div class="row">
-			<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
-			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="eight cell" ng-model="editedResourceType.name" required />
+			<label class="five cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
+			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="seven cell" ng-model="editedResourceType.name" required />
 		</div>
-		<hr />
-
 		<div class="row">
-			<label class="six cell"><i18n>rbs.resourcetype.edit.validation.label</i18n></label>
+			<label class="five cell"><i18n>rbs.resourcetype.edit.validation.label</i18n></label>
 			<label class="one cell">
 				<i18n>rbs.resourcetype.edit.validation.true</i18n>
 				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="true" checked />
@@ -32,7 +30,6 @@
 
 		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
-		<hr />
 
 		<div class="row">
 			<button class="right-magnet" ng-click="saveResourceType()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>

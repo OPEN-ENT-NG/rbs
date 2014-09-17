@@ -6,19 +6,6 @@
 	z-index: 11000 !important;
 }
 
-.form-element {
-	padding-left: 10px;
-	padding-right: 10px;
-	margin-bottom: 5px;
-}
-
-.form-label {
-	padding-left: 10px;
-	padding-right: 10px;
-	padding-top: 4px;
-	margin-bottom: 5px;
-}
-
 .form-article {
 	margin-bottom: 0;
 }
