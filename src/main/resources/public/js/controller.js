@@ -10,18 +10,30 @@ function RbsController($scope, template, model, date, route){
 	route({
         viewBooking: function(param){
         	$scope.resourceTypes.one('sync', function(){
-	        	var routedBooking = $scope.bookings.find(function(booking){
-	        		return booking.id === param.bookingId;
-	        	});
-	        	if (routedBooking !== undefined) {
-	        		// resource selection
-	        		$scope.switchSelect(routedBooking.resource);
-	        		// booking details view
-	        		$scope.viewBooking(routedBooking);	
-	        	}
-	        	else {
-	        		// error
-	        	}
+        		var actions = 0;
+        		var routedBooking = undefined;
+        		$scope.resourceTypes.forEach(function(resourceType){
+        			actions = actions + resourceType.resources.size();
+        			resourceType.resources.forEach(function(resource){
+        				resource.bookings.one('sync', function(){
+        					if (routedBooking !== undefined) {
+        						return;
+        					}
+        					routedBooking = resource.bookings.find(function(booking){
+				        		return booking.id == param.bookingId;
+				        	});
+				        	if (routedBooking !== undefined) {
+				        		// found
+				        		$scope.viewBooking(routedBooking);
+				        		return;
+				        	}
+			        		actions--;
+			        		if (actions === 0) {
+			        			// error
+			        		}
+        				});
+        			});
+        		});
 	        });
         }
     });
@@ -62,6 +74,7 @@ function RbsController($scope, template, model, date, route){
 	template.open('bookings', 'main-calendar');
 
 	// Will auto-select "Mine" bookings by default
+	model.bookings.filters.mine = true;
 	model.recordedSelections.mine = true;
 	model.recordedSelections.allResources = true;
 
@@ -178,6 +191,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.processBookings = [];
 		$scope.currentErrors = [];
 		$scope.display.showPanel = false;
+		$scope.display.createItem = false;
 		template.close('lightbox');
 	};
 
@@ -308,30 +322,16 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
-		if ($scope.lastSelectedResource) {
-			$scope.editedBooking.resource = $scope.lastSelectedResource;
-			$scope.editedBooking.type = $scope.lastSelectedResource.type;
-		}
-		else {
-			$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
-			$scope.autoSelectResource();
-		}
-
-		// default hours
-		$scope.editedBooking.startTime = model.times[0];
-		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { return $scope.editedBooking.startTime.hour < hourMinutes.hour });
-		$scope.editedBooking.startDate = undefined;
-		$scope.editedBooking.endDate = undefined;
 
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
 		if(periodic === 'periodic'){
 			$scope.editedBooking.is_periodic = true;
+			$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
+			$scope.editedBooking.byOccurrences = true;
+			$scope.editedBooking.periodicEndDate = undefined;
 		}
-
-		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
-		$scope.editedBooking.byOccurrences = true;
-		$scope.editedBooking.periodicEndDate = undefined;
+		$scope.initBookingDates();
 
 		// debug
 		var DEBUG_editedBooking = $scope.editedBooking;
@@ -343,6 +343,8 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.editBooking = function() {
 		$scope.display.processing = undefined;
+		$scope.editedBooking.initialized = undefined;
+
 		if ($scope.selectedBooking !== undefined) {
 			$scope.editedBooking = $scope.selectedBooking;
 		}
@@ -352,21 +354,6 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking = $scope.editedBooking.booking;
 			}
 		}
-
-		// dates management
-		$scope.editedBooking.startDate = $scope.editedBooking.startMoment.toDate();
-		$scope.editedBooking.startDate.setFullYear($scope.editedBooking.startMoment.years());
-		$scope.editedBooking.startDate.setMonth($scope.editedBooking.startMoment.months());
-		$scope.editedBooking.startDate.setDate($scope.editedBooking.startMoment.date());
-		$scope.editedBooking.endDate = $scope.editedBooking.endMoment.toDate();
-		$scope.editedBooking.endDate.setFullYear($scope.editedBooking.endMoment.years());
-		$scope.editedBooking.endDate.setMonth($scope.editedBooking.endMoment.months());
-		$scope.editedBooking.endDate.setDate($scope.editedBooking.endMoment.date());
-
-		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour && $scope.editedBooking.startMoment.minutes() === hourMinutes.min) });
-		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
-			return ($scope.editedBooking.endMoment.hour() === hourMinutes.hour && $scope.editedBooking.endMoment.minutes() === hourMinutes.min) });
 
 		// periodic booking
 		if ($scope.editedBooking.is_periodic === true) {
@@ -379,11 +366,7 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking.byOccurrences = false;
 			}
 		}
-		else {
-			// prepare so periodic mode can be selected
-			$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
-			$scope.editedBooking.byOccurrences = true;
-		}
+		$scope.initBookingDates();
 
 		// debug
 		var DEBUG_editedBooking = $scope.editedBooking;
@@ -391,6 +374,69 @@ function RbsController($scope, template, model, date, route){
 
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
+	};
+
+	$scope.initBooking = function(newCalendarItem) {
+		if (newCalendarItem === undefined) {
+			return false;
+		}
+		if (newCalendarItem.initialized === true) {
+			return true;
+		}
+
+		$scope.editedBooking = new Booking();
+		$scope.initBookingDates(newCalendarItem);
+		$scope.editedBooking.is_periodic = false; // false from calendar
+		newCalendarItem.initialized = true;
+		return true;
+	};
+
+	$scope.initBookingDates = function(newCalendarItem) {
+		if ($scope.editedBooking.id === undefined) {
+			// new Booking
+			if (newCalendarItem !== undefined) {
+				// created from calendar
+				$scope.editedBooking.startMoment = newCalendarItem.beginning;
+				$scope.editedBooking.startMoment.minutes(0);
+				$scope.editedBooking.endMoment = newCalendarItem.end;
+				$scope.editedBooking.endMoment.minutes(0);
+			}
+			else {
+				// not from calendar : default hours
+				$scope.editedBooking.startMoment = moment();
+				$scope.editedBooking.endMoment = moment();
+				$scope.editedBooking.startMoment.hour($scope.editedBooking.startMoment.hour() + 1);
+			}
+
+			if ($scope.lastSelectedResource) {
+				$scope.editedBooking.resource = $scope.lastSelectedResource;
+				$scope.editedBooking.type = $scope.lastSelectedResource.type;
+			}
+			else {
+				$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
+				$scope.autoSelectResource();
+			}
+		};
+
+		// dates management
+		$scope.editedBooking.startDate = $scope.editedBooking.startMoment.toDate();
+		$scope.editedBooking.startDate.setFullYear($scope.editedBooking.startMoment.years());
+		$scope.editedBooking.startDate.setMonth($scope.editedBooking.startMoment.months());
+		$scope.editedBooking.startDate.setDate($scope.editedBooking.startMoment.date());
+		$scope.editedBooking.endDate = $scope.editedBooking.endMoment.toDate();
+		$scope.editedBooking.endDate.setFullYear($scope.editedBooking.endMoment.years());
+		$scope.editedBooking.endDate.setMonth($scope.editedBooking.endMoment.months());
+		$scope.editedBooking.endDate.setDate($scope.editedBooking.endMoment.date());
+
+		// hours minutes management
+		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
+			return ($scope.editedBooking.startMoment.hour() === hourMinutes.hour && $scope.editedBooking.startMoment.minutes() === hourMinutes.min) });
+		$scope.editedBooking.endTime = _.find(model.times, function(hourMinutes) { 
+			return ($scope.editedBooking.endMoment.hour() === hourMinutes.hour && $scope.editedBooking.endMoment.minutes() === hourMinutes.min) });
+
+		// debug
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /debug
 	};
 
 	$scope.autoSelectResource = function() {

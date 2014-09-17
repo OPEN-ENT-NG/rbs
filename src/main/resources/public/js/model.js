@@ -1,7 +1,7 @@
 // custom loading
 loader.loadFile('/rbs/public/js/additional.js');
 
-model.colors = ['cyan', 'green', 'orange', 'yellow', 'pink', 'purple', 'grey'];
+model.colors = ['cyan', 'green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
 
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
@@ -107,7 +107,6 @@ Booking.prototype.create = function(cb, cbe) {
 		if (booking.resource.selected) {
 			booking.resource.bookings.push(booking);
 		}
-		model.mine.bookings.push(booking);
 		model.bookings.pushAll([booking]);
 		if(typeof cb === 'function'){
 			cb();
