@@ -1,5 +1,31 @@
-function RbsController($scope, template, model, date){
+routes.define(function($routeProvider){
+    $routeProvider
+        .when('/booking/:bookingId', {
+            action: 'viewBooking'
+        })
+});
+
+function RbsController($scope, template, model, date, route){
 	
+	route({
+        viewBooking: function(param){
+        	$scope.resourceTypes.one('sync', function(){
+	        	var routedBooking = $scope.bookings.find(function(booking){
+	        		return booking.id === param.bookingId;
+	        	});
+	        	if (routedBooking !== undefined) {
+	        		// resource selection
+	        		$scope.switchSelect(routedBooking.resource);
+	        		// booking details view
+	        		$scope.viewBooking(routedBooking);	
+	        	}
+	        	else {
+	        		// error
+	        	}
+	        });
+        }
+    });
+
 	$scope.template = template;
 	$scope.me = model.me;
 	$scope.date = date;
@@ -22,8 +48,6 @@ function RbsController($scope, template, model, date){
 
 	$scope.resourceTypes = model.resourceTypes;
 	$scope.bookings = model.bookings;
-	$scope.mine = model.mine;
-	$scope.unprocessed = model.unprocessed;
 	$scope.times = model.times;
 	$scope.periods = model.periods;
 
@@ -39,23 +63,15 @@ function RbsController($scope, template, model, date){
 
 	// Will auto-select "Mine" bookings by default
 	model.recordedSelections.mine = true;
+	model.recordedSelections.allResources = true;
 
 	$scope.resourceTypes.on('sync', function(){
 		// Restore previous selections
 		model.recordedSelections.restore(
-			function(){
-				$scope.mine.bookings.sync(function(){
-					$scope.bookings.pushAll($scope.mine.bookings.all);
-				});
-			},
-			function(){
-				$scope.unprocessed.bookings.sync(function(){
-					$scope.bookings.pushAll($scope.unprocessed.bookings.all);
-				});
-			},
 			function(resource){
 				resource.bookings.sync(function(){
 					$scope.bookings.pushAll(resource.bookings.all);
+					// route
 				});
 			}
 		);
@@ -64,6 +80,8 @@ function RbsController($scope, template, model, date){
 		if ($scope.currentResourceType !== undefined) {
 			$scope.currentResourceType = model.resourceTypes.first();
 		}
+
+		model.recordedSelections.allResources = false;
 	});
 
 
@@ -95,9 +113,6 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.switchExpand = function(resourceType) {
-		if ($scope.unprocessed.selected === true) {
-			$scope.unprocessedRestoreSelections();
-		}
 		if (resourceType.expanded !== true) {
 			resourceType.expanded = true;
 		}
@@ -126,57 +141,21 @@ function RbsController($scope, template, model, date){
 	};
 
 	$scope.switchSelectMine = function() {
-		if ($scope.unprocessed.selected === true) {
-			$scope.unprocessedRestoreSelections();
-		}
-		if ($scope.mine.selected !== true) {
-			$scope.bookings.pushAll($scope.mine.bookings.all);
+		if ($scope.bookings.filters.mine === true) {
+			$scope.bookings.filters.mine = undefined;
 		}
 		else {
-			$scope.bookings.pullAll($scope.mine.bookings.all);
+			$scope.bookings.filters.mine = true;	
 		}
 	};
 
 	$scope.switchSelectUnprocessed = function() {
-		if ($scope.unprocessed.selected !== true) {
-			$scope.unprocessed.selected = true;
-			// deselect other cases (false: without saving the unprocessed selection)
-			model.recordedSelections.record(
-				false,
-				function(resourceType){
-					resourceType.expanded = undefined;
-				},
-				function(resource){
-					resource.selected = undefined;
-				}
-			);
-			$scope.lastSelectedResource = undefined;
-
-			$scope.bookings.clear();
-			$scope.unprocessed.bookings.sync(function(){
-				$scope.bookings.pushAll($scope.unprocessed.bookings.all);	
-			});
+		if ($scope.bookings.filters.unprocessed === true) {
+			$scope.bookings.filters.unprocessed = undefined;
 		}
 		else {
-			$scope.unprocessedRestoreSelections();
+			$scope.bookings.filters.unprocessed = true;	
 		}
-	}
-
-	$scope.unprocessedRestoreSelections = function() {
-		$scope.unprocessed.selected = undefined;
-		$scope.bookings.clear();
-		// restore previous selections
-		model.recordedSelections.restore(
-			function(){
-				$scope.bookings.pushAll($scope.mine.bookings.all);
-			},
-			function(){
-				$scope.bookings.pushAll($scope.unprocessed.bookings.all);
-			},
-			function(resource){
-				$scope.bookings.pushAll(resource.bookings.all);
-			}
-		);
 	}
 
 
@@ -212,7 +191,35 @@ function RbsController($scope, template, model, date){
 		booking.hideSlots();
 	};
 
-	$scope.filterList = function(booking) {
+	$scope.filterList = function() {
+		if ($scope.bookings.filters.mine === true) {
+			if ($scope.bookings.filters.unprocessed === true) {
+				return (function(booking){ 
+					return booking.isBooking() 
+					&& booking.owner === model.me.userId 
+					&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+				});
+			}
+			else {
+				return (function(booking){ 
+					return booking.isBooking() 
+					&& booking.owner === model.me.userId;
+				});
+			}
+		}
+		else {
+			if ($scope.bookings.filters.unprocessed === true) {
+				return (function(booking){ 
+					return booking.isBooking() 
+					&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+				});
+			}
+			else {
+				return (function(booking){ 
+					return booking.isBooking();
+				});
+			}
+		}
 		return booking.isBooking();
 	}
 
