@@ -8,48 +8,30 @@
 			<select class="nine cell" ng-model="editedResource.type" ng-options="resourceType.name for resourceType in resourceTypes.all" required>
 			</select>
 		</div>
-		<hr />
-
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.name.label</i18n></label>
 			<input class="nine cell" type="text" i18n-placeholder="rbs.resource.edit.name.placeholder" ng-model="editedResource.name" required />
 		</div>
-		<hr />
+		<div class="row">
+			<label class="nine cell right-magnet">
+				<input type="checkbox" name="is_available" data-ng-model="editedResource.is_available" />
+				<i18n>rbs.resource.edit.is_available.label</i18n>
+			</label>
+		</div>
 
+		<div class="row">
+			<label class="nine cell right-magnet">
+				<input type="checkbox" name="is_available" data-ng-model="editedResource.periodic_booking" />
+				<i18n>rbs.resource.edit.periodic_booking.label</i18n>
+			</label>
+		</div>
 		<div class="row">
 			<label class="twelve cell"><i18n>rbs.resource.edit.description.label</i18n></label>
 			<html-editor ng-model="editedResource.description"></html-editor>
 		</div>
 
-		<div class="row">
-			<label class="five cell"><i18n>rbs.resource.edit.is_available.label</i18n></label>
-			<label class="one cell">
-				<i18n>rbs.resource.edit.is_available.false</i18n>
-				<input type="radio" name="is_available" data-ng-model="editedResource.is_available" ng-value="false" checked />
-			</label>
-			<label class="one cell">
-				<i18n>rbs.resource.edit.is_available.true</i18n>
-				<input type="radio" name="is_available" data-ng-model="editedResource.is_available" ng-value="true" />
-			</label>
-		</div>
-		<hr />
-
-		<div class="row">
-			<label class="five cell"><i18n>rbs.resource.edit.periodic_booking.label</i18n></label>
-			<label class="one cell">
-				<i18n>rbs.resource.edit.periodic_booking.true</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedResource.periodic_booking" ng-value="true" checked />
-			</label>
-			<label class="one cell">
-				<i18n>rbs.resource.edit.periodic_booking.false</i18n>
-				<input type="radio" name="periodic_booking" data-ng-model="editedResource.periodic_booking" ng-value="false" />
-			</label>
-		</div>
-		<hr />
-
 		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
-		<hr />
 
 		<div class="row">
 			<behaviour name="manage" resource="editedResource.type">
@@ -57,7 +39,7 @@
 			</behaviour>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
-			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
+			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
 		</div>
 	</article>
 </div>

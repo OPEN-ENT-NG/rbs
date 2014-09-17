@@ -4,19 +4,13 @@
 
 	<article class="twelve cell">
 		<div class="row">
-			<label class="five cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
-			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="seven cell" ng-model="editedResourceType.name" required />
+			<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
+			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required />
 		</div>
 		<div class="row">
-			<label class="five cell"><i18n>rbs.resourcetype.edit.validation.label</i18n></label>
-			<label class="one cell">
-				<i18n>rbs.resourcetype.edit.validation.true</i18n>
-				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="true" checked />
-			</label>
-			<label class="one cell">
-				<i18n>rbs.resourcetype.edit.validation.false</i18n>
-				<input type="radio" name="validation" data-ng-model="editedResourceType.validation" ng-value="false" />
-			</label>
+			<div class="nine cell right-magnet">
+				<input type="checkbox" ng-model="editedResourceType.validation" /> Les demandes de réservation doivent être validées
+			</div>
 		</div>
 		<hr />
 
@@ -26,8 +20,6 @@
 		<div ng-if="editedResourceType.id === undefined" class="row info">
 			<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
 		</div>
-		<hr />
-
 		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
 

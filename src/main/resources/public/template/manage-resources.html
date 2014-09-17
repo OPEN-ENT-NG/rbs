@@ -1,3 +1,7 @@
+<div workflow="rbs.ressourcemanage" class="cell">
+	<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>
+</div>
+
 <article class="twelve cell form-article" ng-if="resourceTypes.empty() !== true">
 	<div class="row">
 		<p ng-if="currentResourceType.validation === true"><i18n>rbs.type.details.validation.true</i18n></p>
@@ -45,10 +49,6 @@
 		</tbody>
 	</table>
 	<hr />
-
-	<div workflow="rbs.ressourcemanage" class="row">
-		<button ng-click="newResource()"><i18n>rbs.manage.resource.create</i18n></button>
-	</div>
 </article>
 
 <article class="twelve cell form-article" ng-if="resourceTypes.empty() === true">
