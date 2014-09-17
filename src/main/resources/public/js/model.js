@@ -1,9 +1,7 @@
 // custom loading
 loader.loadFile('/rbs/public/js/additional.js');
 
-
-model.colorMine = 'cyan';
-model.colors = ['green', 'orange', 'yellow', 'pink', 'purple', 'grey'];
+model.colors = ['cyan', 'green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
 
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
@@ -56,10 +54,20 @@ Booking.prototype.save = function(cb, cbe) {
 
 Booking.prototype.calendarUpdate = function(cb, cbe) {
 	if(this.id) {
-		this.update(cb, cbe);
+		this.update(function(){
+			model.refresh;
+		}, function(error){
+			// notify
+			model.refresh;
+		});
 	}
 	else {
-		this.create(cb, cbe);
+		this.create(function(){
+			model.refresh;
+		}, function(error){
+			// notify
+			model.refresh;
+		});
 	}
 };
 
@@ -99,7 +107,6 @@ Booking.prototype.create = function(cb, cbe) {
 		if (booking.resource.selected) {
 			booking.resource.bookings.push(booking);
 		}
-		model.mine.bookings.push(booking);
 		model.bookings.pushAll([booking]);
 		if(typeof cb === 'function'){
 			cb();
@@ -443,45 +450,12 @@ ResourceType.prototype.toJSON = function() {
 };
 
 
-function BookingsHolder(params) {
-	this.url = params.url;
-	if (params.color) {
-		this.color = params.color;
-	}
-	var holder = this;
-
-	this.collection(Booking, {
-		sync: function(cb){
-			// Load the Bookings
-			http().get(holder.url).done(function(rows){
-				// Load
-				this.load(rows);
-				// Prepare ressources
-				var resourceIndex = {};
-				model.resourceTypes.forEach(function(resourceType){
-					resourceType.resources.forEach(function(resource){
-						resourceIndex[resource.id] = resource;
-					});
-				});
-				// Parse
-				var bookingIndex = model.parseBookingsAndSlots(this.all, resourceIndex, holder.color !== undefined ? holder.color : undefined);
-				// Callback
-				if(typeof cb === 'function'){
-					cb();
-				}
-			}.bind(this));
-		},
-		behaviours: 'rbs'
-	});
-}
-
-
 function SelectionHolder() {
 }
 
-SelectionHolder.prototype.record = function(restoreUnprocessed, resourceTypeCallback, resourceCallback) {
-	this.restoreUnprocessed = (restoreUnprocessed === true ? true : undefined);
-	this.mine = (model.mine.selected === true ? true : undefined);
+SelectionHolder.prototype.record = function(resourceTypeCallback, resourceCallback) {
+	this.mine = (model.bookings.filters.mine === true ? true : undefined);
+	this.unprocessed = (model.bookings.filters.unprocessed === true ? true : undefined);
 
 	var typeRecords = {};
 	var resourceRecords = {};
@@ -507,38 +481,21 @@ SelectionHolder.prototype.record = function(restoreUnprocessed, resourceTypeCall
 	this.resources = resourceRecords;
 };
 
-SelectionHolder.prototype.restore = function(mineCallback, unprocessedCallback, resourceCallback) {
+SelectionHolder.prototype.restore = function(resourceCallback) {
 	var typeRecords = this.resourceTypes || {};
 	var resourceRecords = this.resources || {};
+	var holder = this;
 
-	if (this.restoreUnprocessed === true) {
-		// Restore unprocessed only, and keep record
-		model.unprocessed.selected === true;
-		if(typeof unprocessedCallback === 'function'){
-			unprocessedCallback();
-		}
-		this.restoreUnprocessed = undefined;
-		return;
-	}
-
-	// Deselect unprocessed
-	model.unprocessed.selected = undefined;
-
-	// Apply recorded selections
-	if (this.mine === true) {
-		model.mine.selected = true;
-		if(typeof mineCallback === 'function'){
-			mineCallback();
-		}
-		this.mine = undefined;
-	}
+	// Apply recorded booking filters
+	model.bookings.filters.mine = (this.mine === true ? true : undefined);
+	model.bookings.filters.unprocessed = (this.unprocessed === true ? true : undefined);
 
 	model.resourceTypes.forEach(function(resourceType){
-		if (typeRecords[resourceType.id]) {
+		if (typeRecords[resourceType.id] || holder.allResources === true) {
 			resourceType.expanded = true;
 		}
 		resourceType.resources.forEach(function(resource){
-			if (resourceRecords[resource.id]) {
+			if (resourceRecords[resource.id] || holder.allResources === true) {
 				resource.selected = true;
 				if(typeof resourceCallback === 'function'){
 					resourceCallback(resource);
@@ -554,8 +511,8 @@ SelectionHolder.prototype.restore = function(mineCallback, unprocessedCallback, 
 
 model.build = function(){
 	model.me.workflow.load(['rbs']);
-	this.makeModels([ResourceType, Resource, Booking, BookingsHolder, SelectionHolder]);
-	Model.prototype.inherits(Booking, calendar.ScheduleItem);
+	this.makeModels([ResourceType, Resource, Booking, SelectionHolder]);
+	//Model.prototype.inherits(Booking, calendar.ScheduleItem);
 
 	// ResourceTypes collection with embedded Resources
 	this.collection(ResourceType, {
@@ -666,17 +623,13 @@ model.build = function(){
 			}
 			return this._selectionResources;
 		},
+		filters: {
+			mine: undefined,
+			unprocessed: undefined
+		},
 		behavious: 'rbs'
 	});
 
-	// Holders for special lists of Bookings
-	this.mine = new BookingsHolder({
-		url: '/rbs/bookings', 
-		color: this.colorMine
-	});
-	this.unprocessed = new BookingsHolder({
-		url: '/rbs/bookings/unprocessed'
-	});
 	this.recordedSelections = new SelectionHolder();
 
 	model.loadTimes();
@@ -685,7 +638,7 @@ model.build = function(){
 
 model.refresh = function() {
 	// Record selections
-	model.recordedSelections.record(model.unprocessed.selected);
+	model.recordedSelections.record();
 	// Clear bookings
 	model.bookings.clear();
 	// Launch resync
