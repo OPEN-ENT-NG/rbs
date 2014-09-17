@@ -54,6 +54,15 @@ Booking.prototype.save = function(cb, cbe) {
 	}
 };
 
+Booking.prototype.calendarUpdate = function(cb, cbe) {
+	if(this.id) {
+		this.update(cb, cbe);
+	}
+	else {
+		this.create(cb, cbe);
+	}
+};
+
 Booking.prototype.update = function(cb, cbe) {
 	var url = '/rbs/resource/' + this.resource.id + '/booking/' + this.id;
 	if (this.is_periodic === true) {
