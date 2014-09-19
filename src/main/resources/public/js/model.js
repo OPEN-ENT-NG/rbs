@@ -595,6 +595,7 @@ model.build = function(){
 		pushAll: function(datas, trigger) {
 			if (datas) {
 				this.all = _.union(this.all, datas);
+				this.applyFilters();
 				if (trigger) {
 					this.trigger('sync');
 				}
@@ -603,6 +604,7 @@ model.build = function(){
 		pullAll: function(datas, trigger) {
 			if (datas) {
 				this.all = _.difference(this.all, datas);
+				this.applyFilters();
 				if (trigger) {
 					this.trigger('sync');	
 				}
@@ -610,6 +612,7 @@ model.build = function(){
 		},
 		clear: function(trigger) {
 			this.all = [];
+			this.applyFilters();
 			if (trigger) {
 				this.trigger('sync');	
 			}
@@ -623,10 +626,36 @@ model.build = function(){
 			}
 			return this._selectionResources;
 		},
+		applyFilters: function() {
+			if (this.filters.mine === true) {
+				if (this.filters.unprocessed === true) {
+					this.filtered = _.filter(this.all, function(booking){
+						return booking.owner === model.me.userId 
+						&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+					});
+				}
+				else {
+					this.filtered = _.filter(this.all, function(booking){
+						return booking.owner === model.me.userId;
+					});
+				}
+			}
+			else {
+				if (this.filters.unprocessed === true) {
+					this.filtered = _.filter(this.all, function(booking){
+						return (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+					});
+				}
+				else {
+					this.filtered = this.all;
+				}				
+			}
+		},
 		filters: {
 			mine: undefined,
 			unprocessed: undefined
 		},
+		filtered: [],
 		behavious: 'rbs'
 	});
 

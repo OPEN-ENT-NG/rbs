@@ -160,6 +160,7 @@ function RbsController($scope, template, model, date, route){
 		else {
 			$scope.bookings.filters.mine = true;	
 		}
+		$scope.bookings.applyFilters();
 	};
 
 	$scope.switchSelectUnprocessed = function() {
@@ -169,6 +170,7 @@ function RbsController($scope, template, model, date, route){
 		else {
 			$scope.bookings.filters.unprocessed = true;	
 		}
+		$scope.bookings.applyFilters();
 	}
 
 
@@ -205,35 +207,7 @@ function RbsController($scope, template, model, date, route){
 		booking.hideSlots();
 	};
 
-	$scope.filterList = function() {
-		if ($scope.bookings.filters.mine === true) {
-			if ($scope.bookings.filters.unprocessed === true) {
-				return (function(booking){ 
-					return booking.isBooking() 
-					&& booking.owner === model.me.userId 
-					&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-				});
-			}
-			else {
-				return (function(booking){ 
-					return booking.isBooking() 
-					&& booking.owner === model.me.userId;
-				});
-			}
-		}
-		else {
-			if ($scope.bookings.filters.unprocessed === true) {
-				return (function(booking){ 
-					return booking.isBooking() 
-					&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-				});
-			}
-			else {
-				return (function(booking){ 
-					return booking.isBooking();
-				});
-			}
-		}
+	$scope.filterList = function(booking) {
 		return booking.isBooking();
 	}
 

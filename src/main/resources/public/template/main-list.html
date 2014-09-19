@@ -12,7 +12,7 @@
 			<th colspan="2"><a ng-click="switchSortBy('status')" ng-class="{selected: sort.predicate === 'status'}"><i18n>rbs.booking.headers.status</i18n></a></th>
 		</tr>
 	</thead>
-	<tbody ng-repeat="booking in bookings.filter(filterList()) | orderBy:sort.predicate:sort.reverse">
+	<tbody ng-repeat="booking in bookings.filter(filterList) | orderBy:sort.predicate:sort.reverse">
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
 			<td class="icon [[booking.color]]" ng-click="viewBooking(booking)"></td>
