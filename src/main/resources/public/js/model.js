@@ -512,7 +512,7 @@ SelectionHolder.prototype.restore = function(resourceCallback) {
 model.build = function(){
 	model.me.workflow.load(['rbs']);
 	this.makeModels([ResourceType, Resource, Booking, SelectionHolder]);
-	//Model.prototype.inherits(Booking, calendar.ScheduleItem);
+	Model.prototype.inherits(Booking, calendar.ScheduleItem);
 
 	// ResourceTypes collection with embedded Resources
 	this.collection(ResourceType, {
