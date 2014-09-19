@@ -193,7 +193,6 @@ function RbsController($scope, template, model, date, route){
 		$scope.processBookings = [];
 		$scope.currentErrors = [];
 		$scope.display.showPanel = false;
-		$scope.display.createItem = false;
 		template.close('lightbox');
 	};
 
@@ -295,6 +294,7 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
+		$scope.display.actionOnBooking = true;
 		$scope.editedBooking = new Booking();
 
 		// periodic booking
@@ -317,6 +317,7 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.editBooking = function() {
 		$scope.display.processing = undefined;
+		$scope.display.actionOnBooking = true;
 		$scope.editedBooking.initialized = undefined;
 
 		if ($scope.selectedBooking !== undefined) {
@@ -351,17 +352,26 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.initBooking = function(newCalendarItem) {
-		if (newCalendarItem === undefined) {
+		/*
+		if ($scope.display.actionOnBooking !== true
+			&& $scope.display.createItem !== true
+			&& $scope.display.editItem !== true) {
+			// Closed : cleanup
+			$scope.editedBooking = undefined;
+			$scope.currentErrors = [];
 			return false;
-		}
-		if (newCalendarItem.initialized === true) {
-			return true;
-		}
+		}*/
 
-		$scope.editedBooking = new Booking();
-		$scope.initBookingDates(newCalendarItem);
-		$scope.editedBooking.is_periodic = false; // false from calendar
-		newCalendarItem.initialized = true;
+		if ($scope.editedBooking === undefined) {
+			$scope.editedBooking = new Booking();
+		}
+		
+		if ($scope.display.actionOnBooking !== true && newCalendarItem !== undefined && newCalendarItem.initialized !== true) {
+			// From Calendar
+			$scope.initBookingDates(newCalendarItem);
+			$scope.editedBooking.is_periodic = false; // false from calendar
+			newCalendarItem.initialized = true;
+		}
 		return true;
 	};
 
@@ -460,11 +470,13 @@ function RbsController($scope, template, model, date, route){
 		$scope.currentErrors = [];
 		$scope.editedBooking.save(function(){
 			$scope.display.processing = undefined;
+			$scope.display.actionOnBooking = undefined;
 			$scope.$apply('editedBooking')
 			$scope.closeBooking();
 			model.refresh();
 		}, function(e){
 			$scope.display.processing = undefined;
+			$scope.display.actionOnBooking = undefined;
 			$scope.currentErrors.push(e);
 			$scope.$apply('editedBooking');
 		});

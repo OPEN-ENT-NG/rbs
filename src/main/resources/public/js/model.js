@@ -77,6 +77,7 @@ Booking.prototype.update = function(cb, cbe) {
 		url = url + '/periodic';
 	}
 
+	var booking = this;
 	http().putJson(url, this)
 	.done(function(){
 		this.status = model.STATE_CREATED;
