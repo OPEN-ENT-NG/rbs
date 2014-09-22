@@ -628,33 +628,66 @@ model.build = function(){
 			return this._selectionResources;
 		},
 		applyFilters: function() {
-			if (this.filters.mine === true) {
-				if (this.filters.unprocessed === true) {
-					this.filtered = _.filter(this.all, function(booking){
-						return booking.owner === model.me.userId 
-						&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-					});
+			if (this.filters.booking === true) {
+				if (this.filters.mine === true) {
+					if (this.filters.unprocessed === true) {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.isBooking()
+							&& booking.owner === model.me.userId 
+							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+						});
+					}
+					else {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.isBooking()
+							&& booking.owner === model.me.userId;
+						});
+					}
 				}
 				else {
-					this.filtered = _.filter(this.all, function(booking){
-						return booking.owner === model.me.userId;
-					});
+					if (this.filters.unprocessed === true) {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.isBooking()
+							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+						});
+					}
+					else {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.isBooking();
+						});
+					}				
 				}
 			}
 			else {
-				if (this.filters.unprocessed === true) {
-					this.filtered = _.filter(this.all, function(booking){
-						return (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-					});
+				if (this.filters.mine === true) {
+					if (this.filters.unprocessed === true) {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.owner === model.me.userId 
+							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+						});
+					}
+					else {
+						this.filtered = _.filter(this.all, function(booking){
+							return booking.owner === model.me.userId;
+						});
+					}
 				}
 				else {
-					this.filtered = this.all;
-				}				
+					if (this.filters.unprocessed === true) {
+						this.filtered = _.filter(this.all, function(booking){
+							return (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+						});
+					}
+					else {
+						this.filtered = this.all;
+					}				
+				}
 			}
 		},
 		filters: {
 			mine: undefined,
-			unprocessed: undefined
+			unprocessed: undefined,
+			booking: undefined
 		},
 		filtered: [],
 		behavious: 'rbs'

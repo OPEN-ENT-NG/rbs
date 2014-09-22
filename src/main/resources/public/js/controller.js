@@ -30,6 +30,8 @@ function RbsController($scope, template, model, date, route){
 			        		actions--;
 			        		if (actions === 0) {
 			        			// error
+			        			console.log("Booking not found (id: " + param.bookingId + ")");
+			        			notify.error('rbs.route.booking.not.found');
 			        		}
         				});
         			});
@@ -43,7 +45,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.date = date;
 
 	$scope.display = {
-		list: true
+		list: false // calendar by default
 	};
 
 	$scope.sort = {
@@ -116,12 +118,14 @@ function RbsController($scope, template, model, date, route){
 
 	// Main view interaction
 	$scope.displayList = function() {
-		$scope.display.list === true
+		$scope.display.list = true;
+		$scope.bookings.filters.booking = true;
 		template.open('bookings', 'main-list');	
 	};
 
 	$scope.displayCalendar = function() {
-		$scope.display.list === false
+		$scope.display.list = false;
+		$scope.bookings.filters.booking = undefined;
 		template.open('bookings', 'main-calendar');
 	};
 
@@ -205,10 +209,6 @@ function RbsController($scope, template, model, date, route){
 		booking.expanded = undefined;
 		booking.hideSlots();
 	};
-
-	$scope.filterList = function(booking) {
-		return booking.isBooking();
-	}
 
 	$scope.switchSelectAllBookings = function() {
 		if ($scope.display.selectAllBookings) {
