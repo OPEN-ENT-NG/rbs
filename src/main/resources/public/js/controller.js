@@ -181,6 +181,7 @@ function RbsController($scope, template, model, date, route){
 	// Bookings
 	$scope.viewBooking = function(booking) {
 		$scope.selectedBooking = booking;
+		$scope.selectedBooking.displaySection = 1;
 
 		template.open('lightbox', 'booking-details');
 		$scope.display.showPanel = true;
@@ -446,7 +447,6 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking.startDate.getDate(),
 				$scope.editedBooking.endTime.hour,
 				$scope.editedBooking.endTime.min]);
-
 			if ($scope.editedBooking.byOccurrences !== true) {
 				$scope.editedBooking.occurrences = undefined;
 				$scope.editedBooking.periodicEndMoment = moment.utc([
@@ -456,6 +456,7 @@ function RbsController($scope, template, model, date, route){
 					$scope.editedBooking.endTime.hour,
 					$scope.editedBooking.endTime.min]);
 			}
+			$scope.resolvePeriodicMoments();
 		}
 		else {
 			// non periodic
@@ -480,6 +481,35 @@ function RbsController($scope, template, model, date, route){
 			$scope.currentErrors.push(e);
 			$scope.$apply('editedBooking');
 		});
+	};
+
+	$scope.resolvePeriodicMoments = function() {
+		// find next selected day as real start date
+		var selectedDays = _.groupBy(_.filter($scope.editedBooking.periodDays, function(periodDay){
+			return periodDay.value === true;
+		}), function(periodDay){
+			return periodDay.number;
+		});
+
+		if (selectedDays[$scope.editedBooking.startMoment.day()] === undefined) {
+			// search the next following day (higher number)
+			for (var i = $scope.editedBooking.startMoment.day(); i < 7; i++){
+				if (selectedDays[i] !== undefined) {
+					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i);
+					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i);
+					return;
+				}
+			}
+			// search the next following day (lower number)
+			for (var i = 0; i < $scope.editedBooking.startMoment.day(); i++){
+				if (selectedDays[i] !== undefined) {
+					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i + 7); // +7 for days in next week, not current
+					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i + 7);
+					return;
+				}
+			}
+		}
+		// nothing to do
 	};
 
 	$scope.removeBookingSelection = function() {
