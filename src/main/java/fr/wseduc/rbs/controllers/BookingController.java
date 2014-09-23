@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.entcore.common.controller.ControllerHelper;
@@ -441,12 +442,13 @@ public class BookingController extends ControllerHelper {
 	 }
 
 	 private boolean haveSameTime(final long thisTimestamp, final long thatTimestamp) {
+		TimeZone gmt = TimeZone.getTimeZone("GMT");
 
-		Calendar thisCal = Calendar.getInstance();
+		Calendar thisCal = Calendar.getInstance(gmt);
 		thisCal.setTimeInMillis(
 				TimeUnit.MILLISECONDS.convert(thisTimestamp, TimeUnit.SECONDS));
 
-		Calendar thatCal = Calendar.getInstance();
+		Calendar thatCal = Calendar.getInstance(gmt);
 		thatCal.setTimeInMillis(
 				TimeUnit.MILLISECONDS.convert(thatTimestamp, TimeUnit.SECONDS));
 
