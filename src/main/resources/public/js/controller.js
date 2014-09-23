@@ -101,15 +101,19 @@ function RbsController($scope, template, model, date, route){
 
 
 	// Navigation
-	$scope.showList = function() {
-		$scope.initMain();
+	$scope.showList = function(refresh) {
+		if (refresh === true) {
+			$scope.initMain();
+		}
 		$scope.display.list = true;
 		$scope.bookings.filters.booking = true;
 		template.open('bookings', 'main-list');	
 	};
 
-	$scope.showCalendar = function() {
-		$scope.initMain();
+	$scope.showCalendar = function(refresh) {
+		if (refresh === true) {
+			$scope.initMain();
+		}
 		$scope.display.list = false;
 		$scope.bookings.filters.booking = undefined;
 		template.open('bookings', 'main-calendar');
@@ -123,6 +127,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.initMain = function() {
+		model.recordedSelections.allResources = true;
 		$scope.currentResourceType = undefined;
 		$scope.resetSort();
 		model.refresh();
@@ -735,6 +740,13 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.saveResource = function() {
 		$scope.display.processing = true;
+		if ($scope.editedResource.is_available === "true") {
+			$scope.editedResource.is_available = true;
+		}
+		else if ($scope.editedResource.is_available === "false") {
+			$scope.editedResource.is_available = false;
+		}
+
 		$scope.currentErrors = [];
 		$scope.editedResource.save(function(){
 			$scope.display.processing = undefined;
