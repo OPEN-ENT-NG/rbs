@@ -101,6 +101,20 @@ function RbsController($scope, template, model, date, route){
 
 
 	// Navigation
+	$scope.showList = function() {
+		$scope.initMain();
+		$scope.display.list = true;
+		$scope.bookings.filters.booking = true;
+		template.open('bookings', 'main-list');	
+	};
+
+	$scope.showCalendar = function() {
+		$scope.initMain();
+		$scope.display.list = false;
+		$scope.bookings.filters.booking = undefined;
+		template.open('bookings', 'main-calendar');
+	};
+
 	$scope.showManage = function() {
 		$scope.currentResourceType = model.resourceTypes.first();
 		$scope.resourceTypes.deselectAllResources();
@@ -108,27 +122,15 @@ function RbsController($scope, template, model, date, route){
 		template.open('resources', 'manage-resources');
 	};
 
-	$scope.showMain = function() {
+	$scope.initMain = function() {
 		$scope.currentResourceType = undefined;
 		$scope.resetSort();
 		model.refresh();
 		template.open('main', 'main-view');
-		template.open('bookings', 'main-list');
 	};
+
 
 	// Main view interaction
-	$scope.displayList = function() {
-		$scope.display.list = true;
-		$scope.bookings.filters.booking = true;
-		template.open('bookings', 'main-list');	
-	};
-
-	$scope.displayCalendar = function() {
-		$scope.display.list = false;
-		$scope.bookings.filters.booking = undefined;
-		template.open('bookings', 'main-calendar');
-	};
-
 	$scope.switchExpand = function(resourceType) {
 		if (resourceType.expanded !== true) {
 			resourceType.expanded = true;

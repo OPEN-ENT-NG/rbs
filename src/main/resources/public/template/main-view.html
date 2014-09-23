@@ -39,8 +39,8 @@
 		</drop-down-button>
 
 		<div class="display-buttons">
-			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="displayList()"></i>
-			<i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="displayCalendar()"></i>
+			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList()"></i>
+			<i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="showCalendar()"></i>
 			<i class="show-admin" ng-click="showManage()" ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')"></i>
 		</div>
 	</div>
