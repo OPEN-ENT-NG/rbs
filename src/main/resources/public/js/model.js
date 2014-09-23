@@ -55,18 +55,18 @@ Booking.prototype.save = function(cb, cbe) {
 Booking.prototype.calendarUpdate = function(cb, cbe) {
 	if(this.id) {
 		this.update(function(){
-			model.refresh;
+			model.refresh();
 		}, function(error){
 			// notify
-			model.refresh;
+			model.refresh();
 		});
 	}
 	else {
 		this.create(function(){
-			model.refresh;
+			model.refresh();
 		}, function(error){
 			// notify
-			model.refresh;
+			model.refresh();
 		});
 	}
 };
@@ -457,6 +457,7 @@ function SelectionHolder() {
 SelectionHolder.prototype.record = function(resourceTypeCallback, resourceCallback) {
 	this.mine = (model.bookings.filters.mine === true ? true : undefined);
 	this.unprocessed = (model.bookings.filters.unprocessed === true ? true : undefined);
+	this.currentType = (model.resourceTypes.current !== undefined ? model.resourceTypes.current.id : undefined);
 
 	var typeRecords = {};
 	var resourceRecords = {};
@@ -482,7 +483,7 @@ SelectionHolder.prototype.record = function(resourceTypeCallback, resourceCallba
 	this.resources = resourceRecords;
 };
 
-SelectionHolder.prototype.restore = function(resourceCallback) {
+SelectionHolder.prototype.restore = function(resourceTypeCallback, resourceCallback) {
 	var typeRecords = this.resourceTypes || {};
 	var resourceRecords = this.resources || {};
 	var holder = this;
@@ -494,6 +495,12 @@ SelectionHolder.prototype.restore = function(resourceCallback) {
 	model.resourceTypes.forEach(function(resourceType){
 		if (typeRecords[resourceType.id] || holder.allResources === true) {
 			resourceType.expanded = true;
+		}
+		if (resourceType.id === holder.currentType) {
+			model.resourceTypes.current = resourceType;
+			if (typeof resourceTypeCallback === 'function'){
+				resourceTypeCallback(resourceType);
+			}
 		}
 		resourceType.resources.forEach(function(resource){
 			if (resourceRecords[resource.id] || holder.allResources === true) {

@@ -83,6 +83,9 @@ function RbsController($scope, template, model, date, route){
 	$scope.resourceTypes.on('sync', function(){
 		// Restore previous selections
 		model.recordedSelections.restore(
+			function(resourceType){
+				$scope.currentResourceType = resourceType;
+			},
 			function(resource){
 				resource.bookings.sync(function(){
 					$scope.bookings.pushAll(resource.bookings.all);
@@ -90,12 +93,6 @@ function RbsController($scope, template, model, date, route){
 				});
 			}
 		);
-
-		// Temporary : reselect first resourceType after model.refresh()
-		if ($scope.currentResourceType !== undefined) {
-			$scope.currentResourceType = model.resourceTypes.first();
-		}
-
 		model.recordedSelections.allResources = false;
 	});
 
@@ -658,6 +655,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.currentResourceType.resources.deselectAll();
 		$scope.currentResourceType.resources.collapseAll();
 		$scope.currentResourceType = resourceType;
+		$scope.resourceTypes.current = resourceType;
 		if ($scope.editedResourceType !== undefined) {
 			$scope.closeResourceType();
 		}
