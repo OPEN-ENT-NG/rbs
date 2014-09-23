@@ -104,6 +104,7 @@ function RbsController($scope, template, model, date, route){
 		}
 		$scope.display.list = true;
 		$scope.bookings.filters.booking = true;
+		$scope.bookings.applyFilters();
 		template.open('bookings', 'main-list');	
 	};
 
@@ -113,6 +114,7 @@ function RbsController($scope, template, model, date, route){
 		}
 		$scope.display.list = false;
 		$scope.bookings.filters.booking = undefined;
+		$scope.bookings.applyFilters();
 		template.open('bookings', 'main-calendar');
 	};
 
@@ -184,8 +186,19 @@ function RbsController($scope, template, model, date, route){
 
 	// Bookings
 	$scope.viewBooking = function(booking) {
-		$scope.selectedBooking = booking;
-		$scope.selectedBooking.displaySection = 1;
+		if (booking.isSlot()) {
+			// slot : view booking details and show slot
+			$scope.selectedBooking = booking.booking;
+			$scope.selectedBooking.displaySection = 3;
+			if (booking.status === $scope.status.STATE_REFUSED) {
+				booking.expanded = true;
+			}
+		}
+		else {
+			// booking
+			$scope.selectedBooking = booking;
+			$scope.selectedBooking.displaySection = 1;
+		}
 
 		template.open('lightbox', 'booking-details');
 		$scope.display.showPanel = true;
@@ -284,6 +297,14 @@ function RbsController($scope, template, model, date, route){
 		return _.isString(reason) ? (reason.trim().length > 23 ? reason.substring(0, 20) + '...' : reason.trim()) : "";
 	};
 
+	$scope.countValidatedSlots = function(slots) {
+		return _.filter(slots, function(slot) { return slot.isValidated(); }).length;
+	};
+
+	$scope.countRefusedSlots = function(slots) {
+		return _.filter(slots, function(slot) { return slot.isRefused(); }).length;
+	};
+
 
 	// Booking edition
 	$scope.canEditBookingSelection = function() {
@@ -323,7 +344,6 @@ function RbsController($scope, template, model, date, route){
 	$scope.editBooking = function() {
 		$scope.display.processing = undefined;
 		$scope.display.actionOnBooking = true;
-		$scope.editedBooking.initialized = undefined;
 
 		if ($scope.selectedBooking !== undefined) {
 			$scope.editedBooking = $scope.selectedBooking;
@@ -334,6 +354,7 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking = $scope.editedBooking.booking;
 			}
 		}
+		$scope.editedBooking.initialized = undefined;
 
 		// periodic booking
 		if ($scope.editedBooking.is_periodic === true) {
@@ -717,9 +738,9 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.saveResourceType = function() {
-		// Default to user's classId
+		// Default to user's school UAI or 'null'
 		if ($scope.editedResourceType.school_id === undefined) {
-			$scope.editedResourceType.school_id = model.me.classId;			
+			$scope.editedResourceType.school_id = ((model.me.uai !== undefined && model.me.uai !== null) ? model.me.uai : 'null');
 		}
 
 		$scope.display.processing = true;

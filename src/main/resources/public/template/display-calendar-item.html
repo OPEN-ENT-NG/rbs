@@ -1,4 +1,4 @@
-<div class="schedule-item-content [[item.color]]">
+<div class="schedule-item-content [[item.color]]" ng-click="viewBooking(item)">
 	<i ng-if="item.status === 1" class="pending-status"></i>
 	<i ng-if="item.status === 2" class="validated-status"></i>
 	<i ng-if="item.status === 3" class="refused-status"></i>

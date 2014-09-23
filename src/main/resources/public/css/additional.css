@@ -36,11 +36,6 @@
 	margin-top: 2px;
 }
 
-
-tr.minor td {
-	background: rgba(48, 48, 48, 0.6);
-}
-
 button.disabled,
 a.button.disabled,
 input[type=button].disabled {

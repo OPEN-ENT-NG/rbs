@@ -457,7 +457,7 @@ function SelectionHolder() {
 SelectionHolder.prototype.record = function(resourceTypeCallback, resourceCallback) {
 	this.mine = (model.bookings.filters.mine === true ? true : undefined);
 	this.unprocessed = (model.bookings.filters.unprocessed === true ? true : undefined);
-	this.currentType = (model.resourceTypes.current !== undefined ? model.resourceTypes.current.id : undefined);
+	this.currentType = ((model.resourceTypes.current !== undefined && model.resourceTypes.current !== null) ? model.resourceTypes.current.id : undefined);
 
 	var typeRecords = {};
 	var resourceRecords = {};

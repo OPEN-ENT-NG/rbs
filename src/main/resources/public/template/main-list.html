@@ -35,11 +35,11 @@
 		<tr ng-repeat="slot in booking.slots">
 			<td class="invisible"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
-			<td></td>
 			<td ng-class="booking.color"></td>
-			<td><a ng-click="viewBooking(booking)">[[formatMoment(slot.startMoment)]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[formatMoment(slot.endMoment)]]</a></td>
-			<td><a ng-click="viewBooking(booking)">[[booking.booking_reason]]</a></td>
+			<td></td>
+			<td><a ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</a></td>
+			<td><a ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</a></td>
+			<td><a ng-click="viewBooking(slot)">[[booking.booking_reason]]</a></td>
 			<td>
 				<i ng-if="booking.status === 1" class="pending-status"></i>
 				<i ng-if="booking.status === 2" class="validated-status"></i>

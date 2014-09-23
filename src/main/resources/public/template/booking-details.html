@@ -1,153 +1,216 @@
 <div class="row">
 	<h2><i18n>rbs.booking.title</i18n></h2>
-	<article class="twelve cell">
 
-		<h3><i18n>rbs.booking.title.resource</i18n></h3>
+	<div class="row accordions">
+		<article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 1 }">
 
-		<div class="row">
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
-				<p class="uneditable">[[selectedBooking.resource.type.name]]</p>
-			</div>
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
-				<p class="uneditable">[[selectedBooking.resource.name]]</p>
-			</div>
-		</div>
+			<h2 ng-click="selectedBooking.displaySection = 1;">
+				<i18n>rbs.booking.title.booking</i18n>
+				<span class="right-magnet" ng-if="selectedBooking.is_periodic !== true">
+					<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatMoment(selectedBooking.startMoment)]]&nbsp;
+					<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatMoment(selectedBooking.endMoment)]]
+				</span>
+				<span class="right-magnet" ng-if="selectedBooking.is_periodic === true">
+					<i18n>rbs.booking.details.header.periodic</i18n>&nbsp;[[formatMoment(selectedBooking.startMoment)]]
+				</span>
+			</h2>
 
-		<div class="warning row form-element" ng-if="selectedBooking.resource.is_available !== true">
-			<i18n>rbs.booking.details.resource.unavailable</i18n>
-		</div>
-		<hr />
+			<div class="toggle">
+				<div class="content">
+					<div class="row">
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
+							<p class="uneditable">[[formatMomentLong(selectedBooking.startMoment)]]</p>
+						</div>
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
+							<p class="uneditable">[[formatMomentLong(selectedBooking.endMoment)]]</p>
+						</div>
+					</div>
+					<hr />
 
-		<div class="row form-element">
-			<label class="twelve cell"><i18n>rbs.booking.details.description.label</i18n></label>
-			<p class="twelve cell uneditable" bind-html="selectedBooking.resource.description"></p>
-		</div>
-		<hr />
+					<div class="row">
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
+							<p class="uneditable">[[selectedBooking.owner_name]]</p>
+						</div>
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
+							<p class="uneditable">[[formatDateLong(selectedBooking.created)]]</p>
+						</div>
+					</div>
+					<hr />
 
-		<h3><i18n>rbs.booking.title.booking</i18n></h3>
-
-		<div class="row">
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
-				<p class="uneditable">[[formatMomentLong(selectedBooking.startMoment)]]</p>
-			</div>
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
-				<p class="uneditable">[[formatMomentLong(selectedBooking.endMoment)]]</p>
-			</div>
-		</div>
-		<hr />
-
-		<div class="row">
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
-				<p class="uneditable">[[selectedBooking.owner_name]]</p>
-			</div>
-			<div class="six cell form-element">
-				<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
-				<p class="uneditable">[[formatDateLong(selectedBooking.created)]]</p>
-			</div>
-		</div>
-		<hr />
-
-		<div class="row form-element" ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
-			<label class="twelve cell"><i18n>rbs.booking.details.reason</i18n></label>
-			<p class="twelve cell uneditable">[[selectedBooking.booking_reason]]</p>
-		</div>
-		<hr />
-
-		<div ng-if="selectedBooking.is_periodic === true" class="row">
-			<h3><i18n>rbs.booking.title.periodic</i18n></h3>
-
-			<table class="list-view twelve">
-				<thead>
-					<tr>
-						<th><i18n>rbs.booking.headers.nb</i18n></th>
-						<th><i18n>rbs.booking.headers.start_date</i18n></th>
-						<th><i18n>rbs.booking.headers.end_date</i18n></th>
-						<th><i18n>rbs.booking.headers.moderator</i18n></th>
-						<th><i18n>rbs.booking.headers.status</i18n></th>
-					</tr>
-				</thead>
-				<tbody ng-repeat="slot in selectedBooking._slots">
-					<tr>
-						<td></td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
-
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a></td>
-						<td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
-
-						<td ng-if="slot.isPending()"></td>
-						<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
-
-						<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
-						<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>
-						<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)"><i18n>rbs.booking.status.refused</i18n></a></td>
-					</tr>
-					<tr ng-if="slot.expanded === true" class="minor">
-						<td></td>
-						<td colspan="4">
-							<div class="row form-element">
-								<p class="twelve cell uneditable" bind-html="slot.refusal_reason"></p>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-		<div ng-if="selectedBooking.is_periodic !== true" class="row">
-			<h3><i18n>rbs.booking.title.process</i18n></h3>
-
-			<div class="row form-element" ng-if="selectedBooking.isPending()">
-				<p class="four cell uneditable"><i18n>rbs.booking.details.pending</i18n></p>
-			</div>
-
-			<div class="row" ng-if="selectedBooking.isValidated()">
-				<div class="six cell form-element">
-					<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
-					<p class="uneditable">[[selectedBooking.moderator_name]]</p>
-				</div>
-				<div class="six cell form-element">
-					<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
-					<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+					<div class="row form-element" ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
+						<label class="twelve cell"><i18n>rbs.booking.details.reason</i18n></label>
+						<p class="twelve cell uneditable">[[selectedBooking.booking_reason]]</p>
+					</div>
+					<hr />
 				</div>
 			</div>
+		</article>
 
-			<div class="row" ng-if="selectedBooking.isRefused()">
-				<div class="six cell form-element">
-					<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
-					<p class="uneditable">[[selectedBooking.moderator_name]]</p>
-				</div>
-				<div class="six cell form-element">
-					<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
-					<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+		<article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 2 }">
+
+			<h2 ng-click="selectedBooking.displaySection = 2;">
+				<i18n>rbs.booking.title.resource</i18n>
+				<span class="right-magnet">
+					[[selectedBooking.resource.type.name]]&nbsp;-&nbsp;[[selectedBooking.resource.name]]
+				</span>
+			</h2>
+
+			<div class="toggle">
+				<div class="content">
+					<div class="row">
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
+							<p class="uneditable">[[selectedBooking.resource.type.name]]</p>
+						</div>
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
+							<p class="uneditable">[[selectedBooking.resource.name]]</p>
+						</div>
+					</div>
+
+					<div class="warning row form-element" ng-if="selectedBooking.resource.is_available !== true">
+						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					</div>
+					<hr />
+
+					<div class="row form-element">
+						<label class="twelve cell"><i18n>rbs.booking.details.description.label</i18n></label>
+						<p class="twelve cell uneditable" bind-html="selectedBooking.resource.description"></p>
+					</div>
+					<hr />
 				</div>
 			</div>
-			<hr />
+		</article>
 
-			<div class="row form-element" ng-if="selectedBooking.isRefused()">
-				<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
-				<p class="twelve cell uneditable" bind-html="selectedBooking.refusal_reason"></p>
+		<article ng-if="selectedBooking.is_periodic === true" class="accordion" ng-class="{ opened: selectedBooking.displaySection === 3 }">
+
+			<h2 ng-click="selectedBooking.displaySection = 3;">
+				<i18n>rbs.booking.title.periodic</i18n>
+				<span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) <= 1">
+					[[countRefusedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.refused.one</i18n>
+				</span>
+				<span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) > 1">
+					[[countRefusedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.refused.many</i18n>
+				</span>
+				<span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) <= 1">
+					[[countValidatedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.validated.one</i18n>&nbsp;-&nbsp;
+				</span>
+				<span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) > 1">
+					[[countValidatedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.validated.many</i18n>&nbsp;-&nbsp;
+				</span>
+				<span class="right-magnet" ng-if="selectedBooking._slots.length <= 1">
+					[[selectedBooking._slots.length]]&nbsp;<i18n>rbs.booking.details.header.slots.one</i18n>&nbsp;-&nbsp;
+				</span>
+				<span class="right-magnet" ng-if="selectedBooking._slots.length > 1">
+					[[selectedBooking._slots.length]]&nbsp;<i18n>rbs.booking.details.header.slots.many</i18n>&nbsp;-&nbsp;
+				</span>
+			</h2>
+
+			<div class="toggle">
+				<div class="content">
+					<table class="list-view twelve">
+						<thead>
+							<tr>
+								<th><i18n>rbs.booking.headers.nb</i18n></th>
+								<th><i18n>rbs.booking.headers.start_date</i18n></th>
+								<th><i18n>rbs.booking.headers.end_date</i18n></th>
+								<th><i18n>rbs.booking.headers.moderator</i18n></th>
+								<th><i18n>rbs.booking.headers.status</i18n></th>
+							</tr>
+						</thead>
+						<tbody ng-repeat="slot in selectedBooking._slots">
+							<tr>
+								<td></td>
+								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a></td>
+								<td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
+
+								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a></td>
+								<td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
+
+								<td ng-if="slot.isPending()"></td>
+								<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
+								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
+
+								<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
+								<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>
+								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)"><i18n>rbs.booking.status.refused</i18n></a></td>
+							</tr>
+							<tr ng-if="slot.expanded === true" class="minor">
+								<td></td>
+								<td colspan="4">
+									<div class="row form-element">
+										<p class="twelve cell uneditable" bind-html="slot.refusal_reason"></p>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-			<hr />
-		</div>
-		<hr />
+		</article>
 
-		<div class="row">
-			<behaviour name="process" resource="selectedBooking.resource">
-				<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
-				<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
-			</behaviour>
-			<behaviour name="manage" resource="selectedBooking">
-				<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-				<button class="right-magnet" ng-if="selectedBooking.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
-				<button class="right-magnet" ng-if="selectedBooking.is_available !== true" class="disabled" disabled><i18n>edit</i18n></button>
-			</behaviour>
-		</div>
-	</article>
+		<article ng-if="selectedBooking.is_periodic !== true" class="accordion" ng-class="{ opened: selectedBooking.displaySection === 3 }">
+
+			<h2 ng-click="selectedBooking.displaySection = 3;">
+				<i18n>rbs.booking.title.process</i18n>
+				<span class="right-magnet" ng-if="selectedBooking.isPending()"><i18n>rbs.booking.status.created</i18n></span>
+				<span class="right-magnet" ng-if="selectedBooking.isValidated()"><i18n>rbs.booking.status.validated</i18n></span>
+				<span class="right-magnet" ng-if="selectedBooking.isRefused()"><i18n>rbs.booking.status.refused</i18n></span>
+			</h2>
+
+			<div class="toggle">
+				<div class="content">
+					<div class="row form-element" ng-if="selectedBooking.isPending()">
+						<p class="four cell uneditable"><i18n>rbs.booking.details.pending</i18n></p>
+					</div>
+
+					<div class="row" ng-if="selectedBooking.isValidated()">
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
+							<p class="uneditable">[[selectedBooking.moderator_name]]</p>
+						</div>
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
+							<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+						</div>
+					</div>
+
+					<div class="row" ng-if="selectedBooking.isRefused()">
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
+							<p class="uneditable">[[selectedBooking.moderator_name]]</p>
+						</div>
+						<div class="six cell form-element">
+							<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
+							<p class="uneditable">[[formatDateLong(selectedBooking.modified)]]</p>
+						</div>
+					</div>
+					<hr />
+
+					<div class="row form-element" ng-if="selectedBooking.isRefused()">
+						<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
+						<p class="twelve cell uneditable" bind-html="selectedBooking.refusal_reason"></p>
+					</div>
+					<hr />
+				</div>
+			</div>
+		</article>
+	</div>
+	<hr />
+
+	<div class="row">
+		<behaviour name="process" resource="selectedBooking.resource">
+			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
+			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
+		</behaviour>
+		<behaviour name="manage" resource="selectedBooking">
+			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
+			<button class="right-magnet" ng-if="selectedBooking.resource.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
+			<button class="right-magnet" ng-if="selectedBooking.resource.is_available !== true" class="disabled" disabled><i18n>edit</i18n></button>
+		</behaviour>
+	</div>
 </div>
