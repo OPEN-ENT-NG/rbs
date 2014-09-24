@@ -150,18 +150,21 @@ public class BookingController extends ControllerHelper {
 								if (event.isRight() && event.right() != null) {
 									List<String> recipients = getModeratorsList(event.right().getValue());
 
-									JsonObject params = new JsonObject();
-									params.putString("uri", container.config().getString("userbook-host") +
-											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-									params.putString("bookingUri", container.config().getString("host")
-											+ "/rbs#/booking/" + bookingId)
-										.putString("username", user.getUsername())
-										.putString("startdate", startDate)
-										.putString("enddate", endDate)
-										.putString("resourcename", resourceName);
+									if(!recipients.isEmpty()) {
+										JsonObject params = new JsonObject();
+										params.putString("uri", container.config().getString("userbook-host") +
+												"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+										params.putString("bookingUri", container.config().getString("host")
+												+ "/rbs#/booking/" + bookingId)
+											.putString("username", user.getUsername())
+											.putString("startdate", startDate)
+											.putString("enddate", endDate)
+											.putString("resourcename", resourceName);
 
-									notification.notifyTimeline(request, user, RBS_NAME, eventType,
-											recipients, bookingId, template, params);
+										notification.notifyTimeline(request, user, RBS_NAME, eventType,
+												recipients, bookingId, template, params);
+									}
+
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
@@ -316,7 +319,7 @@ public class BookingController extends ControllerHelper {
 	private void notifyPeriodicBookingCreatedOrUpdated(final HttpServerRequest request, final UserInfos user,
 			final JsonArray childBookings, final boolean isCreation) {
 
-		// Send a notification if if there is at least one child booking with status "created"
+		// Send a notification if there is at least one child booking with status "created"
 		boolean sendNotification = false;
 		try {
 			for (Object booking : childBookings) {
@@ -378,18 +381,21 @@ public class BookingController extends ControllerHelper {
 								if (event.isRight() && event.right() != null) {
 									List<String> recipients = getModeratorsList(event.right().getValue());
 
-									JsonObject params = new JsonObject();
-									params.putString("uri", container.config().getString("userbook-host") +
-											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-									params.putString("bookingUri", container.config().getString("host")
-					                        + "/rbs#/booking/" + periodicBookingId)
-										.putString("username", user.getUsername())
-										.putString("startdate", startDate)
-										.putString("enddate", endDate)
-										.putString("resourcename", resourceName);
+									if(!recipients.isEmpty()) {
+										JsonObject params = new JsonObject();
+										params.putString("uri", container.config().getString("userbook-host") +
+												"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+										params.putString("bookingUri", container.config().getString("host")
+						                        + "/rbs#/booking/" + periodicBookingId)
+											.putString("username", user.getUsername())
+											.putString("startdate", startDate)
+											.putString("enddate", endDate)
+											.putString("resourcename", resourceName);
 
-									notification.notifyTimeline(request, user, RBS_NAME, eventType,
-											recipients, periodicBookingId, template, params);
+										notification.notifyTimeline(request, user, RBS_NAME, eventType,
+												recipients, periodicBookingId, template, params);
+									}
+
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
