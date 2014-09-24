@@ -33,18 +33,23 @@
 		<div class="row" ng-if="!editedBooking.is_periodic">
 			<div class="row">
 				<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
-				<date-picker class="two cell horizontal-spacing" ng-model="editedBooking.startDate" ng-change="showDate = true" required></date-picker>
+				<date-picker class="two cell horizontal-spacing" ng-model="editedBooking.startDate" ng-change="adjustEndDate(); showDate = true" required></date-picker>
 				<div class="one cell centered-text"><i18n>to</i18n></div>
 				<select class="three cell horizontal-spacing" ng-model="editedBooking.startTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 				</select>
 			</div>
 			<div class="row">
 				<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
-				<date-picker class="two cell horizontal-spacing" ng-model="editedBooking.endDate" ng-change="showDate = true" required></date-picker>
+				<date-picker class="two cell horizontal-spacing" ng-model="editedBooking.endDate" ng-change="adjustStartDate(); showDate = true" required></date-picker>
 				<div class="one cell centered-text"><i18n>to</i18n></div>
 				<select class="three cell horizontal-spacing" ng-model="editedBooking.endTime" ng-options="hourMinutes.name for hourMinutes in times" required>
 				</select>
 			</div>
+		</div>
+
+		<!-- Non periodic Booking reason -->
+		<div class="row form-element" ng-if="editedBooking.is_periodic !== true">
+			<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 		</div>
 
 		<!-- Periodic Booking hour slot, dates and periodicity -->
