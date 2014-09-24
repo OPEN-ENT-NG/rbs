@@ -23,6 +23,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
 	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
+	private final static String DATE_FORMAT = "DD/MM/YY HH24:MI";
 
 	public BookingServiceSqlImpl() {
 		super("rbs", "booking");
@@ -87,7 +88,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' <= start_date AND start_date < to_timestamp(?) AT TIME ZONE 'UTC' )")
 				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' < end_date AND end_date <= to_timestamp(?) AT TIME ZONE 'UTC' )")
 				.append(")) RETURNING id, status,")
-				.append(" to_char(start_date, 'DD/MM/YY HH24:MI') AS start_date, to_char(end_date, 'DD/MM/YY HH24:MI') AS end_date");
+				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
+				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
 		values.add(rId)
 				.add(VALIDATED.status())
@@ -447,7 +449,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' < end_date AND end_date <= to_timestamp(?) AT TIME ZONE 'UTC' )")
 				.append("))")
 				.append(" RETURNING id, status,")
-				.append(" to_char(start_date, 'DD/MM/YY HH24:MI') AS start_date, to_char(end_date, 'DD/MM/YY HH24:MI') AS end_date");
+				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
+				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
 		Object newStartDate = data.getValue("start_date");
 		Object newEndDate = data.getValue("end_date");
@@ -577,7 +580,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		processValues.add(bId)
 			.add(rId);
 
-		String returningClause = " RETURNING id, status, owner";
+		StringBuilder returningClause = new StringBuilder(" RETURNING id, status, owner, ")
+			.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
+			.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
 		if (newStatus != VALIDATED.status()) {
 			processQuery.append(returningClause);
@@ -656,7 +661,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			rbValues.add(rId)
 				.add(CREATED.status());
 
-			rbQuery.append(" RETURNING id, status, owner");
+			rbQuery.append(returningClause);
 
 			statementsBuilder.prepared(rbQuery.toString(), rbValues);
 		}

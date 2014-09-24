@@ -153,7 +153,8 @@ public class BookingController extends ControllerHelper {
 									JsonObject params = new JsonObject();
 									params.putString("uri", container.config().getString("userbook-host") +
 											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-									params.putString("id", bookingId)
+									params.putString("bookingUri", container.config().getString("host")
+											+ "/rbs#/booking/" + bookingId)
 										.putString("username", user.getUsername())
 										.putString("startdate", startDate)
 										.putString("enddate", endDate)
@@ -380,7 +381,8 @@ public class BookingController extends ControllerHelper {
 									JsonObject params = new JsonObject();
 									params.putString("uri", container.config().getString("userbook-host") +
 											"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-									params.putString("id", periodicBookingId)
+									params.putString("bookingUri", container.config().getString("host")
+					                        + "/rbs#/booking/" + periodicBookingId)
 										.putString("username", user.getUsername())
 										.putString("startdate", startDate)
 										.putString("enddate", endDate)
@@ -544,7 +546,7 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(JsonObject object) {
 								String resourceId = request.params().get("id");
-								String bookingId = request.params().get("bookingId");
+								final String bookingId = request.params().get("bookingId");
 
 								int newStatus = object.getInteger("status");
 								if (newStatus != VALIDATED.status()
@@ -560,20 +562,36 @@ public class BookingController extends ControllerHelper {
 									public void handle(Either<String, JsonArray> event) {
 										if (event.isRight()) {
 											if (event.right().getValue() != null && event.right().getValue().size() >= 3) {
-												JsonArray results = event.right().getValue();
+												final JsonArray results = event.right().getValue();
 
 												try {
-													JsonObject processedBooking = ((JsonArray) results.get(2)).get(0);
-													notifyBookingProcessed(request, user, processedBooking);
+													final JsonObject processedBooking = ((JsonArray) results.get(2)).get(0);
 
-													if (results.size() >= 4) {
-														JsonArray concurrentBookings = results.get(3);
-														for (Object o : concurrentBookings) {
-															JsonObject booking = (JsonObject) o;
-															notifyBookingProcessed(request, user, booking);
+													Handler<Either<String, JsonObject>> notifHandler = new Handler<Either<String,JsonObject>>() {
+														@Override
+														public void handle(Either<String, JsonObject> event) {
+															if (event.isRight() && event.right().getValue() != null
+																	&& event.right().getValue().size() > 0) {
+
+																final String resourceName = event.right().getValue().getString("resource_name");
+
+																notifyBookingProcessed(request, user, processedBooking, resourceName);
+
+																if (results.size() >= 4) {
+																	JsonArray concurrentBookings = results.get(3);
+																	for (Object o : concurrentBookings) {
+																		JsonObject booking = (JsonObject) o;
+																		notifyBookingProcessed(request, user, booking, resourceName);
+																	}
+																}
+
+															} else {
+																log.error("Error when calling service getResourceName. Unable to send timeline notification.");
+															}
 														}
-													}
+											    	};
 
+													bookingService.getResourceName(bookingId, notifHandler);
 													renderJson(request, processedBooking);
 												} catch (Exception e) {
 													log.error("Unable to send timeline notification. Error when processing response from worker mod-mysql-postgresql :");
@@ -606,17 +624,20 @@ public class BookingController extends ControllerHelper {
 	 }
 
 	private void notifyBookingProcessed(final HttpServerRequest request, final UserInfos user,
-			final JsonObject booking){
+			final JsonObject booking, final String resourceName){
 
 		final long id = booking.getLong("id", 0L);
 		final int status = booking.getInteger("status", 0);
 		final String owner = booking.getString("owner", null);
+		final String startDate = booking.getString("start_date", null);
+		final String endDate = booking.getString("end_date", null);
 
 		final String eventType;
 		final String template;
 
-		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0) {
-			log.error("Could not get bookingId or status or owner from response. Unable to send timeline "+
+		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0
+				|| startDate == null || endDate == null) {
+			log.error("Could not get bookingId, status, owner, start_date or end_date from response. Unable to send timeline "+
 					BOOKING_VALIDATED_EVENT_TYPE + " or " + BOOKING_REFUSED_EVENT_TYPE + " notification.");
 			return;
 		}
@@ -636,8 +657,11 @@ public class BookingController extends ControllerHelper {
 		}
 
 		JsonObject params = new JsonObject();
-		params.putString("id", bookingId)
-			.putString("username", user.getUsername());
+		params.putString("username", user.getUsername())
+			.putString("startdate", startDate)
+			.putString("enddate", endDate)
+			.putString("resourcename", resourceName)
+			.putString("bookingUri", container.config().getString("host") + "/rbs#/booking/" + bookingId);
 
 		List<String> recipients = new ArrayList<>();
 		recipients.add(owner);
