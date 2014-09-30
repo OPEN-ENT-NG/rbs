@@ -48,10 +48,6 @@ public class BookingController extends ControllerHelper {
 		bookingService = new BookingServiceSqlImpl();
 	}
 
-	/*
-	 * TODO : contenu des notifications : ajouter un lien vers la demande de réservation ou le calendrier correspondant
-	 */
-
 	@Post("/resource/:id/booking")
 	@ApiDoc("Create booking of a given resource")
 	@SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
