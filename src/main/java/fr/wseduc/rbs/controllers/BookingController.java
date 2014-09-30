@@ -658,18 +658,21 @@ public class BookingController extends ControllerHelper {
 			return;
 		}
 
-		JsonObject params = new JsonObject();
-		params.putString("username", user.getUsername())
-			.putString("startdate", startDate)
-			.putString("enddate", endDate)
-			.putString("resourcename", resourceName)
-			.putString("bookingUri", container.config().getString("host") + "/rbs#/booking/" + bookingId);
+		if(!owner.equals(user.getUserId())) {
+			JsonObject params = new JsonObject();
+			params.putString("username", user.getUsername())
+				.putString("startdate", startDate)
+				.putString("enddate", endDate)
+				.putString("resourcename", resourceName)
+				.putString("bookingUri", container.config().getString("host") + "/rbs#/booking/" + bookingId);
 
-		List<String> recipients = new ArrayList<>();
-		recipients.add(owner);
+			List<String> recipients = new ArrayList<>();
+			recipients.add(owner);
 
-		notification.notifyTimeline(request, user, RBS_NAME, eventType,
-				recipients, bookingId, template, params);
+			notification.notifyTimeline(request, user, RBS_NAME, eventType,
+					recipients, bookingId, template, params);
+		}
+
 	}
 
 	 @Delete("/resource/:id/booking/:bookingId")
