@@ -487,37 +487,40 @@ function RbsController($scope, template, model, date, route){
 		// /debug
 	};
 
-	$scope.adjustEndDate = function() {
-		if ($scope.editedBooking.endDate.getFullYear() < $scope.editedBooking.startDate.getFullYear()
-			|| $scope.editedBooking.endDate.getMonth() < $scope.editedBooking.startDate.getMonth()
-			|| $scope.editedBooking.endDate.getDate() < $scope.editedBooking.startDate.getDate()) {
-			// End date before start date : set to same date
-			$scope.editedBooking.endDate.setFullYear($scope.editedBooking.startDate.getFullYear());
-			$scope.editedBooking.endDate.setMonth($scope.editedBooking.startDate.getMonth());
-			$scope.editedBooking.endDate.setDate($scope.editedBooking.startDate.getDate());
-			$scope.$apply('editedBooking.endDate');
-		}
-	};
-
-	$scope.adjustStartDate = function() {
-		if ($scope.editedBooking.endDate.getFullYear() < $scope.editedBooking.startDate.getFullYear()
-			|| $scope.editedBooking.endDate.getMonth() < $scope.editedBooking.startDate.getMonth()
-			|| $scope.editedBooking.endDate.getDate() < $scope.editedBooking.startDate.getDate()) {
-			// End date before start date : set to same date
-			$scope.editedBooking.startDate.setFullYear($scope.editedBooking.endDate.getFullYear());
-			$scope.editedBooking.startDate.setMonth($scope.editedBooking.endDate.getMonth());
-			$scope.editedBooking.startDate.setDate($scope.editedBooking.endDate.getDate());
-			$scope.$apply('editedBooking.startDate');
+	$scope.adjustStartTime = function() {
+		if (($scope.editedBooking.is_periodic !== true 
+				&& $scope.editedBooking.endDate.getFullYear() == $scope.editedBooking.startDate.getFullYear()
+				&& $scope.editedBooking.endDate.getMonth() == $scope.editedBooking.startDate.getMonth()
+				&& $scope.editedBooking.endDate.getDate() == $scope.editedBooking.startDate.getDate())
+			|| ($scope.editedBooking.is_periodic === true && $scope.editedBooking.byOccurrences !== true
+				&& $scope.editedBooking.periodicEndDate.getFullYear() == $scope.editedBooking.startDate.getFullYear()
+				&& $scope.editedBooking.periodicEndDate.getMonth() == $scope.editedBooking.startDate.getMonth()
+				&& $scope.editedBooking.periodicEndDate.getDate() == $scope.editedBooking.startDate.getDate())
+			) {
+			if ($scope.editedBooking.endTime.hour <= $scope.editedBooking.startTime.hour) {
+				// next hour
+				var endTime = _.find(model.times, function(hourMinutes) { 
+					return ($scope.editedBooking.startTime.hour < hourMinutes.hour && $scope.editedBooking.startTime.min == hourMinutes.min) });
+				$scope.editedBooking.endTime = (endTime !== undefined ? endTime : $scope.editedBooking.endTime = _.last(model.times));
+			}
 		}
 	};
 
 	$scope.adjustEndTime = function() {
-		if ($scope.editedBooking.endDate.getFullYear() == $scope.editedBooking.startDate.getFullYear()
-			|| $scope.editedBooking.endDate.getMonth() == $scope.editedBooking.startDate.getMonth()
-			|| $scope.editedBooking.endDate.getDate() == $scope.editedBooking.startDate.getDate()) {
-			if ($scope.endTime.hour < $scope.startTime.hour) {
+		if (($scope.editedBooking.is_periodic !== true 
+				&& $scope.editedBooking.endDate.getFullYear() == $scope.editedBooking.startDate.getFullYear()
+				&& $scope.editedBooking.endDate.getMonth() == $scope.editedBooking.startDate.getMonth()
+				&& $scope.editedBooking.endDate.getDate() == $scope.editedBooking.startDate.getDate())
+			|| ($scope.editedBooking.is_periodic === true && $scope.editedBooking.byOccurrences !== true
+				&& $scope.editedBooking.periodicEndDate.getFullYear() == $scope.editedBooking.startDate.getFullYear()
+				&& $scope.editedBooking.periodicEndDate.getMonth() == $scope.editedBooking.startDate.getMonth()
+				&& $scope.editedBooking.periodicEndDate.getDate() == $scope.editedBooking.startDate.getDate())
+			) {
+			if ($scope.editedBooking.endTime.hour <= $scope.editedBooking.startTime.hour) {
 				// next hour
-
+				var endTime = _.find(model.times, function(hourMinutes) { 
+					return ($scope.editedBooking.startTime.hour == hourMinutes.hour && $scope.editedBooking.startTime.min < hourMinutes.min) });
+				$scope.editedBooking.endTime = (endTime !== undefined ? endTime : $scope.editedBooking.endTime = _.last(model.times));
 			}
 		}
 	};

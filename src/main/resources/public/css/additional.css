@@ -19,3 +19,67 @@ p.placeholder {
 div.disabled {
 	color: #888;
 }
+
+.centered-text {
+	text-align: center;
+}
+
+/* deleted */
+.dropdown-menu {
+	z-index: 11000 !important;
+}
+
+i.long-badge {
+	border-radius: 10px;
+	background: #ccc;
+	font-weight: bold;
+	font-size: 12px;
+	padding: 1px 4px;
+	height: 15px;
+	text-align: center;
+	line-height: 15px;
+	color: #000;
+}
+
+table i.pending-status::before {
+	content: "?";
+	height: 20px;
+	width: 20px;
+	display: block;
+	color: #000;
+	font-size: 21px;
+	font-family: Arial;
+	font-weight: 900;
+}
+
+table i.validated-status {
+	height: 20px;
+	width: 20px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_206_ok_2.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	background-size: 100% auto;
+}
+
+table i.refused-status {
+	height: 16px;
+	width: 16px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_207_remove_2.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	background-size: 100% auto;
+}
