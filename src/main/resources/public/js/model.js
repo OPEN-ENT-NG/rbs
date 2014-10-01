@@ -794,6 +794,10 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 			// Is a Booking
 			bookingIndex.bookings[row.id] = row;
 			model.parseBooking(row, color !== undefined ? color :  row.resource.type.color);
+			// Calendar locking
+			if (row.owner !== model.me.userId) {
+				row.locked = true;	
+			}
 		}
 		else {
 			// Is a Slot
@@ -802,6 +806,8 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 			}
 			bookingIndex.slots[row.parent_booking_id].push(row);
 			model.parseSlot(row);
+			// Calendar locking
+			row.locked = true;
 		}
 	});
 

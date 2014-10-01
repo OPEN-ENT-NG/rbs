@@ -359,6 +359,8 @@ function RbsController($scope, template, model, date, route){
 			$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
 			$scope.editedBooking.byOccurrences = true;
 			$scope.editedBooking.periodicEndDate = undefined;
+			$scope.editedBooking.periodicity = 1;
+			$scope.editedBooking.occurrences = 1;
 		}
 		$scope.initBookingDates();
 
@@ -531,6 +533,16 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.saveBooking = function() {
+		// Check
+		$scope.currentErrors = [];
+		if ($scope.editedBooking.is_periodic === true
+			&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
+			// Error
+			$scope.currentErrors.push({error: 'rbs.booking.missing.days'});
+			return;
+		}
+
+		// Save
 		$scope.display.processing = true;
 		
 		// dates management
@@ -570,7 +582,6 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking.endTime.min]);		
 		}
 
-		$scope.currentErrors = [];
 		$scope.editedBooking.save(function(){
 			$scope.display.processing = undefined;
 			$scope.display.actionOnBooking = undefined;

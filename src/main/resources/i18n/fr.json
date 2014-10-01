@@ -211,6 +211,7 @@
 	"rbs.booking.bad.request.first.day.not.selected" : "Le 1er créneau de réservation doit porter sur un jour de la semaine sélectionné",
 	"rbs.booking.bad.request.invalid.enddates" : "Le 1er et le dernier créneau de réservation doivent se terminer à la même heure",
 	"rbs.booking.bad.request.invalid.days" : "Le tableau des jours sélectionnés n'a pas pu être récupéré, ou sa taille est différente de 7",
+	"rbs.booking.missing.days" : "Sélectionnez au moins un jour de la semaine pour répéter la réservation",
 
 	"rbs.route.booking.not.found" : "La réservation cherchée n'existe pas.",
 	
