@@ -1,10 +1,11 @@
 package fr.wseduc.rbs.service;
 
+import static fr.wseduc.rbs.BookingStatus.CREATED;
+import static fr.wseduc.rbs.BookingStatus.VALIDATED;
 import static org.entcore.common.sql.Sql.parseId;
+import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
-import static fr.wseduc.rbs.BookingStatus.*;
-import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		values.add(user.getUserId());
 
 		query.append(" GROUP BY r.id")
-			.append(" ORDER BY r.modified DESC");
+			.append(" ORDER BY r.id");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}

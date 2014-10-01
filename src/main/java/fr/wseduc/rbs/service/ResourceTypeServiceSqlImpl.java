@@ -32,7 +32,8 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 			values.add(groupOruser);
 		}
 		query.append(" OR t.owner = ?")
-			.append(" GROUP BY t.id");
+			.append(" GROUP BY t.id")
+			.append(" ORDER BY t.id");
 		values.add(user.getUserId());
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
