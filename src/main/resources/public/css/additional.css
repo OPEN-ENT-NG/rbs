@@ -1,132 +1,21 @@
-.lightbox-view {
-	position: absolute !important;
-}
-
-.dropdown-menu {
-	z-index: 11000 !important;
-}
-
-.form-article {
-	margin-bottom: 0;
-}
-
-.uneditable {
-	background: rgba(0, 0, 0, 0.1);
-	padding: 5px;
-	font-size: 14px;
-	line-height: 20px;
-	margin: 3px 0;
-}
-
-.uneditable p {
-	margin: 5px 0;
-}
-
-.long-badge {
-	border-radius: 10px;
-	background: #ccc;
+.details label {
 	font-weight: bold;
-	font-size: 12px;
-	padding: 1px 4px;
-	display: inline-block;
-	height: 15px;
-	text-align: center;
-	line-height: 19px;
-	color: #000;
+}
+
+.details p {
 	margin-top: 2px;
+	margin-bottom: 12px;
+	padding: 5px 0;
 }
 
-table.colored i.pending-status {
-	content: "?";
-	height: 20px;
-	width: 20px;
-	display: block;
-	color: #000;
-	font-size: 21px;
-	font-family: Arial;
-	font-weight: 900;
+p.placeholder {
+	font-style: italic;
 }
 
-table.colored i.validated-status {
-	height: 20px;
-	width: 20px;
-	background-image: url("/assets/themes/raw/img/icons/glyphicons_206_ok_2.png");
-	background-repeat: no-repeat;
-	background-position: center;
-	display: block;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-o-box-sizing: border-box;
-	box-sizing: border-box;
-	float: left;
-	vertical-align: middle;
-	background-size: 100% auto;
+.accordions .accordion.opened .toggle {
+	overflow: auto !important;
 }
 
-table.colored i.refused-status {
-	height: 16px;
-	width: 16px;
-	background-image: url("/assets/themes/raw/img/icons/glyphicons_207_remove_2.png");
-	background-repeat: no-repeat;
-	background-position: center;
-	display: block;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-o-box-sizing: border-box;
-	box-sizing: border-box;
-	float: left;
-	vertical-align: middle;
-	background-size: 100% auto;
-}
-
-button.disabled,
-a.button.disabled,
-input[type=button].disabled {
-	background: #646464;
-	color: #ccc;
-}
-
-button.disabled:hover,
-a.button.disabled:hover,
-input[type=button].disabled:hover {
-	background: #646464;
-	color: #373737;
-}
-
-table.colored tbody tr:hover a {
-	color: #fff;
-}
-
-table.colored td.grey {
-	background: rgba(100, 100, 100, 0.75);
-}
-
-table.colored tr:hover td.grey {
-	background: rgba(100, 100, 100, 0.6);
-}
-
-table.colored span.badge {
-	line-height: 19px;
-	color: #000;
-}
-
-ul.colored a:hover {
-	color: #000;
-	font-weight: bold;
-}
-
-ul.colored a.grey, 
-ul.colored a.grey:hover, 
-ul.colored ul.grey a, 
-ul.colored ul.grey a:hover {
-	color: rgb(100, 100, 100);
-}
-
-ul.colored ul.grey a.selected {
-	background: rgb(100, 100, 100);
-}
-
-td.invisible, 
-tr:hover td.invisible {
-	background: transparent !important;	
+div.disabled {
+	color: #888;
 }

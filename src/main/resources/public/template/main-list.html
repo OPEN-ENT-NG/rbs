@@ -1,3 +1,19 @@
+<div class="row">
+	<div class="cell three" ng-class="{disabled: bookings.filters.dates !== true}">
+		&nbsp;<i18n>rbs.filters.date.from</i18n>
+		<date-picker-icon ng-model="bookings.filters.startDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
+		[[formatMomentDayLong(bookings.filters.startMoment)]]
+	</div>
+	<div class="cell three" ng-class="{disabled: bookings.filters.dates !== true}">
+		&nbsp;<i18n>rbs.filters.date.to</i18n>
+		<date-picker-icon ng-model="bookings.filters.endDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
+		[[formatMomentDayLong(bookings.filters.endMoment)]]
+	</div>
+	<div class="cell three">
+		<button ng-if="bookings.filters.dates === true" ng-click="filterListByDates(false)" class="cancel"><i18n>rbs.filters.date.all</i18n></button>
+		<button ng-if="bookings.filters.dates !== true" ng-click="filterListByDates(true)"><i18n>rbs.filters.date.all</i18n></button>
+	</div>
+</div>
 <table class="list-view colored">
 	<thead>
 		<tr>
@@ -30,20 +46,21 @@
 				<i ng-if="booking.status === 2" class="validated-status"></i>
 				<i ng-if="booking.status === 3" class="refused-status"></i>
 			</td>
-			<td ng-click="viewBooking(booking)"><span ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></span></td>
+			<td ng-click="viewBooking(booking)"><i ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></i></td>
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
 			<td class="invisible"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
 			<td ng-class="booking.color"></td>
 			<td></td>
-			<td><a ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</a></td>
-			<td><a ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</a></td>
-			<td><a ng-click="viewBooking(slot)">[[booking.booking_reason]]</a></td>
-			<td>
-				<i ng-if="booking.status === 1" class="pending-status"></i>
-				<i ng-if="booking.status === 2" class="validated-status"></i>
-				<i ng-if="booking.status === 3" class="refused-status"></i>
+			<td></td>
+			<td ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</td>
+			<td ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</td>
+			<td ng-click="viewBooking(slot)">[[trimReason(booking.booking_reason)]]</td>
+			<td ng-click="viewBooking(slot)">
+				<i ng-if="slot.status === 1" class="pending-status"></i>
+				<i ng-if="slot.status === 2" class="validated-status"></i>
+				<i ng-if="slot.status === 3" class="refused-status"></i>
 			</td>
 			<td></td>
 		</tr>

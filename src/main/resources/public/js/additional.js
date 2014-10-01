@@ -33,10 +33,11 @@ module.directive('lightboxPlus', function($compile){
 						lightboxWindow.fadeIn();
 					}, 0);
 
+					
 					lightboxWindow.css({
-						top: '0px'
+						top: '100px'
 					});
-
+					
 					/*
 					lightboxWindow.css({
 						top: Math.max(parseInt(($(window).height() / 2 - lightboxWindow.height() / 2)), 0) + 'px'
@@ -45,7 +46,6 @@ module.directive('lightboxPlus', function($compile){
 					console.log("Lightbox-plus: Lightbox height: " + lightboxWindow.height() + 'px');
 					console.log("Lightbox-plus: Computed top: " + Math.max(parseInt(($(window).height() / 2 - lightboxWindow.height() / 2)), 0) + 'px');
 					*/
-
 					var backdrop = element.find('.lightbox-background');
 					setTimeout(function(){
 						backdrop.fadeIn();

@@ -65,6 +65,7 @@ function RbsController($scope, template, model, date, route){
 		STATE_REFUSED: model.STATE_REFUSED,
 		STATE_PARTIAL: model.STATE_PARTIAL
 	};
+	$scope.today = moment().startOf('day');
 
 	$scope.resourceTypes = model.resourceTypes;
 	$scope.bookings = model.bookings;
@@ -85,6 +86,11 @@ function RbsController($scope, template, model, date, route){
 	model.bookings.filters.mine = true;
 	model.recordedSelections.mine = true;
 	model.recordedSelections.allResources = true;
+	model.bookings.filters.dates = true;
+	model.bookings.filters.startMoment = moment().startOf('day');
+	model.bookings.filters.endMoment = moment().add('month', 2).startOf('day');
+	model.bookings.filters.startDate = model.bookings.filters.startMoment.toDate();
+	model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
 
 	$scope.resourceTypes.on('sync', function(){
 		// Restore previous selections
@@ -274,12 +280,25 @@ function RbsController($scope, template, model, date, route){
 			$scope.sort.predicate = predicate;
 			$scope.sort.reverse = false;
 		}
-	}
+	};
 
 	$scope.resetSort = function() {
 		$scope.sort.predicate = 'start_date';
 		$scope.sort.reverse = false;
 	}
+
+	$scope.filterListByDates = function(filter) {
+		if (filter === true) {
+			$scope.bookings.filters.startMoment = moment($scope.bookings.filters.startDate);
+			$scope.bookings.filters.endMoment = moment($scope.bookings.filters.endDate);
+			$scope.bookings.filters.dates = true;
+		}
+		else {
+			$scope.bookings.filters.dates = undefined;
+		}
+		$scope.bookings.applyFilters();
+		$scope.bookings.trigger('change');
+	};
 
 
 	// General
@@ -299,8 +318,12 @@ function RbsController($scope, template, model, date, route){
 		return date.format('dddd DD MMMM YYYY - HH[h]mm');
 	};
 
+	$scope.formatMomentDayLong = function(date) {
+		return date.format('dddd DD MMMM YYYY');	
+	};
+
 	$scope.trimReason = function(reason) {
-		return _.isString(reason) ? (reason.trim().length > 23 ? reason.substring(0, 20) + '...' : reason.trim()) : "";
+		return _.isString(reason) ? (reason.trim().length > 15 ? reason.substring(0, 12) + '...' : reason.trim()) : "";
 	};
 
 	$scope.countValidatedSlots = function(slots) {

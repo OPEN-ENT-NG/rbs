@@ -24,7 +24,7 @@ model.periods = {
 		3, // wednesday
 		4, // thursday
 		5, // friday
-		6,  // saturday
+		6, // saturday
 		0 // sunday
 	],
 	occurrences: [] // loaded by function
@@ -636,33 +636,89 @@ model.build = function(){
 		},
 		applyFilters: function() {
 			if (this.filters.booking === true) {
-				if (this.filters.mine === true) {
-					if (this.filters.unprocessed === true) {
-						this.filtered = _.filter(this.all, function(booking){
-							return booking.isBooking()
-							&& booking.owner === model.me.userId 
-							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-						});
+				if (this.filters.dates !== undefined) {
+					if (this.filters.mine === true) {
+						if (this.filters.unprocessed === true) {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& booking.owner === model.me.userId 
+								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
+								&& ((booking.is_periodic !== true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
+									|| (booking.is_periodic === true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
+							});
+						}
+						else {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& booking.owner === model.me.userId
+								&& ((booking.is_periodic !== true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
+									|| (booking.is_periodic === true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
+							});
+						}
 					}
 					else {
-						this.filtered = _.filter(this.all, function(booking){
-							return booking.isBooking()
-							&& booking.owner === model.me.userId;
-						});
+						if (this.filters.unprocessed === true) {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
+								&& ((booking.is_periodic !== true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
+									|| (booking.is_periodic === true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
+							});
+						}
+						else {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& ((booking.is_periodic !== true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
+									|| (booking.is_periodic === true 
+										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
+										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
+							});
+						}				
 					}
 				}
 				else {
-					if (this.filters.unprocessed === true) {
-						this.filtered = _.filter(this.all, function(booking){
-							return booking.isBooking()
-							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
-						});
+					if (this.filters.mine === true) {
+						if (this.filters.unprocessed === true) {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& booking.owner === model.me.userId 
+								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+							});
+						}
+						else {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& booking.owner === model.me.userId;
+							});
+						}
 					}
 					else {
-						this.filtered = _.filter(this.all, function(booking){
-							return booking.isBooking();
-						});
-					}				
+						if (this.filters.unprocessed === true) {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking()
+								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+							});
+						}
+						else {
+							this.filtered = _.filter(this.all, function(booking){
+								return booking.isBooking();
+							});
+						}				
+					}
 				}
 			}
 			else {
@@ -694,7 +750,10 @@ model.build = function(){
 		filters: {
 			mine: undefined,
 			unprocessed: undefined,
-			booking: undefined
+			booking: undefined,
+			dates: undefined,
+			startMoment: undefined,
+			endMoment: undefined
 		},
 		filtered: [],
 		behavious: 'rbs'
