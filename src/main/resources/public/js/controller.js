@@ -177,20 +177,22 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.switchSelectMine = function() {
 		if ($scope.bookings.filters.mine === true) {
-			$scope.bookings.filters.mine = undefined;
+			delete $scope.bookings.filters.mine;
 		}
 		else {
-			$scope.bookings.filters.mine = true;	
+			$scope.bookings.filters.mine = true;
+			delete $scope.bookings.filters.unprocessed;
 		}
 		$scope.bookings.applyFilters();
 	};
 
 	$scope.switchSelectUnprocessed = function() {
 		if ($scope.bookings.filters.unprocessed === true) {
-			$scope.bookings.filters.unprocessed = undefined;
+			delete $scope.bookings.filters.unprocessed;
 		}
 		else {
-			$scope.bookings.filters.unprocessed = true;	
+			$scope.bookings.filters.unprocessed = true;
+			delete $scope.bookings.filters.mine;
 		}
 		$scope.bookings.applyFilters();
 	}
