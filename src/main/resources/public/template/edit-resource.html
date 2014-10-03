@@ -34,9 +34,7 @@
 		</div>
 
 		<div class="row">
-			<behaviour name="process" resource="editedResource.type">
-				<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
-			</behaviour>
+			<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>

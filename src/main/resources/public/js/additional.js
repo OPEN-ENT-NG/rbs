@@ -35,7 +35,7 @@ module.directive('lightboxPlus', function($compile){
 
 					
 					lightboxWindow.css({
-						top: '100px'
+						top: '50px'
 					});
 					
 					/*
