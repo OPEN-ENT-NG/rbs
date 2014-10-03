@@ -117,6 +117,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			final int firstSelectedDay, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler) {
 
+		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		statementsBuilder.prepared(UPSERT_USER_QUERY,
+				new JsonArray().add(user.getUserId()).add(user.getUsername()));
+
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -158,7 +162,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			values = getValuesWithProperEndDate(values, lastSlotEndDate, endDateIndex);
 		}
 
-		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+		statementsBuilder.prepared(query.toString(), values);
+		Sql.getInstance().transaction(statementsBuilder.build(),
+				validResultHandler(1, handler));
 
 	}
 
