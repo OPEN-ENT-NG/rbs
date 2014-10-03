@@ -74,7 +74,7 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.currentResourceType = undefined;
 	$scope.selectedBooking = undefined;
-	$scope.editedBooking = undefined;
+	$scope.editedBooking = new Booking();
 	$scope.bookings.refuseReason = undefined;
 	$scope.processBookings = [];
 	$scope.currentErrors = [];
@@ -223,7 +223,7 @@ function RbsController($scope, template, model, date, route){
 			});
 		}
 		$scope.selectedBooking = undefined;
-		$scope.editedBooking = undefined;
+		$scope.editedBooking = new Booking();
 		$scope.processBookings = [];
 		$scope.currentErrors = [];
 		$scope.display.showPanel = false;
