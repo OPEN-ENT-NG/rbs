@@ -757,6 +757,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				validResultHandler(handler));
 	}
 
+	/**
+	 * Get ids of groups and users that are moderators
+	 */
 	@Override
 	public void getModeratorsIds(final String bookingId, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler){
@@ -765,33 +768,37 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		JsonArray values = new JsonArray();
 		Object bId = parseId(bookingId);
 
-		query.append("SELECT r.owner AS member_id FROM rbs.booking AS b")
+		query.append("SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+			.append(" INNER JOIN rbs.members AS m on r.owner = m.id")
 			.append(" WHERE b.id = ? AND r.owner != ?");
 		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
-			.append(" SELECT t.owner AS member_id FROM rbs.booking AS b")
+			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
+			.append(" INNER JOIN rbs.members AS m on t.owner = m.id ")
 			.append(" WHERE b.id = ? AND t.owner != ?");
 		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
-			.append(" SELECT DISTINCT rs.member_id FROM rbs.booking AS b")
+			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+			.append(" INNER JOIN rbs.members AS m on rs.member_id = m.id")
 			.append(" WHERE b.id = ? AND rs.member_id != ?");
 		values.add(bId)
 			.add(user.getUserId());
 
 		query.append(" UNION")
-			.append(" SELECT DISTINCT ts.member_id FROM rbs.booking AS b")
+			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
 			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+			.append(" INNER JOIN rbs.members AS m on ts.member_id = m.id")
 			.append(" WHERE b.id = ? AND ts.member_id != ?");
 		values.add(bId)
 			.add(user.getUserId());

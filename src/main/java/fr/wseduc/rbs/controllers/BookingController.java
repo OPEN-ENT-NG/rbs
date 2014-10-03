@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -144,23 +145,9 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
 								if (event.isRight() && event.right() != null) {
-									List<String> recipients = getModeratorsList(event.right().getValue());
-
-									if(!recipients.isEmpty()) {
-										JsonObject params = new JsonObject();
-										params.putString("uri", container.config().getString("userbook-host") +
-												"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-										params.putString("bookingUri", container.config().getString("host")
-												+ "/rbs#/booking/" + bookingId)
-											.putString("username", user.getUsername())
-											.putString("startdate", startDate)
-											.putString("enddate", endDate)
-											.putString("resourcename", resourceName);
-
-										notification.notifyTimeline(request, user, RBS_NAME, eventType,
-												recipients, bookingId, template, params);
-									}
-
+									notifyModerators(request, user, event.right().getValue(),
+											bookingId, startDate, endDate,
+											resourceName, eventType, template);
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
@@ -375,23 +362,9 @@ public class BookingController extends ControllerHelper {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
 								if (event.isRight() && event.right() != null) {
-									List<String> recipients = getModeratorsList(event.right().getValue());
-
-									if(!recipients.isEmpty()) {
-										JsonObject params = new JsonObject();
-										params.putString("uri", container.config().getString("userbook-host") +
-												"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-										params.putString("bookingUri", container.config().getString("host")
-						                        + "/rbs#/booking/" + periodicBookingId)
-											.putString("username", user.getUsername())
-											.putString("startdate", startDate)
-											.putString("enddate", endDate)
-											.putString("resourcename", resourceName);
-
-										notification.notifyTimeline(request, user, RBS_NAME, eventType,
-												recipients, periodicBookingId, template, params);
-									}
-
+									notifyModerators(request, user, event.right().getValue(),
+											bookingId, startDate, endDate,
+											resourceName, eventType, template);
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
@@ -408,23 +381,71 @@ public class BookingController extends ControllerHelper {
 
 	}
 
-	private List<String> getModeratorsList(JsonArray moderators) {
-		Set<String> recipientSet = new HashSet<>();
+	private void notifyModerators(final HttpServerRequest request, final UserInfos user, JsonArray moderators,
+			final String bookingId, final String startDate, final String endDate, final String resourceName,
+			final String eventType, final String template) {
+
+		final Set<String> recipientSet = new HashSet<>();
+		final AtomicInteger remaining = new AtomicInteger(moderators.size());
+
 		for(Object o : moderators){
-			if(!(o instanceof JsonObject)){
-				continue;
-			}
 			JsonObject jo = (JsonObject) o;
-			recipientSet.add(jo.getString("member_id"));
+			String userId = jo.getString("user_id");
+			if (userId != null) {
+				recipientSet.add(userId);
+				remaining.getAndDecrement();
+			} else {
+				String groupId = jo.getString("group_id");
+				if (groupId != null) {
+					UserUtils.findUsersInProfilsGroups(groupId, eb, user.getUserId(), false, new Handler<JsonArray>() {
+						@Override
+						public void handle(JsonArray event) {
+							if (event != null) {
+								for (Object o : event) {
+									if (!(o instanceof JsonObject)) continue;
+									JsonObject j = (JsonObject) o;
+									String id = j.getString("id");
+									recipientSet.add(id);
+								}
+							}
+							if (remaining.decrementAndGet() < 1 && !recipientSet.isEmpty()) {
+								sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, template, recipientSet);
+							}
+						}
+					});
+				}
+			}
+			if (remaining.get() < 1 && !recipientSet.isEmpty()) {
+				sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, template, recipientSet);
+			}
 		}
 
-		return new ArrayList<String>(recipientSet);
+	}
+
+	private void sendNotification(final HttpServerRequest request, final UserInfos user,
+			final String bookingId, final String startDate, final String endDate, final String resourceName,
+			final String eventType, final String template, final Set<String> recipientSet) {
+
+		List<String> recipients = new ArrayList<>(recipientSet);
+
+		JsonObject params = new JsonObject();
+		params.putString("uri", container.config().getString("userbook-host") +
+				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+		params.putString("bookingUri", container.config().getString("host")
+				+ "/rbs#/booking/" + bookingId)
+			.putString("username", user.getUsername())
+			.putString("startdate", startDate)
+			.putString("enddate", endDate)
+			.putString("resourcename", resourceName);
+
+		notification.notifyTimeline(request, user, RBS_NAME, eventType,
+				recipients, bookingId, template, params);
 	}
 
 	 /**
 	  *
 	  * @param unixTimestamp in seconds
-	  * @return
+	  * @return 0 for sunday, 1 for monday, etc
 	  */
 	 private int getDayFromTimestamp(final long unixTimestamp) {
 			Calendar cal = Calendar.getInstance();
