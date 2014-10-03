@@ -563,10 +563,10 @@ model.build = function(){
 				
 			}.bind(this));
 		},
-		filterAvailable: function() {
+		filterAvailable: function(periodic) {
 			return this.filter(function(resourceType){
 				return resourceType.resources.some(function(resource){ 
-					return resource.is_available === true;
+					return resource.is_available === true && (!periodic || resource.periodic_booking);
 				});
 			});
 		},
