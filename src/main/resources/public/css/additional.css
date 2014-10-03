@@ -1,0 +1,73 @@
+.details label {
+	font-weight: bold;
+}
+
+.details p {
+	margin-top: 2px;
+	margin-bottom: 12px;
+	padding: 5px 0;
+}
+
+p.placeholder {
+	font-style: italic;
+}
+
+.accordions .accordion.opened .toggle {
+	overflow: auto !important;
+}
+
+div.disabled {
+	color: #888;
+}
+
+.centered-text {
+	text-align: center;
+}
+
+
+.dropdown-menu {
+	z-index: 11000 !important;
+}
+
+table.colored i.pending-icon::before {
+	content: "?";
+	height: 20px;
+	width: 20px;
+	display: block;
+	color: #000;
+	font-size: 21px;
+	font-family: Arial;
+	font-weight: 900;
+}
+
+table.colored i.validated-icon {
+	height: 20px;
+	width: 20px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_206_ok_2.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	background-size: 100% auto;
+}
+
+table.colored i.refused-icon {
+	height: 16px;
+	width: 16px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_207_remove_2.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	background-size: 100% auto;
+}

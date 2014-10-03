@@ -1,1 +1,7 @@
-<calendar display-template="display-calendar-item" create-template="edit-booking" items="bookings.filtered"></calendar>
+<calendar 
+	display-template="display-calendar-item" 
+	create-template="edit-booking"
+	on-create-open="newBookingCalendar(newItem)"
+	on-create-close="closeBooking()" 
+	items="bookings.filtered">
+</calendar>

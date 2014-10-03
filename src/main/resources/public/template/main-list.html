@@ -42,9 +42,9 @@
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.endMoment)]]</td>
 			<td ng-click="viewBooking(booking)">[[trimReason(booking.booking_reason)]]</td>
 			<td ng-click="viewBooking(booking)">
-				<i ng-if="booking.status === 1" class="pending-status"></i>
-				<i ng-if="booking.status === 2" class="validated-status"></i>
-				<i ng-if="booking.status === 3" class="refused-status"></i>
+				<i ng-if="booking.status === 1" class="pending-icon"></i>
+				<i ng-if="booking.status === 2" class="validated-icon"></i>
+				<i ng-if="booking.status === 3" class="refused-icon"></i>
 			</td>
 			<td ng-click="viewBooking(booking)"><i ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></i></td>
 		</tr>
@@ -58,9 +58,9 @@
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</td>
 			<td ng-click="viewBooking(slot)">[[trimReason(booking.booking_reason)]]</td>
 			<td ng-click="viewBooking(slot)">
-				<i ng-if="slot.status === 1" class="pending-status"></i>
-				<i ng-if="slot.status === 2" class="validated-status"></i>
-				<i ng-if="slot.status === 3" class="refused-status"></i>
+				<i ng-if="slot.status === 1" class="pending-icon"></i>
+				<i ng-if="slot.status === 2" class="validated-icon"></i>
+				<i ng-if="slot.status === 3" class="refused-icon"></i>
 			</td>
 			<td></td>
 		</tr>

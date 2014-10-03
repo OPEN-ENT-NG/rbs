@@ -96,6 +96,8 @@
 	"rbs.booking.edit.period.days.6" : "Samedi",
 	"rbs.booking.edit.period.days.0" : "Dimanche",
 
+	"rbs.booking.description.toggle" : "Description de la ressource",
+
 	"rbs.booking.validate" : "Valider",
 	"rbs.booking.refuse" : "Refuser",
 	"rbs.booking.validate.one" : "Valider la réservation ?",
