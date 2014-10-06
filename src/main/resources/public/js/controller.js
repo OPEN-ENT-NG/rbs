@@ -467,6 +467,12 @@ function RbsController($scope, template, model, date, route){
 
 		if ($scope.editedBooking.startTime === undefined || $scope.editedBooking.endTime === undefined) {
 			// hour slot does not fit today, set to first slot tomorrow
+			if(!$scope.startMoment){
+				$scope.startMoment = moment();
+			}
+			if(!$scope.endMoment){
+				$scope.endMoment = moment();
+			}
 			$scope.startMoment.add('day', 1);
 			$scope.endMoment.add('day', 1);
 			$scope.editedBooking.startTime = model.times[0];
