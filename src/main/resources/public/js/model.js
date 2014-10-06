@@ -756,7 +756,7 @@ model.build = function(){
 			endMoment: undefined
 		},
 		filtered: [],
-		behavious: 'rbs'
+		behaviours: 'rbs'
 	});
 
 	this.recordedSelections = new SelectionHolder();

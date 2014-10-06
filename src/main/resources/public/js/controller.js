@@ -378,6 +378,9 @@ function RbsController($scope, template, model, date, route){
 		$scope.editedBooking.startMoment = moment();
 		$scope.editedBooking.endMoment = moment();
 		$scope.editedBooking.endMoment.hour($scope.editedBooking.startMoment.hour() + 1);
+		// DEBUG
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /DEBUG
 		$scope.initBookingDates();
 
 		template.open('lightbox', 'edit-booking');
@@ -410,6 +413,9 @@ function RbsController($scope, template, model, date, route){
 			$scope.editedBooking.endMoment = moment();
 			$scope.editedBooking.endMoment.hour($scope.editedBooking.startMoment.hour() + 1);
 		}
+		// DEBUG
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /DEBUG
 		$scope.initBookingDates();
 		$scope.$apply('editedBooking')
 	};
@@ -439,6 +445,9 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking.byOccurrences = false;
 			}
 		}
+		// DEBUG
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /DEBUG
 		$scope.initBookingDates();
 
 		template.open('lightbox', 'edit-booking');
@@ -446,6 +455,10 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.initBookingDates = function() {
+		// DEBUG
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /DEBUG
+
 		// hours minutes management
 		$scope.editedBooking.startTime = _.find(model.times, function(hourMinutes) { 
 			return ($scope.editedBooking.startMoment.hour() <= hourMinutes.hour && $scope.editedBooking.startMoment.minutes() <= hourMinutes.min) });
@@ -470,6 +483,10 @@ function RbsController($scope, template, model, date, route){
 		$scope.editedBooking.endDate.setFullYear($scope.editedBooking.endMoment.years());
 		$scope.editedBooking.endDate.setMonth($scope.editedBooking.endMoment.months());
 		$scope.editedBooking.endDate.setDate($scope.editedBooking.endMoment.date());
+		
+		// DEBUG
+		var DEBUG_editedBooking = $scope.editedBooking;
+		// /DEBUG
 	};
 
 	$scope.adjustStartTime = function() {
