@@ -89,10 +89,17 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 					.append(" AND r.is_available = ?");
 				values.add(true).add(true);
 			}
-			else if(isCreateBooking(request) || isUpdateBooking(request) || isUpdatePeriodicBooking(request)) {
+			else if(isCreateBooking(request)) {
 				// Check that the resource is available
 				query.append(" AND r.is_available = ?");
 				values.add(true);
+			}
+			else if(isUpdateBooking(request) || isUpdatePeriodicBooking(request)) {
+				// Check that the resource is available and that the user is the booking's owner
+				query.append(" AND r.is_available = ?")
+					.append(" AND b.owner = ?");
+				values.add(true)
+					.add(user.getUserId());
 			}
 
 			// Execute
