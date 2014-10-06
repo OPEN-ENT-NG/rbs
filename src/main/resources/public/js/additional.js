@@ -9,7 +9,7 @@ module.directive('lightboxPlus', function($compile){
 		template: '<div>\
 					<section class="lightbox-background"></section>\
 					<section class="lightbox-view">\
-						<div class="twelve cell reduce-block-eight" ng-transclude></div>\
+						<div class="twelve cell" ng-transclude></div>\
 						<div class="close-lightbox">\
 						<i class="close-2x"></i>\
 						</div>\
@@ -35,7 +35,7 @@ module.directive('lightboxPlus', function($compile){
 
 					
 					lightboxWindow.css({
-						top: '50px'
+						top: '10px'
 					});
 					
 					/*
