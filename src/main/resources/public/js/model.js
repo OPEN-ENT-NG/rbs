@@ -906,7 +906,18 @@ model.parseError = function(e, object, context) {
 		error = JSON.parse(e.responseText);
 	}
 	catch (err) {
-		error.error = "rbs.error.unknown";
+		if (e.status == 401) {
+			error.error = "rbs.error.unauthorized";
+		}
+		else if (e.status == 404) {
+			error.error = "rbs.error.notfound";
+		}
+		else if (e.status = 409) {
+			error.error = "rbs.error.conflict";
+		}
+		else {
+			error.error = "rbs.error.unknown";
+		}
 	}
 	error.status = e.status;	
 	error.object = object;

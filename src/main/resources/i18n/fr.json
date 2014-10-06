@@ -185,6 +185,7 @@
 	"rbs.delete" : "Supprimer",
 	"rbs.processing": "Enregistrement en cours",
 	"rbs.deleting" : "Suppression en cours",
+	"rbs.close" : "Fermer",
 
 	"rbs.read": "Voir",
 	"rbs.contrib": "Réserver",
@@ -225,8 +226,14 @@
 	"rbs.errors.actions.validate" : "Validation",
 	"rbs.errors.actions.refuse" : "Refus",
 	"rbs.errors.actions.delete" : "Suppression",
+	"rbs.errors.objects.resourceType" : "Type de ressources",
+	"rbs.errors.objects.resource" : "Ressource",
+	"rbs.errors.objects.booking" : "Réservation",
 
 	"rbs.error.unknown" : "Erreur inconnue",
+	"rbs.error.unauthorized" : "Permissions insuffisantes (401)",
+	"rbs.error.conflict" : "Conflit (409)",
+	"rbs.error.notfound" : "Objet non trouvé (404)",
 
 	"rbs.route.booking.not.found" : "La réservation cherchée n'existe pas.",
 	

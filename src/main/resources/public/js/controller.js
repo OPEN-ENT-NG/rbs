@@ -931,7 +931,24 @@ function RbsController($scope, template, model, date, route){
 	$scope.showActionErrors = function() {
 		$scope.display.showPanel = true;
 		template.open('lightbox', 'action-errors');
-	}
+	};
+
+	$scope.isErrorObjectResourceType = function(object) {
+		return object instanceof ResourceType;
+	};
+
+	$scope.isErrorObjectResource = function(object) {
+		return object instanceof Resource;
+	};
+
+	$scope.isErrorObjectBooking = function(object) {
+		return object instanceof Booking;
+	};
+
+	$scope.closeActionErrors = function() {
+		$scope.display.showPanel = false;
+		template.close('lightbox');
+	};
 
 	// Special Workflow and Behaviours
 	$scope.hasWorkflowOrAnyResourceHasBehaviour = function(workflowRight, ressourceRight) {
