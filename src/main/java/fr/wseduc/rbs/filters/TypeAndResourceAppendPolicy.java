@@ -19,6 +19,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.HttpMethod;
 
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
@@ -76,6 +77,10 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			values.add(user.getUserId());
 			query.append(" OR (r.owner = ?)");
 			values.add(user.getUserId());
+			if(isDeleteBooking(binding)) {
+				query.append(" OR (b.owner = ?)");
+				values.add(user.getUserId());
+			}
 			query.append(") AND r.id = ?");
 			values.add(Sql.parseId(id));
 			if (hasBooking) {
@@ -116,6 +121,7 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		}
 	}
 
+	// TODO : refactor following methods to use a Binding parameter (instead of HttpServerRequest)
 	private boolean isCreateBooking(final HttpServerRequest request) {
 		return ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking"));
 	}
@@ -130,6 +136,11 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 	private boolean isUpdatePeriodicBooking(final HttpServerRequest request) {
 		return ("PUT".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/\\d+/periodic"));
+	}
+
+	private boolean isDeleteBooking(final Binding binding) {
+		return (HttpMethod.DELETE.equals(binding.getMethod())
+				&& "fr.wseduc.rbs.controllers.BookingController|deleteBooking".equals(binding.getServiceMethod()));
 	}
 
 }

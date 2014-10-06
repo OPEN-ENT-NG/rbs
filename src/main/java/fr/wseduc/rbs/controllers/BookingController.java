@@ -784,9 +784,4 @@ public class BookingController extends ControllerHelper {
 
 	 }
 
-	// Pour afficher l'historique des reservations
-	// @Get("/bookings/all")
-	// @ApiDoc("List all bookings")
-	// @SecuredAction(value = "rbs.manage", type = ActionType.RESOURCE)
-
 }
