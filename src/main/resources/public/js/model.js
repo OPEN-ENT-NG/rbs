@@ -260,6 +260,10 @@ function Resource() {
 		sync: function(cb){
 			// Load the Bookings
 			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(rows){
+				// Resource association necessary before Behaviours loading
+				_.each(rows, function(row){
+					row.resource = resource;
+				});
 				// Load
 				this.load(rows);
 				// Resource
@@ -787,9 +791,6 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 	// Process
 	_.each(rows, function(row) {
-		// Resource
-		row.resource = resourceIndex[row.resource_id];
-
 		if (row.parent_booking_id === null) {
 			// Is a Booking
 			bookingIndex.bookings[row.id] = row;
