@@ -129,7 +129,7 @@
 				<div class="row"></div>
 			</article>
 			<article class="accordion" ng-if="!editedBooking.is_periodic" ng-class="{ opened: !editedBooking.showDescription }">
-				<h2 ng-click="editedBooking.showDescription = undefined;"></h2>
+				<h2 ng-click="editedBooking.showDescription = undefined;"><i18n>rbs.booking.edit.slot.start.label</i18n></h2>
 				<div class="toggle">
 					<!-- Non Periodic Booking dates and hours -->
 					<div class="row" ng-if="!editedBooking.is_periodic">
