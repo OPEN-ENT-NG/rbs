@@ -14,7 +14,7 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="actionError in currentErrors" class="warning">
-						<td translate content="rbs.errors.actions.[[actionError.action]]">
+						<td translate content="rbs.errors.actions.[[actionError.context]]">
 						</td>
 						<td>
 							<i18n ng-if="actionError.object instanceof ResourceType">rbs.errors.objects.resourceType</i18n>

@@ -215,6 +215,19 @@
 	"rbs.booking.bad.request.invalid.days" : "Le tableau des jours sélectionnés n'a pas pu être récupéré, ou sa taille est différente de 7",
 	"rbs.booking.missing.days" : "Sélectionnez au moins un jour de la semaine pour répéter la réservation",
 
+	"rbs.errors.title.one" : "Une erreur est survenue",
+	"rbs.errors.title.many" : "Plusieurs erreurs sont survenues",
+	"rbs.errors.headers.action" : "Action",
+	"rbs.errors.headers.object" : "Objet",
+	"rbs.errors.headers.error" : "Erreur",
+	"rbs.errors.actions.create" : "Création",
+	"rbs.errors.actions.update" : "Mise à jour",
+	"rbs.errors.actions.validate" : "Validation",
+	"rbs.errors.actions.refuse" : "Refus",
+	"rbs.errors.actions.delete" : "Suppression",
+
+	"rbs.error.unknown" : "Erreur inconnue",
+
 	"rbs.route.booking.not.found" : "La réservation cherchée n'existe pas.",
 	
 	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
