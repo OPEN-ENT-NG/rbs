@@ -141,7 +141,7 @@
 								<td colspan="4">
 									<div class="row form-element">
 										<p class="twelve cell" ng-if="slot.refusal_reason && slot.refusal_reason !== ''" bind-html="slot.refusal_reason"></p>
-										<p class="twelve cell placeholder" ng-if="! (slot.refusal_reason && slot.refusal_reason !== '')"><i18n>rbs.booking.refused.reason.empty</i18n></p>
+										<p class="twelve cell placeholder" ng-if="! (slot.refusal_reason && slot.refusal_reason !== '')"><i18n>rbs.booking.details.refused.reason.empty</i18n></p>
 									</div>
 								</td>
 							</tr>
@@ -191,7 +191,7 @@
 					<div class="row details" ng-if="selectedBooking.isRefused()">
 						<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
 						<p class="twelve cell" ng-if="selectedBooking.refusal_reason && selectedBooking.refusal_reason !== ''" bind-html="selectedBooking.refusal_reason"></p>
-						<p class="twelve cell placeholder" ng-if="! (selectedBooking.refusal_reason && selectedBooking.refusal_reason !== '')"><i18n>rbs.booking.refused.reason.empty</i18n></p>
+						<p class="twelve cell placeholder" ng-if="! (selectedBooking.refusal_reason && selectedBooking.refusal_reason !== '')"><i18n>rbs.booking.details.refused.reason.empty</i18n></p>
 					</div>
 				</div>
 			</div>
