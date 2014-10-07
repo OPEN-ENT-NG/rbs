@@ -305,11 +305,11 @@ function RbsController($scope, template, model, date, route){
 
 	// General
 	$scope.formatDate = function(date) {
-		return $scope.formatMoment(moment(date + 'Z'));
+		return $scope.formatMoment(moment(date));
 	};
 
 	$scope.formatDateLong = function(date) {
-		return $scope.formatMomentLong(moment(date + 'Z'));
+		return $scope.formatMomentLong(moment(date));
 	};
 
 	$scope.formatMoment = function(date) {
