@@ -340,7 +340,7 @@ function RbsController($scope, template, model, date, route){
 	// Booking edition
 	$scope.canEditBookingSelection = function() {
 		var localSelection = _.filter($scope.bookings.selection(), function(booking) { return booking.isBooking(); });
-		return (localSelection.length === 1 && localSelection[0].resource.is_available === true);
+		return (localSelection.length === 1 && localSelection[0].owner === model.me.userId && localSelection[0].resource.is_available === true);
 	};
 
 	$scope.canDeleteBookingSelection = function() {
