@@ -4,8 +4,13 @@
 
 		<div class="row accordions">
 			<!-- Resource description -->
-			<article class="accordion" ng-class="{ opened: editedBooking.showDescription === true }">
-				<h2 ng-click="toggleShowBookingDescription()"><i18n>rbs.booking.description.toggle</i18n></h2>
+			<article class="accordion" ng-class="{ opened: editedBooking.showResource === true }">
+				<h2 ng-click="toggleShowBookingResource()">
+					<i18n>rbs.booking.description.toggle</i18n>
+					<span class="right-magnet" ng-if="editedBooking.showResource !== true">
+						[[editedBooking.resource.type.name]]&nbsp;-&nbsp;[[editedBooking.resource.name]]
+					</span>
+				</h2>
 				<div class="toggle">
 					<div class="row" ng-if="editedBooking.id === undefined">
 						<div class="row">
@@ -33,8 +38,8 @@
 				</div>
 			</article>
 			<!-- Periodic Booking with end date -->
-			<article class="accordion" ng-if="editedBooking.is_periodic === true" ng-class="{ opened: (!editedBooking.byOccurrences && editedBooking.showDescription !== true) }">
-				<h2 ng-click="editedBooking.byOccurrences = false; editedBooking.showDescription = undefined;"><i18n>header.period.pick</i18n></h2>
+			<article class="accordion" ng-if="editedBooking.is_periodic === true" ng-class="{ opened: (!editedBooking.byOccurrences && editedBooking.showResource !== true) }">
+				<h2 ng-click="editedBooking.byOccurrences = false; editedBooking.showResource = undefined;"><i18n>header.period.pick</i18n></h2>
 				<div class="toggle">
 					<div class="content">
 						<div class="row">
@@ -80,8 +85,8 @@
 				</div>
 			</article>
 			<!-- Periodic Booking with occurences -->
-			<article class="accordion" ng-if="editedBooking.is_periodic === true" ng-class="{ opened: (editedBooking.byOccurrences && editedBooking.showDescription !== true) }">
-				<h2 ng-click="editedBooking.byOccurrences = true; editedBooking.showDescription = undefined;">Sélectionner un nombre de réservations</h2>
+			<article class="accordion" ng-if="editedBooking.is_periodic === true" ng-class="{ opened: (editedBooking.byOccurrences && editedBooking.showResource !== true) }">
+				<h2 ng-click="editedBooking.byOccurrences = true; editedBooking.showResource = undefined;">Sélectionner un nombre de réservations</h2>
 				<div class="toggle">
 					<div class="row">
 						<label class="three cell form-label"><i18n>Créneau</i18n></label>
@@ -128,10 +133,10 @@
 				</div>
 				<div class="row"></div>
 			</article>
-			<article class="accordion" ng-if="!editedBooking.is_periodic" ng-class="{ opened: !editedBooking.showDescription }">
-				<h2 ng-click="editedBooking.showDescription = undefined;"><i18n>rbs.booking.edit.slot.start.label</i18n></h2>
+			<!-- Non Periodic Booking dates and hours -->
+			<article class="accordion" ng-if="!editedBooking.is_periodic" ng-class="{ opened: !editedBooking.showResource }">
+				<h2 ng-click="editedBooking.showResource = undefined;"><i18n>rbs.booking.edit.slot.start.label</i18n></h2>
 				<div class="toggle">
-					<!-- Non Periodic Booking dates and hours -->
 					<div class="row" ng-if="!editedBooking.is_periodic">
 						<div class="row">
 							<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
@@ -162,8 +167,8 @@
 
 		<div class="row">
 			<behaviour name="contrib" resource="editedBooking.resource">
-				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true && (editedBooking.is_periodic !== true || editedBooking.showDescription !== true)"><i18n>rbs.save</i18n></button>
-				<button class="right-magnet disabled" disabled ng-if="display.processing !== true && (editedBooking.is_periodic === true && editedBooking.showDescription === true)"><i18n>rbs.save</i18n></button>
+				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true && (editedBooking.is_periodic !== true || editedBooking.showResource !== true)"><i18n>rbs.save</i18n></button>
+				<button class="right-magnet disabled" disabled ng-if="display.processing !== true && (editedBooking.is_periodic === true && editedBooking.showResource === true)"><i18n>rbs.save</i18n></button>
 			</behaviour>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true" />
 

@@ -361,6 +361,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
+		$scope.editedBooking.showResource = true;
 
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
@@ -398,6 +399,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBookingCalendar = function() {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
+		$scope.editedBooking.showResource = false;
 
 		// resource
 		if ($scope.lastSelectedResource) {
@@ -441,6 +443,7 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking = $scope.editedBooking.booking;
 			}
 		}
+		$scope.editedBooking.showResource = true;
 
 		// periodic booking
 		if ($scope.editedBooking.is_periodic === true) {			
@@ -633,12 +636,12 @@ function RbsController($scope, template, model, date, route){
 		// nothing to do
 	};
 
-	$scope.toggleShowBookingDescription = function() {
-		if ($scope.editedBooking.showDescription == true) {
-			$scope.editedBooking.showDescription = undefined;
+	$scope.toggleShowBookingResource = function() {
+		if ($scope.editedBooking.showResource == true) {
+			$scope.editedBooking.showResource = undefined;
 		}
 		else {
-			$scope.editedBooking.showDescription = true;
+			$scope.editedBooking.showResource = true;
 		}
 
 	};
