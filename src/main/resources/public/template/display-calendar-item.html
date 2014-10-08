@@ -9,6 +9,6 @@
 		[[item.owner_name]]
 	</div>
 	<behaviour name="process" resource="item" class="twelve cell">
-		<input type="checkbox" ng-model="item.selected" />
+		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isBooking() || item.isPending()" />
 	</behaviour>
 </div>

@@ -37,7 +37,7 @@ Behaviours.register('rbs', {
 		}
 
 		for(var behaviour in rbsBehaviours.resources){ // resource.owner currently directly contains Id
-			if(model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour]) || model.me.userId === resource.owner){
+			if(model.me.userId === resource.owner || model.me.userId === rightsContainer.owner || model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour])){
 				if(resource.myRights[behaviour] !== undefined){
 					resource.myRights[behaviour] = resource.myRights[behaviour] && rbsBehaviours.resources[behaviour];
 				}
