@@ -164,7 +164,7 @@
 	"rbs.resource.edit.name.label": "Nom de la ressource",
 	"rbs.resource.edit.name.placeholder": "Entrez un nom pour la ressource",
 	"rbs.resource.edit.description.label": "Description",
-	"rbs.resource.edit.is_available.label": "Rendre la ressource indisponible",
+	"rbs.resource.edit.is_available.label": "Rendre la ressource disponible",
 	"rbs.resource.edit.is_available.false": "Oui",
 	"rbs.resource.edit.is_available.true": "Non",
 	"rbs.resource.edit.periodic_booking.label": "Autoriser les réservations périodiques",
