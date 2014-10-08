@@ -399,7 +399,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBookingCalendar = function() {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
-		$scope.editedBooking.showResource = false;
+		$scope.editedBooking.showResource = true;
 
 		// resource
 		if ($scope.lastSelectedResource) {
