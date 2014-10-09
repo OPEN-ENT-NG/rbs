@@ -76,21 +76,21 @@ module.directive('datePickerRbs', function($compile){
 		template: '<input ng-transclude type="text" data-date-format="dd/mm/yyyy"  />',
 		link: function($scope, $element, $attributes){
 			$scope.$watch('ngModel', function(newVal){
-				if($scope.ngModel === null){
-					$scope.ngModel = moment();
+				if ($scope.ngModel === undefined || $scope.ngModel === null) {
+					$scope.ngModel = moment().startOf('day').toDate();
 				}
 				$element.val(moment($scope.ngModel).format('DD/MM/YYYY'));
-				if($scope.past !== undefined && $scope.past === true){
-					if($scope.minDate === undefined){
-						$scope.minDate = moment();
+				if ($scope.past === true) {
+					if ($scope.minDate === undefined) {
+						$scope.minDate = moment().startOf('day').toDate();
 					}
-					if(moment($scope.minDate).unix() > moment($scope.ngModel).unix()){
+					if (moment($scope.minDate).isAfter(moment($scope.ngModel))) {
 						$element.val(moment($scope.minDate).format('DD/MM/YYYY'));
 						$scope.ngModel = $scope.minDate;
 					}
 				}
-				if($scope.exp !== undefined && $scope.exp === true){
-					if(moment($scope.expObject).unix() < moment($scope.ngModel).unix()){
+				if ($scope.exp === true) {
+					if (moment($scope.expObject).isBefore(moment($scope.ngModel))) {
 						$scope.expObject = $scope.ngModel;
 					}
 				}

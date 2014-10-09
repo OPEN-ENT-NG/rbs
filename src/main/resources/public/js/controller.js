@@ -67,6 +67,7 @@ function RbsController($scope, template, model, date, route){
 			STATE_PARTIAL: model.STATE_PARTIAL
 		};
 		$scope.today = moment().startOf('day');
+		$scope.tomorrow = moment().add('day', 1).startOf('day');
 
 		$scope.booking = {};
 		$scope.initBookingDates(moment(), moment());
@@ -496,7 +497,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.booking.endDate.setFullYear(endMoment.years());
 		$scope.booking.endDate.setMonth(endMoment.months());
 		$scope.booking.endDate.setDate(endMoment.date());
-		
+
 		// DEBUG
 		var DEBUG_booking = $scope.booking;
 		// /DEBUG
@@ -548,10 +549,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.saveBooking = function() {
 		// Check
 		$scope.currentErrors = [];
-		if ($scope.editedBooking.is_periodic === true
-			&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
-			// Error
-			$scope.currentErrors.push({error: 'rbs.booking.missing.days'});
+		if ($scope.checkSaveBooking()) {
 			return;
 		}
 
@@ -605,6 +603,24 @@ function RbsController($scope, template, model, date, route){
 			$scope.currentErrors.push(e);
 			$scope.$apply('editedBooking');
 		});
+	};
+
+	$scope.checkSaveBooking = function() {
+		var hasErrors = false;
+		if (($scope.booking.startDate.getFullYear() < $scope.today.year())
+			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() < $scope.today.month())
+			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() < $scope.today.date())
+			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() == $scope.today.date() && $scope.booking.startTime.hour < moment().hour())) {
+			$scope.currentErrors.push({error: 'rbs.booking.invalid.datetimes.past'});
+			hasErrors = true;
+		}
+		if ($scope.editedBooking.is_periodic === true
+			&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
+			// Error
+			$scope.currentErrors.push({error: 'rbs.booking.missing.days'});
+			hasErrors = true;
+		}
+		return hasErrors;
 	};
 
 	$scope.resolvePeriodicMoments = function() {
