@@ -59,7 +59,9 @@ La consultation peut se faire grâce à un Calendrier, ou grâce à une Liste de
 
 ## Modèle de persistance
 
-Les données du module sont stockées dans une base PostgresSql.
+Les données du module sont stockées dans une base PostgreSQL, dans le schéma `rbs`.
+Les scripts sql se trouvent dans le dossier "src/main/resources/sql".
+
 3 tables représentent le modèle relationnel applicatif :
  * `resource_type` : Types de ressources
  * `resource` : Ressources
@@ -86,6 +88,7 @@ Pour manipulations spécifiques, des classes de Service sont utilisées :
  * `ResourceService` : concernant les Ressources
  * `BookingService` : concernant les Réservations
 
+Des jsonschemas permettent de vérifier les données reçues par le serveur, ils se trouvent dans le dossier "src/main/resources/jsonschema".
 
 ## Modèle front-end
 
