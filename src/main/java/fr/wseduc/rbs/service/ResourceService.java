@@ -20,4 +20,5 @@ public interface ResourceService extends CrudService {
 
 	public void getBookingOwnersIds(final long resourceId, final Handler<Either<String, JsonArray>> handler);
 
+	public void getDelays(long resourceId, Handler<Either<String, JsonObject>> handler);
 }

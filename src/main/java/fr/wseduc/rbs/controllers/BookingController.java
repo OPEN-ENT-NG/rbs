@@ -26,6 +26,8 @@ import org.vertx.java.core.json.JsonObject;
 import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
 import fr.wseduc.rbs.service.BookingService;
 import fr.wseduc.rbs.service.BookingServiceSqlImpl;
+import fr.wseduc.rbs.service.ResourceService;
+import fr.wseduc.rbs.service.ResourceServiceSqlImpl;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -44,9 +46,11 @@ public class BookingController extends ControllerHelper {
 
 
 	private final BookingService bookingService;
+	private final ResourceService resourceService;
 
 	public BookingController(){
 		bookingService = new BookingServiceSqlImpl();
+		resourceService = new ResourceServiceSqlImpl();
 	}
 
 	@Post("/resource/:id/booking")
@@ -59,15 +63,54 @@ public class BookingController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					RequestUtils.bodyToJson(request, pathPrefix + "createBooking", new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject object) {
-							final String id = request.params().get("id");
+					RequestUtils.bodyToJson(request, pathPrefix + "createBooking",
+							getBookingHandler(user, request, true));
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			}
+		});
+	}
 
-							long startDate = object.getLong("start_date", 0L);
-							long endDate = object.getLong("end_date", 0L);
-							if (!isValidDates(startDate, endDate)) {
-								badRequest(request, "rbs.booking.bad.request.invalid.dates");
+	/**
+	 * @param isCreation : true when creating a booking, false when updating a booking.
+	 * @return Handler to create or update a booking
+	 */
+	private Handler<JsonObject> getBookingHandler(final UserInfos user,
+			final HttpServerRequest request, final boolean isCreation) {
+
+		return new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject object) {
+				final String resourceId = request.params().get("id");
+				final String bookingId = request.params().get("bookingId");
+
+				final long startDate = object.getLong("start_date", 0L);
+				long endDate = object.getLong("end_date", 0L);
+				final long now = getCurrentTimestamp();
+
+				if (!isValidDates(startDate, endDate, now)) {
+					badRequest(request, "rbs.booking.bad.request.invalid.dates");
+					return;
+				}
+
+				resourceService.getDelays(Long.parseLong(resourceId), new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight() && event.right().getValue()!=null) {
+							// check that booking dates respect min and max delays
+							JsonObject resource = event.right().getValue();
+							if(isDelayLessThanMin(request, resource, startDate, now)) {
+								JsonObject error = new JsonObject()
+									.putString("error", "rbs.booking.bad.request.minDelay.not.respected");
+								renderJson(request, error, 400);
+								return;
+							}
+							else if(isDelayGreaterThanMax(request, resource, startDate, now)) {
+								JsonObject error = new JsonObject()
+									.putString("error", "rbs.booking.bad.request.maxDelay.not.respected");
+								renderJson(request, error, 400);
 								return;
 							}
 
@@ -76,11 +119,13 @@ public class BookingController extends ControllerHelper {
 								public void handle(Either<String, JsonObject> event) {
 									if (event.isRight()) {
 										if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-											notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), true);
+											notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
 											renderJson(request, event.right().getValue(), 200);
 										} else {
+											String errorMessage = isCreation ?
+													"rbs.booking.create.conflict" : "rbs.booking.update.conflict";
 											JsonObject error = new JsonObject()
-												.putString("error", "rbs.booking.create.conflict");
+												.putString("error", errorMessage);
 											renderJson(request, error, 409);
 										}
 									} else {
@@ -91,16 +136,47 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 
-							bookingService.createBooking(id, object, user, handler);
+							if (isCreation) {
+								bookingService.createBooking(resourceId, object, user, handler);
+							}
+							else {
+								bookingService.updateBooking(resourceId, bookingId, object, handler);
+							}
+
+
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("error", event.left().getValue());
+							Renders.renderJson(request, error, 400);
 						}
-					});
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+					}
+
+				});
 			}
-		});
+		};
 	}
+
+	/**
+	 * @return Current unix timestamp in seconds
+	 */
+	private long getCurrentTimestamp() {
+		return TimeUnit.SECONDS.convert(Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
+	}
+
+	private boolean isDelayLessThanMin(HttpServerRequest request, JsonObject resource, long startDate, long now) {
+		long minDelay = resource.getLong("min_delay", -1);
+		long delay = startDate - now;
+
+		return (minDelay > -1 && minDelay > delay);
+	}
+
+	private boolean isDelayGreaterThanMax(HttpServerRequest request, JsonObject resource, long startDate, long now) {
+		long maxDelay = resource.getLong("max_delay", -1);
+		long delay = startDate - now;
+
+		return (maxDelay > -1 && delay > maxDelay);
+	}
+
 
 	/**
 	 * Notify moderators that a booking has been created or updated
@@ -184,25 +260,29 @@ public class BookingController extends ControllerHelper {
 			});
 	 }
 
+	/**
+	 * @return Handler to create or update a periodic booking
+	 */
 	private Handler<JsonObject> getPeriodicBookingHandler(final UserInfos user,
 			final HttpServerRequest request, final boolean isCreation) {
 
 		return new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject object) {
+			public void handle(final JsonObject object) {
 				final String id = request.params().get("id");
 				final String bookingId = request.params().get("bookingId");
 
-				long endDate = object.getLong("periodic_end_date", 0L);
+				final long endDate = object.getLong("periodic_end_date", 0L);
+				final long now = getCurrentTimestamp();
 				int occurrences = object.getInteger("occurrences", 0);
 				if (endDate == 0L && occurrences == 0){
 					badRequest(request, "rbs.booking.bad.request.enddate.or.occurrences");
 					return;
 				}
 
-				long firstSlotStartDate = object.getLong("start_date", 0L);
-				long firstSlotEndDate = object.getLong("end_date", 0L);
-				if (!isValidDates(firstSlotStartDate, firstSlotEndDate)) {
+				final long firstSlotStartDate = object.getLong("start_date", 0L);
+				final long firstSlotEndDate = object.getLong("end_date", 0L);
+				if (!isValidDates(firstSlotStartDate, firstSlotEndDate, now)) {
 					badRequest(request, "rbs.booking.bad.request.invalid.dates");
 					return;
 				}
@@ -239,7 +319,7 @@ public class BookingController extends ControllerHelper {
 				}
 
 				// Store boolean array (selected days) as a bit string
-				String selectedDays;
+				final String selectedDays;
 				try {
 					selectedDays = booleanArrayToBitString(selectedDaysArray);
 				} catch (Exception e) {
@@ -248,37 +328,66 @@ public class BookingController extends ControllerHelper {
 					return;
 				}
 
-				if (isCreation) {
-					try {
-						bookingService.createPeriodicBooking(id, selectedDays,
-								firstSlotStartDay, object, user,
-								getHandlerForPeriodicNotification(user, request, isCreation));
+				resourceService.getDelays(Long.parseLong(id), new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight() && event.right().getValue()!=null) {
+							// check that booking dates respect min and max delays
+							JsonObject resource = event.right().getValue();
+							if (endDate > 0L) {
+								long lastSlotStartDate = endDate - (firstSlotEndDate - firstSlotStartDate);
+								if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
+									JsonObject error = new JsonObject()
+										.putString("error", "rbs.booking.bad.request.minDelay.not.respected.by.firstSlot");
+									renderJson(request, error, 400);
+									return;
+								}
+								else if(isDelayGreaterThanMax(request, resource, lastSlotStartDate, now)) {
+									JsonObject error = new JsonObject()
+										.putString("error", "rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot");
+									renderJson(request, error, 400);
+									return;
+								}
+							}
+							else {
+								// TODO : case when occurrences is supplied (i.e. when end_date is not supplied)
+							}
 
-					} catch (Exception e) {
-						log.error("Error during service createPeriodicBooking", e);
-						renderError(request);
-					}
-				}
-				else {
-					try {
-						bookingService.updatePeriodicBooking(id, bookingId, selectedDays,
-								firstSlotStartDay, object, user,
-								getHandlerForPeriodicNotification(user, request, isCreation));
+							if (isCreation) {
+								try {
+									bookingService.createPeriodicBooking(id, selectedDays,
+											firstSlotStartDay, object, user,
+											getHandlerForPeriodicNotification(user, request, isCreation));
+								} catch (Exception e) {
+									log.error("Error during service createPeriodicBooking", e);
+									renderError(request);
+								}
+							}
+							else {
+								try {
+									bookingService.updatePeriodicBooking(id, bookingId, selectedDays,
+											firstSlotStartDay, object, user,
+											getHandlerForPeriodicNotification(user, request, isCreation));
+								} catch (Exception e) {
+									log.error("Error during service updatePeriodicBooking", e);
+									renderError(request);
+								}
+							}
 
-					} catch (Exception e) {
-						log.error("Error during service updatePeriodicBooking", e);
-						renderError(request);
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("error", event.left().getValue());
+							Renders.renderJson(request, error, 400);
+						}
 					}
-				}
+
+				});
 
 			}
 		};
 	}
 
-	private boolean isValidDates(long startDate, long endDate) {
-		long now = Calendar.getInstance().getTimeInMillis();
-		now = TimeUnit.SECONDS.convert(now, TimeUnit.MILLISECONDS);
-
+	private boolean isValidDates(long startDate, long endDate, long now) {
 		return (startDate > now && endDate > startDate);
 	}
 
@@ -487,54 +596,18 @@ public class BookingController extends ControllerHelper {
 	 @SecuredAction(value = "rbs.contrib", type= ActionType.RESOURCE)
 	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void updateBooking(final HttpServerRequest request){
-
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						RequestUtils.bodyToJson(request, pathPrefix + "updateBooking", new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject object) {
-								String resourceId = request.params().get("id");
-								String bookingId = request.params().get("bookingId");
-
-								long startDate = object.getLong("start_date", 0L);
-								long endDate = object.getLong("end_date", 0L);
-								if (!isValidDates(startDate, endDate)) {
-									badRequest(request, "rbs.booking.bad.request.invalid.dates");
-									return;
-								}
-
-								Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
-									@Override
-									public void handle(Either<String, JsonObject> event) {
-										if (event.isRight()) {
-											if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-												notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), false);
-												renderJson(request, event.right().getValue(), 200);
-											} else {
-												JsonObject error = new JsonObject()
-													.putString("error", "rbs.booking.update.conflict");
-												renderJson(request, error, 409);
-											}
-										} else {
-											JsonObject error = new JsonObject()
-													.putString("error", event.left().getValue());
-											renderJson(request, error, 400);
-										}
-									}
-								};
-
-								bookingService.updateBooking(resourceId, bookingId, object, handler);
-							}
-						});
+						RequestUtils.bodyToJson(request, pathPrefix + "updateBooking",
+								getBookingHandler(user, request, false));
 					} else {
 						log.debug("User not found in session.");
 						unauthorized(request);
 					}
 				}
 			});
-
 	 }
 
 	@Put("/resource/:id/booking/:bookingId/periodic")

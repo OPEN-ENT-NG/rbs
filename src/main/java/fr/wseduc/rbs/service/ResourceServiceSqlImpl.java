@@ -108,4 +108,12 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
+	@Override
+	public void getDelays(long resourceId, Handler<Either<String, JsonObject>> handler) {
+		String query = "SELECT min_delay, max_delay FROM rbs.resource WHERE id = ?";
+		JsonArray values = new JsonArray().add(resourceId);
+
+		Sql.getInstance().prepared(query, values, validUniqueResultHandler(handler));
+	}
+
 }

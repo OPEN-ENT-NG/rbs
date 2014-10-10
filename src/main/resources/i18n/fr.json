@@ -215,6 +215,10 @@
 	"rbs.booking.bad.request.first.day.not.selected" : "Le 1er créneau de réservation doit porter sur un jour de la semaine sélectionné",
 	"rbs.booking.bad.request.invalid.enddates" : "Le 1er et le dernier créneau de réservation doivent se terminer à la même heure",
 	"rbs.booking.bad.request.invalid.days" : "Le tableau des jours sélectionnés n'a pas pu être récupéré, ou sa taille est différente de 7",
+	"rbs.booking.bad.request.minDelay.not.respected" : "Le délai minimum de réservation n'est pas respecté.",
+	"rbs.booking.bad.request.maxDelay.not.respected" : "Le délai maximum de réservation n'est pas respecté.",
+	"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot" : "Le délai minimum de réservation n'est pas respecté par le premier créneau.",
+	"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot" : "Le délai maximum de réservation n'est pas respecté par le dernier créneau.",
 	"rbs.booking.missing.days" : "Sélectionnez au moins un jour de la semaine pour répéter la réservation",
 	"rbs.booking.invalid.datetimes.past" : "Créneau non valide : Sélectionnez un créneau supérieur à la date et l'heure courante",
 
