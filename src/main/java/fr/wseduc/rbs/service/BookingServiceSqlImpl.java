@@ -5,6 +5,7 @@ import static fr.wseduc.rbs.BookingStatus.REFUSED;
 import static fr.wseduc.rbs.BookingStatus.VALIDATED;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
+import static fr.wseduc.rbs.BookingUtils.*;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -330,73 +331,6 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		return newValues;
 	}
-
-	/**
-	 *
-	 * @param lastSelectedDay : index of last selected day
-	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
-	 * @param periodicity : slots are repeated every "periodicity" week
-	 * @return Number of days until next slot
-	 *
-	 * @throws IllegalArgumentException, IndexOutOfBoundsException
-	 */
-	private int getNextInterval(final int lastSelectedDay, final String selectedDays, final int periodicity) {
-		if (!selectedDays.contains("1")) {
-			throw new IllegalArgumentException("Argument selectedDays must contain char '1'");
-		}
-
-		int count = 0;
-		int k = lastSelectedDay;
-
-		do {
-			k++;
-			if (k == 1) {
-				// On monday, go to next week
-				count += (periodicity - 1) * 7;
-			}
-			else if (k >= 7) {
-				k = k % 7;
-			}
-			count++;
-		} while (selectedDays.charAt(k) != '1');
-
-		return count;
-	}
-
-	/**
-	 *
-	 * @param firstSelectedDay : index of the first slot's day
-	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
-	 * @param durationInDays : difference in days between the first slot's end date and the end date of the periodic booking
-	 * @param periodicity : slots are repeated every "periodicity" week
-	 * @return Number of occurrences
-	 *
-	 * @throws IndexOutOfBoundsException
-	 */
-	private int getOccurrences(final int firstSelectedDay, final String selectedDays,
-			final long durationInDays, final int periodicity) {
-		int count = 0;
-		int k = firstSelectedDay;
-		int i = 0;
-
-		while(i <= durationInDays) {
-			if(k >= 7) {
-				k = k % 7;
-			}
-			if(selectedDays.charAt(k) == '1') {
-				count++;
-			}
-			k++;
-			if (k == 1) {
-				// On monday, go to next week
-				i += (periodicity - 1) * 7;
-			}
-			i++;
-		}
-
-		return count;
-	}
-
 
 	@Override
 	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,

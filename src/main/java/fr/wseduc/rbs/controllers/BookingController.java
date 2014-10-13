@@ -4,13 +4,12 @@ import static fr.wseduc.rbs.Rbs.RBS_NAME;
 import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static fr.wseduc.rbs.BookingUtils.*;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -162,13 +161,6 @@ public class BookingController extends ControllerHelper {
 		};
 	}
 
-	/**
-	 * @return Current unix timestamp in seconds
-	 */
-	private long getCurrentTimestamp() {
-		return TimeUnit.SECONDS.convert(Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
-	}
-
 	private boolean isDelayLessThanMin(HttpServerRequest request, JsonObject resource, long startDate, long now) {
 		long minDelay = resource.getLong("min_delay", -1);
 		long delay = startDate - now;
@@ -274,39 +266,39 @@ public class BookingController extends ControllerHelper {
 
 		return new Handler<JsonObject>() {
 			@Override
-			public void handle(final JsonObject object) {
+			public void handle(final JsonObject booking) {
 				final String id = request.params().get("id");
 				final String bookingId = request.params().get("bookingId");
 
-				final long endDate = object.getLong("periodic_end_date", 0L);
+				final long endDate = booking.getLong("periodic_end_date", 0L);
 				final long now = getCurrentTimestamp();
-				int occurrences = object.getInteger("occurrences", 0);
+				final int occurrences = booking.getInteger("occurrences", 0);
 				if (endDate == 0L && occurrences == 0){
 					badRequest(request, "rbs.booking.bad.request.enddate.or.occurrences");
 					return;
 				}
 
-				final long firstSlotStartDate = object.getLong("start_date", 0L);
-				final long firstSlotEndDate = object.getLong("end_date", 0L);
+				final long firstSlotStartDate = booking.getLong("start_date", 0L);
+				final long firstSlotEndDate = booking.getLong("end_date", 0L);
 				if (!isValidDates(firstSlotStartDate, firstSlotEndDate, now)) {
 					badRequest(request, "rbs.booking.bad.request.invalid.dates");
 					return;
 				}
 
 				// The first slot must begin and end on the same day
-				final int firstSlotStartDay = getDayFromTimestamp(firstSlotStartDate);
-				if (firstSlotStartDay != getDayFromTimestamp(firstSlotEndDate)) {
+				final int firstSlotDay = getDayFromTimestamp(firstSlotStartDate);
+				if (firstSlotDay != getDayFromTimestamp(firstSlotEndDate)) {
 					badRequest(request, "rbs.booking.bad.request.invalid.first.slot");
 					return;
 				}
 
-				JsonArray selectedDaysArray = object.getArray("days", null);
+				JsonArray selectedDaysArray = booking.getArray("days", null);
 				if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
 					badRequest(request, "rbs.booking.bad.request.invalid.days");
 					return;
 				}
 				try {
-					Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotStartDay);
+					Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotDay);
 					// The day of the first slot must be a selected day
 					if(!(Boolean) firstSlotDayIsSelected) {
 						badRequest(request, "rbs.booking.bad.request.first.day.not.selected");
@@ -338,21 +330,30 @@ public class BookingController extends ControllerHelper {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight() && event.right().getValue()!=null) {
-							// check that booking dates respect min and max delays
+							// Check that booking dates respect min and max delays
 							JsonObject resource = event.right().getValue();
-							if (endDate > 0L) {
-								long lastSlotStartDate = endDate - (firstSlotEndDate - firstSlotStartDate);
-								if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
-									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
-									String errorMessage = i18n.translate(
-											"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
-											I18n.acceptLanguage(request),
-											Long.toString(nbDays));
 
-									badRequest(request, errorMessage);
-									return;
+							if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
+								long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
+								String errorMessage = i18n.translate(
+										"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
+										I18n.acceptLanguage(request),
+										Long.toString(nbDays));
+
+								badRequest(request, errorMessage);
+								return;
+							}
+							else {
+								long lastSlotStartDate;
+								if (endDate > 0L) { // when end_date is supplied
+									lastSlotStartDate = endDate - (firstSlotEndDate - firstSlotStartDate);
 								}
-								else if(isDelayGreaterThanMax(request, resource, lastSlotStartDate, now)) {
+								else { // when occurrences is supplied
+									int periodicity = booking.getInteger("periodicity");
+									lastSlotStartDate = getLastSlotStartDate(occurrences, periodicity, firstSlotStartDate, firstSlotDay, selectedDays);
+								}
+
+								if(isDelayGreaterThanMax(request, resource, lastSlotStartDate, now)) {
 									long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
 									String errorMessage = i18n.translate(
 											"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
@@ -363,14 +364,12 @@ public class BookingController extends ControllerHelper {
 									return;
 								}
 							}
-							else {
-								// TODO : case when occurrences is supplied (i.e. when end_date is not supplied)
-							}
 
+							// Create or update booking
 							if (isCreation) {
 								try {
 									bookingService.createPeriodicBooking(id, selectedDays,
-											firstSlotStartDay, object, user,
+											firstSlotDay, booking, user,
 											getHandlerForPeriodicNotification(user, request, isCreation));
 								} catch (Exception e) {
 									log.error("Error during service createPeriodicBooking", e);
@@ -380,7 +379,7 @@ public class BookingController extends ControllerHelper {
 							else {
 								try {
 									bookingService.updatePeriodicBooking(id, bookingId, selectedDays,
-											firstSlotStartDay, object, user,
+											firstSlotDay, booking, user,
 											getHandlerForPeriodicNotification(user, request, isCreation));
 								} catch (Exception e) {
 									log.error("Error during service updatePeriodicBooking", e);
@@ -561,21 +560,6 @@ public class BookingController extends ControllerHelper {
 				recipients, bookingId, template, params);
 	}
 
-	 /**
-	  *
-	  * @param unixTimestamp in seconds
-	  * @return 0 for sunday, 1 for monday, etc
-	  */
-	 private int getDayFromTimestamp(final long unixTimestamp) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(
-					TimeUnit.MILLISECONDS.convert(unixTimestamp, TimeUnit.SECONDS));
-			// "- 1", so that sunday is 0, monday is 1, etc
-			int day = cal.get(Calendar.DAY_OF_WEEK) - 1;
-
-			return day;
-	 }
-
 	 private String booleanArrayToBitString(JsonArray selectedDaysArray) {
 		 StringBuilder selectedDays = new StringBuilder();
 			for (Object day : selectedDaysArray) {
@@ -583,22 +567,6 @@ public class BookingController extends ControllerHelper {
 				selectedDays.append(isSelectedDay);
 			}
 		 return selectedDays.toString();
-	 }
-
-	 private boolean haveSameTime(final long thisTimestamp, final long thatTimestamp) {
-		TimeZone gmt = TimeZone.getTimeZone("GMT");
-
-		Calendar thisCal = Calendar.getInstance(gmt);
-		thisCal.setTimeInMillis(
-				TimeUnit.MILLISECONDS.convert(thisTimestamp, TimeUnit.SECONDS));
-
-		Calendar thatCal = Calendar.getInstance(gmt);
-		thatCal.setTimeInMillis(
-				TimeUnit.MILLISECONDS.convert(thatTimestamp, TimeUnit.SECONDS));
-
-		 return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
-				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
-				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
 	 }
 
 	 @Put("/resource/:id/booking/:bookingId")
