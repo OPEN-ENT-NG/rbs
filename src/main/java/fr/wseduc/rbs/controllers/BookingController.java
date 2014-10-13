@@ -32,6 +32,7 @@ import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -44,6 +45,7 @@ public class BookingController extends ControllerHelper {
 	private static final String PERIODIC_BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_CREATED";
 	private static final String PERIODIC_BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_PEROIDIC_BOOKING_UPDATED";
 
+	private static final I18n i18n = I18n.getInstance();
 
 	private final BookingService bookingService;
 	private final ResourceService resourceService;
@@ -102,15 +104,23 @@ public class BookingController extends ControllerHelper {
 							// check that booking dates respect min and max delays
 							JsonObject resource = event.right().getValue();
 							if(isDelayLessThanMin(request, resource, startDate, now)) {
-								JsonObject error = new JsonObject()
-									.putString("error", "rbs.booking.bad.request.minDelay.not.respected");
-								renderJson(request, error, 400);
+								long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
+								String errorMessage = i18n.translate(
+										"rbs.booking.bad.request.minDelay.not.respected",
+										I18n.acceptLanguage(request),
+										Long.toString(nbDays));
+
+								badRequest(request, errorMessage);
 								return;
 							}
 							else if(isDelayGreaterThanMax(request, resource, startDate, now)) {
-								JsonObject error = new JsonObject()
-									.putString("error", "rbs.booking.bad.request.maxDelay.not.respected");
-								renderJson(request, error, 400);
+								long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
+								String errorMessage = i18n.translate(
+										"rbs.booking.bad.request.maxDelay.not.respected",
+										I18n.acceptLanguage(request),
+										Long.toString(nbDays));
+
+								badRequest(request, errorMessage);
 								return;
 							}
 
@@ -129,9 +139,7 @@ public class BookingController extends ControllerHelper {
 											renderJson(request, error, 409);
 										}
 									} else {
-										JsonObject error = new JsonObject()
-												.putString("error", event.left().getValue());
-										renderJson(request, error, 400);
+										badRequest(request, event.left().getValue());
 									}
 								}
 							};
@@ -145,9 +153,7 @@ public class BookingController extends ControllerHelper {
 
 
 						} else {
-							JsonObject error = new JsonObject()
-									.putString("error", event.left().getValue());
-							Renders.renderJson(request, error, 400);
+							badRequest(request, event.left().getValue());
 						}
 					}
 
@@ -337,15 +343,23 @@ public class BookingController extends ControllerHelper {
 							if (endDate > 0L) {
 								long lastSlotStartDate = endDate - (firstSlotEndDate - firstSlotStartDate);
 								if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
-									JsonObject error = new JsonObject()
-										.putString("error", "rbs.booking.bad.request.minDelay.not.respected.by.firstSlot");
-									renderJson(request, error, 400);
+									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
+									String errorMessage = i18n.translate(
+											"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
+											I18n.acceptLanguage(request),
+											Long.toString(nbDays));
+
+									badRequest(request, errorMessage);
 									return;
 								}
 								else if(isDelayGreaterThanMax(request, resource, lastSlotStartDate, now)) {
-									JsonObject error = new JsonObject()
-										.putString("error", "rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot");
-									renderJson(request, error, 400);
+									long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
+									String errorMessage = i18n.translate(
+											"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
+											I18n.acceptLanguage(request),
+											Long.toString(nbDays));
+
+									badRequest(request, errorMessage);
 									return;
 								}
 							}
@@ -375,9 +389,7 @@ public class BookingController extends ControllerHelper {
 							}
 
 						} else {
-							JsonObject error = new JsonObject()
-									.putString("error", event.left().getValue());
-							Renders.renderJson(request, error, 400);
+							badRequest(request, event.left().getValue());
 						}
 					}
 
@@ -400,9 +412,7 @@ public class BookingController extends ControllerHelper {
 					notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
 					Renders.renderJson(request, event.right().getValue());
 				} else {
-					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
-					Renders.renderJson(request, error, 400);
+					badRequest(request, event.left().getValue());
 				}
 			}
 		};
@@ -700,9 +710,7 @@ public class BookingController extends ControllerHelper {
 												renderJson(request, new JsonObject());
 											}
 										} else {
-											JsonObject error = new JsonObject()
-													.putString("error", event.left().getValue());
-											renderJson(request, error, 400);
+											badRequest(request, event.left().getValue());
 										}
 									}
 								};

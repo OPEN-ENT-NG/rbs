@@ -76,6 +76,8 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			sb.append(attr).append(" = ?, ");
 			values.add(data.getValue(attr));
 		}
+		unsetFieldIfNull(data, sb, values, "max_delay");
+		unsetFieldIfNull(data, sb, values, "min_delay");
 
 		StringBuilder query = new StringBuilder();
 		query.append("UPDATE rbs.resource")
@@ -87,6 +89,15 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		values.add(parseId(id));
 
 		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	private void unsetFieldIfNull(final JsonObject data, final StringBuilder sb,
+			final JsonArray values, final String fieldname){
+
+		if(data.getField(fieldname) == null) {
+			sb.append(fieldname).append(" = ?, ");
+			values.add(null);
+		}
 	}
 
 	@Override

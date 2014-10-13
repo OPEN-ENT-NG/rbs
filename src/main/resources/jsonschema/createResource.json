@@ -18,10 +18,12 @@
 			"type": "boolean"
 		},
 		"min_delay": {
+			"description": "In seconds. The resource must be booked at least min_delay in advance",
 			"type": "integer",
 			"minimum": 0
 		},
 		"max_delay": {
+			"description": "In seconds. The resource can be booked at most max_delay in advance",
 			"type": "integer",
 			"minimum": 0
 		},

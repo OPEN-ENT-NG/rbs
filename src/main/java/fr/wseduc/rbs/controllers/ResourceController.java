@@ -99,8 +99,14 @@ public class ResourceController extends ControllerHelper {
 				if (user != null) {
 					RequestUtils.bodyToJson(request, pathPrefix + SCHEMA_RESOURCE_CREATE, new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject object) {
-							crudService.create(object, user, notEmptyResponseHandler(request));
+						public void handle(JsonObject resource) {
+							long minDelay = resource.getLong("min_delay", -1L);
+							long maxDelay = resource.getLong("max_delay", -1L);
+							if(minDelay > -1L && maxDelay > -1L && minDelay >= maxDelay) {
+								badRequest(request, "rbs.resource.bad.request.min_delay.greater.than.max_delay");
+							}
+
+							crudService.create(resource, user, notEmptyResponseHandler(request));
 						}
 					});
 				} else {
@@ -123,10 +129,16 @@ public class ResourceController extends ControllerHelper {
 				if (user != null) {
 					RequestUtils.bodyToJson(request, pathPrefix + SCHEMA_RESOURCE_UPDATE, new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject object) {
+						public void handle(JsonObject resource) {
 							String id = request.params().get("id");
-							final boolean isAvailable = object.getBoolean("is_available");
-							final boolean wasAvailable = object.getBoolean("was_available");
+							final boolean isAvailable = resource.getBoolean("is_available");
+							final boolean wasAvailable = resource.getBoolean("was_available");
+
+							long minDelay = resource.getLong("min_delay", -1L);
+							long maxDelay = resource.getLong("max_delay", -1L);
+							if(minDelay > -1L && maxDelay > -1L && minDelay >= maxDelay) {
+								badRequest(request, "rbs.resource.bad.request.min_delay.greater.than.max_delay");
+							}
 
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 								@Override
@@ -143,7 +155,7 @@ public class ResourceController extends ControllerHelper {
 								}
 							};
 
-							resourceService.updateResource(id, object, handler);
+							resourceService.updateResource(id, resource, handler);
 						}
 					});
 				} else {

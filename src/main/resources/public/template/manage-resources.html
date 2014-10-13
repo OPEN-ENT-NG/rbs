@@ -11,15 +11,17 @@
 		<thead>
 			<tr>
 				<th><input type="checkbox" ng-model="display.selectAllRessources" ng-change="swicthSelectAllRessources()" /></th>
-				<th class="six"><i18n>rbs.manage.resource.name</i18n></th>
+				<th class="four"><i18n>rbs.manage.resource.name</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
-				<th class="three"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.min_delay</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.max_delay</i18n></th>
 			</tr>
 		</thead>
 		<tbody ng-repeat="resource in currentResourceType.resources.all">
 			<tr>
 				<td><input type="checkbox" ng-model="resource.selected" /></td>
-				<td class="six">
+				<td class="four">
 					<a ng-click="switchExpandResource(resource)">[[resource.name]]</a>
 				</td>
 				<td class="two">
@@ -28,10 +30,32 @@
 						<i18n ng-if="resource.is_available !== true">rbs.manage.resource.is_available.false</i18n>
 					</a>
 				</td>
-				<td class="three">
+				<td class="two">
 					<a ng-click="switchExpandResource(resource)">
 						<i18n ng-if="resource.periodic_booking === true">rbs.manage.resource.periodic_booking.true</i18n>
 						<i18n ng-if="resource.periodic_booking !== true">rbs.manage.resource.periodic_booking.false</i18n>
+					</a>
+				</td>
+				<td class="two">
+					<a ng-click="switchExpandResource(resource)">
+						<span ng-if="resource.min_delay">
+							[[secondsToDays(resource.min_delay)]]
+							&nbsp;<i18n>rbs.manage.resource.days</i18n>
+						</span>
+						<span ng-if="!resource.min_delay">
+							<i18n>rbs.manage.resource.delay.undefined</i18n>
+						</span>
+					</a>
+				</td>
+				<td class="two">
+					<a ng-click="switchExpandResource(resource)">
+						<span ng-if="resource.max_delay">
+							[[secondsToDays(resource.max_delay)]]
+							&nbsp;<i18n>rbs.manage.resource.days</i18n>
+						</span>
+						<span ng-if="!resource.max_delay">
+							<i18n>rbs.manage.resource.delay.undefined</i18n>
+						</span>
 					</a>
 				</td>
 			</tr>

@@ -344,7 +344,9 @@ Resource.prototype.toJSON = function() {
 		name : this.name,
 		periodic_booking : this.periodic_booking,
 		is_available : this.is_available,
-		type_id : this.type_id
+		type_id : this.type_id,
+		min_delay : (this.hasMinDelay) ? this.min_delay : undefined,
+		max_delay : (this.hasMaxDelay) ? this.max_delay : undefined
 	}
 	if (this.was_available !== undefined) {
 		json.was_available = this.was_available;
@@ -352,9 +354,9 @@ Resource.prototype.toJSON = function() {
 	if (_.isString(this.description)) {
 		json.description = this.description;
 	}
+	
 	return json;
 };
-
 
 function ResourceType(data) {
 	if (data) {

@@ -908,6 +908,9 @@ function RbsController($scope, template, model, date, route){
 		if ($scope.editedResource.was_available === undefined) {
 			$scope.editedResource.was_available = $scope.editedResource.is_available;
 		}
+		
+		$scope.editedResource.hasMaxDelay = ($scope.editedResource.max_delay !== undefined && $scope.editedResource.max_delay !== null);
+		$scope.editedResource.hasMinDelay = ($scope.editedResource.min_delay !== undefined && $scope.editedResource.min_delay !== null);
 		template.open('resources', 'edit-resource');
 	};
 
@@ -1059,6 +1062,15 @@ function RbsController($scope, template, model, date, route){
 				}) !== undefined);
 			});
 	};
+	
+	// Used when adding delays to resources
+	$scope.delayDays = _.range(1, 31);
+	$scope.daysToSeconds = function(nbDays) {
+		return moment.duration(nbDays, 'days').asSeconds();
+	};
+	$scope.secondsToDays = function(nbSeconds) {
+		return moment.duration(nbSeconds, 'seconds').asDays();
+	}
 
 	this.initialize();
 }

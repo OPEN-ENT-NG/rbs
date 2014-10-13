@@ -18,13 +18,48 @@
 				<i18n>rbs.resource.edit.is_available.label</i18n>
 			</label>
 		</div>
-
 		<div class="row">
 			<label class="nine cell right-magnet">
 				<input type="checkbox" name="is_available" data-ng-model="editedResource.periodic_booking" />
 				<i18n>rbs.resource.edit.periodic_booking.label</i18n>
 			</label>
 		</div>
+
+		<div>
+			<div class="row">
+				<label class="nine cell right-magnet">
+					<input type="checkbox" ng-model="editedResource.hasMinDelay" />
+					<i18n>rbs.resource.edit.add.min_delay</i18n>
+				</label>
+			</div>
+			<div ng-if="editedResource.hasMinDelay === true" class="row">
+				<span class="nine cell right-magnet">
+					<i18n>rbs.resource.must.be.booked.at.least</i18n>&nbsp;
+					<select ng-model="editedResource.min_delay" ng-options="daysToSeconds(day) as day for day in delayDays">
+					</select>
+					&nbsp;<i18n>rbs.resource.days.in.advance</i18n>.
+				</span>
+			</div>
+		</div>
+		<div>
+			<div class="row">
+				<label class="nine cell right-magnet">
+					<input type="checkbox" ng-model="editedResource.hasMaxDelay" />
+					<i18n>rbs.resource.edit.add.max_delay</i18n>
+				</label>
+			</div>
+			<div ng-if="editedResource.hasMaxDelay === true" class="row">
+				<span class="nine cell right-magnet">
+					<i18n>rbs.resource.can.be.booked.at.most</i18n>&nbsp;
+					<select ng-model="editedResource.max_delay" ng-options="daysToSeconds(day) as day for day in delayDays">
+					</select>
+					&nbsp;<i18n>rbs.resource.days.in.advance</i18n>.
+				</span>
+			</div>
+		</div>
+		<hr class="row" />
+		<hr class="row" />
+		
 		<div class="row">
 			<label class="twelve cell"><i18n>rbs.resource.edit.description.label</i18n></label>
 			<html-editor ng-model="editedResource.description"></html-editor>
