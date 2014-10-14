@@ -30,8 +30,6 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		super("rbs", "booking");
 	}
 
-	// TODO : use OVERLAPS operator to check if two bookings overlap
-
 	@Override
 	public void createBooking(final String resourceId, final JsonObject data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler) {
@@ -83,23 +81,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append("SELECT 1 FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
 				.append(" AND status = ?")
-				.append(" AND (")
-				.append("( start_date <= to_timestamp(?) AT TIME ZONE 'UTC' AND to_timestamp(?) AT TIME ZONE 'UTC' < end_date )")
-				.append(" OR ( start_date < to_timestamp(?) AT TIME ZONE 'UTC' AND to_timestamp(?) AT TIME ZONE 'UTC' <= end_date )")
-				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' <= start_date AND start_date < to_timestamp(?) AT TIME ZONE 'UTC' )")
-				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' < end_date AND end_date <= to_timestamp(?) AT TIME ZONE 'UTC' )")
-				.append(")) RETURNING id, status,")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(") RETURNING id, status,")
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
 				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
 		values.add(rId)
 				.add(VALIDATED.status())
-				.add(newStartDate)
-				.add(newStartDate)
-				.add(newEndDate)
-				.add(newEndDate)
-				.add(newStartDate)
-				.add(newEndDate)
 				.add(newStartDate)
 				.add(newEndDate);
 
@@ -140,7 +128,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.add(data.getValue("start_date"));
 
 		query.append(" to_timestamp(?) AT TIME ZONE 'UTC',");
-		values.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot end date
+		values.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date, which will be computed
 		final int endDateIndex = values.size() - 1;
 
 		query.append(" ?, ?, ?,");
@@ -173,7 +161,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * Appends the insert child bookings query to parameter query, and the associated values to parameter values
 	 *
 	 * @param bookingId : used when updating a periodic booking
-	 * @return Unix timestamp of the last child booking
+	 * @return Unix timestamp of the last child booking's end date
 	 */
 	private long appendInsertChildBookingsQuery(StringBuilder query, JsonArray values, final Object resourceId,
 			final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
@@ -382,13 +370,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" WHERE resource_id = ?")
 				.append(" AND id != ?")
 				.append(" AND status = ?")
-				.append(" AND (")
-				.append("( start_date <= to_timestamp(?) AT TIME ZONE 'UTC' AND to_timestamp(?) AT TIME ZONE 'UTC' < end_date )")
-				.append(" OR ( start_date < to_timestamp(?) AT TIME ZONE 'UTC' AND to_timestamp(?) AT TIME ZONE 'UTC' <= end_date )")
-				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' <= start_date AND start_date < to_timestamp(?) AT TIME ZONE 'UTC' )")
-				.append(" OR ( to_timestamp(?) AT TIME ZONE 'UTC' < end_date AND end_date <= to_timestamp(?) AT TIME ZONE 'UTC' )")
-				.append("))")
-				.append(" RETURNING id, status,")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(") RETURNING id, status,")
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
 				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
@@ -398,12 +381,6 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		values.add(rId)
 				.add(bId)
 				.add(VALIDATED.status())
-				.add(newStartDate)
-				.add(newStartDate)
-				.add(newEndDate)
-				.add(newEndDate)
-				.add(newStartDate)
-				.add(newEndDate)
 				.add(newStartDate)
 				.add(newEndDate);
 
@@ -447,7 +424,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" SET booking_reason = ?, start_date = to_timestamp(?) AT TIME ZONE 'UTC', end_date = to_timestamp(?) AT TIME ZONE 'UTC',");
 		parentValues.add(data.getString("booking_reason"))
 			.add(data.getLong("start_date"))
-			.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot end date
+			.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date
 		final int endDateIndex = parentValues.size() - 1;
 
 		parentQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");
@@ -548,12 +525,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append("SELECT 1 FROM rbs.booking")
 					.append(" WHERE resource_id = ?")
 					.append(" AND status = ?")
-					.append(" AND (")
-					.append("( start_date <= (SELECT start_date from validated_booking) AND (SELECT start_date from validated_booking) < end_date )")
-					.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
-					.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
-					.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
-					.append("))");
+					.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
+					.append(")");;
 			validateValues.add(rId)
 				.add(VALIDATED.status());
 
@@ -592,12 +565,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" SELECT id FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
 				.append(" AND status = ?")
-				.append(" AND (")
-				.append("( start_date <= (SELECT start_date from validated_booking) AND (SELECT start_date from validated_booking) < end_date )")
-				.append(" OR ( start_date < (SELECT end_date from validated_booking) AND (SELECT end_date from validated_booking) <= end_date )")
-				.append(" OR ( (SELECT start_date from validated_booking) <= start_date AND start_date < (SELECT end_date from validated_booking) )")
-				.append(" OR ( (SELECT start_date from validated_booking) < end_date AND end_date <= (SELECT end_date from validated_booking) )")
-				.append("))");
+				.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
+				.append(")");
 			rbValues.add(rId)
 				.add(CREATED.status());
 
@@ -763,8 +732,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
 		StringBuilder query = new StringBuilder();
 
-		query.append("SELECT DISTINCT p.id, r.name as resource_name, to_char(p.start_date, 'DD/MM/YY HH24:MI') as start_date,")
-			.append(" to_char(p.end_date, 'DD/MM/YY HH24:MI') as end_date")
+		query.append("SELECT DISTINCT p.id, r.name as resource_name, ")
+			.append("to_char(p.start_date, '").append(DATE_FORMAT).append("') as start_date,")
+			.append("to_char(p.end_date, '").append(DATE_FORMAT).append("') as end_date,")
 			.append(" FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.booking AS p ON b.parent_booking_id = p.id")
 			.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
