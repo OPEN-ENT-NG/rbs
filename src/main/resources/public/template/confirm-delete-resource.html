@@ -1,11 +1,11 @@
 <div class="row">
 	<article class="twelve cell">
-		<h2 ng-if="currentResourceType.resources.selection().length === 1"><i18n>rbs.manage.resource.delete.confirm.one</i18n></h2>
-		<h2 ng-if="currentResourceType.resources.selection().length > 1"><i18n>rbs.manage.resource.delete.confirm.multi</i18n></h2>
+		<h2 ng-if="currentResourceType.resourcesToDelete.length === 1"><i18n>rbs.manage.resource.delete.confirm.one</i18n></h2>
+		<h2 ng-if="currentResourceType.resourcesToDelete.length > 1"><i18n>rbs.manage.resource.delete.confirm.multi</i18n></h2>
 
 		<div class="row">
 			<ul>
-				<li ng-repeat="resource in currentResourceType.resources.selection()">[[resource.name]]</li>
+				<li ng-repeat="resource in currentResourceType.resourcesToDelete">[[resource.name]]</li>
 			</ul>
 		</div>
 

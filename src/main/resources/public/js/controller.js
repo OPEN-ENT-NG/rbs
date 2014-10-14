@@ -851,6 +851,8 @@ function RbsController($scope, template, model, date, route){
 	$scope.editSelectedResource = function() {
 		$scope.display.processing = undefined;
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
+		$scope.currentResourceType.resources.deselectAll();
+		
 		// Field to track Resource availability change
 		if ($scope.editedResource.was_available === undefined) {
 			$scope.editedResource.was_available = $scope.editedResource.is_available;
@@ -906,12 +908,12 @@ function RbsController($scope, template, model, date, route){
 	$scope.deleteCurrentResourceType = function() {
 		$scope.editedResourceType = $scope.currentResourceType;
 		template.open('resources', 'confirm-delete-type');
-		//$scope.display.showPanel = true;
 	};
 
 	$scope.deleteResourcesSelection = function() {
+		$scope.currentResourceType.resourcesToDelete = $scope.currentResourceType.resources.selection();
+		$scope.currentResourceType.resources.deselectAll();
 		template.open('resources', 'confirm-delete-resource');
-		//$scope.display.showPanel = true;
 	};
 
 	$scope.doDeleteResourceType = function() {
@@ -932,8 +934,8 @@ function RbsController($scope, template, model, date, route){
 	$scope.doDeleteResource = function() {
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
-		var actions = $scope.currentResourceType.resources.selection().length;
-		_.each($scope.currentResourceType.resources.selection(), function(resource){
+		var actions = $scope.currentResourceType.resourcesToDelete.length;
+		_.each($scope.currentResourceType.resourcesToDelete, function(resource){
 			resource.delete(function(){
 				actions--;
 				if (actions === 0) {
