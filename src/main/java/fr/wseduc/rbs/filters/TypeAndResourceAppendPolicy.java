@@ -88,18 +88,18 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(Sql.parseId(bookingId));
 			}
 
-			if (isCreatePeriodicBooking(request)) {
+			if (isCreatePeriodicBooking(binding)) {
 				// Check that the resource allows periodic_booking and that it is available
 				query.append(" AND r.periodic_booking = ?")
 					.append(" AND r.is_available = ?");
 				values.add(true).add(true);
 			}
-			else if(isCreateBooking(request)) {
+			else if(isCreateBooking(binding)) {
 				// Check that the resource is available
 				query.append(" AND r.is_available = ?");
 				values.add(true);
 			}
-			else if(isUpdateBooking(request) || isUpdatePeriodicBooking(request)) {
+			else if(isUpdateBooking(binding) || isUpdatePeriodicBooking(binding)) {
 				// Check that the resource is available and that the user is the booking's owner
 				query.append(" AND r.is_available = ?")
 					.append(" AND b.owner = ?");
@@ -121,21 +121,24 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		}
 	}
 
-	// TODO : refactor following methods to use a Binding parameter (instead of HttpServerRequest)
-	private boolean isCreateBooking(final HttpServerRequest request) {
-		return ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking"));
+	private boolean isCreateBooking(final Binding binding) {
+		return (HttpMethod.POST.equals(binding.getMethod())
+				&& "fr.wseduc.rbs.controllers.BookingController|createBooking".equals(binding.getServiceMethod()));
 	}
 
-	private boolean isCreatePeriodicBooking(final HttpServerRequest request) {
-		return ("POST".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/periodic"));
+	private boolean isCreatePeriodicBooking(final Binding binding) {
+		return (HttpMethod.POST.equals(binding.getMethod())
+				&& "fr.wseduc.rbs.controllers.BookingController|createPeriodicBooking".equals(binding.getServiceMethod()));
 	}
 
-	private boolean isUpdateBooking(final HttpServerRequest request) {
-		return ("PUT".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/\\d+"));
+	private boolean isUpdateBooking(final Binding binding) {
+		return (HttpMethod.PUT.equals(binding.getMethod())
+				&& "fr.wseduc.rbs.controllers.BookingController|updateBooking".equals(binding.getServiceMethod()));
 	}
 
-	private boolean isUpdatePeriodicBooking(final HttpServerRequest request) {
-		return ("PUT".equals(request.method()) && request.path().matches("/rbs/resource/\\d+/booking/\\d+/periodic"));
+	private boolean isUpdatePeriodicBooking(final Binding binding) {
+		return (HttpMethod.PUT.equals(binding.getMethod())
+				&& "fr.wseduc.rbs.controllers.BookingController|updatePeriodicBooking".equals(binding.getServiceMethod()));
 	}
 
 	private boolean isDeleteBooking(final Binding binding) {
