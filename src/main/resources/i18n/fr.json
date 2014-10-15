@@ -232,6 +232,7 @@
 	"rbs.errors.objects.booking" : "Réservation",
 
 	"rbs.error.unknown" : "Erreur inconnue",
+	"rbs.error.technical" : "Erreur technique",
 	"rbs.error.unauthorized" : "Permissions insuffisantes (401)",
 	"rbs.error.conflict" : "Conflit (409)",
 	"rbs.error.notfound" : "Objet non trouvé (404)",

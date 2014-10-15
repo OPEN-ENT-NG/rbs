@@ -98,6 +98,8 @@ function RbsController($scope, template, model, date, route){
 		model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
 
 		$scope.resourceTypes.on('sync', function(){
+			var remanentBookingId = ($scope.selectedBooking !== undefined ? $scope.selectedBooking.id : undefined);
+			var remanentBooking = undefined;
 			// Restore previous selections
 			model.recordedSelections.restore(
 				function(resourceType){
@@ -106,7 +108,14 @@ function RbsController($scope, template, model, date, route){
 				function(resource){
 					resource.bookings.sync(function(){
 						$scope.bookings.pushAll(resource.bookings.all);
-						// route
+						if (remanentBookingId !== undefined) {
+							remanentBooking = resource.bookings.find(function(booking){
+								return booking.id === remanentBookingId;
+							});
+							if (remanentBooking !== undefined) {
+								$scope.viewBooking(remanentBooking);
+							}
+						}
 					});
 				}
 			);
@@ -549,60 +558,67 @@ function RbsController($scope, template, model, date, route){
 	$scope.saveBooking = function() {
 		// Check
 		$scope.currentErrors = [];
-		if ($scope.checkSaveBooking()) {
-			return;
-		}
+		try {
+			if ($scope.checkSaveBooking()) {
+				return;
+			}
 
-		// Save
-		$scope.display.processing = true;
-		
-		// dates management
-		$scope.editedBooking.startMoment = moment.utc([
-			$scope.booking.startDate.getFullYear(),
-			$scope.booking.startDate.getMonth(),
-			$scope.booking.startDate.getDate(),
-			$scope.booking.startTime.hour,
-			$scope.booking.startTime.min]);
-
-		if ($scope.editedBooking.is_periodic === true) {
-			// periodic booking
-			$scope.editedBooking.endMoment = moment.utc([
+			// Save
+			$scope.display.processing = true;
+			
+			// dates management
+			$scope.editedBooking.startMoment = moment.utc([
 				$scope.booking.startDate.getFullYear(),
 				$scope.booking.startDate.getMonth(),
 				$scope.booking.startDate.getDate(),
-				$scope.booking.endTime.hour,
-				$scope.booking.endTime.min]);
-			if ($scope.editedBooking.byOccurrences !== true) {
-				$scope.editedBooking.occurrences = undefined;
-				$scope.editedBooking.periodicEndMoment = moment.utc([
-					$scope.booking.periodicEndDate.getFullYear(),
-					$scope.booking.periodicEndDate.getMonth(),
-					$scope.booking.periodicEndDate.getDate(),
+				$scope.booking.startTime.hour,
+				$scope.booking.startTime.min]);
+
+			if ($scope.editedBooking.is_periodic === true) {
+				// periodic booking
+				$scope.editedBooking.endMoment = moment.utc([
+					$scope.booking.startDate.getFullYear(),
+					$scope.booking.startDate.getMonth(),
+					$scope.booking.startDate.getDate(),
 					$scope.booking.endTime.hour,
 					$scope.booking.endTime.min]);
+				if ($scope.editedBooking.byOccurrences !== true) {
+					$scope.editedBooking.occurrences = undefined;
+					$scope.editedBooking.periodicEndMoment = moment.utc([
+						$scope.booking.periodicEndDate.getFullYear(),
+						$scope.booking.periodicEndDate.getMonth(),
+						$scope.booking.periodicEndDate.getDate(),
+						$scope.booking.endTime.hour,
+						$scope.booking.endTime.min]);
+				}
+				$scope.resolvePeriodicMoments();
 			}
-			$scope.resolvePeriodicMoments();
-		}
-		else {
-			// non periodic
-			$scope.editedBooking.endMoment = moment.utc([
-				$scope.booking.endDate.getFullYear(),
-				$scope.booking.endDate.getMonth(),
-				$scope.booking.endDate.getDate(),
-				$scope.booking.endTime.hour,
-				$scope.booking.endTime.min]);		
-		}
+			else {
+				// non periodic
+				$scope.editedBooking.endMoment = moment.utc([
+					$scope.booking.endDate.getFullYear(),
+					$scope.booking.endDate.getMonth(),
+					$scope.booking.endDate.getDate(),
+					$scope.booking.endTime.hour,
+					$scope.booking.endTime.min]);		
+			}
 
-		$scope.editedBooking.save(function(){
+			$scope.editedBooking.save(function(){
+				$scope.display.processing = undefined;
+				$scope.$apply('editedBooking')
+				$scope.closeBooking();
+				model.refresh();
+			}, function(e){
+				$scope.display.processing = undefined;
+				$scope.currentErrors.push(e);
+				$scope.$apply('editedBooking');
+			});
+		}
+		catch (e) {
 			$scope.display.processing = undefined;
-			$scope.$apply('editedBooking')
-			$scope.closeBooking();
-			model.refresh();
-		}, function(e){
-			$scope.display.processing = undefined;
-			$scope.currentErrors.push(e);
+			$scope.currentErrors.push({error: "rbs.error.technical"});
 			$scope.$apply('editedBooking');
-		});
+		}
 	};
 
 	$scope.checkSaveBooking = function() {
@@ -678,26 +694,32 @@ function RbsController($scope, template, model, date, route){
 	$scope.doRemoveBookingSelection = function() {
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
-		var actions = $scope.processBookings.length;
-		_.each($scope.processBookings, function(booking){
-			booking.delete(function(){
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.bookings.deselectAll();
-					$scope.closeBooking();
-					model.refresh();
-				}
-			}, function(e){
-				$scope.currentErrors.push(e);
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.showActionErrors()
-					model.refresh();
-				}
+		try {
+			var actions = $scope.processBookings.length;
+			_.each($scope.processBookings, function(booking){
+				booking.delete(function(){
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.bookings.deselectAll();
+						$scope.closeBooking();
+						model.refresh();
+					}
+				}, function(e){
+					$scope.currentErrors.push(e);
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.showActionErrors()
+						model.refresh();
+					}
+				});
 			});
-		});
+		}
+		catch (e) {
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push({error: "rbs.error.technical"});
+		}
 	};
 
 
@@ -746,53 +768,65 @@ function RbsController($scope, template, model, date, route){
 	$scope.doValidateBookingSelection = function() {
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
-		var actions = $scope.processBookings.length;
-		_.each($scope.processBookings, function(booking){
-			booking.validate(function(){
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.bookings.deselectAll();
-					$scope.closeBooking();
-					model.refresh();
-				}
-			}, function(e){
-				$scope.currentErrors.push(e);
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.showActionErrors();
-					model.refresh();
-				}
+		try {
+			var actions = $scope.processBookings.length;
+			_.each($scope.processBookings, function(booking){
+				booking.validate(function(){
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.bookings.deselectAll();
+						$scope.closeBooking();
+						model.refresh();
+					}
+				}, function(e){
+					$scope.currentErrors.push(e);
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.showActionErrors();
+						model.refresh();
+					}
+				});
 			});
-		});
+		}
+		catch (e) {
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push({error: "rbs.error.technical"});
+		}
 	};
 
 	$scope.doRefuseBookingSelection = function() {
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
-		var actions = $scope.processBookings.length;
-		_.each($scope.processBookings, function(booking){
-			booking.refusal_reason = $scope.bookings.refuseReason;
-			booking.refuse(function(){
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.bookings.deselectAll();
-					$scope.bookings.refuseReason = undefined;
-					$scope.closeBooking();
-					model.refresh();
-				}
-			}, function(e){
-				$scope.currentErrors.push(e);
-				actions--;
-				if (actions === 0) {
-					$scope.display.processing = undefined;
-					$scope.showActionErrors();
-					model.refresh();
-				}
+		try {
+			var actions = $scope.processBookings.length;
+			_.each($scope.processBookings, function(booking){
+				booking.refusal_reason = $scope.bookings.refuseReason;
+				booking.refuse(function(){
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.bookings.deselectAll();
+						$scope.bookings.refuseReason = undefined;
+						$scope.closeBooking();
+						model.refresh();
+					}
+				}, function(e){
+					$scope.currentErrors.push(e);
+					actions--;
+					if (actions === 0) {
+						$scope.display.processing = undefined;
+						$scope.showActionErrors();
+						model.refresh();
+					}
+				});
 			});
-		});
+		}
+		catch (e) {
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push({error: "rbs.error.technical"});
+		}
 	};
 
 
