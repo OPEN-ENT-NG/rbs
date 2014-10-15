@@ -173,6 +173,7 @@
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
+			<div class="cell warning" ng-if="editedBooking.id !== undefined && editedBooking.is_periodic"><i18n>rbs.booking.warning.periodic</i18n></cell>
 		</div>
 	</section>
 </div>

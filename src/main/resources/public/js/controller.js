@@ -234,9 +234,10 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.closeBooking = function() {
 		if ($scope.selectedBooking !== undefined && $scope.selectedBooking.is_periodic === true) {
+			$scope.selectedBooking = undefined;
 			_.each($scope.selectedBooking._slots, function(slot){
 				slot.expanded = false;
-				slot.selected = false;
+				slot.selected = undefined;
 			});
 		}
 		$scope.selectedBooking = undefined;
@@ -359,7 +360,7 @@ function RbsController($scope, template, model, date, route){
 			return (localSelection.length === 1 && localSelection[0].owner === model.me.userId && localSelection[0].resource.is_available === true);
 		}
 		else {
-			$scope.bookings.selection().length === 1 && $scope.bookings.selection()[0].owner === model.me.userId && $scope.bookings.selection()[0].resource.is_available === true;
+			return $scope.bookings.selection().length === 1 && $scope.bookings.selection()[0].owner === model.me.userId && $scope.bookings.selection()[0].resource.is_available === true;
 		}
 	};
 
