@@ -18,13 +18,11 @@
 	<thead>
 		<tr>
 			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
-			<th></th>
-			<th></th>
+			<th colspan="3"></th>
 			<th><a ng-click="switchSortBy('owner_name')" ng-class="{selected: sort.predicate === 'owner_name'}"><i18n>rbs.booking.headers.owner</i18n></a></th>
 			<th><a ng-click="switchSortBy('resource.name')" ng-class="{selected: sort.predicate === 'resource.name'}"><i18n>rbs.booking.headers.resource</i18n></a></th>
 			<th><a ng-click="switchSortBy('start_date')" ng-class="{selected: sort.predicate === 'start_date'}"><i18n>rbs.booking.headers.start_date</i18n></a></th>
 			<th><a ng-click="switchSortBy('end_date')" ng-class="{selected: sort.predicate === 'end_date'}"><i18n>rbs.booking.headers.end_date</i18n></a></th>
-			<th><a ng-click="switchSortBy('booking_reason')" ng-class="{selected: sort.predicate === 'booking_reason'}"><i18n>rbs.booking.headers.reason</i18n></a></th>
 			<th colspan="2"><a ng-click="switchSortBy('status')" ng-class="{selected: sort.predicate === 'status'}"><i18n>rbs.booking.headers.status</i18n></a></th>
 		</tr>
 	</thead>
@@ -32,6 +30,7 @@
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
 			<td class="icon [[booking.color]]" ng-click="viewBooking(booking)"></td>
+			<td><i ng-if="booking.is_periodic" class="periodic-icon"></i></td>
 			<td>
 				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)"><span class="badge">+</span></a>
 				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)"><span class="badge">-</span></a>
@@ -40,7 +39,6 @@
 			<td ng-click="viewBooking(booking)">[[booking.resource.name]]</td>
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.startMoment)]]</td>
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.endMoment)]]</td>
-			<td ng-click="viewBooking(booking)">[[trimReason(booking.booking_reason)]]</td>
 			<td ng-click="viewBooking(booking)">
 				<i ng-if="booking.status === 1" class="pending-icon"></i>
 				<i ng-if="booking.status === 2" class="validated-icon"></i>
@@ -52,11 +50,9 @@
 			<td class="invisible"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
 			<td ng-class="booking.color"></td>
-			<td></td>
-			<td></td>
+			<td colspan="3"></td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</td>
-			<td ng-click="viewBooking(slot)">[[trimReason(booking.booking_reason)]]</td>
 			<td ng-click="viewBooking(slot)">
 				<i ng-if="slot.status === 1" class="pending-icon"></i>
 				<i ng-if="slot.status === 2" class="validated-icon"></i>
