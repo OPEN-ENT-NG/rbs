@@ -71,3 +71,19 @@ table.colored i.refused-icon {
 	vertical-align: middle;
 	background-size: 100% auto;
 }
+
+table.colored i.periodic-icon {
+	height: 16px;
+	width: 16px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_057_history.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	background-size: 100% auto;
+}
