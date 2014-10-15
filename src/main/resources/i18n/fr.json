@@ -67,7 +67,7 @@
 	"rbs.booking.details.refused.date.label" : "Date de refus",
 	"rbs.booking.details.refused.reason" : "Motif de refus",
 	"rbs.booking.details.refused.reason.empty" : "Non renseigné",
-	"rbs.booking.warning.periodic" : "Attention, vous allez modifier ou supprimer l'ensemble des créneaux de la réservation périodique",
+	"rbs.booking.warning.periodic" : "Attention, vous allez modifier l'ensemble des créneaux de la réservation périodique",
 
 	"rbs.booking.edit" : "Edition : ",
 	"rbs.booking.edit.type.label" : "Type de ressource",
