@@ -236,8 +236,11 @@ function RbsController($scope, template, model, date, route){
 		if ($scope.selectedBooking !== undefined && $scope.selectedBooking.is_periodic === true) {
 			_.each($scope.selectedBooking._slots, function(slot){
 				slot.expanded = false;
-				slot.selected = undefined;
 			});
+		}
+		if ($scope.display.list !== true) {
+			// In calendar view, deselect all when closing lightboxes
+			$scope.bookings.deselectAll();
 		}
 		$scope.selectedBooking = undefined;
 		$scope.editedBooking = new Booking();
@@ -364,9 +367,14 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.canDeleteBookingSelection = function() {
-		return _.every($scope.bookings.selection(), function(booking){ 
-			return booking.isBooking() || (booking.isSlot() && booking.booking.selected === true); 
-		});
+		if ($scope.display.list === true) {
+			return _.every($scope.bookings.selection(), function(booking){ 
+				return booking.isBooking() || (booking.isSlot() && booking.booking.selected === true); 
+			});
+		}
+		else{
+			return true;
+		}
 	};
 
 	$scope.newBooking = function(periodic) {
@@ -687,8 +695,9 @@ function RbsController($scope, template, model, date, route){
 		}
 		// All slots for periodic bookings
 		_.each($scope.bookings.selection(), function(booking){
-			if (booking.is_periodic) {
-				booking.selectAllSlots();
+			if (booking.isSlot() && booking.booking.selected !== true) {
+				booking.booking.selected = true;
+				booking.booking.selectAllSlots();
 			}
 		});
 

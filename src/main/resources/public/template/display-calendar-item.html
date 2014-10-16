@@ -1,14 +1,15 @@
 <div class="schedule-item-content [[item.color]]">
+	
 	<i ng-if="item.status === 1" ng-click="viewBooking(item)" class="pending-status"></i>
 	<i ng-if="item.status === 2" ng-click="viewBooking(item)" class="validated-status"></i>
 	<i ng-if="item.status === 3" ng-click="viewBooking(item)" class="refused-status"></i>
-	<div class="cell twelve" ng-click="viewBooking(item)">
-		[[item.resource.name]]
+	<div class="cell twelve">
+		<behaviour name="process" resource="item" class="cell">
+			<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.manage !== undefined" />
+		</behaviour>
+		<span ng-click="viewBooking(item)">[[item.resource.name]]</span>
 	</div>
 	<div class="cell twelve" ng-click="viewBooking(item)">
 		[[item.owner_name]]
 	</div>
-	<behaviour name="process" resource="item" class="twelve cell">
-		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isBooking() || item.isPending()" />
-	</behaviour>
 </div>
