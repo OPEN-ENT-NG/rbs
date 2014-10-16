@@ -234,7 +234,6 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.closeBooking = function() {
 		if ($scope.selectedBooking !== undefined && $scope.selectedBooking.is_periodic === true) {
-			$scope.selectedBooking = undefined;
 			_.each($scope.selectedBooking._slots, function(slot){
 				slot.expanded = false;
 				slot.selected = undefined;
