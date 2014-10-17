@@ -78,7 +78,7 @@
 	"rbs.booking.edit.start.hour" : " à ",
 	"rbs.booking.edit.end.label" : "Fin de la réservation",
 	"rbs.booking.edit.end.hour" : " à ",
-	"rbs.booking.edit.slot.start.label" : "Créneau",
+	"rbs.booking.edit.slot.label" : "Créneau",
 	"rbs.booking.edit.reason.label" : "Motif de la réservation",
 	"rbs.booking.edit.periodic_booking.label" : "Réservation périodique",
 	"rbs.booking.edit.periodic_booking.true" : "Oui",
@@ -257,6 +257,7 @@
 	
 	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
 	"to": "à",
-	"header.period.pick": "Sélectionner une période",
+	"rbs.header.period.pick": "Sélectionner une période",
+	"rbs.header.occurences.pick": "Sélectionner un nombre de réservations",
 	"type.form.validation.required": "Les demandes de réservation doivent être validées"
 }
