@@ -97,7 +97,12 @@
 	"rbs.booking.edit.period.days.6" : "Samedi",
 	"rbs.booking.edit.period.days.0" : "Dimanche",
 
-	"rbs.booking.description.toggle" : "Choisir une ressource",
+	"rbs.header.resource.pick" : "1- Choisir une ressource",
+	"rbs.header.simple.pick" : "2- Créneau",
+	"rbs.header.period.pick": "2- Sélectionner une période",
+	"rbs.header.occurences.pick": "2- Sélectionner un nombre de réservations",
+	"rbs.booking.edit.toggle.periodic" : "Basculer vers une réservation périodique",
+	"rbs.booking.edit.toggle.nonperiodic" : "Basculer vers une réservation ponctuelle",
 
 	"rbs.booking.validate" : "Valider",
 	"rbs.booking.refuse" : "Refuser",
@@ -196,6 +201,7 @@
 	"rbs.processing": "Enregistrement en cours",
 	"rbs.deleting" : "Suppression en cours",
 	"rbs.close" : "Fermer",
+	"rbs.next" : "Suivant",
 
 	"rbs.read": "Voir",
 	"rbs.contrib": "Réserver",
@@ -257,7 +263,5 @@
 	
 	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
 	"to": "à",
-	"rbs.header.period.pick": "Sélectionner une période",
-	"rbs.header.occurences.pick": "Sélectionner un nombre de réservations",
 	"type.form.validation.required": "Les demandes de réservation doivent être validées"
 }

@@ -385,11 +385,7 @@ function RbsController($scope, template, model, date, route){
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
 		if(periodic === 'periodic'){
-			$scope.editedBooking.is_periodic = true;
-			$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
-			$scope.editedBooking.byOccurrences = true;
-			$scope.editedBooking.periodicity = 1;
-			$scope.editedBooking.occurrences = 1;
+			$scope.initPeriodic();
 		}
 
 		// resource
@@ -480,6 +476,14 @@ function RbsController($scope, template, model, date, route){
 
 		template.open('lightbox', 'edit-booking');
 		$scope.display.showPanel = true;
+	};
+
+	$scope.initPeriodic = function() {
+		$scope.editedBooking.is_periodic = true;
+		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
+		$scope.editedBooking.byOccurrences = true;
+		$scope.editedBooking.periodicity = 1;
+		$scope.editedBooking.occurrences = 1;
 	};
 
 	$scope.initBookingDates = function(startMoment, endMoment) {
