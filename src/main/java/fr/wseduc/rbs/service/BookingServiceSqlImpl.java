@@ -718,13 +718,26 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
+		this.getResourceName(bookingId, handler, false);
+	}
 
-		String query = "SELECT r.name AS resource_name"
-						+ " FROM rbs.resource AS r"
-						+ " INNER JOIN rbs.booking AS b on r.id = b.resource_id"
-						+ " WHERE b.id = ?";
+	@Override
+	public void getBookingWithResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
+		this.getResourceName(bookingId, handler, true);
+	}
 
-		Sql.getInstance().prepared(query, new JsonArray().add(parseId(bookingId)),
+	private void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler, boolean withBooking) {
+		StringBuilder query = new StringBuilder("SELECT r.name AS resource_name");
+		if(withBooking) {
+			query.append(", b.owner, b.is_periodic,")
+				.append("to_char(b.start_date, '").append(DATE_FORMAT).append("') as start_date,")
+				.append("to_char(b.end_date, '").append(DATE_FORMAT).append("') as end_date");
+		}
+		query.append(" FROM rbs.resource AS r")
+			.append(" INNER JOIN rbs.booking AS b on r.id = b.resource_id")
+			.append(" WHERE b.id = ?");
+
+		Sql.getInstance().prepared(query.toString(), new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 
@@ -734,7 +747,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		query.append("SELECT DISTINCT p.id, r.name as resource_name, ")
 			.append("to_char(p.start_date, '").append(DATE_FORMAT).append("') as start_date,")
-			.append("to_char(p.end_date, '").append(DATE_FORMAT).append("') as end_date,")
+			.append("to_char(p.end_date, '").append(DATE_FORMAT).append("') as end_date")
 			.append(" FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.booking AS p ON b.parent_booking_id = p.id")
 			.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")

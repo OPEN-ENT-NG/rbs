@@ -1,6 +1,7 @@
 {
  	"timeline.rbs.has.created" : "a créé une ",
  	"timeline.rbs.has.updated" : "a mis à jour la ",
+ 	"timeline.rbs.has.deleted.your" : "a supprimé votre",
  	"timeline.rbs.booking" : "demande de réservation",
  	"timeline.rbs.periodic.booking" : "demande de réservation périodique",
  	"timeline.rbs.on.resource" : " sur la ressource ",

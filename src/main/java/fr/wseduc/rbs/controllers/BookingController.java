@@ -3,7 +3,6 @@ package fr.wseduc.rbs.controllers;
 import static fr.wseduc.rbs.Rbs.RBS_NAME;
 import static fr.wseduc.rbs.BookingStatus.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static fr.wseduc.rbs.BookingUtils.*;
 
 import java.util.ArrayList;
@@ -39,10 +38,12 @@ public class BookingController extends ControllerHelper {
 
 	private static final String BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_BOOKING_CREATED";
 	private static final String BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_UPDATED";
+	private static final String BOOKING_DELETED_EVENT_TYPE = RBS_NAME + "_BOOKING_DELETED";
 	private static final String BOOKING_VALIDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_VALIDATED";
 	private static final String BOOKING_REFUSED_EVENT_TYPE = RBS_NAME + "_BOOKING_REFUSED";
 	private static final String PERIODIC_BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_CREATED";
-	private static final String PERIODIC_BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_PEROIDIC_BOOKING_UPDATED";
+	private static final String PERIODIC_BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_UPDATED";
+	private static final String PERIODIC_BOOKING_DELETED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_DELETED";
 
 	private static final I18n i18n = I18n.getInstance();
 
@@ -750,18 +751,102 @@ public class BookingController extends ControllerHelper {
 	 @SecuredAction(value = "rbs.manager", type= ActionType.RESOURCE)
 	 @ResourceFilter(TypeAndResourceAppendPolicy.class)
 	 public void deleteBooking(final HttpServerRequest request){
-			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-				@Override
-				public void handle(final UserInfos user) {
-					if (user != null) {
-						String bookingId = request.params().get("bookingId");
-						bookingService.delete(bookingId, user, notEmptyResponseHandler(request, 204));
-					} else {
-						log.debug("User not found in session.");
-						unauthorized(request);
-					}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					final String bookingId = request.params().get("bookingId");
+
+					bookingService.getBookingWithResourceName(bookingId, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+									final JsonObject booking = event.right().getValue();
+
+									bookingService.delete(bookingId, user, new Handler<Either<String, JsonObject>>() {
+										@Override
+										public void handle(Either<String, JsonObject> event) {
+											if (event.isRight()) {
+												if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+													try {
+														notifyBookingDeleted(request, user, booking, bookingId);
+													} catch (Exception e) {
+														log.error("Unable to send timeline "+ BOOKING_DELETED_EVENT_TYPE
+																+ " or " + PERIODIC_BOOKING_DELETED_EVENT_TYPE + " notification.");
+													}
+													Renders.renderJson(request, event.right().getValue(), 204);
+												} else {
+													notFound(request);
+												}
+											} else {
+												badRequest(request, event.left().getValue());
+											}
+										}
+									});
+
+								} else {
+									notFound(request);
+								}
+							} else {
+								badRequest(request, event.left().getValue());
+							}
+						}
+					});
+
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
 				}
-			});
+			}
+		});
+	 }
+
+
+	 private void notifyBookingDeleted(final HttpServerRequest request, final UserInfos user,
+				final JsonObject booking, final String bookingId) {
+
+		final String owner = booking.getString("owner", null);
+		final String startDate = booking.getString("start_date", null);
+		final String endDate = booking.getString("end_date", null);
+		final boolean isPeriodic = booking.getBoolean("is_periodic");
+		final String resourceName = booking.getString("resource_name", null);
+
+		final String eventType;
+		final String template;
+
+		if (startDate == null || endDate == null ||
+				owner == null || owner.trim().isEmpty() ||
+				resourceName == null || resourceName.trim().isEmpty()) {
+			log.error("Could not get start_date, end_date, owner or resource_name from response. Unable to send timeline "+
+					BOOKING_DELETED_EVENT_TYPE + " or " + PERIODIC_BOOKING_DELETED_EVENT_TYPE + " notification.");
+			return;
+		}
+
+		// Notify only if current user is not the booking's owner
+		if(!owner.equals(user.getUserId())) {
+			if(isPeriodic) {
+				eventType = PERIODIC_BOOKING_DELETED_EVENT_TYPE;
+				template = "notify-periodic-booking-deleted.html";
+			}
+			else {
+				eventType = BOOKING_DELETED_EVENT_TYPE;
+				template = "notify-booking-deleted.html";
+			}
+
+			JsonObject params = new JsonObject();
+			params.putString("username", user.getUsername())
+				.putString("startdate", startDate)
+				.putString("enddate", endDate)
+				.putString("resourcename", resourceName);
+
+			List<String> recipients = new ArrayList<>();
+			recipients.add(owner);
+
+			notification.notifyTimeline(request, user, RBS_NAME, eventType,
+					recipients, bookingId, template, params);
+
+		}
 	 }
 
 

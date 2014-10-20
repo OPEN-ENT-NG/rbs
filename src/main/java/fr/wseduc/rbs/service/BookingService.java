@@ -43,5 +43,8 @@ public interface BookingService extends CrudService {
 
 	public void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
+	public void getBookingWithResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+
 	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+
 }
