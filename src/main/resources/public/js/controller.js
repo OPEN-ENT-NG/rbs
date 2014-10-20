@@ -489,9 +489,9 @@ function RbsController($scope, template, model, date, route){
 
 		// hours minutes management
 		$scope.booking.startTime = _.find(model.times, function(hourMinutes) { 
-			return (startMoment.hour() <= hourMinutes.hour && startMoment.minutes() <= hourMinutes.min) });
+			return ((startMoment.hour() <= hourMinutes.hour && startMoment.minutes() <= hourMinutes.min) || (startMoment.hour() + 1) <= hourMinutes.hour) });
 		$scope.booking.endTime = _.find(model.times, function(hourMinutes) { 
-			return (endMoment.hour() <= hourMinutes.hour && endMoment.minutes() <= hourMinutes.min) });
+			return ((endMoment.hour() <= hourMinutes.hour && endMoment.minutes() <= hourMinutes.min) || (endMoment.hour() + 1) <= hourMinutes.hour) });
 
 		if ($scope.booking.startTime === undefined || $scope.booking.endTime === undefined) {
 			// hour slot does not fit today, set to first slot tomorrow
