@@ -24,6 +24,15 @@ div.disabled {
 	text-align: center;
 }
 
+.scrollable-content {
+	max-height: 350px;
+	overflow: auto;
+}
+
+.scrollable-content-small {
+	max-height: 220px;
+	overflow: auto;
+}
 
 .dropdown-menu {
 	z-index: 11000 !important;
