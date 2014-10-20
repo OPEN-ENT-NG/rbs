@@ -488,6 +488,16 @@ SelectionHolder.prototype.restore = function(resourceTypeCallback, resourceCallb
 	var resourceRecords = this.resources || {};
 	var holder = this;
 
+	// First resourceType intial selection if enabled
+	if (this.firstResourceType === true && model.resourceTypes.size() > 0) {
+		typeRecords = {};
+		typeRecords[model.resourceTypes.first().id] = true;
+		resourceRecords = {};
+		model.resourceTypes.first().resources.forEach(function(resource){
+			resourceRecords[resource.id] = true;
+		});
+	}
+
 	// Apply recorded booking filters
 	model.bookings.filters.mine = (this.mine === true ? true : undefined);
 	model.bookings.filters.unprocessed = (this.unprocessed === true ? true : undefined);

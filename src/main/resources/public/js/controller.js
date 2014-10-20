@@ -87,10 +87,14 @@ function RbsController($scope, template, model, date, route){
 		template.open('main', 'main-view');
 		template.open('bookings', 'main-calendar');
 
-		// Will auto-select "Mine" bookings by default
-		model.bookings.filters.mine = true;
-		model.recordedSelections.mine = true;
-		model.recordedSelections.allResources = true;
+		// Will auto-select all resources and "Mine" bookings filter by default
+		//model.bookings.filters.mine = true;
+		//model.recordedSelections.allResources = true;
+		//model.recordedSelections.mine = true;
+
+		// Will auto-select first resourceType resources and no filter by default
+		model.recordedSelections.firstResourceType = true;
+
 		model.bookings.filters.dates = true;
 		model.bookings.filters.startMoment = moment().startOf('day');
 		model.bookings.filters.endMoment = moment().add('month', 2).startOf('day');
@@ -161,12 +165,42 @@ function RbsController($scope, template, model, date, route){
 
 
 	// Main view interaction
-	$scope.switchExpand = function(resourceType) {
-		if (resourceType.expanded !== true) {
-			resourceType.expanded = true;
+	$scope.expandResourceType = function(resourceType) {
+		resourceType.expanded = true;
+		$scope.selectResources(resourceType);
+	};
+
+	$scope.collapseResourceType = function(resourceType) {
+		resourceType.expanded = undefined;
+		$scope.deselectResources(resourceType);
+	};
+
+	$scope.selectResources = function(resourceType) {
+		resourceType.resources.forEach(function(resource) {
+			if (resource.selected !== true) {
+				resource.selected = true;
+				resource.bookings.sync(function(){
+					$scope.bookings.pushAll(resource.bookings.all);
+				});
+			}
+		});
+		$scope.lastSelectedResource = resourceType.resources.first();	
+	};
+
+	$scope.deselectResources = function(resourceType) {
+		resourceType.resources.forEach(function(resource) {
+			resource.selected = undefined;
+			$scope.bookings.pullAll(resource.bookings.all);
+		});
+		$scope.lastSelectedResource = undefined;
+	};
+
+	$scope.switchSelectResources = function(resourceType) {
+		if (resourceType.resources.every(function(resource) { return resource.selected })) {
+			$scope.deselectResources(resourceType);
 		}
 		else {
-			resourceType.expanded = undefined;
+			$scope.selectResources(resourceType);
 		}
 	};
 

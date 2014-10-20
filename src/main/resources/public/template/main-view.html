@@ -11,7 +11,12 @@
 
 		<ul class="colored">
 			<li ng-repeat="resourceType in resourceTypes.all">
-				<a ng-class="resourceType.color" ng-click="switchExpand(resourceType)">[[resourceType.name]]</a>
+				<a ng-if="resourceType.expanded !== true" ng-class="resourceType.color" ng-click="expandResourceType(resourceType)">
+					[[resourceType.name]]<span class="badge right-magnet">+</span>
+				</a>
+				<a ng-if="resourceType.expanded === true"ng-class="resourceType.color" ng-click="switchSelectResources(resourceType)">
+					[[resourceType.name]]<span ng-click="collapseResourceType(resourceType)" class="badge right-magnet">-</span>
+				</a>
 				<ul ng-if="resourceType.expanded === true" ng-class="resourceType.color">
 					<li ng-repeat="resource in resourceType.resources.all">
 						<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected === true }">
