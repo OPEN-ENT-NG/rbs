@@ -32,13 +32,13 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		JsonArray values = new JsonArray();
 
 		query.append("SELECT r.*,")
-			.append(" json_agg(row_to_json(row(ts.member_id,ts.action)::rbs.share_tuple)) as shared,")
+			.append(" json_agg(row_to_json(row(rs.member_id,rs.action)::rbs.share_tuple)) as shared,")
 			.append(" array_to_json(array_agg(m.group_id)) as groups ")
 			.append(" FROM rbs.resource AS r")
-			.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
 			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
+			.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
 			.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-			.append(" LEFT JOIN rbs.members AS m ON (ts.member_id = m.id AND m.group_id IS NOT NULL)");
+			.append(" LEFT JOIN rbs.members AS m ON (rs.member_id = m.id AND m.group_id IS NOT NULL)");
 
 		query.append(" WHERE rs.member_id IN ")
 			.append(Sql.listPrepared(groupsAndUserIds.toArray()));
