@@ -175,8 +175,8 @@
 		</div>
 
 		<div class="row">
-			<a class="cell" ng-if="editedBooking.is_periodic === true" ng-click="editedBooking.is_periodic = false"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
-			<a class="cell" ng-if="editedBooking.is_periodic !== true" ng-click="initPeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
+			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic === true" ng-click="editedBooking.is_periodic = false"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
+			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic !== true" ng-click="initPeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
 			<behaviour name="contrib" resource="editedBooking.resource">
 				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true && editedBooking.showResource !== true"><i18n>rbs.save</i18n></button>
 				<button class="right-magnet" ng-click="editedBooking.showResource = undefined" ng-if="display.processing !== true && editedBooking.showResource === true"><i18n>rbs.next</i18n></button>
