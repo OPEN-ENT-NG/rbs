@@ -59,6 +59,10 @@
 
 			<div class="toggle">
 				<div class="content">
+					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
+						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					</div>
+
 					<div class="row details">
 						<div class="six cell">
 							<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
@@ -68,10 +72,6 @@
 							<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
 							<p>[[selectedBooking.resource.name]]</p>
 						</div>
-					</div>
-
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
-						<i18n>rbs.booking.details.resource.unavailable</i18n>
 					</div>
 
 					<div class="row details">
@@ -109,6 +109,10 @@
 
 			<div class="toggle">
 				<div class="content">
+					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
+						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					</div>
+
 					<table class="list-view twelve">
 						<thead>
 							<tr>
@@ -162,6 +166,10 @@
 
 			<div class="toggle">
 				<div class="content">
+					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
+						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					</div>
+					
 					<div class="row details" ng-if="selectedBooking.isPending()">
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
 					</div>
