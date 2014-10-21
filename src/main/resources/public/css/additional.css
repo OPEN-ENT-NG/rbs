@@ -116,3 +116,53 @@ table.colored i.periodic-icon {
 	vertical-align: middle;
 	background-size: 100% auto;
 }
+
+div.schedule-item-content i.pending-status::before {
+	bottom: 12px !important;
+	right: 12px !important;
+	z-index: 502;
+}
+div.schedule-item-content i.validated-status {
+	bottom: 14px !important;
+	right: 12px !important;
+	z-index: 502;
+}
+
+div.schedule-item-content i.refused-status {
+	bottom: 15px !important;
+	right: 14px !important;
+	z-index: 502;
+}
+
+div.schedule-item-content i.periodic-icon {
+	height: 16px;
+	width: 16px;
+	background-image: url("/assets/themes/raw/img/icons/glyphicons_057_history.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	display: block;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+	float: left;
+	vertical-align: middle;
+	position: absolute;
+	bottom: 15px;
+	right: 36px;
+	background-size: 100% auto;
+	z-index: 502;
+}
+
+div.schedule-item-content {
+	padding: 5px !important;
+	text-align: left !important;
+	text-overflow: ellipsis;
+	white-space: initial !important;
+}
+
+div.schedule-item-content .checkbox {
+	position: absolute;
+	bottom: 12px;
+	z-index: 504;
+}
