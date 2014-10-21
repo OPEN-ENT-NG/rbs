@@ -38,6 +38,26 @@ div.disabled {
 	z-index: 11000 !important;
 }
 
+nav.vertical ul li i.caret {
+	height: 20px;
+	width: 25px;
+	display: block;
+	float: left !important;
+	color: #fff;
+	font-size: 25px;
+	font-family: Arial;
+	font-weight: 900;
+	line-height: 12px;
+}
+
+nav.vertical ul li i.caret::before {
+	content: "▸";
+}
+
+nav.vertical ul li i.caret.expanded::before {
+	content: "▾";
+}
+
 table.colored i.pending-icon::before {
 	content: "?";
 	height: 20px;

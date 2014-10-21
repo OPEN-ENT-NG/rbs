@@ -156,7 +156,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.initMain = function() {
-		model.recordedSelections.allResources = true;
+		model.recordedSelections.firstResourceType = true;
 		$scope.currentResourceType = undefined;
 		$scope.resetSort();
 		model.refresh();
