@@ -496,6 +496,7 @@ SelectionHolder.prototype.restore = function(resourceTypeCallback, resourceCallb
 		model.resourceTypes.first().resources.forEach(function(resource){
 			resourceRecords[resource.id] = true;
 		});
+		this.firstResourceType = undefined;
 	}
 
 	// Apply recorded booking filters
