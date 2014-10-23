@@ -277,6 +277,7 @@ public class BookingController extends ControllerHelper {
 				final String id = request.params().get("id");
 				final String bookingId = request.params().get("bookingId");
 
+				final int periodicity = booking.getInteger("periodicity");
 				final long endDate = booking.getLong("periodic_end_date", 0L);
 				final long now = getCurrentTimestamp();
 				final int occurrences = booking.getInteger("occurrences", 0);
@@ -299,7 +300,7 @@ public class BookingController extends ControllerHelper {
 					return;
 				}
 
-				JsonArray selectedDaysArray = booking.getArray("days", null);
+				final JsonArray selectedDaysArray = booking.getArray("days", null);
 				if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
 					badRequest(request, "rbs.booking.bad.request.invalid.days");
 					return;
@@ -352,11 +353,32 @@ public class BookingController extends ControllerHelper {
 							}
 							else {
 								long lastSlotEndDate;
-								if (endDate > 0L) { // when end_date is supplied
-									lastSlotEndDate = endDate;
+								if (endDate > 0L) { // Case when end_date is supplied
+									try {
+										int endDateDay = getDayFromTimestamp(endDate);
+										Object endDateDayIsSelected = selectedDaysArray.toList().get(endDateDay);
+										if((Boolean) endDateDayIsSelected) {
+											lastSlotEndDate = endDate;
+										}
+										else {
+											// If the endDateDay is not a selected day, compute the end date of the last slot
+											long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
+											int nbOccurrences = getOccurrences(firstSlotDay, selectedDays, durationInDays, periodicity);
+											lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
+
+											// Replace the end date with the last slot's end date
+											booking.putNumber("periodic_end_date", lastSlotEndDate);
+											// Put the computed value of occurrences
+											booking.putNumber("occurrences", nbOccurrences);
+										}
+									} catch (Exception e) {
+										log.error("Error when checking that the day of the end date is selected", e);
+										renderError(request);
+										return;
+									}
+
 								}
-								else { // when occurrences is supplied
-									int periodicity = booking.getInteger("periodicity");
+								else { // Case when occurrences is supplied
 									lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
 								}
 

@@ -222,15 +222,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 		// 2. Additional VALUES to insert the other child bookings
-		final int nbOccurences;
+		int nbOccurences = data.getInteger("occurrences", -1);
 
-		// Either the endDate of the periodic booking is supplied, or occurrences is supplied
-		if(endDate > 0L) {
+		if(nbOccurences == -1) {
 			long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
 			nbOccurences = getOccurrences(firstSelectedDay, selectedDays, durationInDays, periodicity);
-		}
-		else {
-			nbOccurences = data.getInteger("occurrences");
 		}
 
 		if(nbOccurences > 1) {
