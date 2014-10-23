@@ -89,7 +89,7 @@ public class BookingController extends ControllerHelper {
 				final String bookingId = request.params().get("bookingId");
 
 				final long startDate = object.getLong("start_date", 0L);
-				long endDate = object.getLong("end_date", 0L);
+				final long endDate = object.getLong("end_date", 0L);
 				final long now = getCurrentTimestamp();
 
 				if (!isValidDates(startDate, endDate, now)) {
@@ -113,7 +113,7 @@ public class BookingController extends ControllerHelper {
 								badRequest(request, errorMessage);
 								return;
 							}
-							else if(isDelayGreaterThanMax(request, resource, startDate, now)) {
+							else if(isDelayGreaterThanMax(request, resource, endDate, now)) {
 								long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
 								String errorMessage = i18n.translate(
 										"rbs.booking.bad.request.maxDelay.not.respected",
@@ -169,11 +169,17 @@ public class BookingController extends ControllerHelper {
 		return (minDelay > -1 && minDelay > delay);
 	}
 
-	private boolean isDelayGreaterThanMax(HttpServerRequest request, JsonObject resource, long startDate, long now) {
+	private boolean isDelayGreaterThanMax(HttpServerRequest request, JsonObject resource, long endDate, long now) {
 		long maxDelay = resource.getLong("max_delay", -1);
-		long delay = startDate - now;
+		if(maxDelay == -1) {
+			return false;
+		}
 
-		return (maxDelay > -1 && delay > maxDelay);
+		// Authorize users to book a resource N days in advance, without taking hour/minute/seconds into account
+		maxDelay = (getTomorrowTimestamp() - now) + maxDelay;
+		long delay = endDate - now;
+
+		return (delay > maxDelay);
 	}
 
 
@@ -345,16 +351,16 @@ public class BookingController extends ControllerHelper {
 								return;
 							}
 							else {
-								long lastSlotStartDate;
+								long lastSlotEndDate;
 								if (endDate > 0L) { // when end_date is supplied
-									lastSlotStartDate = endDate - (firstSlotEndDate - firstSlotStartDate);
+									lastSlotEndDate = endDate;
 								}
 								else { // when occurrences is supplied
 									int periodicity = booking.getInteger("periodicity");
-									lastSlotStartDate = getLastSlotStartDate(occurrences, periodicity, firstSlotStartDate, firstSlotDay, selectedDays);
+									lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
 								}
 
-								if(isDelayGreaterThanMax(request, resource, lastSlotStartDate, now)) {
+								if(isDelayGreaterThanMax(request, resource, lastSlotEndDate, now)) {
 									long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
 									String errorMessage = i18n.translate(
 											"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",

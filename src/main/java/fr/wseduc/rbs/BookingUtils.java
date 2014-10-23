@@ -76,17 +76,17 @@ public class BookingUtils {
 	 *
 	 * @param occurrences : number of occurrences
 	 * @param periodicity : slots are repeated every "periodicity" week
-	 * @param firstSlotStartDate : Unix timestamp of the first slot's start date
+	 * @param firstSlotDate : Unix timestamp of the first slot's date (start or end date)
 	 * @param firstSlotDay : index of the first slot's day
 	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
-	 * @return Unix timestamp of the last slot's start date
+	 * @return Unix timestamp of the last slot's date (start or end date)
 	 *
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
-	public static long getLastSlotStartDate(final int occurrences, final int periodicity,
-			final long firstSlotStartDate, final int firstSlotDay, final String selectedDays) {
+	public static long getLastSlotDate(final int occurrences, final int periodicity,
+			final long firstSlotDate, final int firstSlotDay, final String selectedDays) {
 
-		long lastSlotStartDate = firstSlotStartDate;
+		long lastSlotDate = firstSlotDate;
 		if(occurrences > 1) {
 			int selectedDay = firstSlotDay;
 			int intervalFromFirstDay = 0;
@@ -96,10 +96,10 @@ public class BookingUtils {
 				intervalFromFirstDay += interval;
 				selectedDay = (selectedDay + interval) % 7;
 			}
-			lastSlotStartDate += TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS);
+			lastSlotDate += TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS);
 		}
 
-		return lastSlotStartDate;
+		return lastSlotDate;
 	}
 
 	/**
@@ -107,6 +107,23 @@ public class BookingUtils {
 	 */
 	public static long getCurrentTimestamp() {
 		return TimeUnit.SECONDS.convert(Calendar.getInstance().getTimeInMillis(), TimeUnit.MILLISECONDS);
+	}
+
+	/**
+	 * @return Unix timestamp of tomorrow midnight in seconds
+	 */
+	public static long getTomorrowTimestamp() {
+		// Get tomorrow by adding one day to current time
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, 1);
+
+		// Set time to midnight
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+
+		return TimeUnit.SECONDS.convert(cal.getTimeInMillis(), TimeUnit.MILLISECONDS);
 	}
 
 	 /**

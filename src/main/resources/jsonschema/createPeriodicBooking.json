@@ -11,11 +11,11 @@
       "type": "integer"
     },
     "end_date": {
-      "description": "Unix timestamp representing the end date of the first slot. Either end_date or occurrences must be filled",
+      "description": "Unix timestamp representing the end date of the first slot",
       "type": "integer"
     },
     "periodic_end_date": {
-      "description": "Unix timestamp representing the end date of the periodic booking",
+      "description": "Unix timestamp representing the end date of the periodic booking. Either periodic_end_date or occurrences must be filled",
       "type": "integer"
     },
     "periodicity": {
@@ -24,7 +24,7 @@
       "minimum": 1
     },
     "occurrences": {
-      "description" : "The periodic booking ends after n occurrences",
+      "description" : "The periodic booking ends after n occurrences. Either periodic_end_date or occurrences must be filled",
       "type": "integer",
       "minimum": 1
     },
