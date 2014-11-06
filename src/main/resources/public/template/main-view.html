@@ -47,13 +47,13 @@
 	<filters>
 		<li ng-class="{ selected: bookings.filters.mine }">
 			<label>
-				<i class="mine type" tooltip="rbs.selector.mine"></i>
+				<i class="mine" tooltip="rbs.selector.mine"></i>
 				<input type="checkbox" ng-model="mine.selected" ng-change="switchSelectMine()" />
 			</label>
 		</li>
 		<li ng-class="{ selected: bookings.filters.unprocessed }" workflow="rbs.validator">
 			<label>
-				<i class="submitted type" tooltip="rbs.selector.unprocessed"></i>
+				<i class="pending-action" tooltip="rbs.selector.unprocessed"></i>
 				<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
 			</label>
 		</li>
