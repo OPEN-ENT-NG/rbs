@@ -957,9 +957,9 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.saveResourceType = function() {
-		// Default to user's school UAI or 'null'
+		// Default to first element of model.me.structures
 		if ($scope.editedResourceType.school_id === undefined) {
-			$scope.editedResourceType.school_id = ((model.me.uai !== undefined && model.me.uai !== null) ? model.me.uai : 'null');
+			$scope.editedResourceType.school_id = ((model.me.structures !== undefined && model.me.structures.length > 0) ? model.me.structures[0] : 'null');
 		}
 
 		$scope.display.processing = true;
