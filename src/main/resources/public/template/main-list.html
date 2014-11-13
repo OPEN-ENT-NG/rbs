@@ -1,16 +1,13 @@
-<div class="row ten">
-	<div class="cell four" ng-class="{disabled: bookings.filters.dates !== true}">
+<div class="row cells-separated">
+	<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
 		<date-picker-icon ng-model="bookings.filters.startDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
-		<div class="cell">&nbsp;<i18n>rbs.filters.date.from</i18n>&nbsp;</div>
-		<div class="cell">[[formatMomentDayLong(bookings.filters.startMoment)]]</div>
+		<div class="cell"><i18n>rbs.filters.date.from</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.startMoment)]]</div>
 	</div>
-	<div class="cell four" ng-class="{disabled: bookings.filters.dates !== true}">
+	<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
 		<date-picker-icon ng-model="bookings.filters.endDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
-		<div class="cell">&nbsp;<i18n>rbs.filters.date.to</i18n>&nbsp;</div>
-		<div class="cell">[[formatMomentDayLong(bookings.filters.endMoment)]]</div>
+		<div class="cell"><i18n>rbs.filters.date.to</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.endMoment)]]</div>
 	</div>
-	<div class="cell one">&nbsp;</div>
-	<div class="cell three">
+	<div class="right-magnet">
 		<button ng-if="bookings.filters.dates === true" ng-click="filterListByDates(false)" class="cancel"><i18n>rbs.filters.date.all</i18n></button>
 		<button ng-if="bookings.filters.dates !== true" ng-click="filterListByDates(true)"><i18n>rbs.filters.date.all</i18n></button>
 	</div>

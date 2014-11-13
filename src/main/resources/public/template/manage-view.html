@@ -62,7 +62,7 @@
 <section class="toggle-buttons" ng-class="{ hide: (currentResourceType === undefined || currentResourceType.resources.selection().length === 0) }">
 	<div class="toggle">
 		<div class="row">
-			<behaviour name="process" resource="currentResourceType">
+			<behaviour name="process" resource="currentResourceType" class="cell">
 				<button ng-if="currentResourceType.resources.selection().length === 1"
 						ng-click="editSelectedResource()">
 					<i18n>rbs.manage.resource.edit</i18n>
@@ -72,7 +72,7 @@
 					<i18n>rbs.manage.resource.edits</i18n>
 				</button>
 			</behaviour>
-			<behaviour name="manage" resource="currentResourceType">
+			<behaviour name="manage" resource="currentResourceType" class="cell">
 				<button ng-if="currentResourceType.resources.selection().length === 1"
 						ng-click="deleteResourcesSelection()">
 					<i18n>rbs.manage.resource.remove</i18n>

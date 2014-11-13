@@ -376,6 +376,10 @@ function RbsController($scope, template, model, date, route){
 		return date.format('dddd DD MMMM YYYY');	
 	};
 
+	$scope.formatMomentDayMedium = function(date) {
+		return date.format('dddd DD MMM YYYY');	
+	};
+
 	$scope.trimReason = function(reason) {
 		return _.isString(reason) ? (reason.trim().length > 15 ? reason.substring(0, 12) + '...' : reason.trim()) : "";
 	};
