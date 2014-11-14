@@ -1,4 +1,4 @@
-package fr.wseduc.rbs;
+package net.atos.entng.rbs;
 
 public enum BookingStatus {
 	CREATED(1), VALIDATED(2), REFUSED(3);

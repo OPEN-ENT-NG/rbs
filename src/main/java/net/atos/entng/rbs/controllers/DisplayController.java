@@ -1,4 +1,4 @@
-package fr.wseduc.rbs.controllers;
+package net.atos.entng.rbs.controllers;
 
 import org.vertx.java.core.http.HttpServerRequest;
 

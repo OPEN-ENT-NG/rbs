@@ -1,9 +1,9 @@
-package fr.wseduc.rbs.controllers;
+package net.atos.entng.rbs.controllers;
 
-import static fr.wseduc.rbs.Rbs.RBS_NAME;
-import static fr.wseduc.rbs.BookingStatus.*;
+import static net.atos.entng.rbs.BookingStatus.*;
+import static net.atos.entng.rbs.BookingUtils.*;
+import static net.atos.entng.rbs.Rbs.RBS_NAME;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static fr.wseduc.rbs.BookingUtils.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
+import net.atos.entng.rbs.service.BookingService;
+import net.atos.entng.rbs.service.BookingServiceSqlImpl;
+import net.atos.entng.rbs.service.ResourceService;
+import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -21,11 +27,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rbs.filters.TypeAndResourceAppendPolicy;
-import fr.wseduc.rbs.service.BookingService;
-import fr.wseduc.rbs.service.BookingServiceSqlImpl;
-import fr.wseduc.rbs.service.ResourceService;
-import fr.wseduc.rbs.service.ResourceServiceSqlImpl;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;

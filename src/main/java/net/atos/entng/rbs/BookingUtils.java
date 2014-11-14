@@ -1,4 +1,4 @@
-package fr.wseduc.rbs;
+package net.atos.entng.rbs;
 
 import java.util.Calendar;
 import java.util.TimeZone;

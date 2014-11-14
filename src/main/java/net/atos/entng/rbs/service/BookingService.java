@@ -1,4 +1,4 @@
-package fr.wseduc.rbs.service;
+package net.atos.entng.rbs.service;
 
 import java.util.List;
 

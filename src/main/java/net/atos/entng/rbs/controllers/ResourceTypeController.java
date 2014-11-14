@@ -1,4 +1,4 @@
-package fr.wseduc.rbs.controllers;
+package net.atos.entng.rbs.controllers;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
@@ -7,6 +7,9 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 import java.util.ArrayList;
 import java.util.List;
 
+import net.atos.entng.rbs.service.ResourceTypeService;
+import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
+
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -14,8 +17,6 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rbs.service.ResourceTypeService;
-import fr.wseduc.rbs.service.ResourceTypeServiceSqlImpl;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;

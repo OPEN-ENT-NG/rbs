@@ -1,11 +1,11 @@
-package fr.wseduc.rbs.service;
+package net.atos.entng.rbs.service;
 
-import static fr.wseduc.rbs.BookingStatus.CREATED;
-import static fr.wseduc.rbs.BookingStatus.REFUSED;
-import static fr.wseduc.rbs.BookingStatus.VALIDATED;
+import static net.atos.entng.rbs.BookingStatus.CREATED;
+import static net.atos.entng.rbs.BookingStatus.REFUSED;
+import static net.atos.entng.rbs.BookingStatus.VALIDATED;
+import static net.atos.entng.rbs.BookingUtils.*;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
-import static fr.wseduc.rbs.BookingUtils.*;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

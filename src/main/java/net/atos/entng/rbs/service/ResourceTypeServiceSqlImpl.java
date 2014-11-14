@@ -1,4 +1,4 @@
-package fr.wseduc.rbs.service;
+package net.atos.entng.rbs.service;
 
 import static org.entcore.common.sql.SqlResult.parseShared;
 

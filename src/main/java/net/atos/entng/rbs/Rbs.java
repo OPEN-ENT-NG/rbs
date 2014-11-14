@@ -1,9 +1,9 @@
-package fr.wseduc.rbs;
+package net.atos.entng.rbs;
 
-import fr.wseduc.rbs.controllers.BookingController;
-import fr.wseduc.rbs.controllers.DisplayController;
-import fr.wseduc.rbs.controllers.ResourceController;
-import fr.wseduc.rbs.controllers.ResourceTypeController;
+import net.atos.entng.rbs.controllers.BookingController;
+import net.atos.entng.rbs.controllers.DisplayController;
+import net.atos.entng.rbs.controllers.ResourceController;
+import net.atos.entng.rbs.controllers.ResourceTypeController;
 
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.filter.sql.ShareAndOwner;

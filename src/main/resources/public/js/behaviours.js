@@ -1,22 +1,22 @@
 var rbsBehaviours = {
 	resources: {
 		contrib: {
-			right: 'fr-wseduc-rbs-controllers-BookingController|createBooking'
+			right: 'net-atos-entng-rbs-controllers-BookingController|createBooking'
 		},
 		process: {
-			right: 'fr-wseduc-rbs-controllers-BookingController|processBooking'
+			right: 'net-atos-entng-rbs-controllers-BookingController|processBooking'
 		},
 		manage: {
-			right: 'fr-wseduc-rbs-controllers-ResourceTypeController|updateResourceType'
+			right: 'net-atos-entng-rbs-controllers-ResourceTypeController|updateResourceType'
 		},
 		share: {
-			right: 'fr-wseduc-rbs-controllers-ResourceTypeController|shareJson'
+			right: 'net-atos-entng-rbs-controllers-ResourceTypeController|shareJson'
 		}
 	},
 	workflow: {
-		typemanage: 'fr.wseduc.rbs.controllers.ResourceTypeController|createResourceType',
-		ressourcemanage: 'fr.wseduc.rbs.controllers.ResourceController|create',
-		validator: 'fr.wseduc.rbs.controllers.BookingController|listUnprocessedBookings',
+		typemanage: 'net.atos.entng.rbs.controllers.ResourceTypeController|createResourceType',
+		ressourcemanage: 'net.atos.entng.rbs.controllers.ResourceController|create',
+		validator: 'net.atos.entng.rbs.controllers.BookingController|listUnprocessedBookings',
 	}
 };
 

@@ -1,9 +1,11 @@
-package fr.wseduc.rbs.filters;
+package net.atos.entng.rbs.filters;
 
 import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import net.atos.entng.rbs.controllers.ResourceController;
 
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
@@ -17,7 +19,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rbs.controllers.ResourceController;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 
@@ -123,27 +124,27 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 	private boolean isCreateBooking(final Binding binding) {
 		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "fr.wseduc.rbs.controllers.BookingController|createBooking".equals(binding.getServiceMethod()));
+				&& "net.atos.entng.rbs.controllers.BookingController|createBooking".equals(binding.getServiceMethod()));
 	}
 
 	private boolean isCreatePeriodicBooking(final Binding binding) {
 		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "fr.wseduc.rbs.controllers.BookingController|createPeriodicBooking".equals(binding.getServiceMethod()));
+				&& "net.atos.entng.rbs.controllers.BookingController|createPeriodicBooking".equals(binding.getServiceMethod()));
 	}
 
 	private boolean isUpdateBooking(final Binding binding) {
 		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "fr.wseduc.rbs.controllers.BookingController|updateBooking".equals(binding.getServiceMethod()));
+				&& "net.atos.entng.rbs.controllers.BookingController|updateBooking".equals(binding.getServiceMethod()));
 	}
 
 	private boolean isUpdatePeriodicBooking(final Binding binding) {
 		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "fr.wseduc.rbs.controllers.BookingController|updatePeriodicBooking".equals(binding.getServiceMethod()));
+				&& "net.atos.entng.rbs.controllers.BookingController|updatePeriodicBooking".equals(binding.getServiceMethod()));
 	}
 
 	private boolean isDeleteBooking(final Binding binding) {
 		return (HttpMethod.DELETE.equals(binding.getMethod())
-				&& "fr.wseduc.rbs.controllers.BookingController|deleteBooking".equals(binding.getServiceMethod()));
+				&& "net.atos.entng.rbs.controllers.BookingController|deleteBooking".equals(binding.getServiceMethod()));
 	}
 
 }

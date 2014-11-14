@@ -1,5 +1,5 @@
 {
-	"main" : "fr.wseduc.rbs.Rbs",
+	"main" : "net.atos.entng.rbs.Rbs",
 	"port" : 8025,
 	"app-name" : "Rbs",
 	"app-address" : "/rbs",

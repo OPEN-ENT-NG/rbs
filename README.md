@@ -11,15 +11,15 @@
 
 ## Configuration
 
-Dans le fichier `/ent-core.embedded.json` :
+Dans le fichier `/ent-core.json.template` :
 
 
 Déclarer l'application dans la liste :
 <pre>
 	{
-      "name": "fr.wseduc~rbs~0.1-SNAPSHOT",
+      "name": "net.atos~rbs~0.1-SNAPSHOT",
       "config": {
-        "main" : "fr.wseduc.rbs.Rbs",
+        "main" : "net.atos.entng.rbs.Rbs",
         "port" : 8026,
         "sql" : true,
         "mongodb" : false,
