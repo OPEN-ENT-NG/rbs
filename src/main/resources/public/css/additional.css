@@ -118,3 +118,15 @@ div.schedule-item-content .checkbox {
 	bottom: 12px;
 	z-index: 504;
 }
+
+.filters div.dates {
+	position: absolute;
+	right: 0px;
+	top: 4px;
+}
+
+.filters div.dates div.cell {
+	margin-right: 5px;
+	line-height: 40px;
+	vertical-align: middle;
+}

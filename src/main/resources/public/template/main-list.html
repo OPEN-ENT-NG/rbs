@@ -1,17 +1,34 @@
-<div class="row cells-separated">
-	<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
-		<date-picker-icon ng-model="bookings.filters.startDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
-		<div class="cell"><i18n>rbs.filters.date.from</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.startMoment)]]</div>
-	</div>
-	<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
-		<date-picker-icon ng-model="bookings.filters.endDate" ng-change="filterListByDates(true)" class="cell"></date-picker-icon>
-		<div class="cell"><i18n>rbs.filters.date.to</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.endMoment)]]</div>
-	</div>
-	<div class="right-magnet">
-		<button ng-if="bookings.filters.dates === true" ng-click="filterListByDates(false)" class="cancel"><i18n>rbs.filters.date.all</i18n></button>
-		<button ng-if="bookings.filters.dates !== true" ng-click="filterListByDates(true)"><i18n>rbs.filters.date.all</i18n></button>
-	</div>
-</div>
+<filters>
+	<li ng-class="{ selected: bookings.filters.mine }">
+		<label>
+			<i class="mine" tooltip="rbs.selector.mine"></i>
+			<input type="checkbox" ng-model="mine.selected" ng-change="switchSelectMine()" />
+		</label>
+	</li>
+	<li ng-class="{ selected: bookings.filters.unprocessed }" workflow="rbs.validator">
+		<label>
+			<i class="pending-action" tooltip="rbs.selector.unprocessed"></i>
+			<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
+		</label>
+	</li>
+	<li ng-class="{ selected: bookings.filters.dates }">
+		<label>
+			<i class="dates" tooltip="rbs.selector.dates"></i>
+			<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchFilterListByDates(false)" />
+		</label>
+		<div class="dates" ng-if="bookings.filters.dates === true">
+			<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
+				<date-picker-icon ng-model="bookings.filters.startDate" ng-change="switchFilterListByDates(true)" class="cell"></date-picker-icon>
+				<div class="cell"><i18n>rbs.filters.date.from</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.startMoment)]]</div>
+			</div>
+			<div class="cell" ng-class="{disabled: bookings.filters.dates !== true}">
+				<date-picker-icon ng-model="bookings.filters.endDate" ng-change="switchFilterListByDates(true)" class="cell"></date-picker-icon>
+				<div class="cell"><i18n>rbs.filters.date.to</i18n>&nbsp;[[formatMomentDayMedium(bookings.filters.endMoment)]]</div>
+			</div>
+		</div>
+	</li>
+</filters>
+
 <table class="list-view colored">
 	<thead>
 		<tr>

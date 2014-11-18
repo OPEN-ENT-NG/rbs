@@ -341,8 +341,8 @@ function RbsController($scope, template, model, date, route){
 		$scope.sort.reverse = false;
 	}
 
-	$scope.filterListByDates = function(filter) {
-		if (filter === true) {
+	$scope.switchFilterListByDates = function(filter) {
+		if ($scope.bookings.filters.dates !== true || filter === true) {
 			$scope.bookings.filters.startMoment = moment($scope.bookings.filters.startDate);
 			$scope.bookings.filters.endMoment = moment($scope.bookings.filters.endDate);
 			$scope.bookings.filters.dates = true;
