@@ -358,6 +358,14 @@ Resource.prototype.toJSON = function() {
 	return json;
 };
 
+Resource.prototype.isBookable = function(periodic) {
+	return this.is_available === true 
+		&& this.myRights !== undefined 
+		&& this.myRights.contrib !== undefined 
+		&& (!periodic || this.periodic_booking);
+};
+
+
 function ResourceType(data) {
 	if (data) {
 		this.updateData(data);
@@ -369,7 +377,7 @@ function ResourceType(data) {
 	this.collection(Resource, {
 		filterAvailable: function(periodic) {
 			return this.filter(function(resource){
-				return resource.is_available === true && (!periodic || resource.periodic_booking);
+				return resource.isBookable(periodic);
 			});
 		},
 		collapseAll : function() {
@@ -576,9 +584,8 @@ model.build = function(){
 		},
 		filterAvailable: function(periodic) {
 			return this.filter(function(resourceType){
-				return resourceType.resources.some(function(resource){ 
-					return resource.is_available === true && (!periodic || resource.periodic_booking);
-				});
+				return (resourceType.myRights !== undefined 
+					&& resourceType.myRights.contrib !== undefined);
 			});
 		},
 		deselectAllResources: function(){

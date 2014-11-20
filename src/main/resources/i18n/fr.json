@@ -68,12 +68,16 @@
 	"rbs.booking.details.refused.date.label" : "Date de refus",
 	"rbs.booking.details.refused.reason" : "Motif de refus",
 	"rbs.booking.details.refused.reason.empty" : "Non renseigné",
+
 	"rbs.booking.warning.periodic" : "Attention, vous allez modifier l'ensemble des créneaux de la réservation périodique",
+	"rbs.booking.warning.no.types" : "Aucune Type de ressources disponible à la réservation",
+	"rbs.booking.warning.no.resources" : "Aucune Resource disponible à la réservation pour ce type",
 
 	"rbs.booking.edit" : "Edition : ",
 	"rbs.booking.edit.type.label" : "Type de ressource",
 	"rbs.booking.edit.resource.label" : "Ressource",
 	"rbs.booking.edit.description.label" : "Description",
+	"rbs.booking.edit.description.empty" : "Non renseignée",
 	"rbs.booking.edit.start.label" : "Début de la réservation",
 	"rbs.booking.edit.period.start.label" : "Début de la période",
 	"rbs.booking.edit.start.hour" : " à ",

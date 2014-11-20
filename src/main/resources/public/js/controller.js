@@ -394,6 +394,15 @@ function RbsController($scope, template, model, date, route){
 
 
 	// Booking edition
+	$scope.canCreateBooking = function() {
+		if (undefined !== $scope.resourceTypes.find(function(resourceType){
+			return resourceType.myRights !== undefined && resourceType.myRights.contrib !== undefined;
+		})) {
+			return true;
+		}
+		return false;
+	}
+
 	$scope.canEditBookingSelection = function() {
 		if ($scope.display.list === true) {
 			var localSelection = _.filter($scope.bookings.selection(), function(booking) { return booking.isBooking(); });
@@ -429,11 +438,15 @@ function RbsController($scope, template, model, date, route){
 		// resource
 		if ($scope.lastSelectedResource) {
 			$scope.editedBooking.resource = $scope.lastSelectedResource;
-			$scope.editedBooking.type = $scope.lastSelectedResource.type;
+			if ($scope.editedBooking.resource.isBookable($scope.editedBooking.is_periodic)) {
+				$scope.editedBooking.type = $scope.lastSelectedResource.type;
+			}
+			else {
+				$scope.autoSelectTypeAndResource();
+			}
 		}
 		else {
-			$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
-			$scope.autoSelectResource();
+			$scope.autoSelectTypeAndResource();
 		}
 
 		// dates
@@ -460,8 +473,7 @@ function RbsController($scope, template, model, date, route){
 			$scope.editedBooking.type = $scope.lastSelectedResource.type;
 		}
 		else {
-			$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
-			$scope.autoSelectResource();
+			$scope.autoSelectTypeAndResource();
 		}
 
 		// dates
@@ -507,9 +519,6 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking.byOccurrences = false;
 			}
 		}
-		// DEBUG
-		var DEBUG_editedBooking = $scope.editedBooking;
-		// /DEBUG
 		$scope.initBookingDates($scope.editedBooking.startMoment, $scope.editedBooking.endMoment);
 
 		template.open('lightbox', 'edit-booking');
@@ -524,11 +533,23 @@ function RbsController($scope, template, model, date, route){
 		$scope.editedBooking.occurrences = 1;
 	};
 
-	$scope.initBookingDates = function(startMoment, endMoment) {
-		// DEBUG
-		var DEBUG_booking = $scope.booking;
-		// /DEBUG
+	$scope.toggleNonPeriodic = function() {
+		$scope.editedBooking.is_periodic = false;
+		if ($scope.editedBooking.type === undefined || $scope.editedBooking.resource === undefined || (! $scope.editedBooking.resource.isBookable(true))) {
+			$scope.editedBooking.showResource = true;
+			$scope.autoSelectTypeAndResource();
+		}
+	};
 
+	$scope.togglePeriodic = function() {
+		$scope.initPeriodic();
+		if ($scope.editedBooking.type === undefined || $scope.editedBooking.resource === undefined || (! $scope.editedBooking.resource.isBookable(true))) {
+			$scope.editedBooking.showResource = true;
+			$scope.autoSelectTypeAndResource();
+		}
+	};
+
+	$scope.initBookingDates = function(startMoment, endMoment) {
 		// hours minutes management
 		$scope.booking.startTime = _.find(model.times, function(hourMinutes) { 
 			return ((startMoment.hour() <= hourMinutes.hour && startMoment.minutes() <= hourMinutes.min) || (startMoment.hour() + 1) <= hourMinutes.hour) });
@@ -557,10 +578,6 @@ function RbsController($scope, template, model, date, route){
 		$scope.booking.endDate.setFullYear(endMoment.years());
 		$scope.booking.endDate.setMonth(endMoment.months());
 		$scope.booking.endDate.setDate(endMoment.date());
-
-		// DEBUG
-		var DEBUG_booking = $scope.booking;
-		// /DEBUG
 	};
 
 	$scope.adjustStartTime = function() {
@@ -601,9 +618,13 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
+	$scope.autoSelectTypeAndResource = function() {
+		$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
+		$scope.autoSelectResource();
+	}	
 
 	$scope.autoSelectResource = function() {
-		$scope.editedBooking.resource = _.first($scope.editedBooking.type.resources.filterAvailable($scope.editedBooking.is_periodic));
+		$scope.editedBooking.resource = $scope.editedBooking.type === undefined ? undefined : _.first($scope.editedBooking.type.resources.filterAvailable($scope.editedBooking.is_periodic));
 	};
 
 	$scope.saveBooking = function() {

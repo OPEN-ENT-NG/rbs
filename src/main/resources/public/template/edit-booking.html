@@ -16,13 +16,19 @@
 						<div class="row" ng-if="editedBooking.id === undefined">
 							<div class="row">
 								<label class="three cell"><i18n>rbs.booking.edit.type.label</i18n></label>
-								<select class="six cell" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.filterAvailable()" ng-change="autoSelectResource()" required>
+								<select class="six cell" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in resourceTypes.filterAvailable()" ng-change="autoSelectResource()" required ng-if="editedBooking.type !== undefined">
 								</select>
+								<div class="six cell warning" ng-if="editedBooking.type === undefined">
+									<i18n>rbs.booking.warning.no.types</i18n>
+								</div>
 							</div>
-							<div class="row">
+							<div class="row" ng-if="editedBooking.type !== undefined">
 								<label class="three cell"><i18n>rbs.booking.edit.resource.label</i18n></label>
-								<select class="six cell" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable(editedBooking.is_periodic)" required>
+								<select class="six cell" ng-model="editedBooking.resource" ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable(editedBooking.is_periodic)" required ng-if="editedBooking.resource !== undefined">
 								</select>
+								<div class="six cell warning" ng-if="editedBooking.resource === undefined">
+									<i18n>rbs.booking.warning.no.resources</i18n>
+								</div>
 							</div>
 						</div>
 						<div class="row" ng-if="editedBooking.id !== undefined">
@@ -35,7 +41,11 @@
 								<input class="six cell disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
 							</div>
 						</div>
-						<div bind-html="editedBooking.resource.description" class="content"></div>
+						<div ng-if="editedBooking.resource !== undefined && editedBooking.resource.description" 
+							bind-html="editedBooking.resource.description" class="content"></div>
+						<div class="row" ng-if="editedBooking.resource !== undefined && (! editedBooking.resource.description)">
+							<i18n>rbs.booking.edit.description.empty</i18n>
+						</div>
 					</div>
 				</div>
 			</article>
@@ -175,9 +185,9 @@
 		</div>
 
 		<div class="row">
-			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic === true" ng-click="editedBooking.is_periodic = false"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
-			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic !== true" ng-click="initPeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
-			<behaviour name="contrib" resource="editedBooking.resource">
+			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic === true" ng-click="toggleNonPeriodic()"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
+			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic !== true" ng-click="togglePeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
+			<behaviour name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
 				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true && editedBooking.showResource !== true"><i18n>rbs.save</i18n></button>
 				<button class="right-magnet" ng-click="editedBooking.showResource = undefined" ng-if="display.processing !== true && editedBooking.showResource === true"><i18n>rbs.next</i18n></button>
 			</behaviour>
