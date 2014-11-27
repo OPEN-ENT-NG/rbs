@@ -1,6 +1,7 @@
 package net.atos.entng.rbs.service;
 
 import static org.entcore.common.sql.SqlResult.parseShared;
+import static org.entcore.common.sql.SqlResult.validResultHandler;
 
 import java.util.List;
 
@@ -37,6 +38,30 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		values.add(user.getUserId());
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
+	}
+
+	@Override
+	public void getModeratorsIds(final String typeId, final Handler<Either<String, JsonArray>> handler) {
+
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		query.append("SELECT DISTINCT m.*")
+			.append(" FROM rbs.resource_type AS t")
+			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+			.append(" INNER JOIN rbs.members AS m ON (ts.member_id = m.id)")
+			.append(" WHERE ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'")
+			.append(" AND t.id = ?")
+			.append(" GROUP BY m.id");
+		values.add(typeId);
+
+		query.append(" UNION")
+			.append(" SELECT t.owner as id, t.owner as user_id, null as group_id")
+			.append(" FROM rbs.resource_type AS t")
+			.append(" WHERE t.id = ?");
+		values.add(typeId);
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
 }

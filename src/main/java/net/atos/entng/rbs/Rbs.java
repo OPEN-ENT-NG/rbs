@@ -11,6 +11,7 @@ import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 
 public class Rbs extends BaseServer {
@@ -25,6 +26,7 @@ public class Rbs extends BaseServer {
 	@Override
 	public void start() {
 		super.start();
+		final EventBus eb = getEventBus(vertx);
 
 		addController(new DisplayController());
 
@@ -32,12 +34,12 @@ public class Rbs extends BaseServer {
 		confType.setTable(RESOURCE_TYPE_TABLE);
 		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE);
 		confType.setSchema(getSchema());
-		ResourceTypeController typeController = new ResourceTypeController();
+		ResourceTypeController typeController = new ResourceTypeController(eb);
 		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE,
 				new JsonArray().addString("*"), new JsonArray().add("*"), true);
 		typeController.setCrudService(typeSqlCrudService);
 		typeController.setShareService(new SqlShareService(getSchema(),RESOURCE_TYPE_SHARE_TABLE,
-				getEventBus(vertx), securedActions, null));
+				eb, securedActions, null));
 		addController(typeController);
 
 		SqlConf confResource = SqlConfs.createConf(ResourceController.class.getName());
@@ -49,7 +51,7 @@ public class Rbs extends BaseServer {
 				new JsonArray().addString("*"), new JsonArray().add("*"), true);
 		resourceController.setCrudService(resourceSqlCrudService);
 		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
-				getEventBus(vertx), securedActions, null));
+				eb, securedActions, null));
 		addController(resourceController);
 
 		BookingController bookingController = new BookingController();

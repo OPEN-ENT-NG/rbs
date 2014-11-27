@@ -9,12 +9,16 @@ import java.util.List;
 
 import net.atos.entng.rbs.service.ResourceTypeService;
 import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
+import net.atos.entng.rbs.service.UserService;
+import net.atos.entng.rbs.service.UserServiceDirectoryImpl;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import fr.wseduc.rs.ApiDoc;
@@ -24,15 +28,17 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceTypeController extends ControllerHelper {
 
 	private final ResourceTypeService resourceTypeService;
+	private final UserService userService;
 
-	public ResourceTypeController() {
+	public ResourceTypeController(EventBus eb) {
 		resourceTypeService = new ResourceTypeServiceSqlImpl();
+		userService = new UserServiceDirectoryImpl(eb);
 	}
 	// TODO : refactor ResourceTypeController to use resourceService instead of crudService
 
@@ -83,7 +89,7 @@ public class ResourceTypeController extends ControllerHelper {
 					});
 				} else {
 					log.debug("User not found in session.");
-					Renders.unauthorized(request);
+					unauthorized(request);
 				}
 			}
 		});
@@ -106,7 +112,7 @@ public class ResourceTypeController extends ControllerHelper {
 					});
 				} else {
 					log.debug("User not found in session.");
-					Renders.unauthorized(request);
+					unauthorized(request);
 				}
 			}
 		});
@@ -124,7 +130,64 @@ public class ResourceTypeController extends ControllerHelper {
 					crudService.delete(id, user, defaultResponseHandler(request, 204));
 				} else {
 					log.debug("User not found in session.");
-					Renders.unauthorized(request);
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("/type/:id/moderators")
+	@ApiDoc("Return moderators")
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	public void getModerators(final HttpServerRequest request) {
+		String typeId = request.params().get("id");
+		resourceTypeService.getModeratorsIds(typeId, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isRight()) {
+					JsonArray result = event.right().getValue();
+					if(result == null || result.size() == 0) {
+						renderJson(request, event.right().getValue());
+					}
+					else {
+						JsonArray userIds = new JsonArray();
+						JsonArray groupIds = new JsonArray();
+
+						for (Object m : result) {
+							if(!(m instanceof JsonObject)) continue;
+							JsonObject member = (JsonObject) m;
+							String uId = member.getString("user_id", null);
+							String gId = member.getString("group_id", null);
+							if(uId != null) {
+								userIds.addString(uId);
+							}
+							else if(gId != null) {
+								groupIds.addString(gId);
+							}
+						}
+
+						if(userIds.size() == 0 && groupIds.size() == 0) {
+							renderJson(request, event.right().getValue());
+						}
+						else {
+							userService.getUsers(userIds, groupIds, new Handler<JsonObject>() {
+								@Override
+								public void handle(JsonObject event) {
+									if("ok".equals(event.getString("status"))) {
+										renderJson(request, event.getArray("result", new JsonArray()));
+									}
+									else {
+										renderError(request, event);
+									}
+								}
+							});
+						}
+					}
+
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("error", event.left().getValue());
+					renderJson(request, error, 400);
 				}
 			}
 		});
