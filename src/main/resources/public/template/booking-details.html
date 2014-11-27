@@ -172,6 +172,13 @@
 					
 					<div class="row details" ng-if="selectedBooking.isPending()">
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
+						<div class="row" ng-if="selectedBooking.resource.type.moderators">
+							<p class="row">
+								<span ng-repeat="moderator in selectedBooking.resource.type.moderators">
+										[[moderator.username]][[$last ? '' : ', ']]
+								</span>
+							</p>
+						</div>
 					</div>
 
 					<div class="row details" ng-if="selectedBooking.isValidated()">

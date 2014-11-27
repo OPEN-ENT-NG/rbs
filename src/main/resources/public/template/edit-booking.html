@@ -46,7 +46,16 @@
 						<div class="row" ng-if="editedBooking.resource !== undefined && (! editedBooking.resource.description)">
 							<i18n>rbs.booking.edit.description.empty</i18n>
 						</div>
+						<div class="row" ng-if="editedBooking.type && editedBooking.type.moderators">
+							<label class="row"><i18n>rbs.booking.details.moderators</i18n></label>
+							<p class="row">
+								<span ng-repeat="moderator in editedBooking.type.moderators">
+										[[moderator.username]][[$last ? '' : ', ']]
+								</span>
+							</p>
+						</div>
 					</div>
+
 				</div>
 			</article>
 		</div>

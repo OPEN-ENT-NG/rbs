@@ -261,6 +261,7 @@ function RbsController($scope, template, model, date, route){
 			$scope.selectedBooking = booking;
 			$scope.selectedBooking.displaySection = 1;
 		}
+		$scope.initModerators();
 
 		template.open('lightbox', 'booking-details');
 		$scope.display.showPanel = true;
@@ -429,6 +430,8 @@ function RbsController($scope, template, model, date, route){
 		$scope.editedBooking = new Booking();
 		$scope.editedBooking.showResource = true;
 
+		$scope.initModerators();
+		
 		// periodic booking
 		$scope.editedBooking.is_periodic = false; // false by default
 		if(periodic === 'periodic'){
@@ -466,6 +469,8 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
 		$scope.editedBooking.showResource = true;
+		
+		$scope.initModerators();
 
 		// resource
 		if ($scope.lastSelectedResource) {
@@ -1133,6 +1138,17 @@ function RbsController($scope, template, model, date, route){
 	};
 	$scope.secondsToDays = function(nbSeconds) {
 		return moment.duration(nbSeconds, 'seconds').asDays();
+	}
+	
+	// Get Moderators
+	$scope.initModerators = function() {
+		if ($scope.resourceTypes.first().moderators === undefined) {
+			$scope.resourceTypes.forEach(function(resourceType){
+				resourceType.getModerators(function(){
+					$scope.$apply('resourceTypes');
+				});
+			});
+		}
 	}
 
 	this.initialize();

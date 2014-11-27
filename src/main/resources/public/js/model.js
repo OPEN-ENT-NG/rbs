@@ -450,6 +450,15 @@ ResourceType.prototype.delete = function(cb, cbe) {
 	});
 };
 
+ResourceType.prototype.getModerators = function(callback) {
+	http().get('/rbs/type/' + this.id + '/moderators').done(function(response){
+		this.moderators = response;
+		if(typeof callback === 'function'){
+			callback();
+		}
+	}.bind(this));
+}
+
 ResourceType.prototype.toJSON = function() {
 	return {
 		name : this.name,
