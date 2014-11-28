@@ -222,6 +222,13 @@ Booking.prototype.isPartial = function() {
 	return this.status === model.STATE_PARTIAL;
 };
 
+Booking.prototype.hasAtLeastOnePendingSlot = function() {
+	return this._slots.some(function(slot) {
+		return slot.isPending()
+	});
+};
+
+
 Booking.prototype.toJSON = function() {
 	var json = {
 		start_date : this.startMoment.unix(),
