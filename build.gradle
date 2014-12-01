@@ -1,13 +1,26 @@
 apply from: "gradle/vertx.gradle"
+apply plugin: 'scala'
 
 dependencies {
 	compile "org.entcore:common:$entCoreVersion"
+  testCompile "org.entcore:tests:$entCoreVersion"
+  testCompile 'net.minidev:json-smart:1.1.1'
+  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
 }
 
 javadoc {
   options.encoding = 'UTF-8'
   classpath = configurations.provided
   classpath += configurations.compile
+}
+
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.output
+}
+
+artifacts {
+  archives testJar
 }
 
 repositories {
