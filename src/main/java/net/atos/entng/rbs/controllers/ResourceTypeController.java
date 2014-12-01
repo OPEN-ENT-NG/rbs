@@ -170,17 +170,7 @@ public class ResourceTypeController extends ControllerHelper {
 							renderJson(request, event.right().getValue());
 						}
 						else {
-							userService.getUsers(userIds, groupIds, new Handler<JsonObject>() {
-								@Override
-								public void handle(JsonObject event) {
-									if("ok".equals(event.getString("status"))) {
-										renderJson(request, event.getArray("result", new JsonArray()));
-									}
-									else {
-										renderError(request, event);
-									}
-								}
-							});
+							userService.getUsers(userIds, groupIds, arrayResponseHandler(request));
 						}
 					}
 

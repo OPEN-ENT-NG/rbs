@@ -1,10 +1,13 @@
 package net.atos.entng.rbs.service;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import fr.wseduc.webutils.Either;
 
 public class UserServiceDirectoryImpl implements UserService {
 
@@ -17,19 +20,14 @@ public class UserServiceDirectoryImpl implements UserService {
 
 	@Override
 	public void getUsers(final JsonArray userIds, final JsonArray groupIds,
-			final Handler<JsonObject> handler) {
+			final Handler<Either<String, JsonArray>> handler) {
 
 		JsonObject action = new JsonObject()
 				.putString("action", "list-users")
 				.putArray("userIds", userIds)
 				.putArray("groupIds", groupIds);
 
-		eb.send(DIRECTORY_ADDRESS, action, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> res) {
-				handler.handle(res.body());
-			}
-		});
+		eb.send(DIRECTORY_ADDRESS, action, validResultHandler(handler));
 	}
 
 }
