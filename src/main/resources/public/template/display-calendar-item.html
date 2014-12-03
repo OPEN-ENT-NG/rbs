@@ -4,7 +4,7 @@
 	<i ng-if="item.status === 2" ng-click="viewBooking(item)" class="validated-status"></i>
 	<i ng-if="item.status === 3" ng-click="viewBooking(item)" class="refused-status"></i>
 
-	<i ng-if="item.isSlot() === true" ng-click="viewBooking(item)" class="periodic-icon"></i>
+	<i ng-if="item.isSlot() === true" ng-click="viewBooking(item)" class="periodic-status"></i>
 
 	<behaviour name="process" resource="item" class="cell checkbox">
 		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.manage !== undefined" />
