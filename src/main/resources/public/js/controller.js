@@ -85,6 +85,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.currentErrors = [];
 
 		template.open('main', 'main-view');
+		template.open('top-menu', 'top-menu');
 		template.open('bookings', 'main-calendar');
 
 		// Will auto-select all resources and "Mine" bookings filter by default
@@ -132,6 +133,7 @@ function RbsController($scope, template, model, date, route){
 		if (refresh === true) {
 			$scope.initMain();
 		}
+		$scope.display.admin = false;
 		$scope.display.list = true;
 		$scope.bookings.filters.booking = true;
 		$scope.bookings.applyFilters();
@@ -142,6 +144,7 @@ function RbsController($scope, template, model, date, route){
 		if (refresh === true) {
 			$scope.initMain();
 		}
+		$scope.display.admin = false;
 		$scope.display.list = false;
 		$scope.bookings.filters.booking = undefined;
 		$scope.bookings.applyFilters();
@@ -149,6 +152,8 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.showManage = function() {
+		$scope.display.list = undefined;
+		$scope.display.admin = true;
 		$scope.currentResourceType = model.resourceTypes.first();
 		$scope.resourceTypes.deselectAllResources();
 		template.open('main', 'manage-view');

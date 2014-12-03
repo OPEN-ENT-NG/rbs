@@ -6,7 +6,6 @@
 </div>
 
 <section class="cell three">
-	<h1><a ng-click="showCalendar(true)"><i18n>rbs.title</i18n></a></h1>
 	<nav class="vertical row">
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all">
@@ -36,17 +35,9 @@
 	</nav>
 
 	<hr />
-
 </section>
 
 <section class="cell nine">
-	<div class="row">
-		<div class="display-buttons">
-			<i class="show-list" ng-click="showList(true)"></i>
-			<i class="show-calendar" ng-click="showCalendar(true)"></i>
-			<i class="show-admin selected"></i>
-		</div>
-	</div>
 	<div>
 		<container template="resources"></container>
 	</div>

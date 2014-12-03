@@ -30,6 +30,8 @@
 	"rbs.booking.status.partial" : "Partielle",
 
 	"rbs.booking.create" : "Nouvelle réservation",
+	"rbs.single.booking" : "Réservation ponctuelle",
+	"rbs.periodic.booking" : "Réservation périodique",
 	"rbs.booking.new" : "Nouvelle réservation",
 	"rbs.booking.validate" : "Valider",
 	"rbs.booking.refuse" : "Refuser",
@@ -270,5 +272,9 @@
 	
 	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
 	"to": "à",
-	"type.form.validation.required": "Les demandes de réservation doivent être validées"
+	"type.form.validation.required": "Les demandes de réservation doivent être validées",
+	
+	"rbs.icon.show.booking.list" : "Liste des réservations",
+	"rbs.icon.show.booking.calendar" : "Calendrier des réservations",
+	"rbs.icon.show.manage.type.and.resource" : "Gérer les types et ressources"
 }

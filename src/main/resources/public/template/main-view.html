@@ -6,9 +6,7 @@
 </div>
 
 <section class="cell three">
-	<h1><i class="rbs"></i><a ng-click="showCalendar()"><i18n>rbs.title</i18n></a></h1>
 	<nav class="vertical row">
-
 		<ul class="colored">
 			<li ng-repeat="resourceType in resourceTypes.all">
 				<a ng-if="resourceType.expanded !== true" ng-class="resourceType.color" ng-click="expandResourceType(resourceType)">
@@ -34,24 +32,7 @@
 </section>
 
 <section class="cell nine">
-	<div class="row">
-		<drop-down-button class="cell">
-			<label class="opener"><i18n>rbs.booking.create</i18n></label>
-			<opts>
-				<li ng-click="newBooking()"><i18n>Réservation ponctuelle</i18n></li>
-				<li ng-click="newBooking('periodic')"><i18n>Réservation périodique</i18n></li>
-			</opts>
-		</drop-down-button>
-
-		<div class="display-buttons">
-			<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList()"></i>
-			<i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="showCalendar()"></i>
-			<i class="show-admin" ng-click="showManage()" ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'publish')"></i>
-		</div>
-	</div>
-	
 	<container template="bookings"></container>
-
 </section>
 
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
