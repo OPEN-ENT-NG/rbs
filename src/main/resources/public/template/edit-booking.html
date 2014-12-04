@@ -67,12 +67,14 @@
 				<div class="toggle">
 					<div class="content">
 						<div class="row">
-							<label class="three cell form-label"><i18n>rbs.booking.edit.slot.label</i18n></label>
-							<select class="two cell" ng-model="booking.startTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustStartTime()" required>
-							</select>
-							<label class="one cell centered-text"><i18n>-</i18n></label>
-							<select class="two cell" ng-model="booking.endTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustEndTime()" required>
-							</select>
+							<div>
+								<label class="three cell form-label"><i18n>rbs.booking.edit.slot.label</i18n></label>
+								<time-picker-rbs class="two cell" ng-begin="true" ng-limit="booking.endTime" ng-model="booking.startTime" required></time-picker-rbs>
+							</div>
+							<div>
+								<label class="one cell centered-text"><i18n>-</i18n></label>
+								<time-picker-rbs class="two cell" ng-end="true" ng-limit="booking.startTime" ng-model="booking.endTime" required></time-picker-rbs>
+							</div>
 						</div>
 						<div class="row">
 							<label class="three cell form-label"><i18n>rbs.booking.edit.period.start.label</i18n></label>
@@ -114,12 +116,14 @@
 				<div class="toggle">
 					<div class="content">
 						<div class="row">
-							<label class="three cell form-label"><i18n>rbs.booking.edit.slot.label</i18n></label>
-							<select class="two cell" ng-model="booking.startTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustStartTime()" required>
-							</select>
-							<label class="one cell form-label centered-text"><i18n>-</i18n></label>
-							<select class="two cell" ng-model="booking.endTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustEndTime()" required>
-							</select>
+							<div>
+								<label class="three cell form-label"><i18n>rbs.booking.edit.slot.label</i18n></label>
+								<time-picker-rbs class="two cell" ng-begin="true" ng-limit="booking.endTime" ng-model="booking.startTime" required></time-picker-rbs>
+							</div>
+							<div>
+								<label class="one cell form-label centered-text"><i18n>-</i18n></label>
+								<time-picker-rbs class="two cell" ng-end="true" ng-limit="booking.startTime" ng-model="booking.endTime" required></time-picker-rbs>
+							</div>
 						</div>
 						<div class="row">
 							<label class="three cell form-label"><i18n>rbs.booking.edit.start.label</i18n></label>
@@ -168,15 +172,17 @@
 							<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
 							<date-picker-rbs class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker-rbs>
 							<div class="one cell centered-text"><i18n>to</i18n></div>
-							<select class="three cell horizontal-spacing" ng-model="booking.startTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustStartTime()" required>
-							</select>
+							<div>
+								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+							</div>
 						</div>
 						<div class="row">
 							<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
 							<date-picker-rbs class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true" past="true" min-date="booking.startDate" required></date-picker-rbs>
 							<div class="one cell centered-text"><i18n>to</i18n></div>
-							<select class="three cell horizontal-spacing" ng-model="booking.endTime" ng-options="hourMinutes.name for hourMinutes in times" ng-change="adjustEndTime()" required>
-							</select>
+							<div>
+								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
+							</div>
 						</div>
 						<div class="row" ng-if="booking.invalidDateTimes === true" translate content="booking.invalidDateTimesMessage">
 						</div>
