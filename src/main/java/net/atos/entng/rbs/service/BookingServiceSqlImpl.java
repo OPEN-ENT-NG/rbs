@@ -663,7 +663,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	/**
-	 * Get ids of groups and users that are moderators
+	 * Get ids of groups and users that are moderators.
+	 * user.getUserId() is excluded, because the booking owner does not need to be notified.
 	 */
 	@Override
 	public void getModeratorsIds(final String bookingId, final UserInfos user,
@@ -673,6 +674,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		JsonArray values = new JsonArray();
 		Object bId = parseId(bookingId);
 
+		// Resource owner is a moderator
 		query.append("SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.members AS m on r.owner = m.id")
@@ -680,6 +682,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		values.add(bId)
 			.add(user.getUserId());
 
+		// Type owner is a moderator
 		query.append(" UNION")
 			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
@@ -689,12 +692,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		values.add(bId)
 			.add(user.getUserId());
 
+		// Users with resource right "processBooking" are moderators
 		query.append(" UNION")
 			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
 			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
 			.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
 			.append(" INNER JOIN rbs.members AS m on rs.member_id = m.id")
-			.append(" WHERE b.id = ? AND rs.member_id != ?");
+			.append(" WHERE b.id = ? AND rs.member_id != ?")
+			.append(" AND rs.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
 		values.add(bId)
 			.add(user.getUserId());
 
@@ -704,7 +709,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
 			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 			.append(" INNER JOIN rbs.members AS m on ts.member_id = m.id")
-			.append(" WHERE b.id = ? AND ts.member_id != ?");
+			.append(" WHERE b.id = ? AND ts.member_id != ?")
+			.append(" AND ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
 		values.add(bId)
 			.add(user.getUserId());
 

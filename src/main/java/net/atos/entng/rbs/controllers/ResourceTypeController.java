@@ -137,7 +137,7 @@ public class ResourceTypeController extends ControllerHelper {
 	}
 
 	@Get("/type/:id/moderators")
-	@ApiDoc("Return moderators")
+	@ApiDoc("Return moderators. This webservice is used to display moderators' names")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void getModerators(final HttpServerRequest request) {
 		String typeId = request.params().get("id");
