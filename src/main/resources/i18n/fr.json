@@ -268,7 +268,7 @@
 	"rbs.error.conflict" : "Conflit (409)",
 	"rbs.error.notfound" : "Objet non trouvé (404)",
 
-	"rbs.route.booking.not.found" : "La réservation cherchée n'existe pas.",
+	"rbs.route.booking.not.found" : "La réservation cherchée n'existe pas ou a été supprimée.",
 	
 	"rbs.calendar.under.construction" : "Calendrier de réservations en cours de développement...",
 	"to": "à",
