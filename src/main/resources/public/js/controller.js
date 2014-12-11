@@ -52,7 +52,8 @@ function RbsController($scope, template, model, date, route){
 		$scope.date = date;
 
 		$scope.display = {
-			list: false // calendar by default
+			list: false, // calendar by default
+			create: false
 		};
 
 		$scope.sort = {
@@ -103,6 +104,9 @@ function RbsController($scope, template, model, date, route){
 		model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
 
 		$scope.resourceTypes.on('sync', function(){
+			// check create booking rights
+			$scope.display.create = $scope.canCreateBooking();
+
 			var remanentBookingId = ($scope.selectedBooking !== undefined ? $scope.selectedBooking.id : undefined);
 			var remanentBooking = undefined;
 			// Restore previous selections

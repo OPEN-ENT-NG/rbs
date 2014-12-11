@@ -9,7 +9,7 @@
 
 <div class="nine cell display-buttons">
 	<div class="row">
-		<drop-down-button ng-if="!display.admin" class="cell">
+		<drop-down-button ng-if="(!display.admin) && display.create" class="cell">
 			<label class="opener"><i18n>rbs.booking.create</i18n></label>
 			<opts>
 				<li ng-click="newBooking()"><i18n>rbs.single.booking</i18n></li>

@@ -13,10 +13,19 @@
 	</li>
 </filters>
 
-<div class="row">
+<div class="row" ng-if="display.create">
 	<calendar 
 		display-template="display-calendar-item" 
 		create-template="edit-booking"
+		on-create-open="newBookingCalendar(newItem)"
+		on-create-close="closeBooking()" 
+		items="bookings.filtered">
+	</calendar>
+</div>
+
+<div class="row" ng-if="! display.create">
+	<calendar 
+		display-template="display-calendar-item" 
 		on-create-open="newBookingCalendar(newItem)"
 		on-create-close="closeBooking()" 
 		items="bookings.filtered">
