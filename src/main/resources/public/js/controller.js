@@ -14,34 +14,7 @@ function RbsController($scope, template, model, date, route){
         		if ($scope.display.routed !== true) {
         			return;
         		}
-        		var actions = 0;
-        		var routedBooking = undefined;
-        		$scope.resourceTypes.forEach(function(resourceType){
-        			actions = actions + resourceType.resources.size();
-        			resourceType.resources.forEach(function(resource){
-        				resource.bookings.one('sync', function(){
-        					if (routedBooking !== undefined) {
-        						return;
-        					}
-        					routedBooking = resource.bookings.find(function(booking){
-				        		return booking.id == param.bookingId;
-				        	});
-				        	if (routedBooking !== undefined) {
-				        		// found
-				        		$scope.viewBooking(routedBooking);
-				        		$scope.display.routed = undefined;
-				        		return;
-				        	}
-			        		actions--;
-			        		if (actions === 0) {
-			        			// error
-			        			console.log("Booking not found (id: " + param.bookingId + ")");
-			        			notify.error('rbs.route.booking.not.found');
-			        			$scope.display.routed = undefined;
-			        		}
-        				});
-        			});
-        		});
+        		$scope.initResourcesRouted(param.bookingId);
 	        });
         }
     });
@@ -107,30 +80,77 @@ function RbsController($scope, template, model, date, route){
 			// check create booking rights
 			$scope.display.create = $scope.canCreateBooking();
 
-			var remanentBookingId = ($scope.selectedBooking !== undefined ? $scope.selectedBooking.id : undefined);
-			var remanentBooking = undefined;
-			// Restore previous selections
-			model.recordedSelections.restore(
-				function(resourceType){
-					$scope.currentResourceType = resourceType;
-				},
-				function(resource){
-					resource.bookings.sync(function(){
-						$scope.bookings.pushAll(resource.bookings.all);
-						if (remanentBookingId !== undefined) {
-							remanentBooking = resource.bookings.find(function(booking){
-								return booking.id === remanentBookingId;
-							});
-							if (remanentBooking !== undefined) {
-								$scope.viewBooking(remanentBooking);
-							}
-						}
-					});
-				}
-			);
-			model.recordedSelections.allResources = false;
+			// Do not restore if routed
+			if ($scope.display.routed === true) {
+				return;
+			}
+
+			$scope.initResources();
 		});
 	};
+
+	// Initialization
+	$scope.initResources = function() {
+		var remanentBookingId = ($scope.selectedBooking !== undefined ? $scope.selectedBooking.id : undefined);
+		var remanentBooking = undefined;
+		// Restore previous selections
+		model.recordedSelections.restore(
+			function(resourceType){
+				$scope.currentResourceType = resourceType;
+			},
+			function(resource){
+				resource.bookings.sync(function(){
+					$scope.bookings.pushAll(resource.bookings.all);
+					if (remanentBookingId !== undefined) {
+						remanentBooking = resource.bookings.find(function(booking){
+							return booking.id === remanentBookingId;
+						});
+						if (remanentBooking !== undefined) {
+							$scope.viewBooking(remanentBooking);
+						}
+					}
+				});
+			}
+		);
+		model.recordedSelections.allResources = false;
+	}
+
+	$scope.initResourcesRouted = function(bookingId) {
+		var actions = 0;
+		var routedBooking = undefined;
+		$scope.resourceTypes.forEach(function(resourceType){
+			actions = actions + resourceType.resources.size();
+			resourceType.resources.forEach(function(resource){
+				resource.bookings.sync();
+				resource.bookings.one('sync', function(){
+					if (routedBooking !== undefined) {
+						return;
+					}
+					routedBooking = resource.bookings.find(function(booking){
+		        		return booking.id == bookingId;
+		        	});
+		        	if (routedBooking !== undefined) {
+		        		// found
+		        		$scope.bookings.pushAll(routedBooking.resource.bookings.all);
+		        		routedBooking.resource.type.expanded = true;
+		        		routedBooking.resource.selected = true;
+		        		$scope.viewBooking(routedBooking);
+		        		$scope.display.routed = undefined;
+		        		model.recordedSelections.firstResourceType = undefined;
+		        		return;
+		        	}
+	        		actions--;
+	        		if (actions === 0) {
+	        			// error
+	        			console.log("Booking not found (id: " + bookingId + ")");
+	        			notify.error('rbs.route.booking.not.found');
+	        			$scope.display.routed = undefined;
+	        			$scope.initResources();
+	        		}
+				});
+			});
+		});
+	}
 
 	// Navigation
 	$scope.showList = function(refresh) {
