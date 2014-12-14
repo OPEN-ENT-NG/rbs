@@ -1,0 +1,19 @@
+    {
+      "name": "net.atos~rbs~0.4-SNAPSHOT",
+      "config": {
+        "main" : "net.atos.entng.rbs.Rbs",
+        "port" : 8026,
+        "sql" : true,
+        "mongodb" : false,
+        "neo4j" : false,
+        "app-name" : "Réservation de ressources",
+        "app-address" : "/rbs",
+        "app-icon" : "rbs-large",
+        "host": "${host}",
+        "ssl" : $ssl,
+        "auto-redeploy": false,
+        "userbook-host": "${host}",
+        "integration-mode" : "HTTP",
+        "mode" : "${mode}"
+      }
+    }

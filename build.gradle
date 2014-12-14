@@ -19,8 +19,14 @@ task testJar(type: Jar) {
   from sourceSets.test.output
 }
 
+task deploymentJar(type: Jar) {
+  classifier = 'deployment'
+  from 'deployment'
+}
+
 artifacts {
   archives testJar
+  archives deploymentJar
 }
 
 repositories {
