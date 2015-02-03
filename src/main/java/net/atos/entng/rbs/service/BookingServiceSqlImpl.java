@@ -604,7 +604,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" ORDER BY b.start_date, b.end_date");
 
 		JsonArray values = new JsonArray();
-		values.add(resourceId);
+		values.add(parseId(resourceId));
 
 		Sql.getInstance().prepared(query.toString(), values,
 				validResultHandler(handler));
@@ -631,7 +631,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" OR (b.is_periodic = ? AND EXISTS(")
 				.append(" SELECT 1 FROM rbs.booking AS c")
 				.append(" WHERE c.parent_booking_id = b.id")
-				.append(" AND c.status = ?)))");;
+				.append(" AND c.status = ?)))");
 		values.add(CREATED.status())
 			.add(true)
 			.add(CREATED.status());
