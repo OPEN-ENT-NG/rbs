@@ -1,5 +1,6 @@
 package net.atos.entng.rbs.service;
 
+import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 
@@ -53,13 +54,13 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 			.append(" WHERE ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'")
 			.append(" AND t.id = ?")
 			.append(" GROUP BY m.id");
-		values.add(typeId);
+		values.add(parseId(typeId));
 
 		query.append(" UNION")
 			.append(" SELECT t.owner as id, t.owner as user_id, null as group_id")
 			.append(" FROM rbs.resource_type AS t")
 			.append(" WHERE t.id = ?");
-		values.add(typeId);
+		values.add(parseId(typeId));
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
