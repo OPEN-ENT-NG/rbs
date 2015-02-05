@@ -410,8 +410,9 @@ function RbsController($scope, template, model, date, route){
 		return date.format('dddd DD MMM YYYY');	
 	};
 
-	$scope.trimReason = function(reason) {
-		return _.isString(reason) ? (reason.trim().length > 15 ? reason.substring(0, 12) + '...' : reason.trim()) : "";
+	$scope.composeTitle = function(typeTitle, resourceTitle) {
+		var title = typeTitle + ' - ' + resourceTitle;
+		return _.isString(title) ? (title.trim().length > 65 ? title.substring(0, 62) + '...' : title.trim()) : "";
 	};
 
 	$scope.countValidatedSlots = function(slots) {

@@ -53,7 +53,7 @@
 			<h2 ng-click="selectedBooking.displaySection = 2;">
 				<i18n>rbs.booking.title.resource</i18n>
 				<span class="right-magnet" ng-if="selectedBooking.displaySection !== 2">
-					[[selectedBooking.resource.type.name]]&nbsp;-&nbsp;[[selectedBooking.resource.name]]
+					[[composeTitle(selectedBooking.resource.type.name, selectedBooking.resource.name)]]
 				</span>
 			</h2>
 

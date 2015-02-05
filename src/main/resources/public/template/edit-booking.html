@@ -8,7 +8,7 @@
 				<h2 ng-click="toggleShowBookingResource()">
 					<i18n>rbs.header.resource.pick</i18n>
 					<span class="right-magnet" ng-if="editedBooking.showResource !== true">
-						[[editedBooking.resource.type.name]]&nbsp;-&nbsp;[[editedBooking.resource.name]]
+						[[composeTitle(editedBooking.resource.type.name, editedBooking.resource.name)]]
 					</span>
 				</h2>
 				<div class="toggle">
