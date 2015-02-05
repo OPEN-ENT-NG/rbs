@@ -55,7 +55,7 @@
 	"rbs.booking.details.type.label" : "Type de ressource",
 	"rbs.booking.details.resource.label" : "Ressource",
 	"rbs.booking.details.resource.unavailable" : "La ressource est indisponible. Vous serez notifé lorsqu'elle sera rendue à nouveau disponible.",
-	"rbs.booking.details.description.label" : "Choisir une ressource",
+	"rbs.booking.details.description.label" : "Description de la ressource",
 	"rbs.booking.details.description.empty" : "Non renseignée",
 	"rbs.booking.details.moderators" : "Valideur(s)",
 	"rbs.booking.details.start.label" : "Date et heure de début",
