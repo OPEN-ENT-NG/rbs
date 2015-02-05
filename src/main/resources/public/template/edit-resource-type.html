@@ -3,6 +3,19 @@
 	<h2 ng-if="editedResourceType.id !== undefined"><i18n>rbs.resourcetype.edit</i18n>[[editedResourceType.name]]</h2>
 
 	<article class="twelve cell">
+		
+		<div class="row" ng-if="editedResourceType.id === undefined">
+			<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
+			<select ng-if="structures.length > 1" class="nine cell" ng-model="editedResourceType.structure" ng-options="structure.name for structure in structures" required>
+			</select>
+			<span ng-if="structures.length == 1" class="nine cell" translate content="[[structures[0].name]]"></span>
+		</div>
+
+		<div class="row" ng-if="editedResourceType.id !== undefined">
+			<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
+			<span class="nine cell" translate content="[[editedResourceType.structure.name]]"></span>
+		</div>
+
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
 			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required />
