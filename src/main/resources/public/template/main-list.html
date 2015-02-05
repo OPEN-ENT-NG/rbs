@@ -33,7 +33,10 @@
 	<thead>
 		<tr>
 			<th class="one" colspan="2"><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
-			<th class="one" colspan="2"></th>
+			<th class="one" colspan="2" ng-click="switchSortBy('is_periodic')" ng-class="{'order-by-reversed': (sort.predicate === 'is_periodic' && sort.reverse === false),
+				'order-by': (sort.predicate === 'is_periodic' && sort.reverse === true)}">
+				<i class="periodic-status" tooltip="rbs.booking.headers.periodic"></i>
+			</th>
 			<th class="two" ng-click="switchSortBy('owner_name')" ng-class="{'order-by-reversed': (sort.predicate === 'owner_name' && sort.reverse === false),
 				'order-by': (sort.predicate === 'owner_name' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.owner</i18n>
@@ -59,10 +62,10 @@
 	<tbody ng-repeat="booking in bookings.filtered | orderBy:sort.predicate:sort.reverse">
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
-			<td class="icon [[booking.color]]" ng-click="viewBooking(booking)"></td>
+			<td class="[[booking.color]]" ng-click="viewBooking(booking)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 			<td>
-				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)"><span class="badge">+</span></a>
-				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)"><span class="badge">-</span></a>
+				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)">&nbsp;<span class="badge">+</span></a>
+				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)">&nbsp;<span class="badge">-</span></a>
 			</td>
 			<td><i ng-if="booking.is_periodic" class="periodic-icon"></i></td>
 			<td ng-click="viewBooking(booking)">[[booking.owner_name]]</td>
@@ -77,9 +80,10 @@
 			<td ng-click="viewBooking(booking)"><i ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></i></td>
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
-			<td class="invisible" colspan="2"></td>
+			<td class="invisible"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
-			<td ng-class="booking.color"></td>
+			<td class="[[booking.color]]"></td>
+			<td></td>
 			<td ng-click="viewBooking(slot)">[[booking.owner_name]]</td>
 			<td ng-click="viewBooking(slot)">[[booking.resource.name]]</td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</td>
