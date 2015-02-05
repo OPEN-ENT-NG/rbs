@@ -32,25 +32,25 @@
 <table class="list-view colored">
 	<thead>
 		<tr>
-			<th><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
-			<th colspan="3"></th>
-			<th ng-click="switchSortBy('owner_name')" ng-class="{'order-by-reversed': (sort.predicate === 'owner_name' && sort.reverse === false),
+			<th class="one" colspan="2"><input type="checkbox" ng-model="display.selectAllBookings" ng-change="switchSelectAllBookings()" /></th>
+			<th class="one" colspan="2"></th>
+			<th class="two" ng-click="switchSortBy('owner_name')" ng-class="{'order-by-reversed': (sort.predicate === 'owner_name' && sort.reverse === false),
 				'order-by': (sort.predicate === 'owner_name' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.owner</i18n>
 			</th>
-			<th ng-click="switchSortBy('resource.name')" ng-class="{'order-by-reversed': (sort.predicate === 'resource.name' && sort.reverse === false),
+			<th class="three" ng-click="switchSortBy('resource.name')" ng-class="{'order-by-reversed': (sort.predicate === 'resource.name' && sort.reverse === false),
 				'order-by': (sort.predicate === 'resource.name' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.resource</i18n>
 			</th>
-			<th ng-click="switchSortBy('start_date')" ng-class="{'order-by-reversed': (sort.predicate === 'start_date' && sort.reverse === false),
+			<th class="two" ng-click="switchSortBy('start_date')" ng-class="{'order-by-reversed': (sort.predicate === 'start_date' && sort.reverse === false),
 				'order-by': (sort.predicate === 'start_date' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.start_date</i18n>
 			</th>
-			<th ng-click="switchSortBy('end_date')" ng-class="{'order-by-reversed': (sort.predicate === 'end_date' && sort.reverse === false),
+			<th class="two" ng-click="switchSortBy('end_date')" ng-class="{'order-by-reversed': (sort.predicate === 'end_date' && sort.reverse === false),
 				'order-by': (sort.predicate === 'end_date' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.end_date</i18n>
 			</th>
-			<th colspan="2" ng-click="switchSortBy('status')" ng-class="{'order-by-reversed': (sort.predicate === 'status' && sort.reverse === false),
+			<th class="one" colspan="2" ng-click="switchSortBy('status')" ng-class="{'order-by-reversed': (sort.predicate === 'status' && sort.reverse === false),
 				'order-by': (sort.predicate === 'status' && sort.reverse === true)}">
 				<i18n>rbs.booking.headers.status</i18n>
 			</th>
@@ -60,11 +60,11 @@
 		<tr>
 			<td><input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/></td>
 			<td class="icon [[booking.color]]" ng-click="viewBooking(booking)"></td>
-			<td><i ng-if="booking.is_periodic" class="periodic-icon"></i></td>
 			<td>
 				<a ng-if="booking.is_periodic === true && booking.expanded !== true" ng-click="expandPeriodicBooking(booking)"><span class="badge">+</span></a>
 				<a ng-if="booking.is_periodic === true && booking.expanded === true" ng-click="collapsePeriodicBooking(booking)"><span class="badge">-</span></a>
 			</td>
+			<td><i ng-if="booking.is_periodic" class="periodic-icon"></i></td>
 			<td ng-click="viewBooking(booking)">[[booking.owner_name]]</td>
 			<td ng-click="viewBooking(booking)">[[booking.resource.name]]</td>
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.startMoment)]]</td>
@@ -77,10 +77,11 @@
 			<td ng-click="viewBooking(booking)"><i ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></i></td>
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
-			<td class="invisible"></td>
+			<td class="invisible" colspan="2"></td>
 			<td><input type="checkbox" ng-model="slot.selected" /></td>
 			<td ng-class="booking.color"></td>
-			<td colspan="3"></td>
+			<td ng-click="viewBooking(slot)">[[booking.owner_name]]</td>
+			<td ng-click="viewBooking(slot)">[[booking.resource.name]]</td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</td>
 			<td ng-click="viewBooking(slot)">
