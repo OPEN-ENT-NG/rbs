@@ -50,6 +50,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.bookings = model.bookings;
 		$scope.times = model.times;
 		$scope.periods = model.periods;
+		$scope.structures = model.structures;
 
 		$scope.currentResourceType = undefined;
 		$scope.selectedBooking = undefined;
@@ -989,6 +990,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.processing = undefined;
 		$scope.editedResourceType = new ResourceType();
 		$scope.editedResourceType.validation = false;
+		$scope.editedResourceType.structure = $scope.structures[0];
 		template.open('resources', 'edit-resource-type');
 	};
 
@@ -1027,11 +1029,6 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.saveResourceType = function() {
-		// Default to first element of model.me.structures
-		if ($scope.editedResourceType.school_id === undefined) {
-			$scope.editedResourceType.school_id = ((model.me.structures !== undefined && model.me.structures.length > 0) ? model.me.structures[0] : 'null');
-		}
-
 		$scope.display.processing = true;
 		$scope.currentErrors = [];
 		$scope.editedResourceType.save(function(){

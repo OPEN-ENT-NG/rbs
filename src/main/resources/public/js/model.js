@@ -8,6 +8,12 @@ model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 model.STATE_PARTIAL = 4;
 
+model.DETACHED_STRUCTURE = {
+	id: 'DETACHED',
+	name: 'rbs.structure.detached'
+};
+	
+
 model.times = [];
 model.timeConfig = { // 5min slots from 7h00 to 19h55, default 8h00
 	interval: 5, // in minutes
@@ -424,6 +430,8 @@ ResourceType.prototype.update = function(cb, cbe) {
 
 ResourceType.prototype.create = function(cb, cbe) {
 	var resourceType = this;
+	this.school_id = this.structure.id;
+
 	http().postJson('/rbs/type', this)
 	.done(function(t){
 		resourceType.updateData(t);
@@ -467,11 +475,15 @@ ResourceType.prototype.getModerators = function(callback) {
 }
 
 ResourceType.prototype.toJSON = function() {
-	return {
+	var json = {
 		name : this.name,
 		validation : this.validation,
-		school_id : this.school_id
 	}
+	// Send school id only at creation
+	if (! this.id) {
+		json.school_id = this.school_id;
+	}
+	return json;
 };
 
 
@@ -557,6 +569,8 @@ model.build = function(){
 	this.makeModels([ResourceType, Resource, Booking, SelectionHolder]);
 	Model.prototype.inherits(Booking, calendar.ScheduleItem);
 
+	model.loadStructures();
+
 	// ResourceTypes collection with embedded Resources
 	this.collection(ResourceType, {
 		sync: function(){
@@ -564,8 +578,14 @@ model.build = function(){
 			// Load the ResourceTypes
 			http().get('/rbs/types').done(function(resourceTypes){
 				var index = 0;
-				// Auto-associate colors to Types
 				_.each(resourceTypes, function(resourceType){
+					// Resolve the structure if possible
+					var structure = _.find(model.structures, function(s){
+						return s.id === resourceType.school_id;
+					});
+					resourceType.structure = structure || model.DETACHED_STRUCTURE;
+
+					// Auto-associate colors to Types
 					resourceType.color = model.findColor(index);
 					resourceType._id = resourceType.id;
 					index++;
@@ -928,6 +948,21 @@ model.loadTimes = function() {
 model.loadPeriods = function() {
 	for (occurrence = model.periodsConfig.occurrences.start; occurrence <= model.periodsConfig.occurrences.end; occurrence = occurrence + model.periodsConfig.occurrences.interval) {
 		model.periods.occurrences.push(occurrence);
+	}
+}
+
+model.loadStructures = function() {
+	if (model.me.structures && model.me.structures.length > 0 && model.me.structureNames && model.me.structureNames.length > 0) {
+		model.structures = [];
+		for (i = 0; i < model.me.structures.length; i++) {
+			model.structures.push({
+				id: model.me.structures[i],
+				name: model.me.structureNames[i]
+			});
+		}
+	}
+	else {
+		model.structures = [model.DETACHED_STRUCTURE];
 	}
 }
 

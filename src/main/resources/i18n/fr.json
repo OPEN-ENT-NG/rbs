@@ -169,12 +169,14 @@
 
 	"rbs.resourcetype.new": "Nouveau Type de ressources",
 	"rbs.resourcetype.edit": "Edition du Type de ressources : ",
+	"rbs.resourcetype.edit.structure.label": "Etablissement",
 	"rbs.resourcetype.edit.name.label": "Nom du type",
 	"rbs.resourcetype.edit.name.placeholder": "Entrez un nom pour le type de ressources",
 	"rbs.resourcetype.edit.validation.label": "Ajouter une étape de validation des demandes",
 	"rbs.resourcetype.edit.validation.true": "Oui",
 	"rbs.resourcetype.edit.validation.false": "Non",
 	"rbs.resourcetype.edit.save.to.configure": "Enregistrez le Type de ressources pour configurer le partage et les valideurs",
+	"rbs.structure.detached" : "Aucun établissement",
 
 	"rbs.resource.new": "Nouvelle Ressource",
 	"rbs.resource.edit": "Edition de la Ressource : ",
