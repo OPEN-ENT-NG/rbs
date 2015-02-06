@@ -4,13 +4,16 @@ import net.atos.entng.rbs.controllers.BookingController;
 import net.atos.entng.rbs.controllers.DisplayController;
 import net.atos.entng.rbs.controllers.ResourceController;
 import net.atos.entng.rbs.controllers.ResourceTypeController;
+import net.atos.entng.rbs.events.RbsRepositoryEvents;
 
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.filter.sql.ShareAndOwner;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
+import org.entcore.common.user.RepositoryHandler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 
@@ -27,6 +30,11 @@ public class Rbs extends BaseServer {
 	public void start() {
 		super.start();
 		final EventBus eb = getEventBus(vertx);
+
+		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+		eventStoreFactory.setContainer(container);
+		eventStoreFactory.setVertx(vertx);
+		vertx.eventBus().registerHandler("user.repository", new RepositoryHandler(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false))));
 
 		addController(new DisplayController());
 
