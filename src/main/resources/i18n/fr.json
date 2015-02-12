@@ -231,6 +231,9 @@
 	"group.class.Student" : "Tous les élèves de la classe {0}.",
 	"group.class.Relative" : "Tous les parents de la classe {0}.",
 	"group.AdminLocal": "Tous les administrateurs locaux",
+	"group.manager" : "Tous les gestionnnaires de la communauté {0}.",
+	"group.contrib" : "Tous les contributeurs de la communauté {0}.",
+	"group.read" : "Tous les lecteurs de la communauté {0}.",
 	
 	"rbs.booking.create.conflict" : "Votre demande de réservation n'a pas pu être enregistrée, car il existe une demande concurrente validée.",
 	"rbs.booking.update.conflict" : "Votre demande de réservation n'a pas pu être mise à jour, car il existe une demande concurrente validée.",
