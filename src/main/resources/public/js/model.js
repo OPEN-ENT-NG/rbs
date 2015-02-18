@@ -1,6 +1,3 @@
-// custom loading
-loader.loadFile('/rbs/public/js/additional.js');
-
 model.colors = ['cyan', 'green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
 
 model.STATE_CREATED = 1;
@@ -565,6 +562,9 @@ SelectionHolder.prototype.restore = function(resourceTypeCallback, resourceCallb
 
 
 model.build = function(){
+	// custom directives loading
+	loader.loadFile('/rbs/public/js/additional.js');
+
 	model.me.workflow.load(['rbs']);
 	this.makeModels([ResourceType, Resource, Booking, SelectionHolder]);
 	Model.prototype.inherits(Booking, calendar.ScheduleItem);
