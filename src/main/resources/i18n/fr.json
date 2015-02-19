@@ -92,6 +92,7 @@
     "rbs.booking.headers.end_date": "Date de fin",
     "rbs.booking.headers.moderator": "Traité par",
     "rbs.booking.headers.nb": "Créneau",
+    "rbs.booking.headers.periodic": "Réservation périodique",
     "rbs.booking.headers.owner": "Demandeur",
     "rbs.booking.headers.reason": "Motif de la réservation",
     "rbs.booking.headers.resource": "Ressource",
