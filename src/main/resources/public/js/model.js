@@ -11,11 +11,10 @@ model.DETACHED_STRUCTURE = {
 };
 	
 
-model.times = [];
-model.timeConfig = { // 5min slots from 7h00 to 19h55, default 8h00
+model.timeConfig = { // 5min slots from 7h00 to 20h00, default 8h00
 	interval: 5, // in minutes
 	start_hour: 7,
-	end_hour: 19,
+	end_hour: 20,
 	default_hour: 8
 };
 
@@ -815,7 +814,6 @@ model.build = function(){
 
 	this.recordedSelections = new SelectionHolder();
 
-	model.loadTimes();
 	model.loadPeriods();
 };
 
@@ -929,20 +927,6 @@ model.bitMaskToDays = function(bitMask) {
 		}
 	});
 	return periodDays;
-};
-
-model.loadTimes = function() {
-	for(hour = model.timeConfig.start_hour; hour <= model.timeConfig.end_hour; hour++) {
-		for (min = 0; min < 60; min = min + model.timeConfig.interval) {
-			var hourMinutes = {
-				hour: hour,
-				min: min,
-				name: ' ' + (hour < 10 ? ' ' + hour : hour) + ' h ' + (min < 10 ? '0' + min : min)
-
-			};
-			model.times.push(hourMinutes);
-		}
-	}
 };
 
 model.loadPeriods = function() {
