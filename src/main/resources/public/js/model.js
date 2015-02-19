@@ -1,4 +1,4 @@
-model.colors = ['cyan', 'green', 'orange', 'pink', 'yellow', 'purple', 'grey'];
+model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
 
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
