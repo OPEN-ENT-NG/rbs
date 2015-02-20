@@ -142,6 +142,29 @@ module.directive('datePickerRbs', function($compile){
 				$scope.$parent.$eval($scope.ngChange);
 				$scope.$parent.$apply();
 			});
+
+			$element.on('show', function() {
+				var that = this;
+				var lightbox = $element.parents().find('lightbox');
+				if(lightbox) {
+					_.each(lightbox.find('.lightbox-view, .lightbox-background'), function(zone) {
+						$(zone).on('mousedown', function(e) {
+							if ($(e.target).closest('.datepicker').length == 0) {
+								$(that).datepicker('hide');
+							}
+						});
+					});
+				}
+			});
+
+			$element.on('hide', function() {
+				var lightbox = $element.parents().find('lightbox');
+				if(lightbox) {
+					_.each(lightbox.find('.lightbox-view, .lightbox-background'), function(zone) {
+						$(zone).off('mousedown');
+					});
+				}
+			});
 		}
 	}
 });
@@ -168,6 +191,7 @@ module.directive('timePickerRbs', function($compile){
 					maxHour: model.timeConfig.end_hour
 				});
 			});
+
 			$scope.$watch('ngModel', function(newVal){
 				$scope.ngModel = newVal;
 				$element.val($scope.ngModel.format("HH:mm"));
@@ -178,6 +202,7 @@ module.directive('timePickerRbs', function($compile){
 					$scope.ngLimit = moment(newVal);
 				}
 			});
+
 			$element.on('change', function(){
 				var time = $element.val().split(':');
 				$scope.ngModel = moment($scope.ngLimit);
@@ -187,8 +212,37 @@ module.directive('timePickerRbs', function($compile){
 				$scope.$parent.$eval($scope.ngChange);
 				$scope.$parent.$apply();
 			});
+
 			$element.on('focus', function() {
 				$element.timepicker('updateFromElementVal');
+			});
+
+			$element.on('show.timepicker', function() {
+				var timepicker = $element.data('timepicker');
+				if (! timepicker){
+					return;
+				}
+				var lightbox = $element.parents().find('lightbox');
+				if(lightbox) {
+					_.each(lightbox.find('.lightbox-view, .lightbox-background'), function(zone) {
+						$(zone).on('mousedown.timepicker, touchend.timepicker', function(e) {
+							if (!($element.parent().find(e.target).length ||
+								timepicker.$widget.is(e.target) ||
+								timepicker.$widget.find(e.target).length)) {
+								timepicker.hideWidget();
+							}
+						});
+					});
+				}
+			});
+
+			$element.on('hide.timepicker', function() {
+				var lightbox = $element.parents().find('lightbox');
+				if(lightbox) {
+					_.each(lightbox.find('.lightbox-view, .lightbox-background'), function(zone) {
+						$(zone).off('mousedown.timepicker, touchend.timepicker');
+					});
+				}
 			});
 		}
 	}
