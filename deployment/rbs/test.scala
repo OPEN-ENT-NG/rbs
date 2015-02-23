@@ -4,3 +4,6 @@
   .group("Rbs Scenario") {
     net.atos.entng.rbs.test.integration.RbsScenario.scnCreateBookings
   }
+  .group("Rbs Scenario") {
+    net.atos.entng.rbs.test.integration.RbsScenario.scnAdml
+  }

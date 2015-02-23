@@ -53,6 +53,13 @@ object RbsScenario {
       .formParam("""firstname""", """Catherine""")
       .formParam("""type""", """Teacher""")
       .check(status.is(200)))
+    .exec(http("Create manual teacher")
+      .post("""/directory/api/user""")
+      .formParam("""classId""", """${classId}""")
+      .formParam("""lastname""", "DAUDIER")
+      .formParam("""firstname""", """Remi""")
+      .formParam("""type""", """Teacher""")
+      .check(status.is(200)))
 
     .exec(http("List teachers in class")
       .get("""/directory/api/personnes?id=${classId}&type=Teacher""")
@@ -62,7 +69,7 @@ object RbsScenario {
           json.values.asScala.foldLeft[List[(String, String)]](Nil) { (acc, c) =>
             val user = c.asInstanceOf[JSONObject]
             user.get("lastName").asInstanceOf[String] match {
-              case "PIRES" | "BAILLY" if user.get("code") != null =>
+              case "PIRES" | "BAILLY" | "DAUDIER" if user.get("code") != null =>
                 (user.get("lastName").asInstanceOf[String], user.get("userId").asInstanceOf[String]) :: acc
               case _ => acc
             }
@@ -71,7 +78,9 @@ object RbsScenario {
 
     .exec { session =>
       val uIds = session("createdTeacherIds").as[Map[String, String]]
-      session.set("teacherPiresId", uIds.get("PIRES").get).set("teacherBaillyId", uIds.get("BAILLY").get)
+      session.set("teacherPiresId", uIds.get("PIRES").get)
+      	.set("teacherBaillyId", uIds.get("BAILLY").get)
+      	.set("teacherDaudierId", uIds.get("DAUDIER").get)
         .set("now", System.currentTimeMillis())
     }
     .exec(http("Teacher details")
@@ -84,6 +93,11 @@ object RbsScenario {
       .check(status.is(200), jsonPath("$.status").is("ok"),
         jsonPath("$.result.*.login").find.saveAs("teacherBaillyLogin"),
         jsonPath("$.result.*.code").find.saveAs("teacherBaillyCode")))
+    .exec(http("Teacher details")
+      .get("""/directory/api/details?id=${teacherDaudierId}""")
+      .check(status.is(200), jsonPath("$.status").is("ok"),
+        jsonPath("$.result.*.login").find.saveAs("teacherDaudierLogin"),
+        jsonPath("$.result.*.code").find.saveAs("teacherDaudierCode")))
 
     .exec(http("Activate teacher account")
       .post("""/auth/activation""")
@@ -101,6 +115,19 @@ object RbsScenario {
       .formParam("""confirmPassword""", """blipblop""")
       .formParam("""acceptCGU""", """true""")
       .check(status.is(302)))
+    .exec(http("Activate teacher account")
+      .post("""/auth/activation""")
+      .formParam("""login""", """${teacherDaudierLogin}""")
+      .formParam("""activationCode""", """${teacherDaudierCode}""")
+      .formParam("""password""", """blipblop""")
+      .formParam("""confirmPassword""", """blipblop""")
+      .formParam("""acceptCGU""", """true""")
+      .check(status.is(302)))
+    .exec(http("Add ADML function to teacher DAUDIER")
+    .post("""/directory/user/function/${teacherDaudierId}""")
+    .header("Content-Type", "application/json")
+    .body(StringBody("""{"functionCode": "ADMIN_LOCAL_${now}", "scope": ["${schoolId}"], "inherit":"sc"}"""))
+    .check(status.is(200)))
 
   val scnCreateBookings =
     Role.createAndSetRole("Réservation de ressources")
@@ -311,4 +338,87 @@ object RbsScenario {
 //      .exec(http("Get Type deleted")
 //        .get("/rbs/type/${typeId}")
 //        .check(status.is(401)))
+
+
+  val scnAdml =
+    Role.createAndSetRole("Réservation de ressources")
+      .exec(http("Login - ADML")
+        .post("""/auth/login""")
+        .formParam("""email""", """${teacherDaudierLogin}""")
+        .formParam("""password""", """blipblop""")
+        .check(status.is(302)))
+      // ResourceType
+      .exec(http("ADML creates type")
+        .post("/rbs/type")
+        .body(StringBody("""{"name" : "type created", "validation" : true, "school_id" : "${schoolId}"}"""))
+        .check(status.is(200),
+          jsonPath("$.id").find.saveAs("admlTypeId")))
+      // Resource
+      .exec(http("ADML creates resource")
+        .post("/rbs/resources")
+        .body(StringBody("""{"name" : "resource created",
+    					"description" : "resource created desc",
+    					"periodic_booking" : true,
+    					"is_available" : true,
+    					"type_id" : ${typeId}}"""))
+        .check(status.is(200),
+          jsonPath("$.id").find.saveAs("admlResourceId")))
+      .exec(http("ADML gets resource created by a teacher")
+        .get("/rbs/resource/${resourceId}")
+        .check(status.is(200),
+          jsonPath("$.id").find.is("${resourceId}"),
+          jsonPath("$.name").find.is("resource created"),
+          jsonPath("$.description").find.is("resource created desc"),
+          jsonPath("$.periodic_booking").find.is("true"),
+          jsonPath("$.is_available").find.is("true"),
+          jsonPath("$.type_id").find.is("${typeId}")))
+      .exec(http("ADML updates resource created by a teacher")
+        .put("/rbs/resource/${resourceId}")
+        .body(StringBody("""{"name" : "resource updated by adml",
+        					"description" : "resource updated by adml description",
+        					"type_id" : ${typeId},
+            				"is_available" : true,
+        					"was_available" : true }"""))
+        .check(status.is(200)))
+      .exec(http("ADML gets updated resource")
+        .get("/rbs/resource/${resourceId}")
+        .check(status.is(200),
+          jsonPath("$.id").find.is("${resourceId}"),
+          jsonPath("$.name").find.is("resource updated by adml"),
+          jsonPath("$.description").find.is("resource updated by adml description"),
+          jsonPath("$.periodic_booking").find.is("true"),
+          jsonPath("$.is_available").find.is("true"),
+          jsonPath("$.type_id").find.is("${typeId}")))
+      .exec(http("ADML list resources")
+        .get("/rbs/resources")
+        .check(status.is(200),
+          jsonPath("$[0].id").find.is("${resourceId}"),
+          jsonPath("$[1].id").find.is("${admlResourceId}")))
+      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
+        .put("/rbs/share/json/${admlTypeId}")
+        .bodyPart(StringBodyPart("userId", "${teacherPiresId}"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+        .check(status.is(200)))
+      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
+        .put("/rbs/share/json/${admlTypeId}")
+        .bodyPart(StringBodyPart("userId", "${teacherBaillyId}"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+        .check(status.is(200)))
+      .exec(http("Logout - ADML")
+        .get("""/auth/logout""")
+        .check(status.is(302)))
+
+        // TODO : CRUD bookings
 }
