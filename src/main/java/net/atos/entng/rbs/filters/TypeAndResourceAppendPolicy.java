@@ -22,6 +22,7 @@ import org.vertx.java.core.json.JsonObject;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 
+// Filter used to consider rights on resourceTypes AND on resources
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 	@Override
@@ -39,8 +40,8 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			// Groups and users
 			final List<String> groupsAndUserIds = new ArrayList<>();
 			groupsAndUserIds.add(user.getUserId());
-			if (user.getProfilGroupsIds() != null) {
-				groupsAndUserIds.addAll(user.getProfilGroupsIds());
+			if (user.getGroupsIds() != null) {
+				groupsAndUserIds.addAll(user.getGroupsIds());
 			}
 
 			// Query

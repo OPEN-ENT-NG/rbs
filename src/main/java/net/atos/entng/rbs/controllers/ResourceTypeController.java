@@ -51,8 +51,8 @@ public class ResourceTypeController extends ControllerHelper {
 			public void handle(final UserInfos user) {
 				final List<String> groupsAndUserIds = new ArrayList<>();
 				groupsAndUserIds.add(user.getUserId());
-				if (user.getProfilGroupsIds() != null) {
-					groupsAndUserIds.addAll(user.getProfilGroupsIds());
+				if (user.getGroupsIds() != null) {
+					groupsAndUserIds.addAll(user.getGroupsIds());
 				}
 
 				resourceTypeService.list(groupsAndUserIds, user, arrayResponseHandler(request));
