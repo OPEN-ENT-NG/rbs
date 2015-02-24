@@ -5,9 +5,12 @@ import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 
 import java.util.List;
+import java.util.Map;
 
 import org.entcore.common.sql.Sql;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 
@@ -33,10 +36,24 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
-		query.append(" OR t.owner = ?")
-			.append(" GROUP BY t.id")
-			.append(" ORDER BY t.id");
+
+		query.append(" OR t.owner = ?");
 		values.add(user.getUserId());
+
+		// A local administrator of a given school can see its types, even if he is not owner or manager of these types
+		Map<String, Function> functions = user.getFunctions();
+		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+			if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
+				query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
+				for (String schoolId : adminLocal.getScope()) {
+					values.addString(schoolId);
+				}
+			}
+		}
+
+		query.append(" GROUP BY t.id")
+			.append(" ORDER BY t.id");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}

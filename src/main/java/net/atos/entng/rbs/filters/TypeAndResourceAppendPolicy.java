@@ -4,6 +4,7 @@ import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.atos.entng.rbs.controllers.ResourceController;
 
@@ -12,29 +13,38 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 
-// Filter used to consider rights on resourceTypes AND on resources
+/* Authorize if user has rights (owner or shared) on resourceType or on resource,
+ * or if he is a local administrator for the resourceType's school_id
+ */
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(TypeAndResourceAppendPolicy.class);
 
 	@Override
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
 		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
-		String id = request.params().get(conf.getResourceIdLabel());
+		String resourceId = request.params().get(conf.getResourceIdLabel());
 		String bookingId = request.params().get("bookingId");
 		boolean hasBooking = (bookingId != null && !bookingId.trim().isEmpty());
 
-		if (id != null && !id.trim().isEmpty() && (parseId(id) instanceof Integer)) {
+		if (resourceId != null && !resourceId.trim().isEmpty() && (parseId(resourceId) instanceof Integer)) {
 			request.pause();
-			// Method
+			// Replace character '.' by '-' in the called method's name
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 
 			// Groups and users
@@ -47,44 +57,40 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
-			query.append("SELECT count(*) FROM rbs.resource AS r")
-					.append(" INNER JOIN rbs.resource_type AS t")
-					.append(	" ON r.type_id = t.id");
+			query.append("SELECT count(*) AS count,")
+					.append(" (SELECT ty.school_id FROM rbs.resource_type AS ty INNER JOIN rbs.resource AS re ON ty.id = re.type_id WHERE re.id = ?) AS school_id") // subquery to return school_id even if count = 0
+					.append(" FROM rbs.resource AS r")
+					.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
+			values.add(parseId(resourceId));
 
 			if (hasBooking) {
 				// Additional join when parameter bookingId is used
-				query.append(" INNER JOIN rbs.booking AS b")
-					.append(    " ON b.resource_id = r.id ");
+				query.append(" INNER JOIN rbs.booking AS b ON b.resource_id = r.id");
 			}
 
-			query.append(" LEFT JOIN rbs.resource_type_shares AS ts")
-					.append(	" ON t.id = ts.resource_id")
-					.append(" LEFT JOIN rbs.resource_shares AS rs")
-					.append(	" ON r.id = rs.resource_id")
-					.append(" WHERE ((ts.member_id IN ")
-					.append(Sql.listPrepared(groupsAndUserIds.toArray()))
-					.append(" AND ts.action = ?)");
+			query.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+					.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+					.append(" WHERE ((ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray())).append(" AND ts.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (rs.member_id IN ")
-				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
-				.append(" AND rs.action = ?)");
+
+			query.append(" OR (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray())).append(" AND rs.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (t.owner = ?)");
-			values.add(user.getUserId());
-			query.append(" OR (r.owner = ?)");
-			values.add(user.getUserId());
+
+			query.append(" OR t.owner = ? OR r.owner = ?");
+			values.add(user.getUserId()).add(user.getUserId());
 			if(isDeleteBooking(binding)) {
-				query.append(" OR (b.owner = ?)");
+				query.append(" OR b.owner = ?"); // Owner can delete his booking
 				values.add(user.getUserId());
 			}
+
 			query.append(") AND r.id = ?");
-			values.add(Sql.parseId(id));
+			values.add(Sql.parseId(resourceId));
 			if (hasBooking) {
 				query.append(" AND b.id = ?");
 				values.add(Sql.parseId(bookingId));
@@ -114,8 +120,48 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					request.resume();
-					Long count = SqlResult.countResult(message);
-					handler.handle(count != null && count > 0);
+					Either<String, JsonObject> result = SqlResult.validUniqueResult(message);
+
+					if(result.isLeft()) {
+						log.error(result.left());
+						handler.handle(false);
+					}
+					else {
+						JsonObject value = result.right().getValue();
+						if(value == null) {
+							log.error("Error : SQL request in filter TypeAndResourceAppendPolicy should not return null");
+							handler.handle(false);
+							return;
+						}
+
+						// Authorize if count > 0
+						Long count = (Long) value.getNumber("count", 0);
+						if(count != null && count > 0) {
+							handler.handle(true);
+							return;
+						}
+
+						// Else authorize if user is a local admin for the resourceType's school_id
+						String schoolId = value.getString("school_id", null);
+						if(schoolId == null || schoolId.trim().isEmpty()) {
+							log.error("school_id not found");
+							handler.handle(false);
+							return;
+						}
+
+						// *** TODO : check availability of resource, etc.
+
+						Map<String, UserInfos.Function> functions = user.getFunctions();
+						if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+							Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+							if(adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(schoolId)) {
+								handler.handle(true);
+								return;
+							}
+						}
+
+						handler.handle(false);
+					}
 				}
 			});
 		} else {

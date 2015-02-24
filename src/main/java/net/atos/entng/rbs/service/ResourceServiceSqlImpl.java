@@ -8,10 +8,13 @@ import static org.entcore.common.sql.SqlResult.validResultHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
 import java.util.List;
+import java.util.Map;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -40,8 +43,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 			.append(" LEFT JOIN rbs.members AS m ON (rs.member_id = m.id AND m.group_id IS NOT NULL)");
 
-		query.append(" WHERE rs.member_id IN ")
-			.append(Sql.listPrepared(groupsAndUserIds.toArray()));
+		query.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
@@ -56,6 +58,18 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 
 		query.append(" OR t.owner = ?");
 		values.add(user.getUserId());
+
+ 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
+		Map<String, Function> functions = user.getFunctions();
+		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+			if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
+				query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
+				for (String schoolId : adminLocal.getScope()) {
+					values.addString(schoolId);
+				}
+			}
+		}
 
 		query.append(" GROUP BY r.id")
 			.append(" ORDER BY r.id");

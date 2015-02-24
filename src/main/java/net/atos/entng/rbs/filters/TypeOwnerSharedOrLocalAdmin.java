@@ -39,34 +39,38 @@ public class TypeOwnerSharedOrLocalAdmin implements ResourcesProvider {
 			final Handler<Boolean> handler) {
 
 		SqlConf conf = SqlConfs.getConf(ResourceTypeController.class.getName());
-		String id = request.params().get(conf.getResourceIdLabel());
+		String resourceTypeId = request.params().get(conf.getResourceIdLabel());
 
-		if(id == null || id.trim().isEmpty()) {
+		if(resourceTypeId == null || resourceTypeId.trim().isEmpty()) {
 			handler.handle(false);
 		}
 		else {
 			request.pause();
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 
-			List<String> gu = new ArrayList<>();
-			gu.add(user.getUserId());
-			if (user.getGroupsIds() != null) {
-				gu.addAll(user.getGroupsIds());
+			final List<String> groupsAndUserIds = new ArrayList<>();
+			groupsAndUserIds.add(user.getUserId());
+			if (user.getGroupsIds() != null && !user.getGroupsIds().isEmpty()) {
+				groupsAndUserIds.addAll(user.getGroupsIds());
 			}
-			final Object[] groupsAndUserIds = gu.toArray();
 
 			StringBuilder query = new StringBuilder();
-			query.append("SELECT count(*) AS count, (SELECT school_id FROM rbs.resource_type where id = 111) AS school_id ") // subquery to return school_id even if count = 0
+			query.append("SELECT count(*) AS count, ")
+				.append(" (SELECT school_id FROM rbs.resource_type where id = ?) AS school_id") // subquery to return school_id even if count = 0
 				.append(" FROM rbs.resource_type AS t")
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-				.append(" WHERE ((ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds))
+				.append(" WHERE ((ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
 				.append("AND ts.action = ?)");
-			JsonArray values = new JsonArray(groupsAndUserIds).add(sharedMethod);;
+			JsonArray values = new JsonArray().add(Sql.parseId(resourceTypeId));
+			for (String groupOrUserId : groupsAndUserIds) {
+				values.add(groupOrUserId);
+			}
+			values.add(sharedMethod);
 
 			query.append(" OR t.owner = ?)")
 				.append(" AND t.id = ?");
 			values.add(user.getUserId())
-				.add(Sql.parseId(id));
+				.add(Sql.parseId(resourceTypeId));
 
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
 				@Override
