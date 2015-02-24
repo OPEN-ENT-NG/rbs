@@ -309,7 +309,7 @@ object RbsScenario {
         .body(getSlotAsStringBody(firstSlot))
         .check(status.is(409)))
 
-      // 2. Create a periodic booking and check that slots' start and end dates are correct
+      // 2a. Create a periodic booking (with field 'occurrences' supplied) and check that slots' start and end dates are correct
       .exec(http("Create periodic booking")
         .post("/rbs/resource/${resourceId}/booking/periodic")
         .body(StringBody("""{"booking_reason":"Résa périodique",
@@ -345,6 +345,8 @@ object RbsScenario {
           jsonPath("$[?(@.id == ${slotsIds(8)})].end_date").is("2030-12-12T16:30:00.000"),
           jsonPath("$[?(@.id == ${slotsIds(9)})].start_date").is("2030-12-13T09:30:00.000"),
           jsonPath("$[?(@.id == ${slotsIds(9)})].end_date").is("2030-12-13T16:30:00.000")))
+
+          // TODO : 2b create a periodic booking (with field 'periodic_end_date' supplied)
 
   val scnAdml = exec(http("Login - ADML")
         .post("""/auth/login""")
@@ -451,7 +453,21 @@ object RbsScenario {
         .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
         .check(status.is(200)))
 
-        // TODO : CRUD, validate/refuse bookings
+       // Validate/refuse bookings
+      .exec(http("ADML validates booking")
+        .put("/rbs/resource/${resourceId}/booking/${nonConcurrentBookingId}/process")
+        .body(StringBody("""{"status": 2}"""))
+        .check(status.is(200),
+          jsonPath("$.id").is("${nonConcurrentBookingId}"),
+          jsonPath("$.status").is("2")))
+      .exec(http("ADML refuses booking")
+        .put("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}/process")
+        .body(StringBody("""{"status": 3}"""))
+        .check(status.is(200),
+          jsonPath("$.id").is("${secondNonConcurrentBookingId}"),
+          jsonPath("$.status").is("3")))
+
+       // TODO : CRUD bookings
 
       // Deletes
       .exec(http("Delete Resource")
@@ -466,6 +482,7 @@ object RbsScenario {
 //      .exec(http("Get Type deleted")
 //        .get("/rbs/type/${typeId}")
 //        .check(status.is(401)))
+
       .exec(http("Logout - ADML")
         .get("""/auth/logout""")
         .check(status.is(302)))

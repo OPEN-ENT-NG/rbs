@@ -158,6 +158,10 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 						}
 
 						String props = value.getString("properties", null);
+						if(props == null) {
+							handler.handle(false);
+							return;
+						}
 						JsonObject properties = new JsonObject(props);
 
 						String schoolId = properties.getString("school_id", null);
