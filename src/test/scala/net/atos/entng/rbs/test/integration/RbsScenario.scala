@@ -451,7 +451,7 @@ object RbsScenario {
         .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
         .check(status.is(200)))
 
-        // TODO : CRUD bookings
+        // TODO : CRUD, validate/refuse bookings
 
       // Deletes
       .exec(http("Delete Resource")

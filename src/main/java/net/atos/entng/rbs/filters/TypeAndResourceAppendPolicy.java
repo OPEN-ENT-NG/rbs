@@ -57,9 +57,17 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
-			query.append("SELECT count(*) AS count,")
-					.append(" (SELECT ty.school_id FROM rbs.resource_type AS ty INNER JOIN rbs.resource AS re ON ty.id = re.type_id WHERE re.id = ?) AS school_id") // subquery to return school_id even if count = 0
-					.append(" FROM rbs.resource AS r")
+			query.append("SELECT count(*) AS count,");
+
+			// Subquery to return properties even if count = 0 (A query with GROUP BY returns nothing if count = 0)
+			query.append("(SELECT row_to_json(props) AS properties FROM (")
+					.append(" SELECT ty.school_id, re.periodic_booking, re.is_available") // trick to create JSON : selecting from a select clause avoids declaring a type and casting to this type
+					.append(" FROM rbs.resource_type AS ty")
+					.append(" INNER JOIN rbs.resource AS re ON ty.id = re.type_id")
+					.append(" WHERE re.id = ?")
+				.append(") props)");
+
+			query.append(" FROM rbs.resource AS r")
 					.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
 			values.add(parseId(resourceId));
 
@@ -141,15 +149,41 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 							return;
 						}
 
+
 						// Else authorize if user is a local admin for the resourceType's school_id
-						String schoolId = value.getString("school_id", null);
+						if(isUpdateBooking(binding) || isUpdatePeriodicBooking(binding)) {
+							// Only the owner can update his booking. Local admins can't
+							handler.handle(false);
+							return;
+						}
+
+						String props = value.getString("properties", null);
+						JsonObject properties = new JsonObject(props);
+
+						String schoolId = properties.getString("school_id", null);
 						if(schoolId == null || schoolId.trim().isEmpty()) {
 							log.error("school_id not found");
 							handler.handle(false);
 							return;
 						}
 
-						// *** TODO : check availability of resource, etc.
+						Boolean isPeriodicBooking = properties.getBoolean("periodic_booking");
+						Boolean isAvailable = properties.getBoolean("is_available");
+
+						if (isCreatePeriodicBooking(binding)) {
+							// Check that the resource allows periodic_booking and that it is available
+							if(!isPeriodicBooking || !isAvailable) {
+								handler.handle(false);
+								return;
+							}
+						}
+						else if(isCreateBooking(binding)) {
+							// Check that the resource is available
+							if(!isAvailable) {
+								handler.handle(false);
+								return;
+							}
+						}
 
 						Map<String, UserInfos.Function> functions = user.getFunctions();
 						if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {

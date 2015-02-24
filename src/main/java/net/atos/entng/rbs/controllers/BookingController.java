@@ -880,9 +880,9 @@ public class BookingController extends ControllerHelper {
 
 
 	 /*
-	  * TODO : limiter à un créneau horaire donné la liste des réservations retournées.
-	  * Créneau horaire par défaut : la semaine ou le mois actuel
-	  * Permettre de préciser un créneau
+	  * TODO : limiter à un intervalle donné la liste des réservations retournées.
+	  * Mettre en place un intervalle par défaut (la semaine ou le mois actuel par exemple)
+	  * Permettre de préciser un intervalle
 	  */
 
 	 @Get("/bookings")
