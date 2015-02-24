@@ -36,8 +36,13 @@ Behaviours.register('rbs', {
 			resource.myRights = {};
 		}
 
-		for(var behaviour in rbsBehaviours.resources){ // resource.owner currently directly contains Id
-			if(model.me.userId === resource.owner || model.me.userId === rightsContainer.owner || model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour])){
+		// ADML permission check
+		var isAdmlForResource = model.me.functions.ADMIN_LOCAL && _.find(model.me.functions.ADMIN_LOCAL.scope, function(structure_id) {
+			return structure_id === rightsContainer.school_id;
+		});
+
+		for(var behaviour in rbsBehaviours.resources) {
+			if(model.me.userId === resource.owner || model.me.userId === rightsContainer.owner || isAdmlForResource || model.me.hasRight(rightsContainer, rbsBehaviours.resources[behaviour])){
 				if(resource.myRights[behaviour] !== undefined){
 					resource.myRights[behaviour] = resource.myRights[behaviour] && rbsBehaviours.resources[behaviour];
 				}
