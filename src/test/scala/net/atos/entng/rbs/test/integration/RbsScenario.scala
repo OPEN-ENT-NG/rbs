@@ -29,8 +29,9 @@ object RbsScenario {
   val secondNonConcurrentSlot = (concurrentSlot._1 - TimeUnit.SECONDS.convert(1, TimeUnit.HOURS), concurrentSlot._1)
 
   // Dates to create a periodic booking
-  val periodicStartDate = 1919755800L // 2030-11-01 (friday) 09:30:00
-  val periodicEndDate = periodicStartDate + TimeUnit.SECONDS.convert(7, TimeUnit.HOURS)
+  val pSlotStartDate = 1919755800L // 2030-11-01 (friday) 09:30:00
+  val pSlotEndDate = pSlotStartDate + TimeUnit.SECONDS.convert(7, TimeUnit.HOURS)
+  val pLastSlotEndDate = 1923409800L // 2030-12-13 16:30:00
 
   val scnCreateTeachers = exec(http("Login - admin user")
     .post("""/auth/login""")
@@ -313,8 +314,8 @@ object RbsScenario {
       .exec(http("Create periodic booking")
         .post("/rbs/resource/${resourceId}/booking/periodic")
         .body(StringBody("""{"booking_reason":"Résa périodique",
-            "start_date" : """ + periodicStartDate + """,
-            "end_date" : """ + periodicEndDate + """,
+            "start_date" : """ + pSlotStartDate + """,
+            "end_date" : """ + pSlotEndDate + """,
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
             "occurrences":10
@@ -346,7 +347,42 @@ object RbsScenario {
           jsonPath("$[?(@.id == ${slotsIds(9)})].start_date").is("2030-12-13T09:30:00.000"),
           jsonPath("$[?(@.id == ${slotsIds(9)})].end_date").is("2030-12-13T16:30:00.000")))
 
-          // TODO : 2b create a periodic booking (with field 'periodic_end_date' supplied)
+       // 2b. Create a periodic booking (with field 'periodic_end_date' supplied) and check that slots' start and end dates are correct
+       .exec(http("Create periodic booking")
+        .post("/rbs/resource/${resourceId}/booking/periodic")
+        .body(StringBody("""{"booking_reason":"Résa périodique",
+            "start_date" : """ + pSlotStartDate + """,
+            "end_date" : """ + pSlotEndDate + """,
+            "days":[false, true, false, false, true, true, false],
+            "periodicity":2,
+            "periodic_end_date": """ + pLastSlotEndDate + """
+            }"""))
+        .check(status.is(200),
+          jsonPath("$[?(@.status != 1)]").notExists,
+          jsonPath("$..id").findAll.saveAs("slotsIds")))
+      .exec(http("List bookings and check their dates")
+        .get("/rbs/resource/${resourceId}/bookings")
+        .check(status.is(200),
+          jsonPath("$[?(@.id == ${slotsIds(0)})].start_date").is("2030-11-01T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(0)})].end_date").is("2030-11-01T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(1)})].start_date").is("2030-11-11T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(1)})].end_date").is("2030-11-11T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(2)})].start_date").is("2030-11-14T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(2)})].end_date").is("2030-11-14T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(3)})].start_date").is("2030-11-15T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(3)})].end_date").is("2030-11-15T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(4)})].start_date").is("2030-11-25T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(4)})].end_date").is("2030-11-25T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(5)})].start_date").is("2030-11-28T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(5)})].end_date").is("2030-11-28T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(6)})].start_date").is("2030-11-29T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(6)})].end_date").is("2030-11-29T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(7)})].start_date").is("2030-12-09T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(7)})].end_date").is("2030-12-09T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(8)})].start_date").is("2030-12-12T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(8)})].end_date").is("2030-12-12T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(9)})].start_date").is("2030-12-13T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(9)})].end_date").is("2030-12-13T16:30:00.000")))
 
   val scnAdml = exec(http("Login - ADML")
         .post("""/auth/login""")
@@ -454,20 +490,74 @@ object RbsScenario {
         .check(status.is(200)))
 
        // Validate/refuse bookings
-      .exec(http("ADML validates booking")
+      .exec(http("ADML validates booking created by teacher")
         .put("/rbs/resource/${resourceId}/booking/${nonConcurrentBookingId}/process")
         .body(StringBody("""{"status": 2}"""))
         .check(status.is(200),
           jsonPath("$.id").is("${nonConcurrentBookingId}"),
           jsonPath("$.status").is("2")))
-      .exec(http("ADML refuses booking")
+      .exec(http("ADML refuses booking created by teacher")
         .put("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}/process")
         .body(StringBody("""{"status": 3}"""))
         .check(status.is(200),
           jsonPath("$.id").is("${secondNonConcurrentBookingId}"),
           jsonPath("$.status").is("3")))
 
-       // TODO : CRUD bookings
+//      .exec(http("ADML deletes booking created by teacher")
+//        .delete("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}")
+//        .check(status.is(204)))
+      .exec(http("ADML creates booking")
+        .post("/rbs/resource/${resourceId}/booking")
+        .body(getSlotAsStringBody(secondNonConcurrentSlot))
+        .check(status.is(200),
+          jsonPath("$.id").find.saveAs("admlBookingId")))
+      .exec(http("ADML lists bookings")
+        .get("/rbs/resource/${resourceId}/bookings")
+        .check(status.is(200),
+          jsonPath("$[?(@.id == ${admlBookingId})].status").is("1")))
+      .exec(http("ADML updates booking")
+        .put("/rbs/resource/${resourceId}/booking/${admlBookingId}")
+        .body(StringBody("""{
+            "start_date" : """ + pSlotStartDate + """,
+            "end_date" : """ + pSlotEndDate + """
+            }"""))
+        .check(status.is(200)))
+
+      .exec(http("ADML creates periodic booking")
+        .post("/rbs/resource/${admlResourceIdInTeacherType}/booking/periodic")
+        .body(StringBody("""{"booking_reason":"Résa périodique",
+            "start_date" : """ + pSlotStartDate + """,
+            "end_date" : """ + pSlotEndDate + """,
+            "days":[false, true, false, false, true, true, false],
+            "periodicity":2,
+            "occurrences":10
+            }"""))
+        .check(status.is(200),
+          jsonPath("$[?(@.status != 1)]").notExists,
+          jsonPath("$..id").findAll.saveAs("slotsIds")))
+      .exec(http("List bookings and check their dates")
+        .get("/rbs/resource/${admlResourceIdInTeacherType}/bookings")
+        .check(status.is(200),
+          jsonPath("$[?(@.id == ${slotsIds(0)})].start_date").is("2030-11-01T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(0)})].end_date").is("2030-11-01T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(1)})].start_date").is("2030-11-11T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(1)})].end_date").is("2030-11-11T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(2)})].start_date").is("2030-11-14T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(2)})].end_date").is("2030-11-14T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(3)})].start_date").is("2030-11-15T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(3)})].end_date").is("2030-11-15T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(4)})].start_date").is("2030-11-25T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(4)})].end_date").is("2030-11-25T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(5)})].start_date").is("2030-11-28T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(5)})].end_date").is("2030-11-28T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(6)})].start_date").is("2030-11-29T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(6)})].end_date").is("2030-11-29T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(7)})].start_date").is("2030-12-09T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(7)})].end_date").is("2030-12-09T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(8)})].start_date").is("2030-12-12T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(8)})].end_date").is("2030-12-12T16:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(9)})].start_date").is("2030-12-13T09:30:00.000"),
+          jsonPath("$[?(@.id == ${slotsIds(9)})].end_date").is("2030-12-13T16:30:00.000")))
 
       // Deletes
       .exec(http("Delete Resource")
