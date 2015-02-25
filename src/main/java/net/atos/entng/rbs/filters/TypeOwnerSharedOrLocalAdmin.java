@@ -19,10 +19,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 
 /* Authorize if
@@ -31,8 +28,6 @@ import fr.wseduc.webutils.http.Binding;
  * or he is a local administrator for the school_id of the resourceType
  */
 public class TypeOwnerSharedOrLocalAdmin implements ResourcesProvider {
-
-	private static final Logger log = LoggerFactory.getLogger(TypeOwnerSharedOrLocalAdmin.class);
 
 	@Override
 	public void authorize(final HttpServerRequest request, Binding binding, final UserInfos user,
@@ -55,17 +50,29 @@ public class TypeOwnerSharedOrLocalAdmin implements ResourcesProvider {
 			}
 
 			StringBuilder query = new StringBuilder();
-			query.append("SELECT count(*) AS count, ")
-				.append(" (SELECT school_id FROM rbs.resource_type where id = ?) AS school_id") // subquery to return school_id even if count = 0
+			JsonArray values = new JsonArray();
+
+			query.append("SELECT count(*)")
 				.append(" FROM rbs.resource_type AS t")
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 				.append(" WHERE ((ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
-				.append("AND ts.action = ?)");
-			JsonArray values = new JsonArray().add(Sql.parseId(resourceTypeId));
+				.append(" AND ts.action = ?)");
 			for (String groupOrUserId : groupsAndUserIds) {
 				values.add(groupOrUserId);
 			}
 			values.add(sharedMethod);
+
+			// Authorize user if he is a local administrator for the resourceType's school_id
+			Map<String, UserInfos.Function> functions = user.getFunctions();
+			if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+				Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+				if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
+					query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
+					for (String schoolId : adminLocal.getScope()) {
+						values.addString(schoolId);
+					}
+				}
+			}
 
 			query.append(" OR t.owner = ?)")
 				.append(" AND t.id = ?");
@@ -76,47 +83,8 @@ public class TypeOwnerSharedOrLocalAdmin implements ResourcesProvider {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					request.resume();
-					Either<String, JsonObject> result = SqlResult.validUniqueResult(message);
-
-					if(result.isLeft()) {
-						log.error(result.left());
-						handler.handle(false);
-					}
-					else {
-						JsonObject value = result.right().getValue();
-						if(value == null) {
-							log.error("Error : SQL request in filter TypeOwnerSharedOrLocalAdmin should not return null");
-							handler.handle(false);
-							return;
-						}
-
-						// Authorize if user is the resourceType's owner or if he has been shared rights
-						Long count = (Long) value.getNumber("count", 0);
-						if(count != null && count > 0) {
-							handler.handle(true);
-							return;
-						}
-
-						// Else authorize if user is a local admin for the resourceType's school_id
-						String schoolId = value.getString("school_id", null);
-						if(schoolId == null || schoolId.trim().isEmpty()) {
-							log.error("school_id not found");
-							handler.handle(false);
-							return;
-						}
-
-						Map<String, UserInfos.Function> functions = user.getFunctions();
-						if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-							Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-							if(adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(schoolId)) {
-								handler.handle(true);
-								return;
-							}
-						}
-
-						handler.handle(false);
-					}
-
+					Long count = SqlResult.countResult(message);
+					handler.handle(count != null && count > 0);
 				}
 			});
 		}

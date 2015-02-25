@@ -21,10 +21,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 
@@ -32,8 +29,6 @@ import fr.wseduc.webutils.http.HttpMethod;
  * or if he is a local administrator for the resourceType's school_id
  */
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
-
-	private static final Logger log = LoggerFactory.getLogger(TypeAndResourceAppendPolicy.class);
 
 	@Override
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
@@ -57,20 +52,9 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
-			query.append("SELECT count(*) AS count,");
-
-			// Subquery to return properties even if count = 0 (A query with GROUP BY returns nothing if count = 0)
-			query.append("(SELECT row_to_json(props) AS properties FROM (")
-					.append(" SELECT ty.school_id, re.periodic_booking, re.is_available") // trick to create JSON : selecting from a select clause avoids declaring a type and casting to this type
-					.append(" FROM rbs.resource_type AS ty")
-					.append(" INNER JOIN rbs.resource AS re ON ty.id = re.type_id")
-					.append(" WHERE re.id = ?")
-				.append(") props)");
-
-			query.append(" FROM rbs.resource AS r")
-					.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
-			values.add(parseId(resourceId));
-
+			query.append("SELECT count(*)")
+				.append(" FROM rbs.resource AS r")
+				.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
 			if (hasBooking) {
 				// Additional join when parameter bookingId is used
 				query.append(" INNER JOIN rbs.booking AS b ON b.resource_id = r.id");
@@ -89,6 +73,18 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
+
+			// Authorize user if he is a local administrator for the resourceType's school_id
+			Map<String, UserInfos.Function> functions = user.getFunctions();
+			if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+				Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+				if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
+					query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
+					for (String schoolId : adminLocal.getScope()) {
+						values.addString(schoolId);
+					}
+				}
+			}
 
 			query.append(" OR t.owner = ? OR r.owner = ?");
 			values.add(user.getUserId()).add(user.getUserId());
@@ -128,78 +124,8 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					request.resume();
-					Either<String, JsonObject> result = SqlResult.validUniqueResult(message);
-
-					if(result.isLeft()) {
-						log.error(result.left());
-						handler.handle(false);
-					}
-					else {
-						JsonObject value = result.right().getValue();
-						if(value == null) {
-							log.error("Error : SQL request in filter TypeAndResourceAppendPolicy should not return null");
-							handler.handle(false);
-							return;
-						}
-
-						// Authorize if count > 0
-						Long count = (Long) value.getNumber("count", 0);
-						if(count != null && count > 0) {
-							handler.handle(true);
-							return;
-						}
-
-
-						// Else authorize if user is a local admin for the resourceType's school_id
-						if(isUpdateBooking(binding) || isUpdatePeriodicBooking(binding)) {
-							// Only the owner can update his booking. Local admins can't
-							handler.handle(false);
-							return;
-						}
-
-						String props = value.getString("properties", null);
-						if(props == null) {
-							handler.handle(false);
-							return;
-						}
-						JsonObject properties = new JsonObject(props);
-
-						String schoolId = properties.getString("school_id", null);
-						if(schoolId == null || schoolId.trim().isEmpty()) {
-							log.error("school_id not found");
-							handler.handle(false);
-							return;
-						}
-
-						Boolean isPeriodicBooking = properties.getBoolean("periodic_booking");
-						Boolean isAvailable = properties.getBoolean("is_available");
-
-						if (isCreatePeriodicBooking(binding)) {
-							// Check that the resource allows periodic_booking and that it is available
-							if(!isPeriodicBooking || !isAvailable) {
-								handler.handle(false);
-								return;
-							}
-						}
-						else if(isCreateBooking(binding)) {
-							// Check that the resource is available
-							if(!isAvailable) {
-								handler.handle(false);
-								return;
-							}
-						}
-
-						Map<String, UserInfos.Function> functions = user.getFunctions();
-						if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-							Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-							if(adminLocal != null && adminLocal.getScope() != null && adminLocal.getScope().contains(schoolId)) {
-								handler.handle(true);
-								return;
-							}
-						}
-
-						handler.handle(false);
-					}
+					Long count = SqlResult.countResult(message);
+					handler.handle(count != null && count > 0);
 				}
 			});
 		} else {
