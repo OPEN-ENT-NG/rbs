@@ -98,31 +98,41 @@ public class BookingController extends ControllerHelper {
 					return;
 				}
 
-				resourceService.getDelays(Long.parseLong(resourceId), new Handler<Either<String, JsonObject>>() {
+				resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId), new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight() && event.right().getValue()!=null) {
-							// check that booking dates respect min and max delays
+
 							JsonObject resource = event.right().getValue();
-							if(isDelayLessThanMin(request, resource, startDate, now)) {
-								long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
-								String errorMessage = i18n.translate(
-										"rbs.booking.bad.request.minDelay.not.respected",
-										I18n.acceptLanguage(request),
-										Long.toString(nbDays));
+							String owner = resource.getString("owner", null);
+							String schoolId = resource.getString("school_id", null);
 
-								badRequest(request, errorMessage);
-								return;
+							if(owner == null || schoolId == null) {
+								log.warn("Could not get owner or school_id for type of resource "+resourceId);
 							}
-							else if(isDelayGreaterThanMax(request, resource, endDate, now)) {
-								long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
-								String errorMessage = i18n.translate(
-										"rbs.booking.bad.request.maxDelay.not.respected",
-										I18n.acceptLanguage(request),
-										Long.toString(nbDays));
 
-								badRequest(request, errorMessage);
-								return;
+							if(!canBypassDelaysConstraints(owner, schoolId, user)) {
+								// check that booking dates respect min and max delays
+								if(isDelayLessThanMin(request, resource, startDate, now)) {
+									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
+									String errorMessage = i18n.translate(
+											"rbs.booking.bad.request.minDelay.not.respected",
+											I18n.acceptLanguage(request),
+											Long.toString(nbDays));
+
+									badRequest(request, errorMessage);
+									return;
+								}
+								else if(isDelayGreaterThanMax(request, resource, endDate, now)) {
+									long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
+									String errorMessage = i18n.translate(
+											"rbs.booking.bad.request.maxDelay.not.respected",
+											I18n.acceptLanguage(request),
+											Long.toString(nbDays));
+
+									badRequest(request, errorMessage);
+									return;
+								}
 							}
 
 							Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
@@ -161,6 +171,24 @@ public class BookingController extends ControllerHelper {
 				});
 			}
 		};
+	}
+
+	/*
+	 * Owner or managers of a resourceType, as well as local administrators of a resourceType's schoolId,
+	 * do no need to respect constraints on resources' delays
+	 */
+	private boolean canBypassDelaysConstraints(String owner, String schoolId, UserInfos user) {
+		if(user.getUserId().equals(owner)) {
+			return true;
+		}
+		// TODO : type manager case
+
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty() && scope.contains(schoolId)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean isDelayLessThanMin(HttpServerRequest request, JsonObject resource, long startDate, long now) {
@@ -335,7 +363,7 @@ public class BookingController extends ControllerHelper {
 					return;
 				}
 
-				resourceService.getDelays(Long.parseLong(id), new Handler<Either<String, JsonObject>>() {
+				resourceService.getDelaysAndTypeProperties(Long.parseLong(id), new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight() && event.right().getValue()!=null) {

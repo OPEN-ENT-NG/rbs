@@ -2,19 +2,17 @@ package net.atos.entng.rbs.service;
 
 import static net.atos.entng.rbs.BookingStatus.CREATED;
 import static net.atos.entng.rbs.BookingStatus.VALIDATED;
+import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
 import java.util.List;
-import java.util.Map;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -60,14 +58,11 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		values.add(user.getUserId());
 
  		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
-		Map<String, Function> functions = user.getFunctions();
-		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-			if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
-				query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
-				for (String schoolId : adminLocal.getScope()) {
-					values.addString(schoolId);
-				}
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
 			}
 		}
 
@@ -133,9 +128,16 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void getDelays(long resourceId, Handler<Either<String, JsonObject>> handler) {
-		String query = "SELECT min_delay, max_delay FROM rbs.resource WHERE id = ?";
+	public void getDelaysAndTypeProperties(long resourceId, Handler<Either<String, JsonObject>> handler) {
+		String query = "SELECT r.min_delay, r.max_delay, t.owner, t.school_id" +
+				" FROM rbs.resource AS r" +
+				" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id" +
+				" WHERE r.id = ?";
+		// TODO : get type managers (right 'net-atos-entng-rbs-controllers-ResourceTypeController|shareJsonSubmit')
 		JsonArray values = new JsonArray().add(resourceId);
 
 		Sql.getInstance().prepared(query, values, validUniqueResultHandler(handler));

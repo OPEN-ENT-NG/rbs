@@ -1,16 +1,14 @@
 package net.atos.entng.rbs.service;
 
+import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
 
 import java.util.List;
-import java.util.Map;
 
 import org.entcore.common.sql.Sql;
-import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 
@@ -41,14 +39,11 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		values.add(user.getUserId());
 
 		// A local administrator of a given school can see its types, even if he is not owner or manager of these types
-		Map<String, Function> functions = user.getFunctions();
-		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-			if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
-				query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
-				for (String schoolId : adminLocal.getScope()) {
-					values.addString(schoolId);
-				}
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
 			}
 		}
 

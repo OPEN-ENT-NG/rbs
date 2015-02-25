@@ -1,8 +1,15 @@
 package net.atos.entng.rbs;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserInfos.Function;
 
 public class BookingUtils {
 
@@ -156,5 +163,21 @@ public class BookingUtils {
 				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
 				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
 	 }
+
+	/**
+	 * @return Return scope (i.e. the list of school_ids) of a local administrator
+	 */
+	public static List<String> getLocalAdminScope(final UserInfos user) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
+			if(adminLocal != null) {
+				return adminLocal.getScope();
+			}
+		}
+
+		return new ArrayList<String>();
+	}
+
 
 }

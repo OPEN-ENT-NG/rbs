@@ -1,10 +1,10 @@
 package net.atos.entng.rbs.filters;
 
+import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import net.atos.entng.rbs.controllers.ResourceController;
 
@@ -13,9 +13,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.sql.SqlResult;
-import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserInfos.Function;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -75,14 +73,11 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			values.add(sharedMethod);
 
 			// Authorize user if he is a local administrator for the resourceType's school_id
-			Map<String, UserInfos.Function> functions = user.getFunctions();
-			if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
-				Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-				if(adminLocal != null && adminLocal.getScope() != null && !adminLocal.getScope().isEmpty()) {
-					query.append(" OR t.school_id IN ").append(Sql.listPrepared(adminLocal.getScope().toArray()));
-					for (String schoolId : adminLocal.getScope()) {
-						values.addString(schoolId);
-					}
+			List<String> scope = getLocalAdminScope(user);
+			if (scope!=null && !scope.isEmpty()) {
+				query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+				for (String schoolId : scope) {
+					values.addString(schoolId);
 				}
 			}
 
