@@ -133,14 +133,20 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	 */
 	@Override
 	public void getDelaysAndTypeProperties(long resourceId, Handler<Either<String, JsonObject>> handler) {
-		String query = "SELECT r.min_delay, r.max_delay, t.owner, t.school_id" +
-				" FROM rbs.resource AS r" +
-				" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id" +
-				" WHERE r.id = ?";
-		// TODO : get type managers (right 'net-atos-entng-rbs-controllers-ResourceTypeController|shareJsonSubmit')
+		StringBuilder query = new StringBuilder("SELECT r.min_delay, r.max_delay, t.owner, t.school_id,");
+
+		// Subquery to return managers
+		query.append(" (SELECT json_agg(DISTINCT ts.member_id) FROM rbs.resource_type_shares AS ts")
+			.append(" WHERE ts.resource_id = t.id")
+			.append(" AND ts.action = 'net-atos-entng-rbs-controllers-ResourceTypeController|shareJsonSubmit') AS managers");
+
+		query.append(" FROM rbs.resource AS r")
+			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
+			.append(" WHERE r.id = ?");
+
 		JsonArray values = new JsonArray().add(resourceId);
 
-		Sql.getInstance().prepared(query, values, validUniqueResultHandler(handler));
+		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
 
 }

@@ -6,6 +6,7 @@ import static net.atos.entng.rbs.Rbs.RBS_NAME;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,12 +107,14 @@ public class BookingController extends ControllerHelper {
 							JsonObject resource = event.right().getValue();
 							String owner = resource.getString("owner", null);
 							String schoolId = resource.getString("school_id", null);
+							String jsonString = resource.getString("managers", null);
+							JsonArray managers = (jsonString != null) ? new JsonArray(jsonString) : null;
 
 							if(owner == null || schoolId == null) {
 								log.warn("Could not get owner or school_id for type of resource "+resourceId);
 							}
 
-							if(!canBypassDelaysConstraints(owner, schoolId, user)) {
+							if(!canBypassDelaysConstraints(owner, schoolId, user, managers)) {
 								// check that booking dates respect min and max delays
 								if(isDelayLessThanMin(request, resource, startDate, now)) {
 									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
@@ -177,15 +180,26 @@ public class BookingController extends ControllerHelper {
 	 * Owner or managers of a resourceType, as well as local administrators of a resourceType's schoolId,
 	 * do no need to respect constraints on resources' delays
 	 */
-	private boolean canBypassDelaysConstraints(String owner, String schoolId, UserInfos user) {
+	private boolean canBypassDelaysConstraints(String owner, String schoolId, UserInfos user, JsonArray managers) {
 		if(user.getUserId().equals(owner)) {
 			return true;
 		}
-		// TODO : type manager case
 
 		List<String> scope = getLocalAdminScope(user);
 		if (scope!=null && !scope.isEmpty() && scope.contains(schoolId)) {
 			return true;
+		}
+
+		if(managers != null && managers.size() > 0) {
+			// Create a list containing userId and groupIds of current user
+			List<String> userAndGroupIds = new ArrayList<>();
+			userAndGroupIds.add(user.getUserId());
+			userAndGroupIds.addAll(user.getGroupsIds());
+
+			// Return true if managers and userAndGroupIds have at least one common element
+			if (!Collections.disjoint(userAndGroupIds, managers.toList())) {
+				return true;
+			}
 		}
 
 		return false;
@@ -303,7 +317,7 @@ public class BookingController extends ControllerHelper {
 		return new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject booking) {
-				final String id = request.params().get("id");
+				final String resourceId = request.params().get("id");
 				final String bookingId = request.params().get("bookingId");
 
 				final int periodicity = booking.getInteger("periodicity");
@@ -363,70 +377,81 @@ public class BookingController extends ControllerHelper {
 					return;
 				}
 
-				resourceService.getDelaysAndTypeProperties(Long.parseLong(id), new Handler<Either<String, JsonObject>>() {
+				resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId), new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight() && event.right().getValue()!=null) {
-							// Check that booking dates respect min and max delays
+
 							JsonObject resource = event.right().getValue();
+							String owner = resource.getString("owner", null);
+							String schoolId = resource.getString("school_id", null);
+							String jsonString = resource.getString("managers", null);
+							JsonArray managers = (jsonString != null) ? new JsonArray(jsonString) : null;
 
-							if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
-								long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
-								String errorMessage = i18n.translate(
-										"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
-										I18n.acceptLanguage(request),
-										Long.toString(nbDays));
-
-								badRequest(request, errorMessage);
-								return;
+							if(owner == null || schoolId == null) {
+								log.warn("Could not get owner or school_id for type of resource "+resourceId);
 							}
-							else {
-								long lastSlotEndDate;
-								if (endDate > 0L) { // Case when end_date is supplied
-									try {
-										int endDateDay = getDayFromTimestamp(endDate);
-										Object endDateDayIsSelected = selectedDaysArray.toList().get(endDateDay);
-										if((Boolean) endDateDayIsSelected) {
-											lastSlotEndDate = endDate;
-										}
-										else {
-											// If the endDateDay is not a selected day, compute the end date of the last slot
-											long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
-											int nbOccurrences = getOccurrences(firstSlotDay, selectedDays, durationInDays, periodicity);
-											lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
 
-											// Replace the end date with the last slot's end date
-											booking.putNumber("periodic_end_date", lastSlotEndDate);
-											// Put the computed value of occurrences
-											booking.putNumber("occurrences", nbOccurrences);
-										}
-									} catch (Exception e) {
-										log.error("Error when checking that the day of the end date is selected", e);
-										renderError(request);
-										return;
-									}
-
-								}
-								else { // Case when occurrences is supplied
-									lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
-								}
-
-								if(isDelayGreaterThanMax(request, resource, lastSlotEndDate, now)) {
-									long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
+							if(!canBypassDelaysConstraints(owner, schoolId, user, managers)) {
+								// Check that booking dates respect min and max delays
+								if(isDelayLessThanMin(request, resource, firstSlotStartDate, now)) {
+									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
 									String errorMessage = i18n.translate(
-											"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
+											"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
 											I18n.acceptLanguage(request),
 											Long.toString(nbDays));
 
 									badRequest(request, errorMessage);
 									return;
 								}
+								else {
+									long lastSlotEndDate;
+									if (endDate > 0L) { // Case when end_date is supplied
+										try {
+											int endDateDay = getDayFromTimestamp(endDate);
+											Object endDateDayIsSelected = selectedDaysArray.toList().get(endDateDay);
+											if((Boolean) endDateDayIsSelected) {
+												lastSlotEndDate = endDate;
+											}
+											else {
+												// If the endDateDay is not a selected day, compute the end date of the last slot
+												long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
+												int nbOccurrences = getOccurrences(firstSlotDay, selectedDays, durationInDays, periodicity);
+												lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
+
+												// Replace the end date with the last slot's end date
+												booking.putNumber("periodic_end_date", lastSlotEndDate);
+												// Put the computed value of occurrences
+												booking.putNumber("occurrences", nbOccurrences);
+											}
+										} catch (Exception e) {
+											log.error("Error when checking that the day of the end date is selected", e);
+											renderError(request);
+											return;
+										}
+
+									}
+									else { // Case when occurrences is supplied
+										lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
+									}
+
+									if(isDelayGreaterThanMax(request, resource, lastSlotEndDate, now)) {
+										long nbDays = TimeUnit.DAYS.convert(resource.getLong("max_delay"), TimeUnit.SECONDS);
+										String errorMessage = i18n.translate(
+												"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
+												I18n.acceptLanguage(request),
+												Long.toString(nbDays));
+
+										badRequest(request, errorMessage);
+										return;
+									}
+								}
 							}
 
 							// Create or update booking
 							if (isCreation) {
 								try {
-									bookingService.createPeriodicBooking(id, selectedDays,
+									bookingService.createPeriodicBooking(resourceId, selectedDays,
 											firstSlotDay, booking, user,
 											getHandlerForPeriodicNotification(user, request, isCreation));
 								} catch (Exception e) {
@@ -436,7 +461,7 @@ public class BookingController extends ControllerHelper {
 							}
 							else {
 								try {
-									bookingService.updatePeriodicBooking(id, bookingId, selectedDays,
+									bookingService.updatePeriodicBooking(resourceId, bookingId, selectedDays,
 											firstSlotDay, booking, user,
 											getHandlerForPeriodicNotification(user, request, isCreation));
 								} catch (Exception e) {
