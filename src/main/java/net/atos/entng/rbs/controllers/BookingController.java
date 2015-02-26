@@ -417,7 +417,7 @@ public class BookingController extends ControllerHelper {
 												// If the endDateDay is not a selected day, compute the end date of the last slot
 												long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
 												int nbOccurrences = getOccurrences(firstSlotDay, selectedDays, durationInDays, periodicity);
-												lastSlotEndDate = getLastSlotDate(occurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
+												lastSlotEndDate = getLastSlotDate(nbOccurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
 
 												// Replace the end date with the last slot's end date
 												booking.putNumber("periodic_end_date", lastSlotEndDate);
