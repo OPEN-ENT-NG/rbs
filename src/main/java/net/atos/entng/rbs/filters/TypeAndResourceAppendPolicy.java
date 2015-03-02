@@ -1,5 +1,6 @@
 package net.atos.entng.rbs.filters;
 
+import static net.atos.entng.rbs.BookingStatus.SUSPENDED;
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 
@@ -113,6 +114,11 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(true)
 					.add(user.getUserId());
 			}
+			else if(isProcessBooking(binding)) {
+				// A suspended booking cannot be validated or refused
+				query.append(" AND b.status != ?");
+				values.add(SUSPENDED.status());
+			}
 
 			// Execute
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
@@ -128,29 +134,34 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		}
 	}
 
+
 	private boolean isCreateBooking(final Binding binding) {
-		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|createBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.POST, "net.atos.entng.rbs.controllers.BookingController|createBooking");
 	}
 
 	private boolean isCreatePeriodicBooking(final Binding binding) {
-		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|createPeriodicBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.POST, "net.atos.entng.rbs.controllers.BookingController|createPeriodicBooking");
 	}
 
 	private boolean isUpdateBooking(final Binding binding) {
-		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|updateBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|updateBooking");
 	}
 
 	private boolean isUpdatePeriodicBooking(final Binding binding) {
-		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|updatePeriodicBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|updatePeriodicBooking");
+	}
+
+	private boolean isProcessBooking(final Binding binding) {
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|processBooking");
 	}
 
 	private boolean isDeleteBooking(final Binding binding) {
-		return (HttpMethod.DELETE.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|deleteBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.DELETE, "net.atos.entng.rbs.controllers.BookingController|deleteBooking");
 	}
+
+	private boolean bindingIsThatMethod(final Binding binding, final HttpMethod thatHttpMethod, final String thatServiceMethod) {
+		return (thatHttpMethod.equals(binding.getMethod()) && thatServiceMethod.equals(binding.getServiceMethod()));
+	}
+
 
 }
