@@ -115,8 +115,9 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 					.add(user.getUserId());
 			}
 			else if(isProcessBooking(binding)) {
-				// A suspended booking cannot be validated or refused
-				query.append(" AND b.status != ?");
+				// A booking can be validated or refused, only if its status is not "suspended" and the resource is available
+				query.append(" AND b.status != ?")
+					.append(" AND r.is_available = true");
 				values.add(SUSPENDED.status());
 			}
 

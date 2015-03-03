@@ -3,7 +3,8 @@ model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
-model.STATE_PARTIAL = 4;
+model.STATE_SUSPENDED = 4;
+model.STATE_PARTIAL = 9; // this state is used only in front-end for periodic bookings, it is not saved in database.
 
 model.DETACHED_STRUCTURE = {
 	id: 'DETACHED',
@@ -224,9 +225,20 @@ Booking.prototype.isPartial = function() {
 	return this.status === model.STATE_PARTIAL;
 };
 
+Booking.prototype.isSuspended = function() {
+	return this.status === model.STATE_SUSPENDED;
+};
+
+
 Booking.prototype.hasAtLeastOnePendingSlot = function() {
 	return this._slots.some(function(slot) {
-		return slot.isPending()
+		return slot.isPending();
+	});
+};
+
+Booking.prototype.hasAtLeastOneSuspendedSlot = function() {
+	return this._slots.some(function(slot) {
+		return slot.isSuspended();
 	});
 };
 
@@ -356,7 +368,7 @@ Resource.prototype.toJSON = function() {
 		type_id : this.type_id,
 		min_delay : (this.hasMinDelay) ? this.min_delay : undefined,
 		max_delay : (this.hasMaxDelay) ? this.max_delay : undefined
-	}
+	};
 	if (this.was_available !== undefined) {
 		json.was_available = this.was_available;
 	}
@@ -468,13 +480,13 @@ ResourceType.prototype.getModerators = function(callback) {
 			callback();
 		}
 	}.bind(this));
-}
+};
 
 ResourceType.prototype.toJSON = function() {
 	var json = {
 		name : this.name,
 		validation : this.validation,
-	}
+	};
 	// Send school id only at creation
 	if (! this.id) {
 		json.school_id = this.school_id;
@@ -865,22 +877,25 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 		if (booking.is_periodic === true) {
 			// Link
 			booking._slots = bookingIndex.slots[booking.id] || [];
-			// Resolve booking status
-			var status = _.countBy(booking._slots, function(slot) {
+			// Resolve status of periodic booking
+			var statusCount = _.countBy(booking._slots, function(slot) {
 				// link (here to avoid another loop)
 				slot.booking = booking;
 				slot.color = booking.color;
 				// index status
 				return slot.status;
 			});
-			if (booking._slots.length === status[model.STATE_VALIDATED]) {
+			if (booking._slots.length === statusCount[model.STATE_VALIDATED]) {
 				booking.status = model.STATE_VALIDATED;
 			}
-			else if (booking._slots.length === status[model.STATE_REFUSED]) {
+			else if (booking._slots.length === statusCount[model.STATE_REFUSED]) {
 				booking.status = model.STATE_REFUSED;
 			}
-			else if (booking._slots.length === status[model.STATE_CREATED]) {
+			else if (booking._slots.length === statusCount[model.STATE_CREATED]) {
 				booking.status = model.STATE_CREATED;
+			}
+			else if (booking._slots.length === statusCount[model.STATE_SUSPENDED]) {
+				booking.status = model.STATE_SUSPENDED;
 			}
 			else {
 				booking.status = model.STATE_PARTIAL;
@@ -933,7 +948,7 @@ model.loadPeriods = function() {
 	for (occurrence = model.periodsConfig.occurrences.start; occurrence <= model.periodsConfig.occurrences.end; occurrence = occurrence + model.periodsConfig.occurrences.interval) {
 		model.periods.occurrences.push(occurrence);
 	}
-}
+};
 
 model.loadStructures = function() {
 	if (model.me.structures && model.me.structures.length > 0 && model.me.structureNames && model.me.structureNames.length > 0) {
@@ -948,7 +963,7 @@ model.loadStructures = function() {
 	else {
 		model.structures = [model.DETACHED_STRUCTURE];
 	}
-}
+};
 
 model.parseError = function(e, object, context) {
 	var error = {};
@@ -962,7 +977,7 @@ model.parseError = function(e, object, context) {
 		else if (e.status == 404) {
 			error.error = "rbs.error.notfound";
 		}
-		else if (e.status = 409) {
+		else if (e.status == 409) {
 			error.error = "rbs.error.conflict";
 		}
 		else {
@@ -973,4 +988,4 @@ model.parseError = function(e, object, context) {
 	error.object = object;
 	error.context = context;
 	return error;
-}
+};

@@ -206,13 +206,16 @@ public class ResourceController extends ControllerHelper {
 							JsonObject jo = (JsonObject) o;
 							recipientSet.add(jo.getString("owner"));
 						}
-						List<String> recipients = new ArrayList<>(recipientSet);
 
-						JsonObject params = new JsonObject();
-						params.putString("resource_name", resourceName);
+						if(!recipientSet.isEmpty()) {
+							List<String> recipients = new ArrayList<>(recipientSet);
 
-						notification.notifyTimeline(request, user, RBS_NAME, eventType,
-								recipients, String.valueOf(resourceId), template, params);
+							JsonObject params = new JsonObject();
+							params.putString("resource_name", resourceName);
+
+							notification.notifyTimeline(request, user, RBS_NAME, eventType,
+									recipients, String.valueOf(resourceId), template, params);
+						}
 
 					} else {
 						log.error("Error when calling service getBookingOwnersIds. Unable to send timeline "

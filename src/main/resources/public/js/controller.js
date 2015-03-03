@@ -38,6 +38,7 @@ function RbsController($scope, template, model, date, route){
 			STATE_CREATED: model.STATE_CREATED,
 			STATE_VALIDATED: model.STATE_VALIDATED,
 			STATE_REFUSED: model.STATE_REFUSED,
+			STATE_SUSPENDED: model.STATE_SUSPENDED,
 			STATE_PARTIAL: model.STATE_PARTIAL
 		};
 		$scope.today = moment().startOf('day');
@@ -978,9 +979,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.currentResourceType.resources.deselectAll();
 		
 		// Field to track Resource availability change
-		if ($scope.editedResource.was_available === undefined) {
-			$scope.editedResource.was_available = $scope.editedResource.is_available;
-		}
+		$scope.editedResource.was_available = $scope.editedResource.is_available;
 		
 		$scope.editedResource.hasMaxDelay = ($scope.editedResource.max_delay !== undefined && $scope.editedResource.max_delay !== null);
 		$scope.editedResource.hasMinDelay = ($scope.editedResource.min_delay !== undefined && $scope.editedResource.min_delay !== null);

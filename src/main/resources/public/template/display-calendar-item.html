@@ -1,8 +1,9 @@
 <div class="schedule-item-content [[item.color]]">
 
-	<i ng-if="item.status === 1" ng-click="viewBooking(item)" class="pending-status"></i>
-	<i ng-if="item.status === 2" ng-click="viewBooking(item)" class="validated-status"></i>
-	<i ng-if="item.status === 3" ng-click="viewBooking(item)" class="refused-status"></i>
+	<i ng-if="item.isPending() === true" ng-click="viewBooking(item)" class="pending-status"></i>
+	<i ng-if="item.isValidated() === true" ng-click="viewBooking(item)" class="validated-status"></i>
+	<i ng-if="item.isRefused() === true" ng-click="viewBooking(item)" class="refused-status"></i>
+	<i ng-if="item.isSuspended() === true" ng-click="viewBooking(item)" class="suspended-status"></i>
 
 	<i ng-if="item.isSlot() === true" ng-click="viewBooking(item)" class="periodic-status"></i>
 

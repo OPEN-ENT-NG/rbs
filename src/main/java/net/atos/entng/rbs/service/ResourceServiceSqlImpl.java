@@ -1,8 +1,8 @@
 package net.atos.entng.rbs.service;
 
 import static net.atos.entng.rbs.BookingStatus.CREATED;
+import static net.atos.entng.rbs.BookingStatus.REFUSED;
 import static net.atos.entng.rbs.BookingStatus.SUSPENDED;
-import static net.atos.entng.rbs.BookingStatus.VALIDATED;
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.parseShared;
@@ -140,19 +140,16 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 
 	@Override
 	public void getBookingOwnersIds(long resourceId, Handler<Either<String, JsonArray>> handler) {
-
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT DISTINCT owner FROM rbs.booking ")
+		query.append("SELECT DISTINCT owner FROM rbs.booking")
 			.append(" WHERE resource_id = ?")
-			.append(" AND status IN (?, ?)")
+			.append(" AND status != ?")
 			.append(" AND start_date >= now()")
-			.append(" AND is_periodic = ?");
+			.append(" AND is_periodic = false");
 
 		JsonArray values = new JsonArray();
 		values.add(resourceId)
-			.add(CREATED.status())
-			.add(VALIDATED.status())
-			.add(false);
+			.add(REFUSED.status());
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
