@@ -18,7 +18,7 @@
 				<ul ng-if="resourceType.expanded === true" ng-class="resourceType.color">
 					<li ng-repeat="resource in resourceType.resources.all">
 						<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected === true }">
-							[[resource.name]] <i ng-if="resource.is_available !== true" class="long-badge right-magnet"><i18n>rbs.booking.resource.unavailable</i18n></i>
+							[[resource.name]] <i ng-if="resource.is_available !== true" class="suspended-icon right-magnet"></i>
 						</a>
 					</li>
 					<li ng-if="resourceType.resources.empty() === true"><i18n>rbs.resources.empty</i18n></li>
