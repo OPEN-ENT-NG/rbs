@@ -1150,5 +1150,47 @@ function RbsController($scope, template, model, date, route){
 		}
 	}
 
+	$scope.nextWeekButton = function() {
+		var next = moment(model.calendar.firstDay).add(7, 'day');
+		updateCalendarSchedule(next);
+	};
+
+	$scope.previousWeekButton = function() {
+		var prev = moment(model.calendar.firstDay).subtract(7, 'day');
+		updateCalendarSchedule(prev);
+
+	};
+	$scope.nextWeekBookingButton = function() {
+		var nextStart = moment(model.bookings.filters.startMoment).add(7, 'day');
+		var nextEnd = moment(model.bookings.filters.endMoment).add(7, 'day');
+		updateCalendarList(nextStart,nextEnd);
+	};
+
+	$scope.previousWeekBookingButton = function() {
+		var prevStart = moment(model.bookings.filters.startMoment).subtract(7, 'day');
+		var prevEnd = moment(model.bookings.filters.endMoment).subtract(7, 'day');
+		updateCalendarList(prevStart,prevEnd);
+	};
+	var updateCalendarList = function(start, end){
+		model.bookings.filters.startMoment.date(start.date());
+		model.bookings.filters.startMoment.month(start.month());
+		model.bookings.filters.startMoment.year(start.year());
+		
+		model.bookings.filters.endMoment.date(end.date());
+		model.bookings.filters.endMoment.month(end.month());
+		model.bookings.filters.endMoment.year(end.year());
+
+		$scope.bookings.applyFilters();
+
+	};
+
+	var updateCalendarSchedule = function(date){
+		model.calendar.firstDay.date(date.date());
+		model.calendar.firstDay.month(date.month());
+		model.calendar.firstDay.year(date.year());
+
+		$('.hiddendatepickerform').datepicker('setValue', date.format("DD/MM/YYYY")).datepicker('update');
+		$('.hiddendatepickerform').trigger({type: 'changeDate',date: date});
+	};
 	this.initialize();
 }

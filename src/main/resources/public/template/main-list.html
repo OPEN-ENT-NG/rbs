@@ -11,6 +11,10 @@
 			<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
 		</label>
 	</li>
+	<li class="changeWeekButton">
+		<button class="changeWeekButtonBack" ng-click="previousWeekBookingButton()">&#8592;</button>
+		<button class="changeWeekButtonNext" ng-click="nextWeekBookingButton()">&#8594;</button>
+	</li>
 	<li ng-class="{ selected: bookings.filters.dates }">
 		<label>
 			<i class="dates" tooltip="rbs.selector.dates"></i>
