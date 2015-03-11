@@ -630,10 +630,8 @@ public class BookingController extends ControllerHelper {
 		List<String> recipients = new ArrayList<>(recipientSet);
 
 		JsonObject params = new JsonObject();
-		params.putString("uri", container.config().getString("userbook-host") +
-				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-		params.putString("bookingUri", container.config().getString("host")
-				+ "/rbs#/booking/" + bookingId)
+		params.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+		params.putString("bookingUri", "/rbs#/booking/" + bookingId)
 			.putString("username", user.getUsername())
 			.putString("startdate", startDate)
 			.putString("enddate", endDate)
@@ -817,7 +815,7 @@ public class BookingController extends ControllerHelper {
 				.putString("startdate", startDate)
 				.putString("enddate", endDate)
 				.putString("resourcename", resourceName)
-				.putString("bookingUri", container.config().getString("host") + "/rbs#/booking/" + bookingId);
+				.putString("bookingUri", "/rbs#/booking/" + bookingId);
 
 			List<String> recipients = new ArrayList<>();
 			recipients.add(owner);
