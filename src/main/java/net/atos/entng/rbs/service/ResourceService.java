@@ -12,13 +12,13 @@ import fr.wseduc.webutils.Either;
 
 public interface ResourceService extends CrudService {
 
-	public void listResources(final List<String> groupsAndUserIds, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler);
+	public void createResource(JsonObject resource, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
-	public void updateResource(final String id, final JsonObject data,
-			final Handler<Either<String, JsonObject>> handler);
+	public void listResources(List<String> groupsAndUserIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
-	public void getBookingOwnersIds(final long resourceId, final Handler<Either<String, JsonArray>> handler);
+	public void updateResource(String id, JsonObject data, Handler<Either<String, JsonObject>> handler);
+
+	public void getBookingOwnersIds(long resourceId, Handler<Either<String, JsonArray>> handler);
 
 	/**
 	 * Get max_delay and min_delay of resource, owner, school_id and managers (userIds and groupIds) of resourceType

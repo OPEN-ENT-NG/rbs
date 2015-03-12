@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
+import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
 import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
 
@@ -90,9 +91,10 @@ public class ResourceController extends ControllerHelper {
 	}
 
 	@Override
-	@Post("/resources")
+	@Post("/type/:id/resource") // Parameter "id" is the resourceTypeId
 	@ApiDoc("Create resource")
-	@SecuredAction("rbs.resource.create")
+	@ResourceFilter(TypeOwnerSharedOrLocalAdmin.class)
+	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	public void create(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -106,8 +108,10 @@ public class ResourceController extends ControllerHelper {
 							if(minDelay > -1L && maxDelay > -1L && minDelay >= maxDelay) {
 								badRequest(request, "rbs.resource.bad.request.min_delay.greater.than.max_delay");
 							}
+							String resourceTypeId = request.params().get("id");
+							resource.putString("type_id", resourceTypeId);
 
-							crudService.create(resource, user, notEmptyResponseHandler(request));
+							resourceService.createResource(resource, user, notEmptyResponseHandler(request));
 						}
 					});
 				} else {

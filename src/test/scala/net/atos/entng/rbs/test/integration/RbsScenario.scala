@@ -166,12 +166,11 @@ object RbsScenario {
           jsonPath("$.id").find.saveAs("typeId")))
       // Resource
       .exec(http("Create resource")
-        .post("/rbs/resources")
+        .post("/rbs/type/${typeId}/resource")
         .body(StringBody("""{"name" : "resource created",
     					"description" : "resource created desc",
     					"periodic_booking" : true,
-    					"is_available" : true,
-    					"type_id" : ${typeId}}"""))
+    					"is_available" : true }"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("resourceId")))
       .exec(http("Get resource")
@@ -404,21 +403,19 @@ object RbsScenario {
 
       // Resource
       .exec(http("ADML creates resource")
-        .post("/rbs/resources")
+        .post("/rbs/type/${admlTypeId}/resource")
         .body(StringBody("""{"name" : "resource created by ADML",
     					"description" : "resource created by ADML description",
     					"periodic_booking" : true,
-    					"is_available" : true,
-    					"type_id" : ${admlTypeId}}"""))
+    					"is_available" : true }"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("admlResourceId")))
       .exec(http("ADML creates resource in teacher's type")
-        .post("/rbs/resources")
+        .post("/rbs/type/${typeId}/resource")
         .body(StringBody("""{"name" : "resource created by ADML in teacher type",
     					"description" : "resource created by ADML in teacher type description",
     					"periodic_booking" : true,
-    					"is_available" : true,
-    					"type_id" : ${typeId}}"""))
+    					"is_available" : true }"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("admlResourceIdInTeacherType")))
 

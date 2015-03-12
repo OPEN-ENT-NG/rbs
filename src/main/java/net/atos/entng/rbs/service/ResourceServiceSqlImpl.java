@@ -175,4 +175,14 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
 
+	@Override
+	public void createResource(final JsonObject resource, final UserInfos user,
+			final Handler<Either<String, JsonObject>> handler) {
+
+		String typeId = resource.getString("type_id");
+		resource.putValue("type_id", parseId(typeId));
+
+		super.create(resource, user, handler);
+	}
+
 }

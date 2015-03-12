@@ -26,16 +26,12 @@
 			"description": "In seconds. The resource can be booked at most max_delay in advance",
 			"type": "integer",
 			"minimum": 0
-		},
-		"type_id": {
-			"type": "integer"
 		}
 	},
 	"required": [
 		"name",
 		"periodic_booking",
-		"is_available",
-		"type_id"
+		"is_available"
 	],
 	"additionalProperties" : false
 }

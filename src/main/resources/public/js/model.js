@@ -325,10 +325,9 @@ Resource.prototype.update = function(cb, cbe) {
 
 Resource.prototype.create = function(cb, cbe) {
 	var resource = this;
-	this.type_id = this.type.id;
 	this.was_available = undefined;
 
-	http().postJson('/rbs/resources', this)
+	http().postJson('/rbs/type/' + this.type.id + '/resource', this)
 	.done(function(r){
 		// Update collections
 		if(typeof cb === 'function'){
