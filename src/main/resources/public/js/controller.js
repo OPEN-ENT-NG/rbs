@@ -33,6 +33,16 @@ function RbsController($scope, template, model, date, route){
 			predicate: 'start_date',
 			reverse: false
 		}
+		
+		// Used to display types for moderators (moderators of a type can update a resource, but cannot create one)
+		$scope.keepProcessableResourceTypes = function(type) {
+			return (type.myRights && type.myRights.process);
+		};
+
+		// Used to display types in which current user can create a resource
+		$scope.keepManageableResourceTypes = function(type) {
+			return (type.myRights && type.myRights.manage);
+		};
 
 		$scope.status = {
 			STATE_CREATED: model.STATE_CREATED,
@@ -181,8 +191,13 @@ function RbsController($scope, template, model, date, route){
 	$scope.showManage = function() {
 		$scope.display.list = undefined;
 		$scope.display.admin = true;
-		$scope.currentResourceType = model.resourceTypes.first();
 		$scope.resourceTypes.deselectAllResources();
+		
+		var processableResourceTypes = _.filter($scope.resourceTypes.all, $scope.keepProcessableResourceTypes);
+		if (processableResourceTypes && processableResourceTypes.length > 0) {
+			$scope.currentResourceType = processableResourceTypes[0];
+		}
+		
 		template.open('main', 'manage-view');
 		template.open('resources', 'manage-resources');
 	};

@@ -8,7 +8,7 @@
 <section class="cell three">
 	<nav class="vertical row">
 		<ul>
-			<li ng-repeat="resourceType in resourceTypes.all">
+			<li ng-repeat="resourceType in resourceTypes.all | filter:keepProcessableResourceTypes">
 				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">[[resourceType.name]]</a>
 
 				<ul ng-if="resourceType === currentResourceType">
