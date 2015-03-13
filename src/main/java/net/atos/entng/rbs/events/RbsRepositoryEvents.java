@@ -23,7 +23,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 	}
 
 	@Override
-	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath, String locale) {
+	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath, String locale, String host, final Handler<Boolean> handler) {
 		// TODO Implement export
 		log.error("Event [exportResources] is not implemented");
 	}
