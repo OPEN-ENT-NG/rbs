@@ -461,8 +461,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
-		$scope.editedBooking.showResource = true;
-
+		$scope.initEditBookingDisplay();
 		$scope.initModerators();
 		
 		// periodic booking
@@ -503,7 +502,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.newBookingCalendar = function() {
 		$scope.display.processing = undefined;
 		$scope.editedBooking = new Booking();
-		$scope.editedBooking.showResource = true;
+		$scope.initEditBookingDisplay();
 		
 		$scope.initModerators();
 
@@ -550,7 +549,7 @@ function RbsController($scope, template, model, date, route){
 				$scope.editedBooking = $scope.editedBooking.booking;
 			}
 		}
-		$scope.editedBooking.showResource = true;
+		$scope.initEditBookingDisplay();
 
 		// periodic booking
 		if ($scope.editedBooking.is_periodic === true) {			
@@ -567,12 +566,22 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.showPanel = true;
 	};
 
+	$scope.initEditBookingDisplay = function() {
+		$scope.editedBooking.display = {
+			state: 0,
+			STATE_RESOURCE: 0,
+			STATE_BOOKING: 1,
+			STATE_PERIODIC: 2
+		};
+	};
+
 	$scope.initPeriodic = function() {
 		$scope.editedBooking.is_periodic = true;
 		$scope.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
 		$scope.editedBooking.byOccurrences = true;
 		$scope.editedBooking.periodicity = 1;
 		$scope.editedBooking.occurrences = 1;
+		$scope.updatePeriodicSummary();
 	};
 
 	$scope.toggleNonPeriodic = function() {
@@ -637,6 +646,35 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.autoSelectResource = function() {
 		$scope.editedBooking.resource = $scope.editedBooking.type === undefined ? undefined : _.first($scope.editedBooking.type.resources.filterAvailable($scope.editedBooking.is_periodic));
+	};
+
+	$scope.updatePeriodicSummary = function() {
+		var days = _.filter($scope.editedBooking.periodDays, function(day){ return day.value });
+		if (days.length == 0) {
+			$scope.editedBooking.periodicSummary = "Sélectionnez au moins un jour de la semaine";
+			return;
+		}
+		if (days.length == 7) {
+			$scope.editedBooking.periodicSummary = "Tous les jours, ";
+		}
+		else {
+			// TODO: Days grouping etc
+			$scope.editedBooking.periodicSummary = "Certains jours, ";	
+		}
+
+		if ($scope.editedBooking.periodicity == 1) {
+			$scope.editedBooking.periodicSummary += "chaque semaine, ";
+		}
+		else {
+			$scope.editedBooking.periodicSummary += "1 semaine sur " + $scope.editedBooking.periodicity + ", ";
+		}
+
+		if ($scope.editedBooking.byOccurrences) {
+			$scope.editedBooking.periodicSummary += "pour " + $scope.editedBooking.occurrences + " créneau(x)";
+		}
+		else {
+			$scope.editedBooking.periodicSummary += "jusqu'au " + $scope.formatMomentDayLong(moment($scope.editedBooking.periodicEndDate));	
+		}
 	};
 
 	$scope.saveBooking = function() {
