@@ -34,7 +34,7 @@ public class Rbs extends BaseServer {
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
 		eventStoreFactory.setContainer(container);
 		eventStoreFactory.setVertx(vertx);
-		vertx.eventBus().registerHandler("user.repository", new RepositoryHandler(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false))));
+		setRepositoryEvents(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false)));
 
 		addController(new DisplayController());
 
