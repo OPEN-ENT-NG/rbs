@@ -827,7 +827,6 @@ model.build = function(){
 
 	this.recordedSelections = new SelectionHolder();
 
-	model.loadTimes();
 	model.loadPeriods();
 };
 
