@@ -11,6 +11,10 @@
 			<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
 		</label>
 	</li>
+	<li class="changeWeekButton">
+		<button  class="changeWeekButtonBack" ng-click="previousWeekButton(); ">&#8592;</button>
+		<button class="changeWeekButtonNext" ng-click="nextWeekButton(); ">&#8594;</button>
+	</li>
 </filters>
 
 <div class="row" ng-if="display.create">

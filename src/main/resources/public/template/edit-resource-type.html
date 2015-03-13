@@ -27,12 +27,23 @@
 		</div>
 		<hr />
 
+		<div ng-if="editedResourceType.id === undefined" class="row">
+			<p class="info">
+				<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
+			</p>
+		</div>
+
+		<div class="row">
+			<p class="info">
+				<i18n>rbs.type.info.adml</i18n>
+			</p>
+		</div>
+		<hr />
+
 		<div ng-if="editedResourceType.id !== undefined" class="row">
 			<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
 		</div>
-		<div ng-if="editedResourceType.id === undefined" class="row info">
-			<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
-		</div>
+		
 		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
 

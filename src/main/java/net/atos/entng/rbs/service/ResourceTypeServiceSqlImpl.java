@@ -1,5 +1,6 @@
 package net.atos.entng.rbs.service;
 
+import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.parseShared;
 import static org.entcore.common.sql.SqlResult.validResultHandler;
@@ -33,10 +34,21 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
-		query.append(" OR t.owner = ?")
-			.append(" GROUP BY t.id")
-			.append(" ORDER BY t.id");
+
+		query.append(" OR t.owner = ?");
 		values.add(user.getUserId());
+
+		// A local administrator of a given school can see its types, even if he is not owner or manager of these types
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
+			}
+		}
+
+		query.append(" GROUP BY t.id")
+			.append(" ORDER BY t.id");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}

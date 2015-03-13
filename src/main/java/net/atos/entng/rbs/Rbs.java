@@ -5,10 +5,10 @@ import net.atos.entng.rbs.controllers.DisplayController;
 import net.atos.entng.rbs.controllers.ResourceController;
 import net.atos.entng.rbs.controllers.ResourceTypeController;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
+import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.http.filter.sql.ShareAndOwner;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
@@ -65,7 +65,7 @@ public class Rbs extends BaseServer {
 		BookingController bookingController = new BookingController();
 		addController(bookingController);
 
-		setDefaultResourceFilter(new ShareAndOwner());
+		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());
 	}
 
 }

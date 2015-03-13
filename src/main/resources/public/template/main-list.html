@@ -11,6 +11,10 @@
 			<input type="checkbox" ng-model="selectUnprocessed" ng-change="switchSelectUnprocessed()" />
 		</label>
 	</li>
+	<li class="changeWeekButton">
+		<button class="changeWeekButtonBack" ng-click="previousWeekBookingButton()">&#8592;</button>
+		<button class="changeWeekButtonNext" ng-click="nextWeekBookingButton()">&#8594;</button>
+	</li>
 	<li ng-class="{ selected: bookings.filters.dates }">
 		<label>
 			<i class="dates" tooltip="rbs.selector.dates"></i>
@@ -73,11 +77,12 @@
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.startMoment)]]</td>
 			<td ng-click="viewBooking(booking)">[[formatMoment(booking.endMoment)]]</td>
 			<td ng-click="viewBooking(booking)">
-				<i ng-if="booking.status === 1" class="pending-icon"></i>
-				<i ng-if="booking.status === 2" class="validated-icon"></i>
-				<i ng-if="booking.status === 3" class="refused-icon"></i>
+				<i ng-if="booking.isPending() === true" class="pending-icon"></i>
+				<i ng-if="booking.isValidated() === true" class="validated-icon"></i>
+				<i ng-if="booking.isRefused() === true" class="refused-icon"></i>
+				<i ng-if="booking.isSuspended() === true" class="suspended-icon"></i>
 			</td>
-			<td ng-click="viewBooking(booking)"><i ng-if="booking.resource.is_available !== true" class="long-badge"><i18n>rbs.booking.resource.unavailable</i18n></i></td>
+			<td ng-click="viewBooking(booking)"></td>
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
 			<td class="invisible"></td>
@@ -89,9 +94,10 @@
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.startMoment)]]</td>
 			<td ng-click="viewBooking(slot)">[[formatMoment(slot.endMoment)]]</td>
 			<td ng-click="viewBooking(slot)">
-				<i ng-if="slot.status === 1" class="pending-icon"></i>
-				<i ng-if="slot.status === 2" class="validated-icon"></i>
-				<i ng-if="slot.status === 3" class="refused-icon"></i>
+				<i ng-if="slot.isPending() === true" class="pending-icon"></i>
+				<i ng-if="slot.isValidated() === true" class="validated-icon"></i>
+				<i ng-if="slot.isRefused() === true" class="refused-icon"></i>
+				<i ng-if="slot.isSuspended() === true" class="suspended-icon"></i>
 			</td>
 			<td></td>
 		</tr>

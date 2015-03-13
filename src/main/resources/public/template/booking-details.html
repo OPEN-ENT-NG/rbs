@@ -109,8 +109,9 @@
 
 			<div class="toggle">
 				<div class="content">
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
-						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true || selectedBooking.hasAtLeastOneSuspendedSlot()">
+						<i18n ng-if="! selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.resource.unavailable</i18n>
+						<i18n ng-if="selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots</i18n>
 					</div>
 
 					<table class="list-view twelve">
@@ -132,11 +133,12 @@
 								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a></td>
 								<td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
 
-								<td ng-if="slot.isPending()"></td>
+								<td ng-if="slot.isPending() || slot.isSuspended()"></td>
 								<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
 								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
 
 								<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
+								<td ng-if="slot.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></td>
 								<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>
 								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)"><i18n>rbs.booking.status.refused</i18n></a></td>
 							</tr>
@@ -174,12 +176,14 @@
 				<span class="right-magnet" ng-if="selectedBooking.isPending()"><i18n>rbs.booking.status.created</i18n></span>
 				<span class="right-magnet" ng-if="selectedBooking.isValidated()"><i18n>rbs.booking.status.validated</i18n></span>
 				<span class="right-magnet" ng-if="selectedBooking.isRefused()"><i18n>rbs.booking.status.refused</i18n></span>
+				<span class="right-magnet" ng-if="selectedBooking.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></span>
 			</h2>
 
 			<div class="toggle">
 				<div class="content">
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
-						<i18n>rbs.booking.details.resource.unavailable</i18n>
+					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true || selectedBooking.isSuspended()">
+						<i18n ng-if="! selectedBooking.isSuspended()">rbs.booking.details.resource.unavailable</i18n>
+						<i18n ng-if="selectedBooking.isSuspended()">rbs.booking.details.suspended.booking</i18n>
 					</div>
 					
 					<div class="row details" ng-if="selectedBooking.isPending()">

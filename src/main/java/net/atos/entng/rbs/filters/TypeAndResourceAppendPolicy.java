@@ -1,5 +1,7 @@
 package net.atos.entng.rbs.filters;
 
+import static net.atos.entng.rbs.BookingStatus.SUSPENDED;
+import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
 
 import java.util.ArrayList;
@@ -22,68 +24,73 @@ import org.vertx.java.core.json.JsonObject;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 
+/* Authorize if user has rights (owner or shared) on resourceType or on resource,
+ * or if he is a local administrator for the resourceType's school_id
+ */
 public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 	@Override
 	public void authorize(final HttpServerRequest request, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
 		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
-		String id = request.params().get(conf.getResourceIdLabel());
+		String resourceId = request.params().get(conf.getResourceIdLabel());
 		String bookingId = request.params().get("bookingId");
 		boolean hasBooking = (bookingId != null && !bookingId.trim().isEmpty());
 
-		if (id != null && !id.trim().isEmpty() && (parseId(id) instanceof Integer)) {
+		if (resourceId != null && !resourceId.trim().isEmpty() && (parseId(resourceId) instanceof Integer)) {
 			request.pause();
-			// Method
+			// Replace character '.' by '-' in the called method's name
 			String sharedMethod = binding.getServiceMethod().replaceAll("\\.", "-");
 
 			// Groups and users
 			final List<String> groupsAndUserIds = new ArrayList<>();
 			groupsAndUserIds.add(user.getUserId());
-			if (user.getProfilGroupsIds() != null) {
-				groupsAndUserIds.addAll(user.getProfilGroupsIds());
+			if (user.getGroupsIds() != null) {
+				groupsAndUserIds.addAll(user.getGroupsIds());
 			}
 
 			// Query
 			StringBuilder query = new StringBuilder();
 			JsonArray values = new JsonArray();
-			query.append("SELECT count(*) FROM rbs.resource AS r")
-					.append(" INNER JOIN rbs.resource_type AS t")
-					.append(	" ON r.type_id = t.id");
-
+			query.append("SELECT count(*)")
+				.append(" FROM rbs.resource AS r")
+				.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
 			if (hasBooking) {
 				// Additional join when parameter bookingId is used
-				query.append(" INNER JOIN rbs.booking AS b")
-					.append(    " ON b.resource_id = r.id ");
+				query.append(" INNER JOIN rbs.booking AS b ON b.resource_id = r.id");
 			}
 
-			query.append(" LEFT JOIN rbs.resource_type_shares AS ts")
-					.append(	" ON t.id = ts.resource_id")
-					.append(" LEFT JOIN rbs.resource_shares AS rs")
-					.append(	" ON r.id = rs.resource_id")
-					.append(" WHERE ((ts.member_id IN ")
-					.append(Sql.listPrepared(groupsAndUserIds.toArray()))
-					.append(" AND ts.action = ?)");
+			query.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+					.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+					.append(" WHERE ((ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray())).append(" AND ts.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (rs.member_id IN ")
-				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
-				.append(" AND rs.action = ?)");
+
+			query.append(" OR (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray())).append(" AND rs.action = ?)");
 			for (String groupOruser : groupsAndUserIds) {
 				values.add(groupOruser);
 			}
 			values.add(sharedMethod);
-			query.append(" OR (t.owner = ?)");
-			values.add(user.getUserId());
-			query.append(" OR (r.owner = ?)");
-			values.add(user.getUserId());
+
+			// Authorize user if he is a local administrator for the resourceType's school_id
+			List<String> scope = getLocalAdminScope(user);
+			if (scope!=null && !scope.isEmpty()) {
+				query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+				for (String schoolId : scope) {
+					values.addString(schoolId);
+				}
+			}
+
+			query.append(" OR t.owner = ? OR r.owner = ?");
+			values.add(user.getUserId()).add(user.getUserId());
 			if(isDeleteBooking(binding)) {
-				query.append(" OR (b.owner = ?)");
+				query.append(" OR b.owner = ?"); // Owner can delete his booking
 				values.add(user.getUserId());
 			}
+
 			query.append(") AND r.id = ?");
-			values.add(Sql.parseId(id));
+			values.add(Sql.parseId(resourceId));
 			if (hasBooking) {
 				query.append(" AND b.id = ?");
 				values.add(Sql.parseId(bookingId));
@@ -107,6 +114,12 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				values.add(true)
 					.add(user.getUserId());
 			}
+			else if(isProcessBooking(binding)) {
+				// A booking can be validated or refused, only if its status is not "suspended" and the resource is available
+				query.append(" AND b.status != ?")
+					.append(" AND r.is_available = true");
+				values.add(SUSPENDED.status());
+			}
 
 			// Execute
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
@@ -122,29 +135,34 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		}
 	}
 
+
 	private boolean isCreateBooking(final Binding binding) {
-		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|createBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.POST, "net.atos.entng.rbs.controllers.BookingController|createBooking");
 	}
 
 	private boolean isCreatePeriodicBooking(final Binding binding) {
-		return (HttpMethod.POST.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|createPeriodicBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.POST, "net.atos.entng.rbs.controllers.BookingController|createPeriodicBooking");
 	}
 
 	private boolean isUpdateBooking(final Binding binding) {
-		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|updateBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|updateBooking");
 	}
 
 	private boolean isUpdatePeriodicBooking(final Binding binding) {
-		return (HttpMethod.PUT.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|updatePeriodicBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|updatePeriodicBooking");
+	}
+
+	private boolean isProcessBooking(final Binding binding) {
+		return bindingIsThatMethod(binding, HttpMethod.PUT, "net.atos.entng.rbs.controllers.BookingController|processBooking");
 	}
 
 	private boolean isDeleteBooking(final Binding binding) {
-		return (HttpMethod.DELETE.equals(binding.getMethod())
-				&& "net.atos.entng.rbs.controllers.BookingController|deleteBooking".equals(binding.getServiceMethod()));
+		return bindingIsThatMethod(binding, HttpMethod.DELETE, "net.atos.entng.rbs.controllers.BookingController|deleteBooking");
 	}
+
+	private boolean bindingIsThatMethod(final Binding binding, final HttpMethod thatHttpMethod, final String thatServiceMethod) {
+		return (thatHttpMethod.equals(binding.getMethod()) && thatServiceMethod.equals(binding.getServiceMethod()));
+	}
+
 
 }
