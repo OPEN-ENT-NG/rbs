@@ -41,6 +41,7 @@
 								<input class="six cell disabled" type="text" disabled value="[[editedBooking.resource.name]]"/>
 							</div>
 						</div>
+						<div ng-include="template.containers.editBookingErrors"></div>
 						<div ng-if="editedBooking.resource !== undefined && editedBooking.resource.description" 
 							bind-html="editedBooking.resource.description" class="content"></div>
 						<div class="row" ng-if="editedBooking.resource !== undefined && (! editedBooking.resource.description)">
@@ -104,12 +105,14 @@
 								</span>
 							</label>
 						</div>
+						<div ng-include="template.containers.editBookingErrors"></div>
 						<div class="row form-element">
 							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 						</div>
 					</div>
 				</div>
 			</article>
+			
 			<!-- Periodic Booking with occurences -->
 			<article class="accordion" ng-if="editedBooking.is_periodic === true" ng-class="{ opened: (editedBooking.byOccurrences && editedBooking.showResource !== true) }">
 				<h2 ng-click="editedBooking.byOccurrences = true; editedBooking.showResource = undefined;"><i18n>rbs.header.occurences.pick</i18n></h2>
@@ -156,6 +159,7 @@
 							</label>
 							<div class="row"></div>
 						</div>
+						<div ng-include="template.containers.editBookingErrors"></div>
 						<div class="row form-element">
 							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 						</div>
@@ -163,6 +167,7 @@
 				</div>
 				<div class="row"></div>
 			</article>
+			
 			<!-- Non Periodic Booking dates and hours -->
 			<article class="accordion" ng-if="!editedBooking.is_periodic" ng-class="{ opened: !editedBooking.showResource }">
 				<h2 ng-click="editedBooking.showResource = undefined;"><i18n>rbs.header.simple.pick</i18n></h2>
@@ -186,6 +191,7 @@
 						</div>
 						<div class="row" ng-if="booking.invalidDateTimes === true" translate content="booking.invalidDateTimesMessage">
 						</div>
+						<div ng-include="template.containers.editBookingErrors"></div>
 						<!-- Non periodic Booking reason -->
 						<div class="row form-element" ng-if="editedBooking.is_periodic !== true">
 							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
@@ -193,10 +199,6 @@
 					</div>
 				</div>
 			</article>
-		</div>
-
-		<!-- Errors -->
-		<div class="warning form-element" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
 		</div>
 
 		<div class="row">

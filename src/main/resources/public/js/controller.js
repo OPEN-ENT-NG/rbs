@@ -71,6 +71,7 @@ function RbsController($scope, template, model, date, route){
 
 		template.open('main', 'main-view');
 		template.open('top-menu', 'top-menu');
+		template.open('editBookingErrors', 'edit-booking-errors');
 
 		// Will auto-select all resources and "Mine" bookings filter by default
 		//model.bookings.filters.mine = true;
