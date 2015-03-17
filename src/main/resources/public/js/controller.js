@@ -90,8 +90,12 @@ function RbsController($scope, template, model, date, route){
 			// check create booking rights
 			$scope.display.create = $scope.canCreateBooking();
 
-			// Open calendar
-			template.open('bookings', 'main-calendar');
+			if($scope.display.list === true) {
+				template.open('bookings', 'main-list');
+			}
+			else {
+				template.open('bookings', 'main-calendar');
+			}
 
 			// Do not restore if routed
 			if ($scope.display.routed === true) {
