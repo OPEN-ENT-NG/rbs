@@ -604,19 +604,13 @@ function RbsController($scope, template, model, date, route){
 		$scope.updatePeriodicSummary();
 	};
 
-	$scope.toggleNonPeriodic = function() {
-		$scope.editedBooking.is_periodic = false;
-		if ($scope.editedBooking.type === undefined || $scope.editedBooking.resource === undefined || (! $scope.editedBooking.resource.isBookable(true))) {
-			$scope.editedBooking.showResource = true;
-			$scope.autoSelectTypeAndResource();
-		}
-	};
-
 	$scope.togglePeriodic = function() {
-		$scope.initPeriodic();
+		if ($scope.editedBooking.is_periodic === true) {
+			$scope.initPeriodic();
+		};
 		if ($scope.editedBooking.type === undefined || $scope.editedBooking.resource === undefined || (! $scope.editedBooking.resource.isBookable(true))) {
-			$scope.editedBooking.showResource = true;
 			$scope.autoSelectTypeAndResource();
+			// Warn user ?
 		}
 	};
 

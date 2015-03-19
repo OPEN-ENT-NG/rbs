@@ -120,14 +120,23 @@
 						</div>
 
 						<!-- Periodicity toggle - new booking -->
-						<div class="row" ng-if="editedBooking.id === undefined">
-							<input type="checkbox" ng-model="editedBooking.is_periodic" ng-change="initPeriodic()"/>&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
+						<hr />
+						<div class="row six" ng-if="editedBooking.id === undefined">
+							<input type="checkbox" ng-model="editedBooking.is_periodic" ng-change="togglePeriodic()" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
 						</div>
 
 						<!-- Periodicity toggle (fixed) - editing booking -->
-						<div class="row" ng-if="editedBooking.id !== undefined">
-							<input type="checkbox" disabled checked="editedBooking.is_periodic" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
+						<div class="row six" ng-if="editedBooking.id !== undefined">
+							<input type="checkbox" disabled checked="editedBooking.is_periodic" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
 						</div>
+
+						<!-- Booking reason -->
+						<hr />
+						<div class="row form-element">
+							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
+						</div>
+
+						<!-- Errors -->
 						<div ng-include="template.containers.editBookingErrors"></div>
 					</div>
 				</div>
@@ -135,7 +144,15 @@
 
 			<!-- Periodic Booking with end date -->
 			<article class="accordion" ng-if="editedBooking.is_periodic" ng-class="{ opened: editedBooking.display.state === editedBooking.display.STATE_PERIODIC }">
-				<h2 ng-click="editedBooking.display.state = editedBooking.display.STATE_PERIODIC;"><i18n>rbs.header.periodic.pick</i18n></h2>
+				<h2 ng-click="editedBooking.display.state = editedBooking.display.STATE_PERIODIC;">
+					<span ng-if="editedBooking.display.state === editedBooking.display.STATE_PERIODIC">
+						<i18n>rbs.header.periodic.pick</i18n>
+					</span>
+					<span ng-if="editedBooking.display.state !== editedBooking.display.STATE_PERIODIC">
+						<i18n>rbs.header.periodic.picked</i18n>
+						<span class="right-magnet">[[editedBooking.periodicSummary]]</span>
+					</span>
+				</h2>
 				<div class="toggle">
 					<div class="content">
 						<!-- Periodicity repeat options -->
@@ -166,24 +183,24 @@
 						</div>
 
 						<!-- Periodicity end by occurences -->
-						<div class="row">
-							<input class="cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="true" ng-change="updatePeriodicSummary()" checked />
-							<label class="one cell form-label"><i18n>rbs.booking.edit.period.end.after</i18n></label>
-							<select class="one cell" ng-model="editedBooking.occurrences" ng-options="occurrence for occurrence in periods.occurrences" ng-change="updatePeriodicSummary()">
-							<label class="three cell form-label"><i18n>rbs.booking.edit.period.end.occurrences</i18n></label>
+						<div class="row six">
+							<input class="one cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="true" ng-change="updatePeriodicSummary()" checked />
+							<label class="two cell form-label"><i18n>rbs.booking.edit.period.end.after</i18n></label>
+							<select class="two cell" ng-model="editedBooking.occurrences" ng-options="occurrence for occurrence in periods.occurrences" ng-change="updatePeriodicSummary()">
 							</select>
+							<label class="six cell form-label"><i18n>rbs.booking.edit.period.end.occurrences</i18n></label>
 						</div>
 
 						<!-- Periodicity end by date -->						
-						<div class="row">
-							<input class="cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="false" ng-change="updatePeriodicSummary()" />
-							<label class="one cell form-label"><i18n>rbs.booking.edit.period.end.on</i18n></label>
-							<date-picker-rbs class="three cell" ng-model="booking.periodicEndDate" ng-change="showDate = true; updatePeriodicSummary()" past="true" min-date="booking.startDate"></date-picker-rbs>
+						<div class="row six">
+							<input class="one cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="false" ng-change="updatePeriodicSummary()" />
+							<label class="two cell form-label"><i18n>rbs.booking.edit.period.end.on</i18n></label>
+							<date-picker-rbs class="six cell" ng-model="booking.periodicEndDate" ng-change="showDate = true; updatePeriodicSummary()" past="true" min-date="booking.startDate"></date-picker-rbs>
 						</div>
 
 						<!-- Periodicity summary -->
 						<div class="row">
-							<p>[[booking.periodicSummary]]</p>
+							<p>[[editedBooking.periodicSummary]]</p>
 						</div>
 
 						<!-- Errors -->
@@ -197,8 +214,26 @@
 			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic === true" ng-click="toggleNonPeriodic()"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
 			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic !== true" ng-click="togglePeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
 			<behaviour name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
-				<button class="right-magnet" ng-click="saveBooking()" ng-if="display.processing !== true && editedBooking.showResource !== true"><i18n>rbs.save</i18n></button>
-				<button class="right-magnet" ng-click="editedBooking.showResource = undefined" ng-if="display.processing !== true && editedBooking.showResource === true"><i18n>rbs.next</i18n></button>
+				<button class="right-magnet" 
+					ng-click="saveBooking()" 
+					ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING">
+					<i18n>rbs.save</i18n>
+				</button>
+				<button class="right-magnet" 
+					ng-click="saveBooking()" 
+					ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC">
+					<i18n>rbs.save</i18n>
+				</button>
+				<button class="right-magnet" 
+					ng-click="editedBooking.display.state = editedBooking.display.STATE_BOOKING" 
+					ng-if="display.processing !== true && editedBooking.display.state === editedBooking.display.STATE_RESOURCE">
+					<i18n>rbs.next</i18n>
+				</button>
+				<button class="right-magnet" 
+					ng-click="editedBooking.display.state = editedBooking.display.STATE_PERIODIC" 
+					ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_BOOKING">
+					<i18n>rbs.next</i18n>
+				</button>
 			</behaviour>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true" />
 
