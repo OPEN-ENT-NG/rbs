@@ -433,6 +433,10 @@ function RbsController($scope, template, model, date, route){
 		return date.format('dddd DD MMM YYYY');	
 	};
 
+	$scope.formatHour = function(hour) {
+		return date.format('HH[h]mm');
+	};
+
 	$scope.composeTitle = function(typeTitle, resourceTitle) {
 		var title = typeTitle + ' - ' + resourceTitle;
 		return _.isString(title) ? (title.trim().length > 65 ? title.substring(0, 62) + '...' : title.trim()) : "";
@@ -669,25 +673,25 @@ function RbsController($scope, template, model, date, route){
 			return;
 		}
 		if (days.length == 7) {
-			$scope.editedBooking.periodicSummary = "Tous les jours, ";
+			$scope.editedBooking.periodicSummary = lang.translate('rbs.period.days.all') + ", ";
 		}
 		else {
 			// TODO: Days grouping etc
-			$scope.editedBooking.periodicSummary = "Certains jours, ";	
+			$scope.editedBooking.periodicSummary = lang.translate('rbs.period.days.some') + ", ";
 		}
 
 		if ($scope.editedBooking.periodicity == 1) {
-			$scope.editedBooking.periodicSummary += "chaque semaine, ";
+			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.weeks.all') + ", ";
 		}
 		else {
-			$scope.editedBooking.periodicSummary += "1 semaine sur " + $scope.editedBooking.periodicity + ", ";
+			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.weeks.partial') + lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) + ", ";
 		}
 
 		if ($scope.editedBooking.byOccurrences) {
-			$scope.editedBooking.periodicSummary += "pour " + $scope.editedBooking.occurrences + " créneau(x)";
+			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.occurences.for') + $scope.editedBooking.occurrences + lang.translate('rbs.period.occurences.slots');
 		}
 		else {
-			$scope.editedBooking.periodicSummary += "jusqu'au " + $scope.formatMomentDayLong(moment($scope.editedBooking.periodicEndDate));	
+			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.date.until') + $scope.formatMomentDayLong(moment($scope.editedBooking.periodicEndDate));	
 		}
 	};
 

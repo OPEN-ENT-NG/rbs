@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row form-section">
 	<h2><i18n>rbs.booking.new</i18n></h2>
 	<section class="twelve cell">
 
@@ -55,7 +55,7 @@
 						<div class="row" ng-if="editedBooking.type && editedBooking.type.moderators">
 							<label class="row"><i18n>rbs.booking.details.moderators</i18n></label>
 							<p class="row">
-								<span ng-repeat="moderator in editedBooking.type.moderators">
+								<span ng-repeat="moderator in editedBooking.type.moderators" class="cell min-four horizontal-spacing-twice">
 										[[moderator.username]][[$last ? '' : ', ']]
 								</span>
 							</p>
@@ -73,7 +73,7 @@
 					</span>
 					<span ng-if="editedBooking.display.state !== editedBooking.display.STATE_BOOKING">
 						<i18n>rbs.header.booking.picked</i18n>
-						<span class="right-magnet" ng-if="selectedBooking.displaySection !== 1 && selectedBooking.is_periodic !== true">
+						<span class="right-magnet">
 							<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatMoment(editedBooking.startMoment)]]&nbsp;
 							<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatMoment(editedBooking.endMoment)]]
 						</span>
@@ -132,7 +132,7 @@
 
 						<!-- Booking reason -->
 						<hr />
-						<div class="row form-element">
+						<div class="row">
 							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 						</div>
 
@@ -142,7 +142,7 @@
 				</div>
 			</article>
 
-			<!-- Periodic Booking with end date -->
+			<!-- Periodicity configuration -->
 			<article class="accordion" ng-if="editedBooking.is_periodic" ng-class="{ opened: editedBooking.display.state === editedBooking.display.STATE_PERIODIC }">
 				<h2 ng-click="editedBooking.display.state = editedBooking.display.STATE_PERIODIC;">
 					<span ng-if="editedBooking.display.state === editedBooking.display.STATE_PERIODIC">
@@ -157,7 +157,7 @@
 					<div class="content">
 						<!-- Periodicity repeat options -->
 						<div class="row">
-							<label class="three cell form-label"><i18n>rbs.booking.edit.period.label</i18n></label>
+							<label class="two cell"><i18n>rbs.booking.edit.period.label</i18n></label>
 							<select class="one cell" ng-model="editedBooking.periodicity" ng-options="periodicity for periodicity in periods.periodicities" ng-change="updatePeriodicSummary()" required>
 							</select>
 							<label class="two cell horizontal-spacing-twice"><i18n>rbs.booking.edit.period.unit</i18n></label>
@@ -179,28 +179,30 @@
 
 						<!-- Periodicity end -->
 						<div class="row">
-							<label class="twelve cell form-label"><i18n>rbs.booking.edit.period.end.label</i18n></label>
+							<label class="twelve cell"><i18n>rbs.booking.edit.period.end.label</i18n></label>
 						</div>
 
 						<!-- Periodicity end by occurences -->
 						<div class="row six">
 							<input class="one cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="true" ng-change="updatePeriodicSummary()" checked />
-							<label class="two cell form-label"><i18n>rbs.booking.edit.period.end.after</i18n></label>
+							<label class="two cell"><i18n>rbs.booking.edit.period.end.after</i18n></label>
 							<select class="two cell" ng-model="editedBooking.occurrences" ng-options="occurrence for occurrence in periods.occurrences" ng-change="updatePeriodicSummary()">
 							</select>
-							<label class="six cell form-label"><i18n>rbs.booking.edit.period.end.occurrences</i18n></label>
+							<label class="six cell horizontal-spacing-twice"><i18n>rbs.booking.edit.period.end.occurrences</i18n></label>
 						</div>
 
 						<!-- Periodicity end by date -->						
 						<div class="row six">
 							<input class="one cell" type="radio" name="periodic_after" data-ng-model="editedBooking.byOccurrences" ng-value="false" ng-change="updatePeriodicSummary()" />
-							<label class="two cell form-label"><i18n>rbs.booking.edit.period.end.on</i18n></label>
+							<label class="two cell"><i18n>rbs.booking.edit.period.end.on</i18n></label>
 							<date-picker-rbs class="six cell" ng-model="booking.periodicEndDate" ng-change="showDate = true; updatePeriodicSummary()" past="true" min-date="booking.startDate"></date-picker-rbs>
 						</div>
 
 						<!-- Periodicity summary -->
+						<hr />
 						<div class="row">
-							<p>[[editedBooking.periodicSummary]]</p>
+							<label class="cell"><i18n>rbs.booking.edit.period.summary</i18n></label>
+							<p class="row">[[editedBooking.periodicSummary]]</p>
 						</div>
 
 						<!-- Errors -->
@@ -211,8 +213,6 @@
 		</div>
 
 		<div class="row">
-			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic === true" ng-click="toggleNonPeriodic()"><i18n>rbs.booking.edit.toggle.nonperiodic</i18n></a>
-			<a class="cell" ng-if="editedBooking.id === undefined && editedBooking.is_periodic !== true" ng-click="togglePeriodic()"><i18n>rbs.booking.edit.toggle.periodic</i18n></a>
 			<behaviour name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
 				<button class="right-magnet" 
 					ng-click="saveBooking()" 

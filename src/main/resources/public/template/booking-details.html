@@ -158,7 +158,7 @@
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
 						<div class="row" ng-if="selectedBooking.resource.type.moderators">
 							<p class="row">
-								<span ng-repeat="moderator in selectedBooking.resource.type.moderators">
+								<span ng-repeat="moderator in selectedBooking.resource.type.moderators" class="cell min-four horizontal-spacing-twice">
 										[[moderator.username]][[$last ? '' : ', ']]
 								</span>
 							</p>

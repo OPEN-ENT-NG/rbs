@@ -110,3 +110,15 @@ div.schedule-item-content .checkbox {
 	line-height: 40px;
 	vertical-align: middle;
 }
+
+.form-section select {
+	padding: 3px 1px;
+}
+
+.form-section input[type=radio] {
+	margin-top: 7px;
+}
+
+.cell.min-four {
+	min-width: 33%;
+}
