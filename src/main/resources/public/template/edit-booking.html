@@ -150,7 +150,7 @@
 					</span>
 					<span ng-if="editedBooking.display.state !== editedBooking.display.STATE_PERIODIC">
 						<i18n>rbs.header.periodic.picked</i18n>
-						<span class="right-magnet">[[editedBooking.periodicSummary]]</span>
+						<span class="right-magnet">[[editedBooking.periodicShortSummary]]</span>
 					</span>
 				</h2>
 				<div class="toggle">
@@ -202,6 +202,7 @@
 						<hr />
 						<div class="row">
 							<label class="cell"><i18n>rbs.booking.edit.period.summary</i18n></label>
+							<p class="row warning" ng-if="editedBooking.periodicError">[[editedBooking.periodicError]]</p>
 							<p class="row">[[editedBooking.periodicSummary]]</p>
 						</div>
 

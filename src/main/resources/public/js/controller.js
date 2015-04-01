@@ -667,32 +667,123 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.updatePeriodicSummary = function() {
-		var days = _.filter($scope.editedBooking.periodDays, function(day){ return day.value });
-		if (days.length == 0) {
-			$scope.editedBooking.periodicSummary = "Sélectionnez au moins un jour de la semaine";
+		$scope.editedBooking.periodicSummary = '';
+		$scope.editedBooking.periodicShortSummary = '';
+		$scope.editedBooking.periodicError = undefined;
+
+		// Selected days
+		var selected = 0;
+		_.each($scope.editedBooking.periodDays, function(d){ selected += (d.value ? 1 : 0)});
+		if (selected == 0) {
+			// Error in periodic view
+			$scope.editedBooking.periodicError = lang.translate('rbs.period.error.nodays');
 			return;
 		}
-		if (days.length == 7) {
-			$scope.editedBooking.periodicSummary = lang.translate('rbs.period.days.all') + ", ";
-		}
-		else {
-			// TODO: Days grouping etc
-			$scope.editedBooking.periodicSummary = lang.translate('rbs.period.days.some') + ", ";
+		if (selected == 7) {
+			$scope.editedBooking.periodicSummary = lang.translate('rbs.period.days.all');
+			$scope.editedBooking.periodicShortSummary = $scope.editedBooking.periodicSummary;
 		}
 
+		$scope.editedBooking.periodicSummary = $scope.summaryBuildDays($scope.editedBooking.periodDays);
+		$scope.editedBooking.periodicShortSummary = lang.translate('rbs.period.days.some');
+		
+		// Weeks
+		var summary = ", ";
 		if ($scope.editedBooking.periodicity == 1) {
-			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.weeks.all') + ", ";
+			summary += lang.translate('rbs.period.weeks.all') + ", ";
 		}
 		else {
-			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.weeks.partial') + lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) + ", ";
+			summary += lang.translate('rbs.period.weeks.partial') + lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) + ", ";
 		}
 
+		// Occurences or date
 		if ($scope.editedBooking.byOccurrences) {
-			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.occurences.for') + $scope.editedBooking.occurrences + lang.translate('rbs.period.occurences.slots');
+			summary += lang.translate('rbs.period.occurences.for') + $scope.editedBooking.occurrences
+			 + lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? 'many' : 'one'));
 		}
 		else {
-			$scope.editedBooking.periodicSummary += lang.translate('rbs.period.date.until') + $scope.formatMomentDayLong(moment($scope.editedBooking.periodicEndDate));	
+			summary += lang.translate('rbs.period.date.until') + $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));	
 		}
+
+		$scope.editedBooking.periodicSummary += summary;
+		$scope.editedBooking.periodicShortSummary += summary;
+	};
+
+	$scope.summaryBuildDays = function(days) {
+		// No days or all days cases are already done here
+		var summary = undefined;
+		var startBuffer = undefined;
+		var lastIndex = days.length - 1;
+		if (_.first(days).value && _.last(days).value) {
+			// Sunday and Monday are selected : summary will not start with monday, reverse-search the start day
+			for (var k = days.length; k > 0; k--) {
+				if (!days[k - 1].value) {
+					lastIndex = k - 1;
+					break;
+				}
+			}
+			startBuffer = lastIndex + 1;
+		}
+		
+		for (var i = 0; i <= lastIndex; i++) {
+			if ((startBuffer === undefined) && days[i].value) {
+				// No range in buffer, start the range
+				startBuffer = i;
+			}
+			if(startBuffer !== undefined) {
+				if (i == lastIndex && days[lastIndex].value) {
+					// Day range complete (last index) write to summary
+					summary = $scope.summaryWriteRange(summary, days[startBuffer], days[lastIndex]);
+					break;
+				}
+				if (!days[i].value) {
+					// Day range complete, write to summary
+					summary = $scope.summaryWriteRange(summary, days[startBuffer], days[i - 1]);
+					startBuffer = undefined;
+				}
+			}
+		}
+		return summary;
+	};
+
+	$scope.summaryWriteRange = function(summary, first, last) {
+		if (first.number == last.number) {
+			// One day range
+			if (summary === undefined) {
+				// Start the summary
+				return lang.translate('rbs.period.days.one.start') + lang.translate('rbs.period.days.' + first.number);
+			}
+			// Continue the summary
+			return summary + lang.translate('rbs.period.days.one.continue') + lang.translate('rbs.period.days.' + first.number);
+		}
+		if (first.number + 1 == last.number || first.number - 6 == last.number) {
+			// Two day range
+			if (summary === undefined) {
+				// Start the summary
+				return lang.translate('rbs.period.days.one.start')
+				 + lang.translate('rbs.period.days.' + first.number)
+				 + lang.translate('rbs.period.days.one.continue')
+				 + lang.translate('rbs.period.days.' + last.number);
+			}
+			// Continue the summary
+			return summary + lang.translate('rbs.period.days.one.continue')
+			 + lang.translate('rbs.period.days.' + first.number)
+			 + lang.translate('rbs.period.days.one.continue')
+			 + lang.translate('rbs.period.days.' + last.number);	
+		}
+		// Multi-day range
+		if (summary === undefined) {
+			// Start the summary
+			return lang.translate('rbs.period.days.range.start')
+			 + lang.translate('rbs.period.days.' + first.number)
+			 + lang.translate('rbs.period.days.range.to')
+			 + lang.translate('rbs.period.days.' + last.number);
+		}
+		// Continue the summary
+		return summary + lang.translate('rbs.period.days.range.continue')
+		 + lang.translate('rbs.period.days.' + first.number)
+		 + lang.translate('rbs.period.days.range.to')
+		 + lang.translate('rbs.period.days.' + last.number);
 	};
 
 	$scope.saveBooking = function() {
