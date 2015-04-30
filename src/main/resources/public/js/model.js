@@ -14,8 +14,8 @@ model.DETACHED_STRUCTURE = {
 
 model.timeConfig = { // 5min slots from 7h00 to 20h00, default 8h00
 	interval: 5, // in minutes
-	start_hour: 7,
-	end_hour: 20,
+	start_hour: 0,
+	end_hour: 23,
 	default_hour: 8
 };
 
