@@ -11,6 +11,13 @@ module.directive('timePickerRbs', function($compile){
 		restrict: 'E',
 		template: "<input type='text' />",
 		link: function($scope, $element, $attributes){
+			$('body, lightbox').on('click', function(e){
+				var timepicker = $element.data('timepicker');
+				if(!timepicker || $element[0] === e.originalEvent.target || $('.bootstrap-timepicker-widget').find(e.originalEvent.target).length !== 0){
+					return;
+				}
+				timepicker.hideWidget();
+			});
 			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-timepicker.js', function(){
 				$element.timepicker({
 					showMeridian: false,
