@@ -2,6 +2,7 @@
 	<h2 ng-if="editedResource.id === undefined"><i18n>rbs.resource.new</i18n></h2>
 	<h2 ng-if="editedResource.id !== undefined"><i18n>rbs.resource.edit</i18n>[[editedResource.name]]</h2>
 
+	<form ng-submit="saveResource()">
 	<article class="twelve cell">
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.type.label</i18n></label>
@@ -70,10 +71,11 @@
 		</div>
 
 		<div class="row">
-			<button class="right-magnet" ng-click="saveResource()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
+			<button class="right-magnet" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
 		</div>
 	</article>
+	</form>
 </div>
