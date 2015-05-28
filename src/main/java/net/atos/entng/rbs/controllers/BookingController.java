@@ -812,6 +812,7 @@ public class BookingController extends ControllerHelper {
 		if(!owner.equals(user.getUserId())) {
 			JsonObject params = new JsonObject();
 			params.putString("username", user.getUsername())
+				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("startdate", startDate)
 				.putString("enddate", endDate)
 				.putString("resourcename", resourceName)
@@ -916,6 +917,7 @@ public class BookingController extends ControllerHelper {
 
 			JsonObject params = new JsonObject();
 			params.putString("username", user.getUsername())
+				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("startdate", startDate)
 				.putString("enddate", endDate)
 				.putString("resourcename", resourceName);
