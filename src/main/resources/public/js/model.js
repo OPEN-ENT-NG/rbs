@@ -640,6 +640,12 @@ model.build = function(){
 				resourceType.resources.deselectAll();
 			});
 		},
+		removeSelectedTypes: function(){
+			this.selection().forEach(function(type){
+				type.delete();
+			});
+			this.removeSelection();
+		},
 		behaviours: 'rbs'
 	});
 

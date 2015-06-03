@@ -9,26 +9,10 @@
 	<nav class="vertical row">
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all | filter:keepProcessableResourceTypes">
-				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">[[resourceType.name]]</a>
-
-				<ul ng-if="resourceType === currentResourceType">
-					<li>
-						<behaviour name="manage" resource="currentResourceType">
-							<a ng-click="editCurrentResourceType()" ng-class="{ selected: resourceType === currentResourceType && resourceType === editedResourceType
-							&& !template.contains('resources', 'confirm-delete-type') }">
-								<i18n>edit</i18n>
-							</a>
-						</behaviour>
-					</li>
-					<li>
-						<behaviour name="manage" resource="currentResourceType">
-							<a ng-click="deleteCurrentResourceType()" ng-class="{ selected: resourceType === currentResourceType && resourceType === editedResourceType
-							&& template.contains('resources', 'confirm-delete-type') }">
-								<i18n>remove</i18n>
-							</a>
-						</behaviour>
-					</li>
-				</ul>
+				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
+					<input type="checkbox" ng-model="resourceType.selected" ng-click="$event.stopPropagation()" />
+					[[resourceType.name]]
+				</a>
 			</li>
 		</ul>
 		<a class="classic-link" workflow="rbs.typemanage" ng-click="newResourceType()"><i18n>rbs.manage.type.create</i18n></a>
@@ -71,6 +55,48 @@
 				<button ng-if="currentResourceType.resources.selection().length > 1"
 						ng-click="deleteResourcesSelection()">
 					<i18n>rbs.manage.resource.removes</i18n>
+				</button>
+			</behaviour>
+		</div>
+	</div>
+</section>
+
+<lightbox show="display.confirmRemoveTypes" on-close="display.confirmRemoveTypes = false">
+
+	<div ng-repeat="type in resourceTypes.selection()">
+		<div ng-if="!type.resources.empty()" class="row">
+			<h2><i18n>rbs.manage.type.delete.confirm</i18n>[[type.name]]</h2>
+			<h4><i18n>rbs.manage.type.delete.resources</i18n></h4>
+			<ul>
+				<li ng-repeat="resource in type.resources.all">[[resource.name]]</li>
+			</ul>
+		</div>
+
+		<div class="row">
+			<p ng-if="!type.resources.empty()"><i18n>rbs.manage.type.delete.details.notempty</i18n></p>
+			<p ng-if="type.resources.empty()"><i18n>rbs.manage.type.delete.details.empty</i18n></p>
+		</div>
+	</div>
+
+
+	<div class="row">
+		<button class="right-magnet" ng-click="doRemoveTypes()"><i18n>rbs.delete</i18n></button>
+		<button type="button" class="cancel right-magnet" ng-click="display.confirmRemoveTypes = false">
+			<i18n>cancel</i18n>
+		</button>
+	</div>
+</lightbox>
+
+<section class="toggle-buttons" ng-class="{ hide: resourceTypes.selection().length === 0 }">
+	<div class="toggle">
+		<div class="row">
+			<behaviour name="manage" resource="resourceTypes.selection()">
+				<button ng-if="resourceTypes.selection().length === 1"
+						ng-click="editSelectedType()">
+					<i18n>edit</i18n>
+				</button>
+				<button ng-click="removeSelectedTypes()">
+					<i18n>remove</i18n>
 				</button>
 			</behaviour>
 		</div>

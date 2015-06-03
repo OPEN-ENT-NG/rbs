@@ -1114,12 +1114,6 @@ function RbsController($scope, template, model, date, route){
 		template.open('resources', 'edit-resource');
 	};
 
-	$scope.editCurrentResourceType = function() {
-		$scope.display.processing = undefined;
-		$scope.editedResourceType = $scope.currentResourceType;
-		template.open('resources', 'edit-resource-type');
-	};
-
 	$scope.editSelectedResource = function() {
 		$scope.display.processing = undefined;
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
@@ -1173,30 +1167,10 @@ function RbsController($scope, template, model, date, route){
 		});
 	};
 
-	$scope.deleteCurrentResourceType = function() {
-		$scope.editedResourceType = $scope.currentResourceType;
-		template.open('resources', 'confirm-delete-type');
-	};
-
 	$scope.deleteResourcesSelection = function() {
 		$scope.currentResourceType.resourcesToDelete = $scope.currentResourceType.resources.selection();
 		$scope.currentResourceType.resources.deselectAll();
 		template.open('resources', 'confirm-delete-resource');
-	};
-
-	$scope.doDeleteResourceType = function() {
-		$scope.display.processing = true;
-		$scope.currentErrors = [];
-		$scope.editedResourceType.delete(function(){
-			$scope.display.processing = undefined;
-			$scope.resourceTypes.remove($scope.editedResourceType);
-			$scope.currentResourceType = $scope.resourceTypes.first();
-			$scope.closeResourceType();
-			model.refresh();
-		}, function(e){
-			$scope.currentErrors.push(e);
-			$scope.display.processing = undefined;
-		});
 	};
 
 	$scope.doDeleteResource = function() {
@@ -1318,6 +1292,22 @@ function RbsController($scope, template, model, date, route){
 		var prevEnd = moment(model.bookings.filters.endMoment).subtract(7, 'day');
 		updateCalendarList(prevStart,prevEnd);
 	};
+
+	$scope.editSelectedType = function(){
+		$scope.display.processing = undefined;
+		$scope.editedResourceType = model.resourceTypes.selection()[0];
+		template.open('resources', 'edit-resource-type');
+	};
+
+	$scope.removeSelectedTypes = function(){
+		$scope.display.confirmRemoveTypes = true;
+	};
+
+	$scope.doRemoveTypes = function(){
+		model.resourceTypes.removeSelectedTypes();
+		$scope.display.confirmRemoveTypes = false;
+	};
+
 	var updateCalendarList = function(start, end){
 		model.bookings.filters.startMoment.date(start.date());
 		model.bookings.filters.startMoment.month(start.month());
