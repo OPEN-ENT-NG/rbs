@@ -287,5 +287,6 @@
     "rbs.period.error.nodays": "Veuillez sélectionner au moins un jour de la semaine",
     "to": "à",
     "from": "de",
-    "type.form.validation.required": "Les demandes de réservation doivent être validées"
+    "type.form.validation.required": "Les demandes de réservation doivent être validées",
+    "VALIDATION_ERROR": "Données non valides."
 }

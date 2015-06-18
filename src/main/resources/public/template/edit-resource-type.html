@@ -3,55 +3,56 @@
 	<h2 ng-if="editedResourceType.id !== undefined"><i18n>rbs.resourcetype.edit</i18n>[[editedResourceType.name]]</h2>
 
 	<article class="twelve cell">
-		
-		<div class="row" ng-if="editedResourceType.id === undefined">
-			<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
-			<select ng-if="structures.length > 1" class="nine cell" ng-model="editedResourceType.structure" ng-options="structure.name for structure in structures" required>
-			</select>
-			<span ng-if="structures.length == 1" class="nine cell" translate content="[[structures[0].name]]"></span>
-		</div>
-
-		<div class="row" ng-if="editedResourceType.id !== undefined">
-			<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
-			<span class="nine cell" translate content="[[editedResourceType.structure.name]]"></span>
-		</div>
-
-		<div class="row">
-			<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
-			<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required />
-		</div>
-		<div class="row">
-			<div class="nine cell right-magnet">
-				<input type="checkbox" ng-model="editedResourceType.validation" />&nbsp;<i18n>type.form.validation.required</i18n>
+		<form name="resourceTypeForm" novalidate>
+			<div class="row" ng-if="editedResourceType.id === undefined">
+				<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
+				<select ng-if="structures.length > 1" class="nine cell" ng-model="editedResourceType.structure" ng-options="structure.name for structure in structures" required>
+				</select>
+				<span ng-if="structures.length == 1" class="nine cell" translate content="[[structures[0].name]]"></span>
 			</div>
-		</div>
-		<hr />
 
-		<div ng-if="editedResourceType.id === undefined" class="row">
-			<p class="info">
-				<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
-			</p>
-		</div>
+			<div class="row" ng-if="editedResourceType.id !== undefined">
+				<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
+				<span class="nine cell" translate content="[[editedResourceType.structure.name]]"></span>
+			</div>
 
-		<div class="row">
-			<p class="info">
-				<i18n>rbs.type.info.adml</i18n>
-			</p>
-		</div>
-		<hr />
+			<div class="row">
+				<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
+				<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required />
+			</div>
+			<div class="row">
+				<div class="nine cell right-magnet">
+					<input type="checkbox" ng-model="editedResourceType.validation" />&nbsp;<i18n>type.form.validation.required</i18n>
+				</div>
+			</div>
+			<hr />
 
-		<div ng-if="editedResourceType.id !== undefined" class="row">
-			<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
-		</div>
-		
-		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
-		</div>
+			<div ng-if="editedResourceType.id === undefined" class="row">
+				<p class="info">
+					<i18n>rbs.resourcetype.edit.save.to.configure</i18n>
+				</p>
+			</div>
 
-		<div class="row">
-			<button class="right-magnet" ng-click="saveResourceType()" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
-			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResourceType()" ng-if="display.processing !== true"/>
+			<div class="row">
+				<p class="info">
+					<i18n>rbs.type.info.adml</i18n>
+				</p>
+			</div>
+			<hr />
 
-			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
-		</div>
+			<div ng-if="editedResourceType.id !== undefined" class="row">
+				<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
+			</div>
+
+			<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
+			</div>
+
+			<div class="row">
+				<button class="right-magnet" ng-click="saveResourceType()" ng-if="display.processing !== true" ng-disabled="resourceTypeForm.$invalid"><i18n>rbs.save</i18n></button>
+				<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResourceType()" ng-if="display.processing !== true"/>
+
+				<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
+			</div>
+		</form>
 	</article>
 </div>
