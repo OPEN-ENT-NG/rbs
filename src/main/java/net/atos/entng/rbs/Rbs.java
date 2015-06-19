@@ -7,13 +7,11 @@ import net.atos.entng.rbs.controllers.ResourceTypeController;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 
-import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
-import org.entcore.common.user.RepositoryHandler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonArray;
 
@@ -31,11 +29,10 @@ public class Rbs extends BaseServer {
 		super.start();
 		final EventBus eb = getEventBus(vertx);
 
-		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setContainer(container);
-		eventStoreFactory.setVertx(vertx);
+		// Set RepositoryEvents implementation used to process events published for transition
 		setRepositoryEvents(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false)));
 
+		// Controllers
 		addController(new DisplayController());
 
 		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
