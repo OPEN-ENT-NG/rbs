@@ -74,8 +74,8 @@
 					<span ng-if="editedBooking.display.state !== editedBooking.display.STATE_BOOKING">
 						<i18n>rbs.header.booking.picked</i18n>
 						<span class="right-magnet">
-							<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatMoment(editedBooking.startMoment)]]&nbsp;
-							<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatMoment(editedBooking.endMoment)]]
+							<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatBooking(booking.startDate, booking.startTime)]]&nbsp;
+							<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatBooking(booking.endDate, booking.endTime)]]
 						</span>
 					</span>
 				</h2>

@@ -39,6 +39,7 @@
     "rbs.booking.details.description.label": "Description de la ressource",
     "rbs.booking.details.end.label": "Date et heure de fin",
     "rbs.booking.details.header.from": "Du",
+    "rbs.booking.details.header.at": "à",
     "rbs.booking.details.header.periodic": "Périodique, début le",
     "rbs.booking.details.header.refused.many": "refusés",
     "rbs.booking.details.header.refused.one": "refusé",
