@@ -127,7 +127,7 @@
 
 						<!-- Periodicity toggle (fixed) - editing booking -->
 						<div class="row six" ng-if="editedBooking.id !== undefined">
-							<input type="checkbox" disabled checked="editedBooking.is_periodic" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
+							<input type="checkbox" disabled ng-checked="editedBooking.is_periodic" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
 						</div>
 
 						<!-- Booking reason -->
