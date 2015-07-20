@@ -1316,6 +1316,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.doRemoveTypes = function(){
 		model.resourceTypes.removeSelectedTypes();
 		$scope.display.confirmRemoveTypes = false;
+        template.close('resources');
 	};
 
 	var updateCalendarList = function(start, end){
