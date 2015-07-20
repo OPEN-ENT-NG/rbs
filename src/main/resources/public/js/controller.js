@@ -1302,6 +1302,8 @@ function RbsController($scope, template, model, date, route){
 	$scope.editSelectedType = function(){
 		$scope.display.processing = undefined;
 		$scope.editedResourceType = model.resourceTypes.selection()[0];
+		template.close('resources');
+		$scope.$apply();
 		template.open('resources', 'edit-resource-type');
 	};
 
