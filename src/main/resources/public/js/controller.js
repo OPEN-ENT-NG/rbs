@@ -445,7 +445,7 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.composeTitle = function(typeTitle, resourceTitle) {
 		var title = typeTitle + ' - ' + resourceTitle;
-		return _.isString(title) ? (title.trim().length > 65 ? title.substring(0, 62) + '...' : title.trim()) : "";
+		return _.isString(title) ? (title.trim().length > 50 ? title.substring(0, 47) + '...' : title.trim()) : "";
 	};
 
 	$scope.countValidatedSlots = function(slots) {
