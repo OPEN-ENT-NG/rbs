@@ -20,7 +20,7 @@
 		</thead>
 		<tbody ng-repeat="resource in currentResourceType.resources.all">
 			<tr>
-				<td><input type="checkbox" ng-model="resource.selected" /></td>
+				<td><input type="checkbox" ng-model="resource.selected" ng-show="resourceTypes.selection().length === 0"/></td>
 				<td class="four">
 					<a ng-click="switchExpandResource(resource)">[[resource.name]]</a>
 				</td>
