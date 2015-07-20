@@ -924,7 +924,9 @@ function RbsController($scope, template, model, date, route){
 			if (booking.isSlot() && booking.booking.selected !== true) {
 				booking.booking.selected = true;
 				booking.booking.selectAllSlots();
-			}
+			} else if(booking.is_periodic){
+                booking.selectAllSlots();
+            }
 		});
 
 		// confirm message
