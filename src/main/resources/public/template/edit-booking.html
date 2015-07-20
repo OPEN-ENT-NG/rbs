@@ -122,7 +122,7 @@
 						<!-- Periodicity toggle - new booking -->
 						<hr />
 						<div class="row six" ng-if="editedBooking.id === undefined && editedBooking.resource.periodic_booking">
-							<input type="checkbox" ng-change="togglePeriodic()" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
+							<input type="checkbox" ng-model="editedBooking.is_periodic" ng-change="togglePeriodic()" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
 						</div>
 
 						<!-- Periodicity toggle (fixed) - editing booking -->
