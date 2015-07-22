@@ -55,8 +55,9 @@
 						<div class="row" ng-if="editedBooking.type && editedBooking.type.moderators">
 							<label class="row"><i18n>rbs.booking.details.moderators</i18n></label>
 							<p class="row">
-								<span ng-repeat="moderator in editedBooking.type.moderators" class="cell min-four horizontal-spacing-twice">
-										[[moderator.username]][[$last ? '' : ', ']]
+								<span ng-repeat="moderator in editedBooking.type.moderators" class="cell four cell-ellipsis horizontal-spacing-twice"
+									  title="[[moderator.username+' ('+lang.translate(moderator.type)+')']]">
+										[[moderator.username]] <em class="small-text">([[lang.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
 								</span>
 							</p>
 						</div>

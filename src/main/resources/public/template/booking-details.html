@@ -158,8 +158,9 @@
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
 						<div class="row" ng-if="selectedBooking.resource.type.moderators">
 							<p class="row">
-								<span ng-repeat="moderator in selectedBooking.resource.type.moderators" class="cell min-four horizontal-spacing-twice">
-										[[moderator.username]][[$last ? '' : ', ']]
+								<span ng-repeat="moderator in selectedBooking.resource.type.moderators" class="cell four cell-ellipsis horizontal-spacing-twice"
+									  title="[[moderator.username+' ('+lang.translate(moderator.type)+')']]">
+										[[moderator.username]] <em class="small-text">([[lang.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
 								</span>
 							</p>
 						</div>
@@ -185,7 +186,7 @@
 						<i18n ng-if="! selectedBooking.isSuspended()">rbs.booking.details.resource.unavailable</i18n>
 						<i18n ng-if="selectedBooking.isSuspended()">rbs.booking.details.suspended.booking</i18n>
 					</div>
-					
+
 					<div class="row details" ng-if="selectedBooking.isPending()">
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
 						<div class="row" ng-if="selectedBooking.resource.type.moderators">

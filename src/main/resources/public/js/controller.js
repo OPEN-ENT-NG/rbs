@@ -23,6 +23,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.template = template;
 		$scope.me = model.me;
 		$scope.date = date;
+        $scope.lang = lang;
 
 		$scope.display = {
 			list: false, // calendar by default

@@ -118,7 +118,3 @@ div.schedule-item-content .checkbox {
 .form-section input[type=radio] {
 	margin-top: 7px;
 }
-
-.cell.min-four {
-	min-width: 33%;
-}
