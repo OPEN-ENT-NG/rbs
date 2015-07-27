@@ -13,7 +13,7 @@ module.directive('timePickerRbs', function($compile){
 		link: function($scope, $element, $attributes){
 			var hideFunction = function(e){
 				var timepicker = $element.data('timepicker');
-				if(!timepicker || $element[0] === e.originalEvent.target || $('.bootstrap-timepicker-widget').find(e.originalEvent.target).length !== 0){
+				if(!timepicker || $element[0] === e.target || $('.bootstrap-timepicker-widget').find(e.target).length !== 0){
 					return;
 				}
 				timepicker.hideWidget();
