@@ -10,7 +10,12 @@
 	<table class="list-view twelve">
 		<thead>
 			<tr>
-				<th><input type="checkbox" ng-model="display.selectAllRessources" ng-change="swicthSelectAllRessources()" /></th>
+				<th>
+					<input type="checkbox"
+						ng-model="display.selectAllRessources" 
+						ng-change="swicthSelectAllRessources()"
+						ng-show="resourceTypes.selection().length === 0"/>
+				</th>
 				<th class="four"><i18n>rbs.manage.resource.name</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
