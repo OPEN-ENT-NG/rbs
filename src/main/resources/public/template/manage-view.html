@@ -13,8 +13,8 @@
 					<input
 							type="checkbox"
 							ng-model="resourceType.selected"
-							ng-click="currentResourceType.resources.deselectAll();$event.stopPropagation()"
-							ng-show="currentResourceType.resources.selection().length === 0"/>
+							ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
+							ng-show="currentResourceType.resources.selection().length === 0" />
 					[[resourceType.name]]
 				</a>
 			</li>
