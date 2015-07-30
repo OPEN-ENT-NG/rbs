@@ -14,7 +14,8 @@
 					<input type="checkbox"
 						ng-model="display.selectAllRessources" 
 						ng-change="swicthSelectAllRessources()"
-						ng-show="resourceTypes.selection().length === 0"/>
+						ng-show="resourceTypes.selection().length === 0"
+						ng-click="resourceTypes.deselectAll()"/>
 				</th>
 				<th class="four"><i18n>rbs.manage.resource.name</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
