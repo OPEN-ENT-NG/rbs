@@ -1085,6 +1085,7 @@ function RbsController($scope, template, model, date, route){
 		if ($scope.editedResourceType !== undefined) {
 			$scope.closeResourceType();
 		}
+        template.open('resources', 'manage-resources');
 	};
 
 	$scope.swicthSelectAllRessources = function() {
