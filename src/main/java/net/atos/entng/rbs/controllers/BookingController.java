@@ -938,6 +938,23 @@ public class BookingController extends ControllerHelper {
 	  * Permettre de préciser un intervalle
 	  */
 
+	@Get("/bookings/all")
+	@ApiDoc("List all bookings")
+	@SecuredAction("rbs.booking.list.all")
+	public void listAllBookings(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					bookingService.listAllBookings(user, arrayResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	 @Get("/bookings")
 	 @ApiDoc("List all bookings created by current user")
 	 @SecuredAction("rbs.booking.list")

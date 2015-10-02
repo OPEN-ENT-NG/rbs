@@ -593,6 +593,26 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
+	public void listAllBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+			.append(" FROM rbs.booking AS b")
+			.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
+			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
+			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+			.append(" WHERE rs.member_id = ?")
+			.append(" OR r.owner = ?")
+			.append(" GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		values.add(user.getUserId());
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
 	public void listBookingsByResource(final String resourceId,
 			final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();

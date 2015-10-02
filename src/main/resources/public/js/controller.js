@@ -119,7 +119,6 @@ function RbsController($scope, template, model, date, route){
 			},
 			function(resource){
 				resource.bookings.sync(function(){
-					$scope.bookings.pushAll(resource.bookings.all);
 					if (remanentBookingId !== undefined) {
 						remanentBooking = resource.bookings.find(function(booking){
 							return booking.id === remanentBookingId;
@@ -564,7 +563,6 @@ function RbsController($scope, template, model, date, route){
 		var DEBUG_editedBooking = $scope.editedBooking;
 		// /DEBUG
 		$scope.initBookingDates($scope.editedBooking.startMoment, $scope.editedBooking.endMoment);
-		$scope.$apply('editedBooking');
 	};
 
 	$scope.editBooking = function() {
@@ -841,19 +839,16 @@ function RbsController($scope, template, model, date, route){
 
 			$scope.editedBooking.save(function(){
 				$scope.display.processing = undefined;
-				$scope.$apply('editedBooking')
 				$scope.closeBooking();
 				model.refresh();
 			}, function(e){
 				$scope.display.processing = undefined;
 				$scope.currentErrors.push(e);
-				$scope.$apply('editedBooking');
 			});
 		}
 		catch (e) {
 			$scope.display.processing = undefined;
 			$scope.currentErrors.push({error: "rbs.error.technical"});
-			$scope.$apply('editedBooking');
 		}
 	};
 

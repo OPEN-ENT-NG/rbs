@@ -43,7 +43,8 @@ model.periodsConfig = {
 
 
 function Booking() {
-
+	this.beginning = this.startMoment = moment.utc(this.start_date);
+	this.end = this.endMoment = moment.utc(this.end_date);
 }
 
 Booking.prototype.save = function(cb, cbe) {
@@ -274,25 +275,20 @@ function Resource() {
 	this.collection(Booking, {
 		sync: function(cb){
 			// Load the Bookings
-			http().get('/rbs/resource/' + resource.id + '/bookings').done(function(rows){
-				// Resource association necessary before Behaviours loading
-				_.each(rows, function(row){
-					row.resource = resource;
-				});
-				// Load
-				this.load(rows);
-				// Resource
-				var resourceIndex = {};
-				resourceIndex[resource.id] = resource;
-				// Parse
-				var bookingIndex = model.parseBookingsAndSlots(this.all, resourceIndex);
-				// Callback
-				if(typeof cb === 'function'){
-					cb();
-				}
-			}.bind(this));
-		},
-		behaviours: 'rbs'
+			this.all = model.bookings.where({ resource_id: resource.id });
+
+			this.forEach(function(booking){
+				booking.resource = resource;
+			});
+			var resourceIndex = {};
+			resourceIndex[resource.id] = resource;
+			console.log('parsing');
+			var bookingIndex = model.parseBookingsAndSlots(this.all, resourceIndex);
+			if(typeof cb === 'function'){
+				cb();
+			}
+			this.trigger('sync');
+		}
 	});
 }
 
@@ -406,8 +402,7 @@ function ResourceType(data) {
 					resource.expanded = undefined;
 				}
 			});
-		},
-		behaviours: 'rbs'
+		}
 	});
 }
 
@@ -618,7 +613,7 @@ model.build = function(){
 						var resourceType = resourceTypeIndex[resource.type_id];
 						if (resourceType !== undefined) {
 							resource.type = resourceType;
-							resourceType.resources.push(resource);
+							resourceType.resources.push(resource, false);
 						}
 						actions--;
 						if (actions === 0) {
@@ -645,12 +640,12 @@ model.build = function(){
 				type.delete();
 			});
 			this.removeSelection();
-		},
-		behaviours: 'rbs'
+		}
 	});
 
 	// Bookings collection, not auto-synced
 	this.collection(Booking, {
+		sync: '/rbs/bookings/all',
 		selectionForProcess: function() {
 			return _.filter(this.selection(), function(booking){
 				return booking.isNotPeriodicRoot();
@@ -674,16 +669,15 @@ model.build = function(){
 		pushAll: function(datas, trigger) {
 			if (datas) {
 				this.all = _.union(this.all, datas);
-				this.applyFilters();
 				if (trigger) {
 					this.trigger('sync');
 				}
+				this.applyFilters();
 			}
 		},
 		pullAll: function(datas, trigger) {
 			if (datas) {
 				this.all = _.difference(this.all, datas);
-				this.applyFilters();
 				if (trigger) {
 					this.trigger('sync');	
 				}
@@ -691,7 +685,6 @@ model.build = function(){
 		},
 		clear: function(trigger) {
 			this.all = [];
-			this.applyFilters();
 			if (trigger) {
 				this.trigger('sync');	
 			}
@@ -826,11 +819,19 @@ model.build = function(){
 			startMoment: undefined,
 			endMoment: undefined
 		},
-		filtered: [],
-		behaviours: 'rbs'
+		filtered: []
 	});
 
 	this.recordedSelections = new SelectionHolder();
+	this.on('bookings.sync', function(){
+		model.resourceTypes.forEach(function(type){
+			type.resources.forEach(function(resource){
+				resource.bookings.sync();
+			});
+		});
+
+		model.bookings.applyFilters();
+	});
 
 	model.loadPeriods();
 };
@@ -839,7 +840,7 @@ model.refresh = function() {
 	// Record selections
 	model.recordedSelections.record();
 	// Clear bookings
-	model.bookings.clear();
+	model.bookings.sync();
 	// Launch resync
 	model.resourceTypes.sync();
 };
@@ -860,7 +861,7 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 		if (row.parent_booking_id === null) {
 			// Is a Booking
 			bookingIndex.bookings[row.id] = row;
-			model.parseBooking(row, color !== undefined ? color :  row.resource.type.color);
+			model.parseBooking(row, color || row.resource.type.color);
 			// Calendar locking
 			if (row.owner !== model.me.userId) {
 				row.locked = true;	
@@ -872,7 +873,6 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 				bookingIndex.slots[row.parent_booking_id] = [];
 			}
 			bookingIndex.slots[row.parent_booking_id].push(row);
-			model.parseSlot(row);
 			// Calendar locking
 			row.locked = true;
 		}
@@ -914,9 +914,6 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 model.parseBooking = function(booking, color) {
 	booking.color = color;
-	booking.startMoment = moment.utc(booking.start_date);
-	booking.endMoment = moment.utc(booking.end_date);
-
 	// periodic booking
 	if (booking.is_periodic === true) {
 		// parse bitmask		
@@ -926,11 +923,6 @@ model.parseBooking = function(booking, color) {
 			booking.periodicEndMoment =  moment.utc(booking.periodic_end_date);
 		}
 	}
-};
-
-model.parseSlot = function(slot) {
-	slot.startMoment = moment.utc(slot.start_date);
-	slot.endMoment = moment.utc(slot.end_date);
 };
 
 model.bitMaskToDays = function(bitMask) {

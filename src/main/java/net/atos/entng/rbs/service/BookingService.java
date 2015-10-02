@@ -32,6 +32,9 @@ public interface BookingService extends CrudService {
 	public void listUserBookings(final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler);
 
+	public void listAllBookings(final UserInfos user,
+			final Handler<Either<String, JsonArray>> handler);
+
 	public void listBookingsByResource(final String resourceId,
 			final Handler<Either<String, JsonArray>> handler);
 
