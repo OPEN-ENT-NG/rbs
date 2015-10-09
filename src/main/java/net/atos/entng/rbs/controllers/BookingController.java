@@ -946,7 +946,12 @@ public class BookingController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					bookingService.listAllBookings(user, arrayResponseHandler(request));
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getGroupsIds());
+					}
+					bookingService.listAllBookings(user, groupsAndUserIds, arrayResponseHandler(request));
 				} else {
 					log.debug("User not found in session.");
 					unauthorized(request);

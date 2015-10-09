@@ -593,21 +593,32 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listAllBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
 			.append(" FROM rbs.booking AS b")
 			.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
+			.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
 			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE rs.member_id = ?")
-			.append(" OR r.owner = ?")
-			.append(" GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+			.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
+		for (String groupOruser : groupsAndUserIds) {
+			values.add(groupOruser);
+		}
 
-		JsonArray values = new JsonArray();
-		values.add(user.getUserId());
-		values.add(user.getUserId());
+		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
+			}
+		}
+
+		query.append(" GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
