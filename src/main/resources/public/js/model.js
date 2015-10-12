@@ -112,10 +112,7 @@ Booking.prototype.create = function(cb, cbe) {
 	.done(function(b){
 		booking.updateData(b);
 
-		// Update collections
-		if (booking.resource.selected) {
-			booking.resource.bookings.push(booking);
-		}
+		booking.resource.bookings.push(booking);
 		model.bookings.pushAll([booking]);
 		if(typeof cb === 'function'){
 			cb();
@@ -290,6 +287,7 @@ function Resource() {
 			this.trigger('sync');
 		}
 	});
+	this.bookings.sync();
 }
 
 Resource.prototype.save = function(cb, cbe) {
@@ -615,9 +613,13 @@ model.build = function(){
 							resource.type = resourceType;
 							resourceType.resources.push(resource, false);
 						}
+						if(collection.first() === resourceType){
+							resource.selected = true;
+						}
 						actions--;
 						if (actions === 0) {
 							collection.trigger('sync');
+							model.bookings.applyFilters();
 						}
 					});
 				});
@@ -705,6 +707,7 @@ model.build = function(){
 						if (this.filters.unprocessed === true) {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& booking.owner === model.me.userId 
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
 								&& ((booking.is_periodic !== true 
@@ -718,6 +721,7 @@ model.build = function(){
 						else {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& booking.owner === model.me.userId
 								&& ((booking.is_periodic !== true 
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
@@ -732,6 +736,7 @@ model.build = function(){
 						if (this.filters.unprocessed === true) {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
 								&& ((booking.is_periodic !== true 
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
@@ -744,6 +749,7 @@ model.build = function(){
 						else {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& ((booking.is_periodic !== true 
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
@@ -759,6 +765,7 @@ model.build = function(){
 						if (this.filters.unprocessed === true) {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& booking.owner === model.me.userId 
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
 							});
@@ -766,6 +773,7 @@ model.build = function(){
 						else {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& booking.owner === model.me.userId;
 							});
 						}
@@ -774,12 +782,13 @@ model.build = function(){
 						if (this.filters.unprocessed === true) {
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
+								&& booking.resource.selected
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
 							});
 						}
 						else {
 							this.filtered = _.filter(this.all, function(booking){
-								return booking.isBooking();
+								return booking.isBooking()&& booking.resource.selected;
 							});
 						}				
 					}
@@ -789,27 +798,32 @@ model.build = function(){
 				if (this.filters.mine === true) {
 					if (this.filters.unprocessed === true) {
 						this.filtered = _.filter(this.all, function(booking){
-							return booking.owner === model.me.userId 
+							return booking.owner === model.me.userId
+							&& booking.resource.selected
 							&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
 						});
 					}
 					else {
 						this.filtered = _.filter(this.all, function(booking){
-							return booking.owner === model.me.userId;
+							return booking.owner === model.me.userId && booking.resource.selected;
 						});
 					}
 				}
 				else {
 					if (this.filters.unprocessed === true) {
 						this.filtered = _.filter(this.all, function(booking){
-							return (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
+							return (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL) && booking.resource.selected;
 						});
 					}
 					else {
-						this.filtered = this.all;
-					}				
+						this.filtered = _.filter(this.all, function (booking) {
+							return booking.resource.selected;
+						});
+					}
 				}
 			}
+
+			model.trigger('change');
 		},
 		filters: {
 			mine: undefined,

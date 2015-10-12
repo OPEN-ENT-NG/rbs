@@ -231,20 +231,18 @@ function RbsController($scope, template, model, date, route){
 		resourceType.resources.forEach(function(resource) {
 			if (resource.selected !== true) {
 				resource.selected = true;
-				resource.bookings.sync(function(){
-					$scope.bookings.pushAll(resource.bookings.all);
-				});
 			}
 		});
 		$scope.lastSelectedResource = resourceType.resources.first();
+		model.bookings.applyFilters();
 	};
 
 	$scope.deselectResources = function(resourceType) {
 		resourceType.resources.forEach(function(resource) {
 			resource.selected = undefined;
-			$scope.bookings.pullAll(resource.bookings.all);
 		});
 		$scope.lastSelectedResource = undefined;
+		model.bookings.applyFilters();
 	};
 
 	$scope.switchSelectResources = function(resourceType) {
@@ -262,16 +260,14 @@ function RbsController($scope, template, model, date, route){
 			if (resource.is_available !== true) {
 				$scope.lastSelectedResource = resource;
 			}
-			resource.bookings.sync(function(){
-				$scope.bookings.pushAll(resource.bookings.all);
-			});
+			model.bookings.applyFilters();
 		}
 		else {
 			resource.selected = undefined;
 			if (resource.is_available !== true) {
 				$scope.lastSelectedResource = undefined;
 			}
-			$scope.bookings.pullAll(resource.bookings.all);
+			model.bookings.applyFilters();
 		}
 	};
 
