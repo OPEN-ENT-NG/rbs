@@ -45,6 +45,7 @@ model.periodsConfig = {
 function Booking() {
 	this.beginning = this.startMoment = moment.utc(this.start_date);
 	this.end = this.endMoment = moment.utc(this.end_date);
+	this.resource = new Resource();
 }
 
 Booking.prototype.save = function(cb, cbe) {
@@ -613,11 +614,11 @@ model.build = function(){
 							resource.type = resourceType;
 							resourceType.resources.push(resource, false);
 						}
-						if(collection.first() === resourceType){
-							resource.selected = true;
-						}
+
 						actions--;
 						if (actions === 0) {
+							model.resourceTypes.first().resources.selectAll();
+
 							collection.trigger('sync');
 							model.bookings.applyFilters();
 						}
@@ -822,7 +823,6 @@ model.build = function(){
 					}
 				}
 			}
-
 			model.trigger('change');
 		},
 		filters: {
