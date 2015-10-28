@@ -1326,12 +1326,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	var updateCalendarSchedule = function(date){
-		model.calendar.firstDay.date(date.date());
-		model.calendar.firstDay.month(date.month());
-		model.calendar.firstDay.year(date.year());
-
-		$('.hiddendatepickerform').datepicker('setValue', date.format("DD/MM/YYYY")).datepicker('update');
-		$('.hiddendatepickerform').trigger({type: 'changeDate',date: date});
+		model.calendar.setDate(date);
 	};
 	this.initialize();
 }
