@@ -602,7 +602,7 @@ model.build = function(){
 				this.addRange(resourceTypes, function(resourceType){
 					resourceType.resources.all = [];
 					resourceTypeIndex[resourceType.id] = resourceType;
-				});
+				}, false);
 
 				// Load the Resources in each ResourceType
 				http().get('/rbs/resources').done(function(resources){

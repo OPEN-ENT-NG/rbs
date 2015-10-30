@@ -21,7 +21,7 @@ var rbsBehaviours = {
 
 Behaviours.register('rbs', {
 	behaviours: rbsBehaviours,
-	resource: function(resource){
+	resourceRights: function(resource){
 		var rightsContainer = resource;
 		
 		if(resource instanceof Resource && resource.type){
