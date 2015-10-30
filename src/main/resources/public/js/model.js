@@ -285,7 +285,6 @@ function Resource() {
 			if(typeof cb === 'function'){
 				cb();
 			}
-			this.trigger('sync');
 		}
 	});
 	this.bookings.sync();
