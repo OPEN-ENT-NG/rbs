@@ -1,3 +1,5 @@
+console.log('RBS behaviours loaded');
+
 var rbsBehaviours = {
 	resources: {
 		contrib: {
@@ -62,8 +64,5 @@ Behaviours.register('rbs', {
 		}
 
 		return workflow;
-	},
-	resourceRights: function(){
-		return ['read', 'contrib', 'publish', 'manager']
 	}
 });
