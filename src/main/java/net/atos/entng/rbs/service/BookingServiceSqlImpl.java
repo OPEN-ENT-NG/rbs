@@ -604,10 +604,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
+			.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
+			.append(" OR t.owner = ?");
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
+		values.addString(user.getUserId());
 
 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
 		List<String> scope = getLocalAdminScope(user);
