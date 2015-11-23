@@ -560,6 +560,13 @@ function RbsController($scope, template, model, date, route){
 		$scope.initBookingDates($scope.editedBooking.startMoment, $scope.editedBooking.endMoment);
 	};
 
+	$scope.editPeriodicStartDate = function(){
+		$scope.showDate = true;
+		if(moment($scope.booking.periodicEndDate).unix() < moment($scope.booking.startDate).unix()){
+			$scope.booking.periodicEndDate = $scope.booking.startDate
+		}
+	};
+
 	$scope.editBooking = function() {
 		$scope.display.processing = undefined;
 		$scope.currentErrors = [];
