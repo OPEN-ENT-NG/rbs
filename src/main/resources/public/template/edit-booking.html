@@ -74,7 +74,10 @@
 					</span>
 					<span ng-if="editedBooking.display.state !== editedBooking.display.STATE_BOOKING">
 						<i18n>rbs.header.booking.picked</i18n>
-						<span class="right-magnet">
+						<span class="right-magnet" ng-if="editedBooking.is_periodic">
+							<i18n>rbs.booking.details.header.from.periodic</i18n>&nbsp;[[formatBooking(booking.startDate, booking.startTime)]]
+						</span>
+						<span class="right-magnet" ng-if="!editedBooking.is_periodic">
 							<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatBooking(booking.startDate, booking.startTime)]]&nbsp;
 							<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatBooking(booking.endDate, booking.endTime)]]
 						</span>
