@@ -10,11 +10,14 @@
 		<ul>
 			<li ng-repeat="resourceType in resourceTypes.all | filter:keepProcessableResourceTypes">
 				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
-					<input
-							type="checkbox"
-							ng-model="resourceType.selected"
-							ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
-							ng-show="currentResourceType.resources.selection().length === 0" />
+					<resource-right name="manage" resource="resourceType" class="cell">
+						<input
+								type="checkbox"
+								ng-model="resourceType.selected"
+								ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
+								ng-show="currentResourceType.resources.selection().length === 0" />
+					</resource-right>
+
 					[[resourceType.name]]
 				</a>
 			</li>
