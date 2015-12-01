@@ -134,39 +134,39 @@ function RbsController($scope, template, model, date, route){
 	}
 
 	$scope.initResourcesRouted = function(bookingId) {
+		var found = false;
 		var actions = 0;
 		var routedBooking = undefined;
 		$scope.resourceTypes.forEach(function(resourceType){
 			actions = actions + resourceType.resources.size();
 			resourceType.resources.forEach(function(resource){
 				resource.bookings.sync(function(){
-					if (routedBooking !== undefined) {
+					if (routedBooking !== undefined || found) {
 						return;
 					}
 					routedBooking = resource.bookings.find(function(booking){
 						return booking.id == bookingId;
 					});
 					if (routedBooking !== undefined) {
-						// found
 						$scope.bookings.pushAll(routedBooking.resource.bookings.all);
 						routedBooking.resource.type.expanded = true;
 						routedBooking.resource.selected = true;
 						$scope.viewBooking(routedBooking);
 						$scope.display.routed = undefined;
 						model.recordedSelections.firstResourceType = undefined;
-						return;
-					}
-					actions--;
-					if (actions === 0) {
-						// error
-						console.log("Booking not found (id: " + bookingId + ")");
-						notify.error('rbs.route.booking.not.found');
-						$scope.display.routed = undefined;
-						$scope.initResources();
+						found = true;
 					}
 				});
 			});
 		});
+
+		if (!found) {
+			// error
+			console.log("Booking not found (id: " + bookingId + ")");
+			notify.error('rbs.route.booking.not.found');
+			$scope.display.routed = undefined;
+			$scope.initResources();
+		}
 	}
 
 	// Navigation
