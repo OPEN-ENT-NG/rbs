@@ -10,7 +10,7 @@ model.DETACHED_STRUCTURE = {
 	id: 'DETACHED',
 	name: 'rbs.structure.detached'
 };
-	
+
 
 model.timeConfig = { // 5min slots from 7h00 to 20h00, default 8h00
 	interval: 5, // in minutes
@@ -98,7 +98,7 @@ Booking.prototype.update = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, booking, 'update'));
-		}	
+		}
 	});
 };
 
@@ -122,7 +122,7 @@ Booking.prototype.create = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, booking, 'create'));
-		}	
+		}
 	});
 };
 
@@ -154,7 +154,7 @@ Booking.prototype.process = function(data, cb, cbe, context) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, booking, context));
-		}	
+		}
 	});
 };
 
@@ -169,7 +169,7 @@ Booking.prototype.delete = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, booking, 'delete'));
-		}	
+		}
 	});
 };
 
@@ -313,7 +313,7 @@ Resource.prototype.update = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resource, 'update'));
-		}	
+		}
 	});
 };
 
@@ -331,7 +331,7 @@ Resource.prototype.create = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resource, 'create'));
-		}	
+		}
 	});
 };
 
@@ -349,7 +349,7 @@ Resource.prototype.delete = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resource, 'delete'));
-		}	
+		}
 	});
 };
 
@@ -368,14 +368,14 @@ Resource.prototype.toJSON = function() {
 	if (_.isString(this.description)) {
 		json.description = this.description;
 	}
-	
+
 	return json;
 };
 
 Resource.prototype.isBookable = function(periodic) {
-	return this.is_available === true 
-		&& this.myRights !== undefined 
-		&& this.myRights.contrib !== undefined 
+	return this.is_available === true
+		&& this.myRights !== undefined
+		&& this.myRights.contrib !== undefined
 		&& (!periodic || this.periodic_booking);
 };
 
@@ -424,7 +424,7 @@ ResourceType.prototype.update = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resourceType, 'update'));
-		}	
+		}
 	});
 };
 
@@ -446,7 +446,7 @@ ResourceType.prototype.create = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resourceType, 'create'));
-		}	
+		}
 	});
 };
 
@@ -461,7 +461,7 @@ ResourceType.prototype.delete = function(cb, cbe) {
 	.error(function(e){
 		if(typeof cbe === 'function'){
 			cbe(model.parseError(e, resourceType, 'delete'));
-		}	
+		}
 	});
 };
 
@@ -617,18 +617,20 @@ model.build = function(){
 						actions--;
 						if (actions === 0) {
 							model.resourceTypes.first().resources.selectAll();
-
+                            model.bookings.forEach(function(booking){
+                                Behaviours.applicationsBehaviours.rbs.resourceRights(booking);
+                            });
 							collection.trigger('sync');
 							model.bookings.applyFilters();
 						}
 					});
 				});
-				
+
 			}.bind(this));
 		},
 		filterAvailable: function(periodic) {
 			return this.filter(function(resourceType){
-				return (resourceType.myRights !== undefined 
+				return (resourceType.myRights !== undefined
 					&& resourceType.myRights.contrib !== undefined);
 			});
 		},
@@ -681,14 +683,14 @@ model.build = function(){
 			if (datas) {
 				this.all = _.difference(this.all, datas);
 				if (trigger) {
-					this.trigger('sync');	
+					this.trigger('sync');
 				}
 			}
 		},
 		clear: function(trigger) {
 			this.all = [];
 			if (trigger) {
-				this.trigger('sync');	
+				this.trigger('sync');
 			}
 		},
 		selectionResources : function() {
@@ -708,12 +710,12 @@ model.build = function(){
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
 								&& booking.resource.selected
-								&& booking.owner === model.me.userId 
+								&& booking.owner === model.me.userId
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
-								&& ((booking.is_periodic !== true 
+								&& ((booking.is_periodic !== true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
-									|| (booking.is_periodic === true 
+									|| (booking.is_periodic === true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
 							});
@@ -723,10 +725,10 @@ model.build = function(){
 								return booking.isBooking()
 								&& booking.resource.selected
 								&& booking.owner === model.me.userId
-								&& ((booking.is_periodic !== true 
+								&& ((booking.is_periodic !== true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
-									|| (booking.is_periodic === true 
+									|| (booking.is_periodic === true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
 							});
@@ -738,10 +740,10 @@ model.build = function(){
 								return booking.isBooking()
 								&& booking.resource.selected
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL)
-								&& ((booking.is_periodic !== true 
+								&& ((booking.is_periodic !== true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
-									|| (booking.is_periodic === true 
+									|| (booking.is_periodic === true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
 							});
@@ -750,14 +752,14 @@ model.build = function(){
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
 								&& booking.resource.selected
-								&& ((booking.is_periodic !== true 
+								&& ((booking.is_periodic !== true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& booking.endMoment.isAfter(model.bookings.filters.startMoment))
-									|| (booking.is_periodic === true 
+									|| (booking.is_periodic === true
 										&& booking.startMoment.isBefore(model.bookings.filters.endMoment)
 										&& (_.last(booking._slots)).endMoment.isAfter(model.bookings.filters.startMoment)));
 							});
-						}				
+						}
 					}
 				}
 				else {
@@ -766,7 +768,7 @@ model.build = function(){
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()
 								&& booking.resource.selected
-								&& booking.owner === model.me.userId 
+								&& booking.owner === model.me.userId
 								&& (booking.status === model.STATE_CREATED || booking.status === model.STATE_PARTIAL);
 							});
 						}
@@ -790,7 +792,7 @@ model.build = function(){
 							this.filtered = _.filter(this.all, function(booking){
 								return booking.isBooking()&& booking.resource.selected;
 							});
-						}				
+						}
 					}
 				}
 			}
@@ -877,7 +879,7 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 			model.parseBooking(row, color || row.resource.type.color);
 			// Calendar locking
 			if (row.owner !== model.me.userId) {
-				row.locked = true;	
+				row.locked = true;
 			}
 		}
 		else {
@@ -929,7 +931,7 @@ model.parseBooking = function(booking, color) {
 	booking.color = color;
 	// periodic booking
 	if (booking.is_periodic === true) {
-		// parse bitmask		
+		// parse bitmask
 		booking.periodDays = model.bitMaskToDays(booking.days);
 		// date if not by occurrences
 		if (booking.occurrences === undefined || booking.occurrences < 1) {
@@ -949,7 +951,7 @@ model.bitMaskToDays = function(bitMask) {
 			periodDays.push({number: day, value: true});
 		}
 		else {
-			periodDays.push({number: day, value: false});	
+			periodDays.push({number: day, value: false});
 		}
 	});
 	return periodDays;
@@ -995,7 +997,7 @@ model.parseError = function(e, object, context) {
 			error.error = "rbs.error.unknown";
 		}
 	}
-	error.status = e.status;	
+	error.status = e.status;
 	error.object = object;
 	error.context = context;
 	return error;
