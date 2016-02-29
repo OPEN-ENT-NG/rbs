@@ -593,7 +593,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler){
+	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final String startDate, final String endDate,
+								final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -604,8 +605,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
+			.append(" WHERE (b.start_date::date >= ?::date AND b.end_date::date < ?::date) AND (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
 			.append(" OR t.owner = ?");
+		values.addString(startDate);
+		values.addString(endDate);
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
@@ -620,7 +623,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			}
 		}
 
-		query.append(" GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+		query.append(") GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}

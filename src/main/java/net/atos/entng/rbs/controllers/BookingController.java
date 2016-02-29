@@ -938,7 +938,7 @@ public class BookingController extends ControllerHelper {
 	  * Permettre de préciser un intervalle
 	  */
 
-	@Get("/bookings/all")
+	@Get("/bookings/all/:startdate/:enddate")
 	@ApiDoc("List all bookings")
 	@SecuredAction("rbs.booking.list.all")
 	public void listAllBookings(final HttpServerRequest request) {
@@ -946,12 +946,19 @@ public class BookingController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					final List<String> groupsAndUserIds = new ArrayList<>();
-					groupsAndUserIds.add(user.getUserId());
-					if (user.getGroupsIds() != null) {
-						groupsAndUserIds.addAll(user.getGroupsIds());
+					final String startDate = request.params().get("startdate");
+					final String endDate = request.params().get("enddate");
+					if (startDate!=null && endDate != null &&
+							startDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+						final List<String> groupsAndUserIds = new ArrayList<>();
+						groupsAndUserIds.add(user.getUserId());
+						if (user.getGroupsIds() != null) {
+							groupsAndUserIds.addAll(user.getGroupsIds());
+						}
+						bookingService.listAllBookings(user, groupsAndUserIds, startDate, endDate, arrayResponseHandler(request));
+					} else {
+						Renders.badRequest(request, "params start and end date must be defined with YYYY-MM-DD format !");
 					}
-					bookingService.listAllBookings(user, groupsAndUserIds, arrayResponseHandler(request));
 				} else {
 					log.debug("User not found in session.");
 					unauthorized(request);
