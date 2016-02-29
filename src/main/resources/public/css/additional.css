@@ -118,3 +118,8 @@ div.schedule-item-content .checkbox {
 .form-section input[type=radio] {
 	margin-top: 7px;
 }
+
+a.notselected {
+	background-color : #aaa;
+	color : #fff;
+}
