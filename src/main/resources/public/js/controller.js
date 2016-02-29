@@ -83,8 +83,14 @@ function RbsController($scope, template, model, date, route){
 		model.recordedSelections.firstResourceType = true;
 
 		model.bookings.filters.dates = true;
+		//Paging start date
+		model.bookings.startPagingDate = moment().startOf('isoweek');
+		//Paging end date
+		model.bookings.endPagingDate = moment().add(7, 'day').startOf('day');
+		//fixme Why started with today date ....
 		model.bookings.filters.startMoment = moment().startOf('day');
-		model.bookings.filters.endMoment = moment().add('month', 2).startOf('day');
+		//fixme Why two month ?
+		model.bookings.filters.endMoment =  moment().add('month', 2).startOf('day');
 		model.bookings.filters.startDate = model.bookings.filters.startMoment.toDate();
 		model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
 
@@ -177,6 +183,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.admin = false;
 		$scope.display.list = true;
 		$scope.bookings.filters.booking = true;
+		$scope.bookings.syncForShowList();
 		$scope.bookings.applyFilters();
 		template.open('bookings', 'main-list');
 	};
@@ -187,6 +194,7 @@ function RbsController($scope, template, model, date, route){
 		}
 		$scope.display.admin = false;
 		$scope.display.list = false;
+		$scope.bookings.sync();
 		$scope.bookings.filters.booking = undefined;
 		$scope.bookings.applyFilters();
 		template.open('bookings', 'main-calendar');
@@ -1280,13 +1288,16 @@ function RbsController($scope, template, model, date, route){
 
 	$scope.nextWeekButton = function() {
 		var next = moment(model.calendar.firstDay).add(7, 'day');
+		model.bookings.startPagingDate = moment(model.bookings.startPagingDate).add(7, 'day');
+		model.bookings.endPagingDate = moment(model.bookings.endPagingDate).add(7, 'day');
 		updateCalendarSchedule(next);
 	};
 
 	$scope.previousWeekButton = function() {
 		var prev = moment(model.calendar.firstDay).subtract(7, 'day');
+		model.bookings.startPagingDate = moment(model.bookings.startPagingDate).subtract(7, 'day');
+		model.bookings.endPagingDate = moment(model.bookings.endPagingDate).subtract(7, 'day');
 		updateCalendarSchedule(prev);
-
 	};
 	$scope.nextWeekBookingButton = function() {
 		var nextStart = moment(model.bookings.filters.startMoment).add(7, 'day');
@@ -1327,12 +1338,14 @@ function RbsController($scope, template, model, date, route){
 		model.bookings.filters.endMoment.month(end.month());
 		model.bookings.filters.endMoment.year(end.year());
 
+		$scope.bookings.syncForShowList();
 		$scope.bookings.applyFilters();
 
 	};
 
 	var updateCalendarSchedule = function(date){
 		model.calendar.setDate(date);
+		$scope.bookings.sync();
 	};
 	this.initialize();
 }

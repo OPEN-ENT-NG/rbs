@@ -649,7 +649,25 @@ model.build = function(){
 
 	// Bookings collection, not auto-synced
 	this.collection(Booking, {
-		sync: '/rbs/bookings/all',
+		//sync: '/rbs/bookings/all',
+		sync: function(callback){
+			http().get('/rbs/bookings/all/' + model.bookings.startPagingDate.format('YYYY-MM-DD') +
+					'/' +	model.bookings.endPagingDate.format('YYYY-MM-DD')).done(function(bookings){
+				this.load(bookings);
+				if(typeof callback === 'function'){
+					callback();
+				}
+			}.bind(this));
+		},
+		syncForShowList: function(callback){
+			http().get('/rbs/bookings/all/' + model.bookings.filters.startMoment.format('YYYY-MM-DD') +
+					'/' +	model.bookings.filters.endMoment.format('YYYY-MM-DD')).done(function(bookings){
+				this.load(bookings);
+				if(typeof callback === 'function'){
+					callback();
+				}
+			}.bind(this));
+		},
 		selectionForProcess: function() {
 			return _.filter(this.selection(), function(booking){
 				return booking.isNotPeriodicRoot();
