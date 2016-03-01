@@ -869,11 +869,15 @@ model.build = function(){
 	model.loadPeriods();
 };
 
-model.refresh = function() {
+model.refresh = function(isDisplayList) {
 	// Record selections
 	model.recordedSelections.record();
 	// Clear bookings
-	model.bookings.sync();
+	if (isDisplayList === true) {
+		model.bookings.syncForShowList();
+	} else {
+		model.bookings.sync();
+	}
 	// Launch resync
 	model.resourceTypes.sync();
 };
