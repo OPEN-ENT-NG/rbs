@@ -218,7 +218,7 @@ function RbsController($scope, template, model, date, route){
 		model.recordedSelections.firstResourceType = true;
 		$scope.currentResourceType = undefined;
 		$scope.resetSort();
-		model.refresh();
+		model.refresh($scope.display.list);
 		template.open('main', 'main-view');
 	};
 
@@ -850,7 +850,7 @@ function RbsController($scope, template, model, date, route){
 			$scope.editedBooking.save(function(){
 				$scope.display.processing = undefined;
 				$scope.closeBooking();
-				model.refresh();
+				model.refresh($scope.display.list);
 			}, function(e){
 				$scope.display.processing = undefined;
 				$scope.currentErrors.push(e);
@@ -954,7 +954,7 @@ function RbsController($scope, template, model, date, route){
 						$scope.display.processing = undefined;
 						$scope.bookings.deselectAll();
 						$scope.closeBooking();
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				}, function(e){
 					$scope.currentErrors.push(e);
@@ -962,7 +962,7 @@ function RbsController($scope, template, model, date, route){
 					if (actions === 0) {
 						$scope.display.processing = undefined;
 						$scope.showActionErrors()
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				});
 			});
@@ -1028,7 +1028,7 @@ function RbsController($scope, template, model, date, route){
 						$scope.display.processing = undefined;
 						$scope.bookings.deselectAll();
 						$scope.closeBooking();
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				}, function(e){
 					$scope.currentErrors.push(e);
@@ -1036,7 +1036,7 @@ function RbsController($scope, template, model, date, route){
 					if (actions === 0) {
 						$scope.display.processing = undefined;
 						$scope.showActionErrors();
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				});
 			});
@@ -1061,7 +1061,7 @@ function RbsController($scope, template, model, date, route){
 						$scope.bookings.deselectAll();
 						$scope.bookings.refuseReason = undefined;
 						$scope.closeBooking();
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				}, function(e){
 					$scope.currentErrors.push(e);
@@ -1069,7 +1069,7 @@ function RbsController($scope, template, model, date, route){
 					if (actions === 0) {
 						$scope.display.processing = undefined;
 						$scope.showActionErrors();
-						model.refresh();
+						model.refresh($scope.display.list);
 					}
 				});
 			});
@@ -1153,7 +1153,7 @@ function RbsController($scope, template, model, date, route){
 			$scope.display.processing = undefined;
 			$scope.currentResourceType = $scope.editedResourceType;
 			$scope.closeResourceType();
-			model.refresh();
+			model.refresh($scope.display.list);
 		}, function(e){
 			$scope.currentErrors.push(e);
 			$scope.display.processing = undefined;
@@ -1174,7 +1174,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.editedResource.save(function(){
 			$scope.display.processing = undefined;
 			$scope.closeResource();
-			model.refresh();
+			model.refresh($scope.display.list);
 		}, function(e){
 			$scope.currentErrors.push(e);
 			$scope.display.processing = undefined;
@@ -1198,7 +1198,7 @@ function RbsController($scope, template, model, date, route){
 				if (actions === 0) {
 					$scope.display.processing = undefined;
 					$scope.closeResource();
-					model.refresh();
+					model.refresh($scope.display.list);
 				}
 			}, function(e){
 				$scope.currentErrors.push(e);
@@ -1206,7 +1206,7 @@ function RbsController($scope, template, model, date, route){
 				if (actions === 0) {
 					$scope.display.processing = undefined;
 					$scope.showActionErrors();
-					model.refresh();
+					model.refresh($scope.display.list);
 				}
 			});
 		});
