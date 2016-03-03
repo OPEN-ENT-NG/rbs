@@ -869,6 +869,12 @@ model.build = function(){
 	model.loadPeriods();
 };
 
+model.refreshRessourceType = function() {
+	// Record selections
+	model.recordedSelections.record();
+	model.resourceTypes.sync();	
+};
+
 model.refresh = function(isDisplayList) {
 	// Record selections
 	model.recordedSelections.record();
@@ -880,6 +886,17 @@ model.refresh = function(isDisplayList) {
 	}
 	// Launch resync
 	model.resourceTypes.sync();
+};
+
+model.refreshBookings = function(isDisplayList) {
+	// Record selections
+	model.recordedSelections.record();
+	// Clear bookings
+	if (isDisplayList === true) {
+		model.bookings.syncForShowList();
+	} else {
+		model.bookings.sync();
+	}
 };
 
 model.findColor = function(index) {
