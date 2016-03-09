@@ -1,29 +1,29 @@
 routes.define(function($routeProvider){
-    $routeProvider
-        .when('/booking/:bookingId', {
-            action: 'viewBooking'
-        })
+	$routeProvider
+			.when('/booking/:bookingId', {
+				action: 'viewBooking'
+			})
 });
 
 function RbsController($scope, template, model, date, route){
 
 	route({
-        viewBooking: function(param){
-        	$scope.display.routed = true;
-        	$scope.resourceTypes.one('sync', function(){
-        		if ($scope.display.routed !== true) {
-        			return;
-        		}
-        		$scope.initResourcesRouted(param.bookingId);
-	        });
-        }
-    });
+		viewBooking: function(param){
+			$scope.display.routed = true;
+			$scope.resourceTypes.one('sync', function(){
+				if ($scope.display.routed !== true) {
+					return;
+				}
+				$scope.initResourcesRouted(param.bookingId);
+			});
+		}
+	});
 
 	this.initialize = function() {
 		$scope.template = template;
 		$scope.me = model.me;
 		$scope.date = date;
-        $scope.lang = lang;
+		$scope.lang = lang;
 
 		$scope.display = {
 			list: false, // calendar by default
@@ -79,8 +79,9 @@ function RbsController($scope, template, model, date, route){
 		//model.recordedSelections.allResources = true;
 		//model.recordedSelections.mine = true;
 
-		// Will auto-select first resourceType resources and no filter by default
-		model.recordedSelections.firstResourceType = true;
+		// fixme why to do that  Will auto-select first resourceType resources and no filter by default
+		//model.recordedSelections.firstResourceType = true;
+		model.recordedSelections.allResources = true;
 
 		model.bookings.filters.dates = true;
 		//Paging start date
@@ -120,21 +121,21 @@ function RbsController($scope, template, model, date, route){
 		var remanentBooking = undefined;
 		// Restore previous selections
 		model.recordedSelections.restore(
-			function(resourceType){
-				$scope.currentResourceType = resourceType;
-			},
-			function(resource){
-				resource.bookings.sync(function(){
-					if (remanentBookingId !== undefined) {
-						remanentBooking = resource.bookings.find(function(booking){
-							return booking.id === remanentBookingId;
-						});
-						if (remanentBooking !== undefined) {
-							$scope.viewBooking(remanentBooking);
+				function(resourceType){
+					$scope.currentResourceType = resourceType;
+				},
+				function(resource){
+					resource.bookings.sync(function(){
+						if (remanentBookingId !== undefined) {
+							remanentBooking = resource.bookings.find(function(booking){
+								return booking.id === remanentBookingId;
+							});
+							if (remanentBooking !== undefined) {
+								$scope.viewBooking(remanentBooking);
+							}
 						}
-					}
-				});
-			}
+					});
+				}
 		);
 		model.recordedSelections.allResources = false;
 	}
@@ -215,7 +216,8 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.initMain = function() {
-		model.recordedSelections.firstResourceType = true;
+		//fixme Why model.recordedSelections.firstResourceType = true;
+		model.recordedSelections.allResources = true;
 		$scope.currentResourceType = undefined;
 		$scope.resetSort();
 		model.refresh($scope.display.list);
@@ -305,17 +307,30 @@ function RbsController($scope, template, model, date, route){
 	$scope.viewBooking = function(booking) {
 		if (booking.isSlot()) {
 			// slot : view booking details and show slot
-			$scope.selectedBooking = booking.booking;
-			$scope.selectedBooking.displaySection = 3;
-			if (booking.status === $scope.status.STATE_REFUSED) {
-				booking.expanded = true;
+			//call back-end to obtain all periodic slots
+			if (booking.booking.occurrences !== booking.booking._slots.length) {
+				$scope.bookings.loadSlots(booking, function(){
+					if (booking.status === $scope.status.STATE_REFUSED) {
+						booking.expanded = true;
+					}
+					$scope.showBookingDetail(booking.booking, 3);
+				});
+			} else {
+				if (booking.status === $scope.status.STATE_REFUSED) {
+					booking.expanded = true;
+				}
+				$scope.showBookingDetail(booking.booking, 3);
 			}
-		}
-		else {
+
+		} else {
 			// booking
-			$scope.selectedBooking = booking;
-			$scope.selectedBooking.displaySection = 1;
+			$scope.showBookingDetail(booking, 1);
 		}
+	};
+
+	$scope.showBookingDetail = function(booking, displaySection) {
+		$scope.selectedBooking = booking;
+		$scope.selectedBooking.displaySection = displaySection;
 		$scope.initModerators();
 
 		template.open('lightbox', 'booking-details');
@@ -440,11 +455,11 @@ function RbsController($scope, template, model, date, route){
 		return date.format('HH[h]mm');
 	};
 
-    $scope.formatBooking = function(date, time){
-        return moment(date).format('DD/MM/YYYY') + ' ' +
-            lang.translate('rbs.booking.details.header.at') + ' ' +
-            time.format('HH[h]mm');
-    };
+	$scope.formatBooking = function(date, time){
+		return moment(date).format('DD/MM/YYYY') + ' ' +
+				lang.translate('rbs.booking.details.header.at') + ' ' +
+				time.format('HH[h]mm');
+	};
 
 	$scope.composeTitle = function(typeTitle, resourceTitle) {
 		var title = typeTitle + ' - ' + resourceTitle;
@@ -459,12 +474,11 @@ function RbsController($scope, template, model, date, route){
 		return _.filter(slots, function(slot) { return slot.isRefused(); }).length;
 	};
 
-
 	// Booking edition
 	$scope.canCreateBooking = function() {
 		if (undefined !== $scope.resourceTypes.find(function(resourceType){
-			return resourceType.myRights !== undefined && resourceType.myRights.contrib !== undefined;
-		})) {
+					return resourceType.myRights !== undefined && resourceType.myRights.contrib !== undefined;
+				})) {
 			return true;
 		}
 		return false;
@@ -714,7 +728,7 @@ function RbsController($scope, template, model, date, route){
 		// Occurences or date
 		if ($scope.editedBooking.byOccurrences) {
 			summary += lang.translate('rbs.period.occurences.for') + $scope.editedBooking.occurrences
-			 + lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? 'many' : 'one'));
+					+ lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? 'many' : 'one'));
 		}
 		else {
 			summary += lang.translate('rbs.period.date.until') + $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));
@@ -776,29 +790,29 @@ function RbsController($scope, template, model, date, route){
 			if (summary === undefined) {
 				// Start the summary
 				return lang.translate('rbs.period.days.one.start')
-				 + lang.translate('rbs.period.days.' + first.number)
-				 + lang.translate('rbs.period.days.one.continue')
-				 + lang.translate('rbs.period.days.' + last.number);
+						+ lang.translate('rbs.period.days.' + first.number)
+						+ lang.translate('rbs.period.days.one.continue')
+						+ lang.translate('rbs.period.days.' + last.number);
 			}
 			// Continue the summary
 			return summary + lang.translate('rbs.period.days.one.continue')
-			 + lang.translate('rbs.period.days.' + first.number)
-			 + lang.translate('rbs.period.days.one.continue')
-			 + lang.translate('rbs.period.days.' + last.number);
+					+ lang.translate('rbs.period.days.' + first.number)
+					+ lang.translate('rbs.period.days.one.continue')
+					+ lang.translate('rbs.period.days.' + last.number);
 		}
 		// Multi-day range
 		if (summary === undefined) {
 			// Start the summary
 			return lang.translate('rbs.period.days.range.start')
-			 + lang.translate('rbs.period.days.' + first.number)
-			 + lang.translate('rbs.period.days.range.to')
-			 + lang.translate('rbs.period.days.' + last.number);
+					+ lang.translate('rbs.period.days.' + first.number)
+					+ lang.translate('rbs.period.days.range.to')
+					+ lang.translate('rbs.period.days.' + last.number);
 		}
 		// Continue the summary
 		return summary + lang.translate('rbs.period.days.range.continue')
-		 + lang.translate('rbs.period.days.' + first.number)
-		 + lang.translate('rbs.period.days.range.to')
-		 + lang.translate('rbs.period.days.' + last.number);
+				+ lang.translate('rbs.period.days.' + first.number)
+				+ lang.translate('rbs.period.days.range.to')
+				+ lang.translate('rbs.period.days.' + last.number);
 	};
 
 	$scope.saveBooking = function() {
@@ -829,11 +843,11 @@ function RbsController($scope, template, model, date, route){
 				if ($scope.editedBooking.byOccurrences !== true) {
 					$scope.editedBooking.occurrences = undefined;
 					$scope.editedBooking.periodicEndMoment = moment.utc([
-					$scope.booking.periodicEndDate.getFullYear(),
-					$scope.booking.periodicEndDate.getMonth(),
-					$scope.booking.periodicEndDate.getDate(),
-					$scope.booking.endTime.hour(),
-					$scope.booking.endTime.minute()]);
+						$scope.booking.periodicEndDate.getFullYear(),
+						$scope.booking.periodicEndDate.getMonth(),
+						$scope.booking.periodicEndDate.getDate(),
+						$scope.booking.endTime.hour(),
+						$scope.booking.endTime.minute()]);
 				}
 				$scope.resolvePeriodicMoments();
 			}
@@ -852,8 +866,10 @@ function RbsController($scope, template, model, date, route){
 				$scope.closeBooking();
 				model.refreshBookings($scope.display.list);
 			}, function(e){
+				notify.error(e.error);
 				$scope.display.processing = undefined;
 				$scope.currentErrors.push(e);
+				$scope.$apply();
 			});
 		}
 		catch (e) {
@@ -865,16 +881,18 @@ function RbsController($scope, template, model, date, route){
 	$scope.checkSaveBooking = function() {
 		var hasErrors = false;
 		if (($scope.booking.startDate.getFullYear() < $scope.today.year())
-			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() < $scope.today.month())
-			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() < $scope.today.date())
-			|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() == $scope.today.date() && $scope.booking.startTime.hour() < moment().hour())) {
+				|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() < $scope.today.month())
+				|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() < $scope.today.date())
+				|| ($scope.booking.startDate.getFullYear() == $scope.today.year() && $scope.booking.startDate.getMonth() == $scope.today.month() && $scope.booking.startDate.getDate() == $scope.today.date() && $scope.booking.startTime.hour() < moment().hour())) {
 			$scope.currentErrors.push({error: 'rbs.booking.invalid.datetimes.past'});
+			notify.error('rbs.booking.invalid.datetimes.past');
 			hasErrors = true;
 		}
 		if ($scope.editedBooking.is_periodic === true
-			&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
+				&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
 			// Error
 			$scope.currentErrors.push({error: 'rbs.booking.missing.days'});
+			notify.error('rbs.booking.missing.days');
 			hasErrors = true;
 		}
 		return hasErrors;
@@ -925,17 +943,42 @@ function RbsController($scope, template, model, date, route){
 			$scope.bookings.deselectAll();
 			$scope.selectedBooking.selected = true;
 		}
-		// All slots for periodic bookings
-		_.each($scope.bookings.selection(), function(booking){
-			if (booking.isSlot() && booking.booking.selected !== true) {
+
+		var totalSelectionAsynchroneCall = 0;
+		_.each($scope.bookings.selection(), function(booking) {
+			if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
+				totalSelectionAsynchroneCall++;
+			} else if (booking.isSlot() && booking.booking.selected !== true) {
 				booking.booking.selected = true;
 				booking.booking.selectAllSlots();
-			} else if(booking.is_periodic){
-                booking.selectAllSlots();
-            }
+			} else if (booking.is_periodic) {
+				booking.selectAllSlots();
+			}
 		});
 
-		// confirm message
+		//if all slots are already completed
+		if (totalSelectionAsynchroneCall === 0) {
+			//confirm message
+			$scope.showConfirmDeleteMessage();
+		} else {
+			// All slots for periodic bookings
+			_.each($scope.bookings.selection(), function(booking){
+				if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
+					//call back-end to obtain all periodic slots
+					$scope.bookings.loadSlots(booking, function(){
+						booking.booking.selected = true;
+						booking.booking.selectAllSlots();
+						totalSelectionAsynchroneCall--;
+						if (totalSelectionAsynchroneCall === 0) {
+							$scope.showConfirmDeleteMessage();
+						}
+					});
+				}
+			});
+		}
+	};
+
+	$scope.showConfirmDeleteMessage = function() {
 		$scope.processBookings = $scope.bookings.selectionForProcess();
 		template.open('lightbox', 'confirm-delete-booking');
 		$scope.display.showPanel = true;
@@ -1090,7 +1133,7 @@ function RbsController($scope, template, model, date, route){
 		if ($scope.editedResourceType !== undefined) {
 			$scope.closeResourceType();
 		}
-        template.open('resources', 'manage-resources');
+		template.open('resources', 'manage-resources');
 	};
 
 	$scope.swicthSelectAllRessources = function() {
@@ -1259,11 +1302,11 @@ function RbsController($scope, template, model, date, route){
 	$scope.hasWorkflowOrAnyResourceHasBehaviour = function(workflowRight, ressourceRight) {
 		var workflowRights = workflowRight.split('.');
 		return (model.me.workflow[workflowRights[0]] !== undefined && model.me.workflow[workflowRights[0]][workflowRights[1]] === true)
-			|| model.resourceTypes.find(function(resourceType){
-				return (resourceType.resources.find(function(resource){
-					return resource.myRights !== undefined && resource.myRights[ressourceRight] !== undefined;
-				}) !== undefined);
-			});
+				|| model.resourceTypes.find(function(resourceType){
+					return (resourceType.resources.find(function(resource){
+						return resource.myRights !== undefined && resource.myRights[ressourceRight] !== undefined;
+					}) !== undefined);
+				});
 	};
 
 	// Used when adding delays to resources
@@ -1326,7 +1369,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.doRemoveTypes = function(){
 		model.resourceTypes.removeSelectedTypes();
 		$scope.display.confirmRemoveTypes = false;
-        template.close('resources');
+		template.close('resources');
 	};
 
 	var updateCalendarList = function(start, end){

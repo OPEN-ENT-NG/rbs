@@ -1,24 +1,17 @@
 package net.atos.entng.rbs.controllers;
 
-import static net.atos.entng.rbs.BookingStatus.*;
-import static net.atos.entng.rbs.BookingUtils.*;
-import static net.atos.entng.rbs.Rbs.RBS_NAME;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import fr.wseduc.rs.*;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.service.BookingService;
 import net.atos.entng.rbs.service.BookingServiceSqlImpl;
 import net.atos.entng.rbs.service.ResourceService;
 import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
-
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
@@ -28,13 +21,14 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.rs.*;
-import fr.wseduc.security.ActionType;
-import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.RequestUtils;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static net.atos.entng.rbs.BookingStatus.*;
+import static net.atos.entng.rbs.BookingUtils.*;
+import static net.atos.entng.rbs.Rbs.RBS_NAME;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class BookingController extends ControllerHelper {
 
@@ -883,7 +877,6 @@ public class BookingController extends ControllerHelper {
 		});
 	 }
 
-
 	 private void notifyBookingDeleted(final HttpServerRequest request, final UserInfos user,
 				final JsonObject booking, final String bookingId) {
 
@@ -931,17 +924,35 @@ public class BookingController extends ControllerHelper {
 		}
 	 }
 
-
-	 /*
-	  * TODO : limiter à un intervalle donné la liste des réservations retournées.
-	  * Mettre en place un intervalle par défaut (la semaine ou le mois actuel par exemple)
-	  * Permettre de préciser un intervalle
-	  */
-
-	@Get("/bookings/all/:startdate/:enddate")
+	/*
+	 * TODO review the ux functional with clients to allow paging in listing view.
+	 */
+	@Get("/bookings/all")
 	@ApiDoc("List all bookings")
 	@SecuredAction("rbs.booking.list.all")
 	public void listAllBookings(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getGroupsIds());
+					}
+					bookingService.listAllBookings(user, groupsAndUserIds, arrayResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("/bookings/all/:startdate/:enddate")
+	@ApiDoc("List all bookings by dates")
+	@SecuredAction("rbs.booking.list.all.dates")
+	public void listAllBookingsByDate(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -955,9 +966,55 @@ public class BookingController extends ControllerHelper {
 						if (user.getGroupsIds() != null) {
 							groupsAndUserIds.addAll(user.getGroupsIds());
 						}
-						bookingService.listAllBookings(user, groupsAndUserIds, startDate, endDate, arrayResponseHandler(request));
+
+						bookingService.listAllBookingsByDates(user, groupsAndUserIds, startDate, endDate, new Handler<Either<String, JsonArray>>() {
+									@Override
+									public void handle(Either<String, JsonArray> event) {
+										if (event.isRight()) {
+											Renders.renderJson(request, event.right().getValue());
+										} else {
+											JsonObject error = new JsonObject()
+													.putString("error", event.left().getValue());
+											Renders.renderJson(request, error, 400);
+										}
+									}
+								});
 					} else {
 						Renders.badRequest(request, "params start and end date must be defined with YYYY-MM-DD format !");
+					}
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("/bookings/full/slots/:bookingId")
+	@ApiDoc("List all booking slots of a periodic booking")
+	@SecuredAction(value = "rbs.booking.list.slots")
+	public void listFullSlotsBooking(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					final String bookingId = request.params().get("bookingId");
+					if (bookingId != null) {
+
+							bookingService.listFullSlotsBooking(bookingId, new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								if (event.isRight()) {
+									Renders.renderJson(request, event.right().getValue());
+								} else {
+									JsonObject error = new JsonObject()
+											.putString("error", event.left().getValue());
+									Renders.renderJson(request, error, 400);
+								}
+							}
+						});
+					} else {
+						Renders.badRequest(request, "param booking id must be defined !");
 					}
 				} else {
 					log.debug("User not found in session.");

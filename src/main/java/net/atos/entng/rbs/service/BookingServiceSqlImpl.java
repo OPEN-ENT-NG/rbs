@@ -1,24 +1,25 @@
 package net.atos.entng.rbs.service;
 
-import static net.atos.entng.rbs.BookingStatus.CREATED;
-import static net.atos.entng.rbs.BookingStatus.REFUSED;
-import static net.atos.entng.rbs.BookingStatus.VALIDATED;
-import static net.atos.entng.rbs.BookingUtils.*;
-import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.*;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Either.Right;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static net.atos.entng.rbs.BookingStatus.*;
+import static net.atos.entng.rbs.BookingUtils.*;
+import static org.entcore.common.sql.Sql.parseId;
+import static org.entcore.common.sql.SqlResult.*;
 
 public class BookingServiceSqlImpl extends SqlCrudService implements BookingService {
 
@@ -593,11 +594,45 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final String startDate, final String endDate,
+	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler){
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+				.append(" FROM rbs.booking AS b")
+				.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
+				.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
+				.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
+				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
+				.append(" OR t.owner = ?");
+		for (String groupOruser : groupsAndUserIds) {
+			values.add(groupOruser);
+		}
+		values.addString(user.getUserId());
+
+		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
+		List<String> scope = getLocalAdminScope(user);
+		if (scope!=null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
+			}
+		}
+
+		query.append(" GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
+	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds, final String startDate, final String endDate,
 								final Handler<Either<String, JsonArray>> handler){
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
+		//find all booking without periodic booking
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
 			.append(" FROM rbs.booking AS b")
 			.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
@@ -605,7 +640,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE (b.start_date::date >= ?::date AND b.end_date::date < ?::date) AND (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
+			.append(" WHERE (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) AND (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
 			.append(" OR t.owner = ?");
 		values.addString(startDate);
 		values.addString(endDate);
@@ -622,10 +657,83 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				values.addString(schoolId);
 			}
 		}
+		query.append(")  GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
 
-		query.append(") GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+		Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final Either<String, JsonArray> ei = validResult(event);
+				if (ei.isRight()) {
+					final Set<Number> setIdsPeriodicBooking = new HashSet<Number>();
+					final JsonArray jsonBookingResult = ei.right().getValue();
+					final JsonArray jsonAllBookingResult = new JsonArray();
+					for (final Object o : jsonBookingResult) {
+						if (!(o instanceof JsonObject)) {
+							continue;
+						} else {
+							final JsonObject jo = (JsonObject) o;
+							if (jo.getNumber("parent_booking_id") != null) {
+								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
+							}
+							jsonAllBookingResult.addObject(jo);
+						}
+					}
+					if (!setIdsPeriodicBooking.isEmpty()) {
+						//find periodicBooking according to ids of sons
+						final StringBuilder queryPeriodicBooking = new StringBuilder();
+						queryPeriodicBooking.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+								.append(" FROM rbs.booking AS b")
+								.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+								.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+								.append(" WHERE b.id IN ").append(Sql.listPrepared(setIdsPeriodicBooking.toArray()));
+						final JsonArray values = new JsonArray(setIdsPeriodicBooking.toArray());
 
-		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+						Sql.getInstance().prepared(queryPeriodicBooking.toString(), values, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								final Either<String, JsonArray> ei = validResult(event);
+								if (ei.isRight()) {
+									final JsonArray jsonBookingPeriodicResult = ei.right().getValue();
+
+									if (jsonBookingPeriodicResult.size() != 0) {
+										for (final Object o : jsonBookingPeriodicResult) {
+											jsonAllBookingResult.add(o);
+										}
+									}
+									handler.handle(new Right<String, JsonArray>(jsonAllBookingResult));
+								} else {
+									handler.handle(ei);
+								}
+							}
+						});
+					} else {
+						handler.handle(ei);
+					}
+				} else {
+					handler.handle(ei);
+				}
+			}
+		});
+	}
+
+	@Override
+	public void listFullSlotsBooking(final String bookingId,
+								final Handler<Either<String, JsonArray>> handler){
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		//find all booking without periodic booking
+		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
+				.append(" FROM rbs.booking AS b")
+				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE b.parent_booking_id=?");
+		values.add(parseId(bookingId));
+
+		query.append(" ORDER BY b.start_date, b.end_date");
+
+		Sql.getInstance().prepared(query.toString(), values,
+				validResultHandler(handler));
 	}
 
 	@Override
