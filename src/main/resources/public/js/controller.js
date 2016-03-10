@@ -152,6 +152,7 @@ function RbsController($scope, template, model, date, route){
 				}
 		);
 		model.recordedSelections.allResources = false;
+		model.bookings.applyFilters();
 	}
 
 	$scope.initResourcesRouted = function(bookingId) {
