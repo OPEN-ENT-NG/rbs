@@ -91,7 +91,7 @@ function RbsController($scope, template, model, date, route){
 		//fixme Why started with today date ....
 		model.bookings.filters.startMoment = moment().startOf('day');
 		//fixme Why two month ?
-		model.bookings.filters.endMoment =  moment().add('month', 2).startOf('day');
+		model.bookings.filters.endMoment = moment().add('month', 2).startOf('day');
 		model.bookings.filters.startDate = model.bookings.filters.startMoment.toDate();
 		model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
 
@@ -99,7 +99,7 @@ function RbsController($scope, template, model, date, route){
 			// check create booking rights
 			$scope.display.create = $scope.canCreateBooking();
 
-			if($scope.display.list === true) {
+			if ($scope.display.list === true) {
 				template.open('bookings', 'main-list');
 			}
 			else {
@@ -113,6 +113,20 @@ function RbsController($scope, template, model, date, route){
 
 			$scope.initResources();
 		});
+
+		//when date picker of calendar directive is used
+		$scope.$watch(function() {
+			return ($('.hiddendatepickerform')[0]) ? $('.hiddendatepickerform')[0].value : '';
+		}, function (newVal, oldVal) {
+			if(newVal !== oldVal) {
+				//console.log('changed!', newVal, oldVal);
+				if (newVal && newVal!=='' && moment(model.bookings.startPagingDate).diff(moment(newVal, 'DD/MM/YYYY').startOf('isoweek')) !== 0) {
+					model.bookings.startPagingDate = moment(newVal, 'DD/MM/YYYY').startOf('isoweek');
+					model.bookings.endPagingDate = moment(newVal, 'DD/MM/YYYY').startOf('isoweek').add(7, 'day').startOf('day');
+					$scope.bookings.sync();
+				}
+			}
+		},true);
 	};
 
 	// Initialization
