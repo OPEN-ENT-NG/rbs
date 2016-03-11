@@ -120,7 +120,7 @@ function RbsController($scope, template, model, date, route){
 		}, function (newVal, oldVal) {
 			if(newVal !== oldVal) {
 				//console.log('changed!', newVal, oldVal);
-				if (newVal && newVal!=='' && moment(model.bookings.startPagingDate).diff(moment(newVal, 'DD/MM/YYYY').startOf('isoweek')) !== 0) {
+				if (!$scope.display.list && newVal && newVal!=='' && moment(model.bookings.startPagingDate).diff(moment(newVal, 'DD/MM/YYYY').startOf('isoweek')) !== 0) {
 					model.bookings.startPagingDate = moment(newVal, 'DD/MM/YYYY').startOf('isoweek');
 					model.bookings.endPagingDate = moment(newVal, 'DD/MM/YYYY').startOf('isoweek').add(7, 'day').startOf('day');
 					$scope.bookings.sync();
