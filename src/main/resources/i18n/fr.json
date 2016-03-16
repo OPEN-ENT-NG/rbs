@@ -67,7 +67,6 @@
     "rbs.booking.details.validated.date.label": "Date de validation",
     "rbs.booking.details.validated.moderator.label": "Validé par",
     "rbs.booking.edit": "Edition : ",
-    "rbs.booking.edit.description.empty": "Non renseignée",
     "rbs.booking.edit.description.label": "Description",
     "rbs.booking.edit.end.hour": " à ",
     "rbs.booking.edit.end.label": "Fin de la réservation",
@@ -290,5 +289,7 @@
     "to": "à",
     "from": "de",
     "type.form.validation.required": "Les demandes de réservation doivent être validées",
-    "VALIDATION_ERROR": "Données non valides."
+    "VALIDATION_ERROR": "Données non valides.",
+    "rbs.search.title" : "Réservation du {0} au {1} sur la ressource {2} ({3})",
+    "rbs.search.date.to" : "à"
 }

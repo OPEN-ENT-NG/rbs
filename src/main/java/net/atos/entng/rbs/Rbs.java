@@ -5,10 +5,12 @@ import net.atos.entng.rbs.controllers.DisplayController;
 import net.atos.entng.rbs.controllers.ResourceController;
 import net.atos.entng.rbs.controllers.ResourceTypeController;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
+import net.atos.entng.rbs.events.RbsSearchingEvents;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.service.impl.SqlCrudService;
+import org.entcore.common.service.impl.SqlSearchService;
 import org.entcore.common.share.impl.SqlShareService;
 import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
@@ -31,7 +33,7 @@ public class Rbs extends BaseServer {
 
 		// Set RepositoryEvents implementation used to process events published for transition
 		setRepositoryEvents(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false)));
-
+		setSearchingEvents(new RbsSearchingEvents());
 		// Controllers
 		addController(new DisplayController());
 
