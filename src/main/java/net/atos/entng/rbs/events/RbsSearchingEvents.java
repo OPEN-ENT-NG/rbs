@@ -4,7 +4,6 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.search.SearchingEvents;
-import org.entcore.common.service.SearchService;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.vertx.java.core.Handler;
@@ -15,12 +14,10 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.SqlResult.validResult;
 
 public class RbsSearchingEvents extends SqlCrudService implements SearchingEvents {
@@ -35,7 +32,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 
 	@Override
 	public void searchResource(List<String> appFilters, String userId, JsonArray groupIds, JsonArray searchWords, Integer page, Integer limit, final JsonArray columnsHeader,
-							   final Handler<Either<String, JsonArray>> handler) {
+							   final String locale, final Handler<Either<String, JsonArray>> handler) {
 		if (appFilters.contains(RbsSearchingEvents.class.getSimpleName())) {
 
 			final List<String> idsUsers = new ArrayList<String>(groupIds.toList());
@@ -59,7 +56,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 					.append(" WHERE (").append(searchWhere).append(") AND (rs.member_id IN ").append(Sql.listPrepared(idsUsers.toArray()))
 					.append(" OR t.owner = ?");
 			// fixme it is important for search : A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
-			// TODO if necessary modify common to add userinfos.getFunctions
+			// if necessary modify common to add userinfos.getFunctions
 			/*List<String> scope = getLocalAdminScope(user);
 			if (scope!=null && !scope.isEmpty()) {
 				query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
@@ -91,32 +88,32 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 				public void handle(Message<JsonObject> event) {
 					final Either<String, JsonArray> ei = validResult(event);
 					if (ei.isRight()) {
-						final JsonArray res = formatSearchResult(ei.right().getValue(), columnsHeader);
+						final JsonArray res = formatSearchResult(ei.right().getValue(), columnsHeader, locale);
 						handler.handle(new Right<String, JsonArray>(res));
 					} else {
 						handler.handle(new Either.Left<String, JsonArray>(ei.left().getValue()));
 					}
+					if (log.isDebugEnabled()) {
+						log.debug("[RbsSearchingEvents][searchResource] The resources searched by user are finded");
+					}
 				}
 			});
-			if (log.isDebugEnabled()) {
-				log.debug("[RbsSearchingEvents][searchResource] The resources searched by user are finded");
-			}
 		} else {
 			handler.handle(new Right<String, JsonArray>(new JsonArray()));
 		}
 	}
 
-	private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader) {
+	private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, String locale) {
 		final List<String> aHeader = columnsHeader.toList();
 		final JsonArray traity = new JsonArray();
 
-		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", "fr") + " HH:mm";
+		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", locale) + " HH:mm";
 
 		for (int i=0;i<results.size();i++) {
 			final JsonObject j = results.get(i);
 			final JsonObject jr = new JsonObject();
 			if (j != null) {
-				jr.putString(aHeader.get(0), formatTitle(j, dateFormat));
+				jr.putString(aHeader.get(0), formatTitle(j, dateFormat, locale));
 				jr.putString(aHeader.get(1), j.getString("booking_reason"));
 				jr.putObject(aHeader.get(2), new JsonObject().putValue("$date",
 						DatatypeConverter.parseDateTime(j.getString("modified")).getTime().getTime()));
@@ -129,9 +126,8 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 		return traity;
 	}
 
-	private String formatTitle(final JsonObject j, final String dateFormat) {
-		//TODO modifier l'api core to add local of request
-		return i18n.translate("rbs.search.title", "fr",
+	private String formatTitle(final JsonObject j, final String dateFormat, final String locale) {
+		return i18n.translate("rbs.search.title", locale,
 				new SimpleDateFormat(dateFormat).format(DatatypeConverter.parseDateTime(j.getString("start_date")).getTime()),
 				new SimpleDateFormat(dateFormat).format(DatatypeConverter.parseDateTime(j.getString("end_date")).getTime()),
 				j.getString("resource_name"),
