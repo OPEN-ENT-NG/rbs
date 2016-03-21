@@ -34,10 +34,6 @@ div.disabled {
 	overflow: auto;
 }
 
-.dropdown-menu {
-	z-index: 11000 !important;
-}
-
 nav.vertical ul li i.caret {
 	height: 20px;
 	width: 25px;
