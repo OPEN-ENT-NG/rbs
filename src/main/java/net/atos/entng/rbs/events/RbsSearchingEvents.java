@@ -14,6 +14,8 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,28 +110,41 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 		final JsonArray traity = new JsonArray();
 
 		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", locale) + " HH:mm";
+		final DateFormat dateFormatFromDB = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 		for (int i=0;i<results.size();i++) {
 			final JsonObject j = results.get(i);
 			final JsonObject jr = new JsonObject();
 			if (j != null) {
-				jr.putString(aHeader.get(0), formatTitle(j, dateFormat, locale));
+				Long start = 0L;
+				Long end = 0L;
+				try {
+					start = dateFormatFromDB.parse(j.getString("start_date")).getTime();
+					end = dateFormatFromDB.parse(j.getString("end_date")).getTime();
+				} catch (ParseException e) {
+					log.error("Can't parse date form RBS DB", e);
+				}
+				jr.putString(aHeader.get(0), formatTitle(j, start, end, dateFormat, locale));
 				jr.putString(aHeader.get(1), j.getString("booking_reason"));
 				jr.putObject(aHeader.get(2), new JsonObject().putValue("$date",
 						DatatypeConverter.parseDateTime(j.getString("modified")).getTime().getTime()));
 				jr.putString(aHeader.get(3), j.getString("owner_name"));
 				jr.putString(aHeader.get(4), j.getString("owner"));
-				jr.putString(aHeader.get(5), "/rbs#/booking/"+ j.getNumber("id",0));
+				jr.putString(aHeader.get(5), formatUrl(j.getNumber("id",0), start));
 				traity.add(jr);
 			}
 		}
 		return traity;
 	}
 
-	private String formatTitle(final JsonObject j, final String dateFormat, final String locale) {
+	private String formatUrl(final Number id, final Long start) {
+		return "/rbs#/booking/"+ id + "/" + new SimpleDateFormat("yyyy-MM-dd").format(start);
+	}
+
+	private String formatTitle(final JsonObject j, final Long start, final Long end, final String dateFormat, final String locale) {
 		return i18n.translate("rbs.search.title", locale,
-				new SimpleDateFormat(dateFormat).format(DatatypeConverter.parseDateTime(j.getString("start_date")).getTime()),
-				new SimpleDateFormat(dateFormat).format(DatatypeConverter.parseDateTime(j.getString("end_date")).getTime()),
+				new SimpleDateFormat(dateFormat).format(start),
+				new SimpleDateFormat(dateFormat).format(end),
 				j.getString("resource_name"),
 				j.getString("resource_type"));
 	}

@@ -3,18 +3,29 @@ routes.define(function($routeProvider){
 			.when('/booking/:bookingId', {
 				action: 'viewBooking'
 			})
+			.when('/booking/:bookingId/:start', {
+				action: 'viewBooking'
+			})
 });
 
 function RbsController($scope, template, model, date, route){
 
 	route({
 		viewBooking: function(param){
+			if (param.start) {
+				model.bookings.startPagingDate = moment(param.start).startOf('isoweek');
+				//Paging end date
+				model.bookings.endPagingDate = moment(param.start).add(7, 'day').startOf('day');
+			}
 			$scope.display.routed = true;
 			$scope.resourceTypes.one('sync', function(){
 				if ($scope.display.routed !== true) {
 					return;
 				}
 				$scope.initResourcesRouted(param.bookingId);
+				if (param.start) {
+					updateCalendarSchedule(moment(param.start));
+				}
 			});
 		}
 	});
