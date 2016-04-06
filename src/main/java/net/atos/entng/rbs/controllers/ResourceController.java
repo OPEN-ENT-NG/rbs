@@ -183,14 +183,14 @@ public class ResourceController extends ControllerHelper {
 			final String resourceName = message.getString("name", null);
 
 			final String eventType;
-			final String template;
+			final String notificationName;
 			if (isAvailable) {
 				eventType = RESOURCE_AVAILABLE_EVENT_TYPE;
-				template = "notify-resource-available.html";
+				notificationName = "resource-available";
 			}
 			else {
 				eventType = RESOURCE_UNAVAILABLE_EVENT_TYPE;
-				template = "notify-resource-unavailable.html";
+				notificationName = "resource-unavailable";
 			}
 
 			if (resourceId == 0L || resourceName == null) {
@@ -217,8 +217,7 @@ public class ResourceController extends ControllerHelper {
 							JsonObject params = new JsonObject();
 							params.putString("resource_name", resourceName);
 
-							notification.notifyTimeline(request, user, RBS_NAME, eventType,
-									recipients, String.valueOf(resourceId), template, params);
+							notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, String.valueOf(resourceId), params);
 						}
 
 					} else {

@@ -232,14 +232,14 @@ public class BookingController extends ControllerHelper {
 		final String endDate = message.getString("end_date", null);
 
 		final String eventType;
-		final String template;
+		final String notificationName;
 		if (isCreated) {
 			eventType = BOOKING_CREATED_EVENT_TYPE;
-			template = "notify-booking-created.html";
+			notificationName = "booking-created";
 		}
 		else {
 			eventType = BOOKING_UPDATED_EVENT_TYPE;
-			template = "notify-booking-updated.html";
+			notificationName = "booking-updated";
 		}
 
 		if (id == 0L || status == 0 || startDate == null || endDate == null) {
@@ -265,7 +265,7 @@ public class BookingController extends ControllerHelper {
 								if (event.isRight() && event.right() != null) {
 									notifyModerators(request, user, event.right().getValue(),
 											bookingId, startDate, endDate,
-											resourceName, eventType, template);
+											resourceName, eventType, notificationName);
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
@@ -517,14 +517,14 @@ public class BookingController extends ControllerHelper {
 			final long id = firstBooking.getLong("id", 0L);
 
 			final String eventType;
-			final String template;
+			final String notificationName;
 			if (isCreation) {
 				eventType = PERIODIC_BOOKING_CREATED_EVENT_TYPE;
-				template = "notify-periodic-booking-created.html";
+				notificationName = "periodic-booking-created";
 			}
 			else {
 				eventType = PERIODIC_BOOKING_UPDATED_EVENT_TYPE;
-				template = "notify-periodic-booking-updated.html";
+				notificationName = "periodic-booking-updated";
 			}
 
 			if (id == 0L) {
@@ -559,7 +559,7 @@ public class BookingController extends ControllerHelper {
 								if (event.isRight() && event.right() != null) {
 									notifyModerators(request, user, event.right().getValue(),
 											bookingId, startDate, endDate,
-											resourceName, eventType, template);
+											resourceName, eventType, notificationName);
 								} else {
 									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
 											+ eventType + " notification.");
@@ -578,7 +578,7 @@ public class BookingController extends ControllerHelper {
 
 	private void notifyModerators(final HttpServerRequest request, final UserInfos user, JsonArray moderators,
 			final String bookingId, final String startDate, final String endDate, final String resourceName,
-			final String eventType, final String template) {
+			final String eventType, final String notificationName) {
 
 		final Set<String> recipientSet = new HashSet<>();
 		final AtomicInteger remaining = new AtomicInteger(moderators.size());
@@ -604,14 +604,14 @@ public class BookingController extends ControllerHelper {
 								}
 							}
 							if (remaining.decrementAndGet() < 1 && !recipientSet.isEmpty()) {
-								sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, template, recipientSet);
+								sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, notificationName, recipientSet);
 							}
 						}
 					});
 				}
 			}
 			if (remaining.get() < 1 && !recipientSet.isEmpty()) {
-				sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, template, recipientSet);
+				sendNotification(request, user, bookingId, startDate, endDate, resourceName, eventType, notificationName, recipientSet);
 			}
 		}
 
@@ -619,20 +619,22 @@ public class BookingController extends ControllerHelper {
 
 	private void sendNotification(final HttpServerRequest request, final UserInfos user,
 			final String bookingId, final String startDate, final String endDate, final String resourceName,
-			final String eventType, final String template, final Set<String> recipientSet) {
+			final String eventType, final String notificationName, final Set<String> recipientSet) {
 
 		List<String> recipients = new ArrayList<>(recipientSet);
 
 		JsonObject params = new JsonObject();
-		params.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-		params.putString("bookingUri", "/rbs#/booking/" + bookingId)
+		params.putString("uri", container.config().getString("host", "http://localhost:8090") +
+				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+		params.putString("bookingUri", container.config().getString("host", "http://localhost:8026") +
+				"/rbs#/booking/" + bookingId)
 			.putString("username", user.getUsername())
 			.putString("startdate", startDate)
 			.putString("enddate", endDate)
 			.putString("resourcename", resourceName);
+		params.putString("resourceUri", params.getString("bookingUri"));
 
-		notification.notifyTimeline(request, user, RBS_NAME, eventType,
-				recipients, bookingId, template, params);
+		notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
 	}
 
 	 private String booleanArrayToBitString(JsonArray selectedDaysArray) {
@@ -779,8 +781,7 @@ public class BookingController extends ControllerHelper {
 		final String startDate = booking.getString("start_date", null);
 		final String endDate = booking.getString("end_date", null);
 
-		final String eventType;
-		final String template;
+		final String notificationName;
 
 		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0
 				|| startDate == null || endDate == null) {
@@ -791,12 +792,10 @@ public class BookingController extends ControllerHelper {
 		final String bookingId = Long.toString(id);
 
 		if(VALIDATED.status() == status){
-			eventType = BOOKING_VALIDATED_EVENT_TYPE;
-			template = "notify-booking-validated.html";
+			notificationName = "booking-validated";
 		}
 		else if(REFUSED.status() == status) {
-			eventType = BOOKING_REFUSED_EVENT_TYPE;
-			template = "notify-booking-refused.html";
+			notificationName = "booking-refused";
 		}
 		else {
 			log.error("Invalid status");
@@ -806,19 +805,20 @@ public class BookingController extends ControllerHelper {
 		if(!owner.equals(user.getUserId())) {
 			JsonObject params = new JsonObject();
 			params.putString("username", user.getUsername())
-				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("uri", container.config().getString("host", "http://localhost:8090") +
+						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("startdate", startDate)
 				.putString("enddate", endDate)
 				.putString("resourcename", resourceName)
-				.putString("bookingUri", "/rbs#/booking/" + bookingId);
+				.putString("bookingUri", container.config().getString("host", "http://localhost:8026") +
+						"/rbs#/booking/" + bookingId);
+			params.putString("resourceUri", params.getString("bookingId"));
 
 			List<String> recipients = new ArrayList<>();
 			recipients.add(owner);
 
-			notification.notifyTimeline(request, user, RBS_NAME, eventType,
-					recipients, bookingId, template, params);
+			notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
 		}
-
 	}
 
 	 @Delete("/resource/:id/booking/:bookingId")
@@ -886,8 +886,7 @@ public class BookingController extends ControllerHelper {
 		final boolean isPeriodic = booking.getBoolean("is_periodic");
 		final String resourceName = booking.getString("resource_name", null);
 
-		final String eventType;
-		final String template;
+		final String notificationName;
 
 		if (startDate == null || endDate == null ||
 				owner == null || owner.trim().isEmpty() ||
@@ -900,17 +899,16 @@ public class BookingController extends ControllerHelper {
 		// Notify only if current user is not the booking's owner
 		if(!owner.equals(user.getUserId())) {
 			if(isPeriodic) {
-				eventType = PERIODIC_BOOKING_DELETED_EVENT_TYPE;
-				template = "notify-periodic-booking-deleted.html";
+				notificationName = "periodic-booking-deleted";
 			}
 			else {
-				eventType = BOOKING_DELETED_EVENT_TYPE;
-				template = "notify-booking-deleted.html";
+				notificationName = "booking-deleted";
 			}
 
 			JsonObject params = new JsonObject();
 			params.putString("username", user.getUsername())
-				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("uri", container.config().getString("host", "http://localhost:8090") +
+						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("startdate", startDate)
 				.putString("enddate", endDate)
 				.putString("resourcename", resourceName);
@@ -918,9 +916,7 @@ public class BookingController extends ControllerHelper {
 			List<String> recipients = new ArrayList<>();
 			recipients.add(owner);
 
-			notification.notifyTimeline(request, user, RBS_NAME, eventType,
-					recipients, bookingId, template, params);
-
+			notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
 		}
 	 }
 
