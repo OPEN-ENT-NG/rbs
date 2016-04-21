@@ -10,27 +10,34 @@ routes.define(function($routeProvider){
 
 function RbsController($scope, template, model, date, route){
 
-	route({
-		viewBooking: function(param){
-			if (param.start) {
-				model.bookings.startPagingDate = moment(param.start).startOf('isoweek');
-				//Paging end date
-				model.bookings.endPagingDate = moment(param.start).add(7, 'day').startOf('day');
-			}
-			$scope.display.routed = true;
-			$scope.resourceTypes.one('sync', function(){
-				if ($scope.display.routed !== true) {
-					return;
-				}
-				$scope.initResourcesRouted(param.bookingId);
-				if (param.start) {
-					updateCalendarSchedule(moment(param.start));
-				}
-			});
-		}
-	});
+    route({
+        viewBooking: function(param){
+            if (param.start) {
+                loadBooking(param.start, param.bookingId);
+            } else {
+                new Booking().retrieve(param.bookingId, function (date) {
+                    loadBooking(date, param.bookingId);
+                }, function (e){
+                    $scope.currentErrors.push(e);
+                    $scope.$apply();
 
-	this.initialize = function() {
+                });
+            }
+        }
+    });
+
+    var loadBooking = function(date, id) {
+        model.bookings.startPagingDate = moment(date).startOf('isoweek');
+        //Paging end date
+        model.bookings.endPagingDate = moment(date).add(7, 'day').startOf('day');
+        $scope.display.routed = true;
+        $scope.resourceTypes.one('sync', function(){
+            $scope.initResourcesRouted(id);
+            updateCalendarSchedule(moment(date));
+        });
+    }
+
+    this.initialize = function() {
 		$scope.template = template;
 		$scope.me = model.me;
 		$scope.date = date;

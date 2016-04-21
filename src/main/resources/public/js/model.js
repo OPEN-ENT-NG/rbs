@@ -61,6 +61,19 @@ Booking.prototype.save = function(cb, cbe) {
 	}
 };
 
+Booking.prototype.retrieve = function(id, cb, cbe) {
+    var booking = this;
+    http().get('/rbs/booking/' + id).done(function(response){
+        if(typeof cb === 'function'){
+            cb(response.start_date);
+        }
+    }.bind(this)).error(function(e){
+        if(typeof cbe === 'function'){
+            cbe(model.parseError(e, booking, 'retieve'));
+        }
+    });
+};
+
 Booking.prototype.calendarUpdate = function(cb, cbe) {
 	if (this.beginning) {
 		this.startMoment = this.beginning;

@@ -25,7 +25,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
 	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
-	private final static String DATE_FORMAT = "DD/MM/YY HH24:MI";
+	public final static String DATE_FORMAT = "DD/MM/YY HH24:MI";
 
 	public BookingServiceSqlImpl() {
 		super("rbs", "booking");
@@ -902,5 +902,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().prepared(query.toString(), new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
+
+    public void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
+        this.retrieve(bookingId, handler);
+    }
 
 }
