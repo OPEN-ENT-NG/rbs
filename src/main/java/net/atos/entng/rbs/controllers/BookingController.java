@@ -815,7 +815,7 @@ public class BookingController extends ControllerHelper {
                     .putString("resourcename", resourceName)
                     .putString("bookingUri", container.config().getString("host", "http://localhost:8026") +
                             "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
-            params.putString("resourceUri", params.getString("bookingId"));
+            params.putString("resourceUri", params.getString("bookingUri"));
 
             List<String> recipients = new ArrayList<>();
             recipients.add(owner);
