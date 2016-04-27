@@ -32,8 +32,9 @@ function RbsController($scope, template, model, date, route){
         model.bookings.endPagingDate = moment(date).add(7, 'day').startOf('day');
         $scope.display.routed = true;
         $scope.resourceTypes.one('sync', function(){
-            $scope.initResourcesRouted(id);
-            updateCalendarSchedule(moment(date));
+            $scope.initResourcesRouted(id, function() {
+                updateCalendarSchedule(moment(date), true);
+            });
         });
     }
 
@@ -173,7 +174,7 @@ function RbsController($scope, template, model, date, route){
 		model.bookings.applyFilters();
 	}
 
-	$scope.initResourcesRouted = function(bookingId) {
+	$scope.initResourcesRouted = function(bookingId, cb) {
 		var found = false;
 		var actions = 0;
 		var routedBooking = undefined;
@@ -195,6 +196,9 @@ function RbsController($scope, template, model, date, route){
 						$scope.display.routed = undefined;
 						model.recordedSelections.firstResourceType = undefined;
 						found = true;
+                        if( typeof(cb) === 'function' ){
+                            cb();
+                        }
 					}
 				});
 			});
@@ -1419,9 +1423,12 @@ function RbsController($scope, template, model, date, route){
 
 	};
 
-	var updateCalendarSchedule = function(date){
-		model.calendar.setDate(date);
-		$scope.bookings.sync();
-	};
-	this.initialize();
+    var updateCalendarSchedule = function(date, skipSync){
+        model.calendar.setDate(date);
+        if( skipSync === undefined) {
+            $scope.bookings.sync();
+        }
+    };
+    this.initialize();
+
 }
