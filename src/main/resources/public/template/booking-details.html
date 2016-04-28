@@ -239,7 +239,6 @@
 		<behaviour name="manage" resource="selectedBooking">
 			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
 			<button class="right-magnet" ng-if="selectedBooking.owner === me.userId && selectedBooking.resource.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
-			<button class="right-magnet" ng-if="selectedBooking.owner !== me.userId || selectedBooking.resource.is_available !== true" class="disabled" disabled><i18n>edit</i18n></button>
 		</behaviour>
 	</div>
 </div>
