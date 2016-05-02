@@ -178,7 +178,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		long lastSlotEndDate = firstSlotEndDate;
 
 		// 1. INSERT clause for the first child booking
-		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status)")
+		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status, refusal_reason)")
 			.append(" VALUES(?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC',");
 		values.add(resourceId)
 			.add(user.getUserId())
@@ -216,13 +216,41 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" FROM rbs.resource_type AS t")
 			.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
 			.append(" WHERE r.id = ?")
-			.append("))");
+			.append("),");
 		values.add(CREATED.status())
 			.add(VALIDATED.status())
 			.add(resourceId);
 
+        // refused because of concurrent in case of periodic reservation
+        query.append(" (SELECT CASE")
+                .append(" WHEN (")
+                .append(" EXISTS(SELECT 1 FROM rbs.booking")
+                .append(" WHERE status = ?")
+                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+                .append(" AND resource_id = ?")
+                .append(" )) THEN ?");
+        values.add(VALIDATED.status())
+                .add(firstSlotStartDate)
+                .add(firstSlotEndDate)
+                .add(resourceId)
+                .add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
 
-		// 2. Additional VALUES to insert the other child bookings
+        // finding the conflicted booking id
+        query.append( " || ( SELECT id FROM rbs.booking")
+                .append(" WHERE status = ?")
+                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+                .append(" AND resource_id = ? LIMIT 1 )");
+        values.add(VALIDATED.status())
+                .add(firstSlotStartDate)
+                .add(firstSlotEndDate)
+                .add(resourceId);
+
+
+
+        query.append(" ELSE ? END)) ");
+        values.add(null);
+
+        // 2. Additional VALUES to insert the other child bookings
 		int nbOccurences = data.getInteger("occurrences", -1);
 
 		if(nbOccurences == -1) {
@@ -281,10 +309,47 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" FROM rbs.resource_type AS t")
 					.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
 					.append(" WHERE r.id = ?")
-					.append("))");
+					.append("), ");
 				values.add(CREATED.status())
 					.add(VALIDATED.status())
 					.add(resourceId);
+
+                // refused because of concurrent in case of periodic reservation
+                query.append(" (SELECT CASE")
+                        .append(" WHEN (")
+                        .append(" EXISTS(SELECT 1 FROM rbs.booking")
+                        .append(" WHERE status = ?")
+                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(intervalFromFirstDay)
+                        .append(" day', ")
+                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(intervalFromFirstDay)
+                        .append(" day')")
+                        .append(" AND resource_id = ?")
+                        .append(" )) THEN ?");
+                values.add(VALIDATED.status())
+                        .add(firstSlotStartDate)
+                        .add(firstSlotEndDate)
+                        .add(resourceId)
+                        .add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
+
+                // finding the conflicted booking id
+                query.append( " || (SELECT id FROM rbs.booking")
+                        .append(" WHERE status = ?")
+                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(intervalFromFirstDay)
+                        .append(" day', ")
+                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(intervalFromFirstDay)
+                        .append(" day')")
+                        .append(" AND resource_id = ? LIMIT 1 )");
+                values.add(VALIDATED.status())
+                        .add(firstSlotStartDate)
+                        .add(firstSlotEndDate)
+                        .add(resourceId);
+
+                query.append(" ELSE ? END)) ");
+                values.add(null);
 			}
 
 			lastSlotEndDate += TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS);
