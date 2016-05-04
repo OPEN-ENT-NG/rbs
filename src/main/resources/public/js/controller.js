@@ -1409,6 +1409,13 @@ function RbsController($scope, template, model, date, route){
 		template.close('resources');
 	};
 
+    // display a warning when editing a resource and changing the resource type.
+    $scope.resourceTypeModified = function() {
+        if($scope.currentResourceType != $scope.editedResource.type) {
+            notify.info('rbs.type.info.change');
+        }
+    }
+
 	var updateCalendarList = function(start, end){
 		model.bookings.filters.startMoment.date(start.date());
 		model.bookings.filters.startMoment.month(start.month());

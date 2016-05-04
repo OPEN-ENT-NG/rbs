@@ -259,6 +259,7 @@
     "rbs.type.details.validation.label": "Etape de validation : ",
     "rbs.type.details.validation.true": "Un valideur doit accepter les demandes de réservation pour les ressources de type [[currentResourceType.name]].",
     "rbs.type.info.adml": "Les administrateurs locaux de l'établissement sont automatiquement gestionnaires de ce type de ressources",
+    "rbs.type.info.change": "Attention : la modification du type de la ressource peut avoir un impact sur les réservations et les validations !",
     "rbs.types.empty": "Aucun Type de ressources",
     "rbs.validate": "Valider",
     "rbs.period.days.all": "Tous les jours",
