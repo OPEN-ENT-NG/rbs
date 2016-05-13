@@ -16,11 +16,6 @@ import fr.wseduc.webutils.Either;
 public class RbsRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(RbsRepositoryEvents.class);
-	private final boolean shareOldGroupsToUsers;
-
-	public RbsRepositoryEvents(boolean shareOldGroupsToUsers) {
-		this.shareOldGroupsToUsers = shareOldGroupsToUsers;
-	}
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath, String locale, String host, final Handler<Boolean> handler) {
@@ -30,12 +25,6 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		if (shareOldGroupsToUsers) {
-			// TODO Implement shareOldGroupsToUsers
-			log.error("Case [shareOldGroupsToUsers] for Event [deleteGroups] is not implemented");
-			return;
-		}
-
 		if (groups != null && groups.size() > 0){
 			final JsonArray groupsIds = new JsonArray();
 			for (Object o : groups) {
@@ -62,7 +51,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteUsers(JsonArray users) {
-		//TODO: Implement anonymization
+		//FIXME: anonymization is not relevant
 		if (users != null && users.size() > 0){
 			final JsonArray userIds = new JsonArray();
 			for (Object o : users) {
