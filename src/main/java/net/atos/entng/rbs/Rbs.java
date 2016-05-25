@@ -49,7 +49,7 @@ public class Rbs extends BaseServer {
 		final EventBus eb = getEventBus(vertx);
 
 		// Set RepositoryEvents implementation used to process events published for transition
-		setRepositoryEvents(new RbsRepositoryEvents(config.getBoolean("share-old-groups-to-users", false)));
+		setRepositoryEvents(new RbsRepositoryEvents());
 		setSearchingEvents(new RbsSearchingEvents());
 		// Controllers
 		addController(new DisplayController());
