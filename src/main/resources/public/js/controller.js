@@ -1201,6 +1201,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.newResource = function() {
+        $scope.isCreation = true;
 		$scope.display.processing = undefined;
 		$scope.editedResource = new Resource();
 		$scope.editedResource.type = $scope.currentResourceType;
@@ -1210,6 +1211,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.editSelectedResource = function() {
+        $scope.isCreation = false;
 		$scope.display.processing = undefined;
 		$scope.editedResource = $scope.currentResourceType.resources.selection()[0];
 		$scope.currentResourceType.resources.deselectAll();
@@ -1409,9 +1411,9 @@ function RbsController($scope, template, model, date, route){
 		template.close('resources');
 	};
 
-    // display a warning when editing a resource and changing the resource type.
+    // display a warning when editing a resource and changing the resource type (not in creation mode).
     $scope.resourceTypeModified = function() {
-        if($scope.currentResourceType != $scope.editedResource.type) {
+        if($scope.currentResourceType != $scope.editedResource.type && !$scope.isCreation) {
             notify.info('rbs.type.info.change');
         }
     }
