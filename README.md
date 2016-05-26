@@ -62,6 +62,7 @@ Elle permet de gérer des Ressources organisées en Types de ressources, d'effec
 Les permissions sont configurées sur les Types de ressources (via des partages Ent-core). Les Réservations peuvent être soumises à validations, et peuvent être ponctuelles ou périodiques.
 La consultation peut se faire grâce à un Calendrier, ou grâce à une Liste des réservations.
 
+RBS met en œuvre un comportement de recherche sur le nom des ressources, des types de ressources et sur les motifs de réservation.
 
 ## Modèle de persistance
 
@@ -93,6 +94,11 @@ Pour manipulations spécifiques, des classes de Service sont utilisées :
  * `ResourceTypeService` : concernant les Types de ressources
  * `ResourceService` : concernant les Ressources
  * `BookingService` : concernant les Réservations
+
+Le module serveur met en œuvre deux évènements issus du framework Ent-core :
+
+* `RbsRepositoryEvents` : Logique de changement d'année scolaire
+* `RbsSearchingEvents` : Logique de recherche
 
 Des jsonschemas permettent de vérifier les données reçues par le serveur, ils se trouvent dans le dossier "src/main/resources/jsonschema".
 
