@@ -68,7 +68,7 @@
     "rbs.booking.details.validated.moderator.label": "Validé par",
     "rbs.booking.edit": "Edition : ",
     "rbs.booking.edit.description.label": "Description",
-    "rbs.booking.edit.description.empty": "Non renseignée",
+    "rbs.booking.edit.description.empty": "Cette ressource n'a pas de description renseignée.",
     "rbs.booking.edit.end.hour": " à ",
     "rbs.booking.edit.end.label": "Fin de la réservation",
     "rbs.booking.edit.period.days.0": "Dimanche",
