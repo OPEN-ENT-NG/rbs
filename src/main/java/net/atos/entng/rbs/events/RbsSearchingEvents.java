@@ -61,7 +61,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 
 			final StringBuilder query = new StringBuilder();
 
-			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray());
+			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
 			final List<String> searchFields = new ArrayList<String>();
 			searchFields.add("r.name");
 			searchFields.add("t.name");
@@ -172,7 +172,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 		StringBuilder sb = new StringBuilder();
 		if (list != null && list.size() > 0) {
 			for (String s : list) {
-				sb.append(s).append(" ").append(templateLike).append(" OR ");
+				sb.append("unaccent(").append(s).append(") ").append(templateLike).append(" OR ");
 			}
 			sb.delete(sb.length() - 3, sb.length());
 		}
