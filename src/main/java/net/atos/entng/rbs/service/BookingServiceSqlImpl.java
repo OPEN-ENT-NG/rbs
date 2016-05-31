@@ -779,7 +779,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 									final Date dateEndSearched = DateUtils.create(Integer.parseInt(endSearched.get(0)),
 											Integer.parseInt(endSearched.get(1))-1, Integer.parseInt(endSearched.get(2)));
 									if (DateUtils.isBetween(dateStartSearched, currentStartDate, currentEndDate) ||
-											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate)) {
+											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate) ||
+											(DateUtils.isBetween(currentStartDate, dateStartSearched, dateEndSearched) &&
+													DateUtils.isBetween(currentEndDate, dateStartSearched, dateEndSearched))) {
 										jsonAllBookingResult.addObject(jo);
 									}
 								} catch (ParseException e) {
