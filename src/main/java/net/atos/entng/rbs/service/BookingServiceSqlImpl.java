@@ -25,11 +25,17 @@ import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.DateUtils;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +51,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	private final static String LOCK_BOOKING_QUERY = "LOCK TABLE rbs.booking IN SHARE ROW EXCLUSIVE MODE;";
 	private final static String UPSERT_USER_QUERY = "SELECT rbs.merge_users(?,?)";
 	public final static String DATE_FORMAT = "DD/MM/YY HH24:MI";
+	private static final Logger log = LoggerFactory.getLogger(BookingServiceSqlImpl.class);
 
 	public BookingServiceSqlImpl() {
 		super("rbs", "booking");
@@ -724,10 +731,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) AND (rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()))
+			.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
+			.append("OR (b.occurrences IS NULL)) AND (rs.member_id IN ")
+			.append(Sql.listPrepared(groupsAndUserIds.toArray()))
 			.append(" OR t.owner = ?");
 		values.addString(startDate);
 		values.addString(endDate);
+
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
@@ -758,8 +768,26 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 							final JsonObject jo = (JsonObject) o;
 							if (jo.getNumber("parent_booking_id") != null) {
 								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
+							} else if (jo.getNumber("occurrences") == null) {
+								try {
+									final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("start_date"));
+									final Date currentEndDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("end_date"));
+									final List<String> startSearched = StringUtils.split(startDate, "-");
+									final Date dateStartSearched = DateUtils.create(Integer.parseInt(startSearched.get(0)),
+											Integer.parseInt(startSearched.get(1))-1, Integer.parseInt(startSearched.get(2)));
+									final List<String>  endSearched = StringUtils.split(endDate, "-");
+									final Date dateEndSearched = DateUtils.create(Integer.parseInt(endSearched.get(0)),
+											Integer.parseInt(endSearched.get(1))-1, Integer.parseInt(endSearched.get(2)));
+									if (DateUtils.isBetween(dateStartSearched, currentStartDate, currentEndDate) ||
+											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate)) {
+										jsonAllBookingResult.addObject(jo);
+									}
+								} catch (ParseException e) {
+									log.error("Can't parse date form RBS DB", e);
+								}
+							} else {
+								jsonAllBookingResult.addObject(jo);
 							}
-							jsonAllBookingResult.addObject(jo);
 						}
 					}
 					if (!setIdsPeriodicBooking.isEmpty()) {
