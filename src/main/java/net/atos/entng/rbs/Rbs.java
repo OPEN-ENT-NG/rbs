@@ -50,7 +50,9 @@ public class Rbs extends BaseServer {
 
 		// Set RepositoryEvents implementation used to process events published for transition
 		setRepositoryEvents(new RbsRepositoryEvents());
-		setSearchingEvents(new RbsSearchingEvents());
+		if (config.getBoolean("searching-event", true)) {
+			setSearchingEvents(new RbsSearchingEvents());
+		}
 		// Controllers
 		addController(new DisplayController());
 
