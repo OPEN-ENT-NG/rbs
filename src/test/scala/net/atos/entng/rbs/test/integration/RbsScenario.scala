@@ -43,28 +43,28 @@ object RbsScenario {
     .exec(http("Create manual teacher")
       .post("""/directory/api/user""")
       .formParam("""classId""", """${classId}""")
-      .formParam("""lastname""", "DROUILLAC")
+      .formParam("""lastname""", "DROUILLACrbs")
       .formParam("""firstname""", """Aurelie""")
       .formParam("""type""", """Teacher""")
       .check(status.is(200)))
     .exec(http("Create manual teacher")
       .post("""/directory/api/user""")
       .formParam("""classId""", """${classId}""")
-      .formParam("""lastname""", "PIRES")
+      .formParam("""lastname""", "PIRESrbs")
       .formParam("""firstname""", """Rachelle""")
       .formParam("""type""", """Teacher""")
       .check(status.is(200)))
     .exec(http("Create manual teacher")
       .post("""/directory/api/user""")
       .formParam("""classId""", """${classId}""")
-      .formParam("""lastname""", "BAILLY")
+      .formParam("""lastname""", "BAILLYrbs")
       .formParam("""firstname""", """Catherine""")
       .formParam("""type""", """Teacher""")
       .check(status.is(200)))
     .exec(http("Create manual teacher")
       .post("""/directory/api/user""")
       .formParam("""classId""", """${classId}""")
-      .formParam("""lastname""", "DAUDIER")
+      .formParam("""lastname""", "DAUDIERrbs")
       .formParam("""firstname""", """Remi""")
       .formParam("""type""", """Teacher""")
       .check(status.is(200)))
@@ -77,7 +77,7 @@ object RbsScenario {
           json.values.asScala.foldLeft[List[(String, String)]](Nil) { (acc, c) =>
             val user = c.asInstanceOf[JSONObject]
             user.get("lastName").asInstanceOf[String] match {
-              case "DROUILLAC" | "PIRES" | "BAILLY" | "DAUDIER" if user.get("code") != null =>
+              case "DROUILLACrbs" | "PIRESrbs" | "BAILLYrbs" | "DAUDIERrbs" if user.get("code") != null =>
                 (user.get("lastName").asInstanceOf[String], user.get("userId").asInstanceOf[String]) :: acc
               case _ => acc
             }
@@ -86,10 +86,10 @@ object RbsScenario {
 
     .exec { session =>
       val uIds = session("createdTeacherIds").as[Map[String, String]]
-      session.set("teacherDrouillacId", uIds.get("DROUILLAC").get)
-      	.set("teacherPiresId", uIds.get("PIRES").get)
-      	.set("teacherBaillyId", uIds.get("BAILLY").get)
-      	.set("teacherDaudierId", uIds.get("DAUDIER").get)
+      session.set("teacherDrouillacId", uIds.get("DROUILLACrbs").get)
+      	.set("teacherPiresId", uIds.get("PIRESrbs").get)
+      	.set("teacherBaillyId", uIds.get("BAILLYrbs").get)
+      	.set("teacherDaudierId", uIds.get("DAUDIERrbs").get)
         .set("now", System.currentTimeMillis())
     }
     .exec(http("Teacher details")
@@ -145,7 +145,7 @@ object RbsScenario {
       .formParam("""confirmPassword""", """blipblop""")
       .formParam("""acceptCGU""", """true""")
       .check(status.is(302)))
-    .exec(http("Add ADML function to teacher DAUDIER")
+    .exec(http("Add ADML function to teacher DAUDIERrbs")
       .post("""/directory/user/function/${teacherDaudierId}""")
       .header("Content-Type", "application/json")
       .body(StringBody("""{"functionCode": "ADMIN_LOCAL", "scope": ["${schoolId}"], "inherit":"sc"}"""))
@@ -203,28 +203,28 @@ object RbsScenario {
         .get("/rbs/resources")
         .check(status.is(200),
           jsonPath("$[0].id").find.is("${resourceId}")))
-      .exec(http("Share rights 'rbs.read' and 'rbs.contrib' for created type")
-        .put("/rbs/share/json/${typeId}")
-        .bodyPart(StringBodyPart("userId", "${teacherPiresId}"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
-        .check(status.is(200)))
-      .exec(http("Share rights 'rbs.read' and 'rbs.contrib' for created type")
-        .put("/rbs/share/json/${typeId}")
-        .bodyPart(StringBodyPart("userId", "${teacherBaillyId}"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
-        .check(status.is(200)))
+//      .exec(http("Share rights 'rbs.read' and 'rbs.contrib' for created type")
+//        .put("/rbs/share/json/${typeId}")
+//        .bodyPart(StringBodyPart("userId", "${teacherPiresId}"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+//        .check(status.is(200)))
+//      .exec(http("Share rights 'rbs.read' and 'rbs.contrib' for created type")
+//        .put("/rbs/share/json/${typeId}")
+//        .bodyPart(StringBodyPart("userId", "${teacherBaillyId}"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+//        .check(status.is(200)))
       .exec(http("Logout - teacher")
         .get("""/auth/logout""")
         .check(status.is(302)))
@@ -236,21 +236,21 @@ object RbsScenario {
         .formParam("""email""", """${teacherPiresLogin}""")
         .formParam("""password""", """blipblop""")
         .check(status.is(302)))
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(firstSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("firstBookingId")))
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(secondSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("secondBookingId")))
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(thirdSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("thirdBookingId")))
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(firstSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("firstBookingId")))
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(secondSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("secondBookingId")))
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(thirdSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("thirdBookingId")))
       .exec(http("Logout - teacher 2")
         .get("""/auth/logout""")
         .check(status.is(302)))
@@ -260,22 +260,22 @@ object RbsScenario {
         .formParam("""email""", """${teacherBaillyLogin}""")
         .formParam("""password""", """blipblop""")
         .check(status.is(302)))
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(concurrentSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("concurrentBookingId")))
-      // Create 2 bookings that do not overlap with the previous bookings
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(nonConcurrentSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("nonConcurrentBookingId")))
-      .exec(http("Create booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(secondNonConcurrentSlot))
-        .check(status.is(200),
-          jsonPath("$.id").find.saveAs("secondNonConcurrentBookingId")))
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(concurrentSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("concurrentBookingId")))
+//      // Create 2 bookings that do not overlap with the previous bookings
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(nonConcurrentSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("nonConcurrentBookingId")))
+//      .exec(http("Create booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(secondNonConcurrentSlot))
+//        .check(status.is(200),
+//          jsonPath("$.id").find.saveAs("secondNonConcurrentBookingId")))
       .exec(http("Logout - teacher 3")
         .get("""/auth/logout""")
         .check(status.is(302)))
@@ -289,25 +289,25 @@ object RbsScenario {
        * concurrents bookings have been refused
        * and non concurrent bookings still have status "created"
        */
-      .exec(http("Validate booking")
-        .put("/rbs/resource/${resourceId}/booking/${concurrentBookingId}/process")
-        .body(StringBody("""{"status": 2}"""))
-        .check(status.is(200),
-          jsonPath("$.id").is("${concurrentBookingId}"),
-          jsonPath("$.status").is("2")))
-      .exec(http("List bookings and check their status")
-        .get("/rbs/resource/${resourceId}/bookings")
-        .check(status.is(200),
-          jsonPath("$[?(@.id == ${concurrentBookingId})].status").is("2"),
-          jsonPath("$[?(@.id == ${firstBookingId})].status").is("3"),
-          jsonPath("$[?(@.id == ${secondBookingId})].status").is("3"),
-          jsonPath("$[?(@.id == ${thirdBookingId})].status").is("3"),
-          jsonPath("$[?(@.id == ${nonConcurrentBookingId})].status").is("1"),
-          jsonPath("$[?(@.id == ${secondNonConcurrentBookingId})].status").is("1")))
-      .exec(http("Try creating a conflicting booking")
-        .post("/rbs/resource/${resourceId}/booking")
-        .body(getSlotAsStringBody(firstSlot))
-        .check(status.is(409)))
+//      .exec(http("Validate booking")
+//        .put("/rbs/resource/${resourceId}/booking/${concurrentBookingId}/process")
+//        .body(StringBody("""{"status": 2}"""))
+//        .check(status.is(200),
+//          jsonPath("$.id").is("${concurrentBookingId}"),
+//          jsonPath("$.status").is("2")))
+//      .exec(http("List bookings and check their status")
+//        .get("/rbs/resource/${resourceId}/bookings")
+//        .check(status.is(200),
+//          jsonPath("$[?(@.id == ${concurrentBookingId})].status").is("2"),
+//          jsonPath("$[?(@.id == ${firstBookingId})].status").is("3"),
+//          jsonPath("$[?(@.id == ${secondBookingId})].status").is("3"),
+//          jsonPath("$[?(@.id == ${thirdBookingId})].status").is("3"),
+//          jsonPath("$[?(@.id == ${nonConcurrentBookingId})].status").is("1"),
+//          jsonPath("$[?(@.id == ${secondNonConcurrentBookingId})].status").is("1")))
+//      .exec(http("Try creating a conflicting booking")
+//        .post("/rbs/resource/${resourceId}/booking")
+//        .body(getSlotAsStringBody(firstSlot))
+//        .check(status.is(409)))
 
       // 2a. Create a periodic booking (with field 'occurrences' supplied) and check that slots' start and end dates are correct
       .exec(http("Create periodic booking")
@@ -463,42 +463,42 @@ object RbsScenario {
             jsonPath("$[?(@.id == ${admlResourceId})].name").is("resource created by ADML"),
             jsonPath("$[?(@.id == ${admlResourceIdInTeacherType})].name").is("resource created by ADML in teacher type")))
 
-      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
-        .put("/rbs/share/json/${admlTypeId}")
-        .bodyPart(StringBodyPart("userId", "${teacherPiresId}"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
-        .check(status.is(200)))
-      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
-        .put("/rbs/share/json/${admlTypeId}")
-        .bodyPart(StringBodyPart("userId", "${teacherBaillyId}"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
-        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
-        .check(status.is(200)))
+//      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
+//        .put("/rbs/share/json/${admlTypeId}")
+//        .bodyPart(StringBodyPart("userId", "${teacherPiresId}"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+//        .check(status.is(200)))
+//      .exec(http("ADML shares rights 'rbs.read' and 'rbs.contrib' for created type")
+//        .put("/rbs/share/json/${admlTypeId}")
+//        .bodyPart(StringBodyPart("userId", "${teacherBaillyId}"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updateBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|updatePeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createPeriodicBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|createBooking"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceController|get"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-ResourceTypeController|getResourceType"))
+//        .bodyPart(StringBodyPart("actions", "net-atos-entng-rbs-controllers-BookingController|listBookingsByResource"))
+//        .check(status.is(200)))
 
        // Validate/refuse bookings
-      .exec(http("ADML validates booking created by teacher")
-        .put("/rbs/resource/${resourceId}/booking/${nonConcurrentBookingId}/process")
-        .body(StringBody("""{"status": 2}"""))
-        .check(status.is(200),
-          jsonPath("$.id").is("${nonConcurrentBookingId}"),
-          jsonPath("$.status").is("2")))
-      .exec(http("ADML refuses booking created by teacher")
-        .put("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}/process")
-        .body(StringBody("""{"status": 3}"""))
-        .check(status.is(200),
-          jsonPath("$.id").is("${secondNonConcurrentBookingId}"),
-          jsonPath("$.status").is("3")))
+//      .exec(http("ADML validates booking created by teacher")
+//        .put("/rbs/resource/${resourceId}/booking/${nonConcurrentBookingId}/process")
+//        .body(StringBody("""{"status": 2}"""))
+//        .check(status.is(200),
+//          jsonPath("$.id").is("${nonConcurrentBookingId}"),
+//          jsonPath("$.status").is("2")))
+//      .exec(http("ADML refuses booking created by teacher")
+//        .put("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}/process")
+//        .body(StringBody("""{"status": 3}"""))
+//        .check(status.is(200),
+//          jsonPath("$.id").is("${secondNonConcurrentBookingId}"),
+//          jsonPath("$.status").is("3")))
 
 //      .exec(http("ADML deletes booking created by teacher")
 //        .delete("/rbs/resource/${resourceId}/booking/${secondNonConcurrentBookingId}")
