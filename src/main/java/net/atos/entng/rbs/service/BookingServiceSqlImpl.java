@@ -768,6 +768,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 							final JsonObject jo = (JsonObject) o;
 							if (jo.getNumber("parent_booking_id") != null) {
 								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
+                                jsonAllBookingResult.addObject(jo);
 							} else if (jo.getNumber("occurrences") == null) {
 								try {
 									final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("start_date"));
