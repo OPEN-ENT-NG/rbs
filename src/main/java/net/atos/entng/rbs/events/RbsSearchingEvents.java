@@ -128,7 +128,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 		final List<String> aHeader = columnsHeader.toList();
 		final JsonArray traity = new JsonArray();
 
-		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", locale) + " HH:mm";
+		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", I18n.DEFAULT_DOMAIN, locale) + " HH:mm";
 		final DateFormat dateFormatFromDB = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 		for (int i=0;i<results.size();i++) {
@@ -161,7 +161,7 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 	}
 
 	private String formatTitle(final JsonObject j, final Long start, final Long end, final String dateFormat, final String locale) {
-		return i18n.translate("rbs.search.title", locale,
+		return i18n.translate("rbs.search.title", I18n.DEFAULT_DOMAIN, locale,
 				new SimpleDateFormat(dateFormat).format(start),
 				new SimpleDateFormat(dateFormat).format(end),
 				j.getString("resource_name"),
