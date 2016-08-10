@@ -646,9 +646,9 @@ public class BookingController extends ControllerHelper {
         List<String> recipients = new ArrayList<>(recipientSet);
 
         JsonObject params = new JsonObject();
-        params.putString("uri", container.config().getString("host", "http://localhost:8090") +
+        params.putString("uri", getScheme(request) + "://" + getHost(request) +
                 "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-        params.putString("bookingUri", container.config().getString("host", "http://localhost:8026") +
+        params.putString("bookingUri", getScheme(request) + "://" + getHost(request) +
                 "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate))
                 .putString("username", user.getUsername())
                 .putString("startdate", startDate)
@@ -827,12 +827,12 @@ public class BookingController extends ControllerHelper {
         if(!owner.equals(user.getUserId())) {
             JsonObject params = new JsonObject();
             params.putString("username", user.getUsername())
-                    .putString("uri", container.config().getString("host", "http://localhost:8090") +
+                    .putString("uri", getScheme(request) + "://" + getHost(request) +
                             "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
                     .putString("startdate", startDate)
                     .putString("enddate", endDate)
                     .putString("resourcename", resourceName)
-                    .putString("bookingUri", container.config().getString("host", "http://localhost:8026") +
+                    .putString("bookingUri", getScheme(request) + "://" + getHost(request) +
                             "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
             params.putString("resourceUri", params.getString("bookingUri"));
 
@@ -929,7 +929,7 @@ public class BookingController extends ControllerHelper {
 
             JsonObject params = new JsonObject();
             params.putString("username", user.getUsername())
-                    .putString("uri", container.config().getString("host", "http://localhost:8090") +
+                    .putString("uri", getScheme(request) + "://" + getHost(request) +
                             "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
                     .putString("startdate", startDate)
                     .putString("enddate", endDate)
