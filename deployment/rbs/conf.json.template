@@ -1,5 +1,5 @@
     {
-      "name": "net.atos~rbs~0.13-SNAPSHOT",
+      "name": "net.atos~rbs~0.13.0",
       "config": {
         "main" : "net.atos.entng.rbs.Rbs",
         "port" : 8026,
