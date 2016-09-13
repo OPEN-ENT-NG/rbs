@@ -476,7 +476,7 @@ function RbsController($scope, template, model, date, route){
 	};
 
 	$scope.formatMoment = function(date) {
-		return date.format('DD/MM/YYYY à H[h]mm');
+		return date.format('DD/MM/YYYY '+lang.translate('rbs.booking.details.header.at')+' H[h]mm');
 	};
 
 	$scope.formatMomentLong = function(date) {
