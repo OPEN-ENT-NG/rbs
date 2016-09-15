@@ -646,10 +646,8 @@ public class BookingController extends ControllerHelper {
         List<String> recipients = new ArrayList<>(recipientSet);
 
         JsonObject params = new JsonObject();
-        params.putString("uri", getScheme(request) + "://" + getHost(request) +
-                "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-        params.putString("bookingUri", getScheme(request) + "://" + getHost(request) +
-                "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate))
+        params.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+        params.putString("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate))
                 .putString("username", user.getUsername())
                 .putString("startdate", startDate)
                 .putString("enddate", endDate)
@@ -827,13 +825,11 @@ public class BookingController extends ControllerHelper {
         if(!owner.equals(user.getUserId())) {
             JsonObject params = new JsonObject();
             params.putString("username", user.getUsername())
-                    .putString("uri", getScheme(request) + "://" + getHost(request) +
-                            "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+                    .putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
                     .putString("startdate", startDate)
                     .putString("enddate", endDate)
                     .putString("resourcename", resourceName)
-                    .putString("bookingUri", getScheme(request) + "://" + getHost(request) +
-                            "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
+                    .putString("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
             params.putString("resourceUri", params.getString("bookingUri"));
 
             List<String> recipients = new ArrayList<>();
@@ -929,8 +925,7 @@ public class BookingController extends ControllerHelper {
 
             JsonObject params = new JsonObject();
             params.putString("username", user.getUsername())
-                    .putString("uri", getScheme(request) + "://" + getHost(request) +
-                            "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+                    .putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
                     .putString("startdate", startDate)
                     .putString("enddate", endDate)
                     .putString("resourcename", resourceName);
