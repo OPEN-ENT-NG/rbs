@@ -110,11 +110,6 @@ public class BookingController extends ControllerHelper {
                 final long endDate = object.getLong("end_date", 0L);
                 final long now = getCurrentTimestamp();
 
-                if (!isValidDates(startDate, endDate, now)) {
-                    badRequest(request, "rbs.booking.bad.request.invalid.dates");
-                    return;
-                }
-
                 resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId), new Handler<Either<String, JsonObject>>() {
                     @Override
                     public void handle(Either<String, JsonObject> event) {
@@ -347,10 +342,6 @@ public class BookingController extends ControllerHelper {
 
                 final long firstSlotStartDate = booking.getLong("start_date", 0L);
                 final long firstSlotEndDate = booking.getLong("end_date", 0L);
-                if (!isValidDates(firstSlotStartDate, firstSlotEndDate, now)) {
-                    badRequest(request, "rbs.booking.bad.request.invalid.dates");
-                    return;
-                }
 
                 // The first slot must begin and end on the same day
                 final int firstSlotDay = getDayFromTimestamp(firstSlotStartDate);
@@ -495,10 +486,6 @@ public class BookingController extends ControllerHelper {
 
             }
         };
-    }
-
-    private boolean isValidDates(long startDate, long endDate, long now) {
-        return (startDate > now && endDate > startDate);
     }
 
     private Handler<Either<String, JsonArray>> getHandlerForPeriodicNotification(final UserInfos user,
