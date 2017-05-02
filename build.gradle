@@ -16,6 +16,14 @@ javadoc {
   classpath += configurations.compile
 }
 
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        // disable the crazy super-strict doclint tool in Java 8
+        //noinspection SpellCheckingInspection
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
 task testJar(type: Jar) {
   classifier = 'tests'
   from sourceSets.test.output
@@ -61,7 +69,6 @@ def configurePom(def pom) {
 		}
 	}
 }
-
 def generateMissingI18n() {
   JsonSlurper jsonSlurper = new JsonSlurper()
     File rootDir = new File(".")
