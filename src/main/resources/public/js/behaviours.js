@@ -25,7 +25,6 @@ Behaviours.register('rbs', {
 	behaviours: rbsBehaviours,
 	resourceRights: function(resource){
 		var rightsContainer = resource;
-		
 		if(resource instanceof Resource && resource.type){
 			rightsContainer = resource.type;
 		}
@@ -62,7 +61,6 @@ Behaviours.register('rbs', {
 				workflow[prop] = true;
 			}
 		}
-
 		return workflow;
 	}
 });

@@ -5,6 +5,12 @@
 	<form ng-submit="saveResource()">
 	<article class="twelve cell">
 		<div class="row">
+			<div class="row">
+				<label class="three cell"><i18n>rbs.resource.edit.structure.label</i18n></label>
+				<span class="nine cell" translate content="[[editedResource.type.structure.name]]"></span>
+			</div>
+		</div>
+		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.type.label</i18n></label>
 			<select class="nine cell" ng_init="editedResource.type = currentResourceType" ng-model="editedResource.type" ng-change="resourceTypeModified()"
 				ng-options="resourceType.name for resourceType in resourceTypes.all | filter:keepManageableResourceTypes" required>
@@ -13,6 +19,12 @@
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.name.label</i18n></label>
 			<input class="nine cell" type="text" i18n-placeholder="rbs.resource.edit.name.placeholder" ng-model="editedResource.name" required />
+		</div>
+		<div class="row">
+			<label class="nine cell right-magnet">
+				<input type="checkbox" data-ng-model="editedResource.validation" />
+				<i18n>type.form.validation.required</i18n>
+			</label>
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
@@ -59,7 +71,12 @@
 				</span>
 			</div>
 		</div>
-		<hr class="row" />
+
+		<hr/>
+		<div class="row">
+			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n></label>
+			<input class="resourceColor" type="color" ng-model="editedResource.color" />
+		</div>
 		<hr class="row" />
 		
 		<div class="row">

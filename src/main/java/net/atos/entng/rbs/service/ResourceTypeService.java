@@ -26,11 +26,63 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.json.JsonObject;
+
+import java.util.List;
 
 public interface ResourceTypeService {
 
-	public void list(List<String> groupsAndUserIds, UserInfos user,
-			Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the list of resource type
+	 *
+	 * @param groupsAndUserIds : list of groups and id of users who are authorized
+	 * @param user             : information of current user logged
+	 * @param handler          : handler which contains the response
+	 */
+	void list(List<String> groupsAndUserIds, UserInfos user,
+	                 Handler<Either<String, JsonArray>> handler);
 
-	public void getModeratorsIds(String typeId, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the moderator list of current resource type
+	 *
+	 * @param typeId  : id of current resource type
+	 * @param handler : handler which contains the response
+	 */
+	void getModeratorsIds(String typeId, Handler<Either<String, JsonArray>> handler);
+
+	/**
+	 * Override the color of current resource type's children
+	 *
+	 * @param typeId        : id of current resource type
+	 * @param color         : color of current resource type
+	 * @param eitherHandler : handler which contains the response
+	 */
+	void overrideColorChild(String typeId, String color, Handler<Either<String, JsonObject>> eitherHandler);
+
+	/**
+	 * Override the validation of current resource type's children
+	 *
+	 * @param typeId     : id of current resource type
+	 * @param validation : boolean for the validation of resource type
+	 * @param handler    : handler which contains the response
+	 */
+	void overrideValidationChild(String typeId, Boolean validation, Handler<Either<String, JsonObject>> handler);
+
+	/**
+	 * Add the notification for current user on current resource type
+	 *
+	 * @param id      : id of current resource type
+	 * @param user    : information of current user logged
+	 * @param handler : handler which contains the response
+	 */
+	void addNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+	/**
+	 * Remove the notification for current user on current resource type
+	 *
+	 * @param id      : id of current resource type
+	 * @param user    : information of current user logged
+	 * @param handler : handler which contains the response
+	 */
+	void removeNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
 }

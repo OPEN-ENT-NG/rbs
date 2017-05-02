@@ -1,0 +1,9 @@
+<h2>[[morePopupItems.length]] <i18n>rbs.bookings.more</i18n></h2>
+
+<div ng-repeat="item in morePopupItems" class="item">
+  <div ng-style="(item.resource.color != null) && {'background-color': '[[item.resource.color]]'} || {'background-color': '[[item.color]]'}"
+    ng-click="display.moreItems = false; viewBooking(item)"
+  >
+    [[ item.resource.name ]] - [[ item.owner_name ]]
+  </div>
+</div>

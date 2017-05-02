@@ -19,14 +19,31 @@
 
 package net.atos.entng.rbs.service;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 
-import fr.wseduc.webutils.Either;
+import java.util.Map;
+import java.util.Set;
 
 public interface UserService {
 
-	public void getUsers(JsonArray userIds, JsonArray groupIds,
-			Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get users list of rbs application
+	 *
+	 * @param userIds  : array of users id
+	 * @param groupIds : array of groups is
+	 * @param handler  : handler which contains the response
+	 */
+	void getUsers(JsonArray userIds, JsonArray groupIds,
+	                     Handler<Either<String, JsonArray>> handler);
 
+	/**
+	 * Get the list of users mail
+	 *
+	 * @param userIds : list of users id
+	 * @param handler : handler which contains the response
+	 */
+	void getUserMails(Set<String> userIds,
+	                  Handler<Map<String, String>> handler);
 }

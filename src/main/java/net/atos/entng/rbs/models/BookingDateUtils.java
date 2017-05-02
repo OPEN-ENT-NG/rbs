@@ -1,11 +1,12 @@
 package net.atos.entng.rbs.models;
 
+
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
-
 public class BookingDateUtils {
 	public static long secondToDays(long seconds) {
 		return TimeUnit.DAYS.convert(seconds, TimeUnit.SECONDS);
@@ -56,5 +57,6 @@ public class BookingDateUtils {
 		ZonedDateTime z = ZonedDateTime.ofInstant(i, ZoneId.of(iana));// LOCAL
 		return z;
 	}
+
 
 }

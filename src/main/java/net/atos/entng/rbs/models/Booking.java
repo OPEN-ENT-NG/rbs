@@ -1,6 +1,5 @@
 package net.atos.entng.rbs.models;
 
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import io.vertx.core.json.JsonArray;
@@ -10,6 +9,7 @@ public class Booking {
 	private final String bookingId;
 	private final JsonObject json;
 	private Resource resource;
+	private Slots slots = new Slots();
 	private String selectedDaysBitString;
 
 	public Booking(JsonObject json, Resource resource) {
@@ -23,10 +23,19 @@ public class Booking {
 		this.resource = resource;
 	}
 
+	public Booking(JsonObject json, final String id, Slots slots) {
+		super();
+		this.json = json;
+		this.bookingId = id;
+		this.slots = slots;
+	}
+
 	public void setResource(Resource resource) {
 		this.resource = resource;
 	}
-
+	public void setSlots(Slots slots) {
+		this.slots = slots;
+	}
 	public String getBookingId() {
 		return bookingId;
 	}
@@ -39,6 +48,8 @@ public class Booking {
 		return json.getString("iana");
 	}
 
+	public Slots getSlots() { return  this.slots.size() == 0 ? new Slots(json.getJsonArray("slots", null)) : this.slots ; }
+
 	public Object getRawStartDate() {
 		return this.json.getValue("start_date");
 	}
@@ -47,13 +58,8 @@ public class Booking {
 		return this.json.getValue("end_date");
 	}
 
-	public Long getStartDateAsUTCSeconds() {
-		return this.json.getLong("start_date", 0l);
-	}
 
-	public Long getEndDateAsUTCSeconds() {
-		return this.json.getLong("end_date", 0l);
-	}
+
 
 	public int getPeriodicity() {
 		return json.getInteger("periodicity");
@@ -105,17 +111,6 @@ public class Booking {
 		}
 		return selectedDaysBitString;
 	}
-
-	public int dayOfWeekForStartDate() {
-		final long firstSlotStartDate = getStartDateAsUTCSeconds();
-		return BookingDateUtils.dayOfWeekForTimestampSecondsAndIana(firstSlotStartDate, getIana());
-	}
-
-	public int dayOfWeekForEndDate() {
-		final long firstSlotEndDate = getEndDateAsUTCSeconds();
-		return BookingDateUtils.dayOfWeekForTimestampSecondsAndIana(firstSlotEndDate, getIana());
-	}
-
 	public int dayOfWeekForPeriodicEndDate() {
 		final long firstSlotEndDate = getPeriodicEndDateAsUTCSeconds();
 		return BookingDateUtils.dayOfWeekForTimestampSecondsAndIana(firstSlotEndDate, getIana());
@@ -133,43 +128,22 @@ public class Booking {
 		return this.getMaxDelayAsSeconds().isPresent();
 	}
 
-	public boolean isNotRespectingMinDelay() {
+	public boolean slotsNotRespectingMinDelay() {
 		Optional<Long> minDelay = getMinDelayAsSeconds();
-		// compare for the same iana
-		long now = BookingDateUtils.currentTimestampSecondsForIana(getIana());
-		long delay = getStartDateAsUTCSeconds() - now;
-		return (minDelay.isPresent() && minDelay.get() > delay);
+		return this.getSlots().areNotRespectingMinDelay(minDelay);
 	}
-
-	public boolean isNotRespectingMaxDelayForEndDate() {
-		return this.isNotRespectingMaxDelay(getEndDateAsUTCSeconds());
-	}
-
-	public boolean isNotRespectingMaxDelay(long endDateAsSeconds) {
-		Long maxDelay = getMaxDelayAsSeconds().orElse(-1l);
-		// compare for the same iana
-		long now = BookingDateUtils.currentTimestampSecondsForIana(getIana());
-		if (maxDelay == -1) {
-			return false;
-		}
-		// Authorize users to book a resource N days in advance, without taking
-		// hour/minute/seconds into account
-		maxDelay = (BookingDateUtils.tomorrowTimestampSecondsForIana(getIana()) - now) + maxDelay;
-		long delay = endDateAsSeconds - now;
-
-		return (delay > maxDelay);
-	}
+    public boolean slotsNotRespectingMaxDelay() {
+        Long maxDelay = getMaxDelayAsSeconds().orElse(-1l);
+        if (maxDelay == -1) {
+            return false;
+        }
+        return this.getSlots().areNotRespectingMaxDelay(this,maxDelay);
+    }
 
 	public boolean isNotPeriodic() {
 		final long endDate = getPeriodicEndDateAsUTCSeconds();
 		final int occurrences = getOccurrences(0);
 		return endDate == 0L && occurrences == 0;
-	}
-
-	public boolean isNotStartingAndEngingSameDay() {
-		final long startDay = dayOfWeekForStartDate();
-		final long endDay = dayOfWeekForEndDate();
-		return startDay != endDay;
 	}
 
 	public boolean hasPeriodicEndAsLastDay() {
@@ -185,26 +159,20 @@ public class Booking {
 	}
 
 	public boolean hasNotSelectedStartDayOfWeek() {
-		final int startDay = dayOfWeekForStartDate();
-		JsonArray selectedDaysArray = getDays().orElse(null);
-		if (selectedDaysArray == null) {
-			return true;
-		}
-		Object firstSlotDayIsSelected = selectedDaysArray.getList().get(startDay);
-		return !(Boolean) firstSlotDayIsSelected;
+        boolean oneFound = true;
+        for(Slot slot : this.getSlots()){
+			final int startDay = slot.dayOfWeekForStartDate();
+            JsonArray selectedDaysArray = getDays().orElse(null);
+            if (selectedDaysArray == null) {
+                return true;
+            }
+            Object firstSlotDayIsSelected = selectedDaysArray.getList().get(startDay);
+            if(!(boolean) firstSlotDayIsSelected){ oneFound = false;}
+        }
+        return !oneFound;
 	}
 
-	public boolean hasNotFirstSlotAndLastSlotFinishingAtSameHour() {
-		final long endDate = getPeriodicEndDateAsUTCSeconds();
-		final long firstSlotEndDate = getEndDateAsUTCSeconds();
-		ZonedDateTime endDateTime = BookingDateUtils.localDateTimeForTimestampSecondsAndIana(endDate, getIana());
-		ZonedDateTime firstSlotEndDateTime = BookingDateUtils.localDateTimeForTimestampSecondsAndIana(firstSlotEndDate,
-				getIana());
-		boolean haveSameTime = endDateTime.getHour() == firstSlotEndDateTime.getHour()
-				&& endDateTime.getMinute() == firstSlotEndDateTime.getMinute()
-				&& endDateTime.getSecond() == firstSlotEndDateTime.getSecond();
-		return endDate > 0L && !haveSameTime;
-	}
+
 
 	public void computeSelectedDaysAsBitString() {
 		JsonArray selectedDaysArray = getDays().get();
@@ -216,9 +184,9 @@ public class Booking {
 		selectedDaysBitString = selectedDays.toString();
 	}
 
-	public long daysBetweenFirstSlotEndAndPeriodicEndDate() {
+	public long daysBetweenFirstSlotEndAndPeriodicEndDate(Slot slot) {
 		long endDate = getPeriodicEndDateAsUTCSeconds();
-		long firstSlotEnd = getEndDateAsUTCSeconds();
+		long firstSlotEnd = slot.getEndUTC();
 		long duration = endDate - firstSlotEnd;
 		return BookingDateUtils.secondToDays(duration);
 	}
@@ -236,10 +204,10 @@ public class Booking {
 	 *
 	 * @throws IndexOutOfBoundsException
 	 */
-	public int countOccurrences() {
+	public int countOccurrences(Slot slot) {
 		final int periodicity = getPeriodicity();
-		final long durationInDays = daysBetweenFirstSlotEndAndPeriodicEndDate();
-		final int firstSelectedDay = dayOfWeekForStartDate();
+		final long durationInDays = daysBetweenFirstSlotEndAndPeriodicEndDate(slot);
+		final int firstSelectedDay = slot.dayOfWeekForStartDate();
 		final String selectedDays = getSelectedDaysBitString();
 		//
 		int count = 0;
@@ -277,8 +245,9 @@ public class Booking {
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
 	public long getLastSlotDate(final int occurrences) {
-		final long firstSlotDate = getEndDateAsUTCSeconds();
-		final int firstSlotDay = dayOfWeekForStartDate();
+		final Slot lastSlot = getSlots().getSlotWithLatestEndDate();
+		final long firstSlotDate = lastSlot.getEndUTC();
+		final int firstSlotDay =lastSlot.dayOfWeekForStartDate();
 		//
 		long lastSlotDate = firstSlotDate;
 		if (occurrences > 1) {
@@ -331,6 +300,7 @@ public class Booking {
 		return count;
 	}
 
+
 	public long computeAndSetLastEndDateAsUTCSedonds() {
 		if (hasPeriodicEndDate()) { // Case when end_date is supplied
 			if (hasPeriodicEndAsLastDay()) {
@@ -338,7 +308,7 @@ public class Booking {
 			} else {
 				// If the endDateDay is not a selected day, compute the end date
 				// of the last slot
-				int nbOccurrences = countOccurrences();
+				int nbOccurrences = countOccurrences(this.getSlots().getSlotWithLatestEndDate());
 				final long lastSlotEndDate = getLastSlotDate(nbOccurrences);
 				// Replace the end date with the last slot's end date
 				setPeriodicEndDateAsUTCSeconds(lastSlotEndDate);

@@ -6,22 +6,36 @@
     "booking_reason": {
       "type": "string"
     },
-    "start_date": {
-      "description": "Unix timestamp representing the start date of the booking",
-      "type": "integer"
-    },
-    "end_date": {
-      "description": "Unix timestamp representing the end date of the booking",
-      "type": "integer"
-    },
-    "iana": {
-      "description": "IANA identifier of the booking owner",
-      "type": "string"
+    "slots": {
+      "type": "array",
+      "description": "List of slots representing the start/end date of the bookings",
+      "additionalProperties": false,
+      "items": {
+        "type": "object",
+        "properties": {
+          "start_date": {
+            "description": "Unix timestamp representing the start date of the booking",
+            "type": "integer"
+          },
+          "end_date": {
+            "description": "Unix timestamp representing the end date of the booking",
+            "type": "integer"
+          },
+          "iana": {
+            "description": "IANA identifier of the booking owner",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "iana"
+        ]
+      },
+      "minItems": 1
     }
   },
   "required": [
-    "iana",
-    "start_date",
-    "end_date"
+    "slots"
   ]
 }

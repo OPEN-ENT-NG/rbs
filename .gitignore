@@ -1,11 +1,13 @@
 .DS_Store
 .gradle
 .idea
+.vscode
 .classpath
 .project
 .settings
 .yardoc
 .yardopts
+.vscode
 bin
 build
 */build
@@ -23,5 +25,6 @@ mods
 data
 developer.id
 *.mod.json
+copy.sh
 .cache-main
 .cache-tests

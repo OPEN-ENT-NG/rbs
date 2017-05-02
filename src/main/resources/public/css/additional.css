@@ -1,110 +1,147 @@
 .details label {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 .details p {
-	margin-top: 2px;
-	margin-bottom: 12px;
-	padding: 5px 0;
+  margin-top: 2px;
+  margin-bottom: 12px;
+  padding: 5px 0;
 }
 
 p.placeholder {
-	font-style: italic;
+  font-style: italic;
 }
 
 .accordions .accordion.opened .toggle {
-	overflow: auto !important;
+  overflow: auto !important;
 }
 
 div.disabled {
-	color: #888;
+  color: #888;
 }
 
 .centered-text {
-	text-align: center;
+  text-align: center;
 }
 
 .scrollable-content {
-	max-height: 350px;
-	overflow: auto;
+  max-height: 350px;
+  overflow: auto;
 }
 
 .scrollable-content-small {
-	max-height: 220px;
-	overflow: auto;
+  max-height: 220px;
+  overflow: auto;
 }
 
 nav.vertical ul li i.caret {
-	height: 20px;
-	width: 25px;
-	display: block;
-	float: left !important;
-	color: #fff;
-	font-size: 25px;
-	font-family: Arial;
-	font-weight: 900;
-	line-height: 12px;
+  height: 20px;
+  width: 25px;
+  display: block;
+  float: left !important;
+  color: #fff;
+  font-size: 25px;
+  font-family: Arial;
+  font-weight: 900;
+  line-height: 12px;
 }
 
 nav.vertical ul li i.caret::before {
-	content: "▸";
+  content: "▸";
 }
 
 nav.vertical ul li i.caret.expanded::before {
-	content: "▾";
+  content: "▾";
+}
+
+nav.vertical ul li i.caretBlack {
+  height: 20px;
+  width: 25px;
+  display: block;
+  float: left !important;
+  color: #000;
+  font-size: 25px;
+  font-family: Arial;
+  font-weight: 900;
+  line-height: 12px;
+  opacity: 1;
+  text-indent: 0;
+}
+
+nav.vertical ul li i.caretBlack::before {
+  content: "▸";
+}
+
+nav.vertical ul li i.caretBlack.expanded::before {
+  content: "▾";
+}
+ul.resourceType {
+  padding-left: 20px !important;
+}
+
+table.colored i.pending-icon::before {
+    content: '\e85c';
+    height: 20px;
+    width: 20px;
+    display: block;
+    color: #000;
+    font-size: 21px;
+    font-weight: 900;
 }
 
 div.schedule-item-content i.pending-status::before {
-	bottom: 12px !important;
-	right: 12px !important;
-	z-index: 502;
+  bottom: 12px !important;
+  right: 12px !important;
+  z-index: 502;
 }
 div.schedule-item-content i.validated-status {
-	bottom: 14px !important;
-	right: 12px !important;
-	z-index: 502;
+  bottom: 14px !important;
+  right: 12px !important;
+  z-index: 502;
 }
 
 div.schedule-item-content i.refused-status {
-	bottom: 15px !important;
-	right: 14px !important;
-	z-index: 502;
+  bottom: 15px !important;
+  right: 14px !important;
+  z-index: 502;
 }
 
 div.schedule-item-content {
-	padding: 5px !important;
-	text-align: left !important;
-	text-overflow: ellipsis;
-	white-space: initial !important;
+  padding: 5px !important;
+  text-align: left !important;
+  text-overflow: ellipsis;
+  white-space: initial !important;
 }
 
 div.schedule-item-content .checkbox {
-	position: absolute;
-	bottom: 12px;
-	z-index: 504;
+  position: absolute;
+  bottom: 12px;
+  z-index: 504;
 }
 
 .filters div.dates {
-	position: absolute;
-	right: 0px;
-	top: 4px;
+  position: absolute;
+  right: 0px;
+  top: 4px;
 }
 
 .filters div.dates div.cell {
-	margin-right: 5px;
-	line-height: 40px;
-	vertical-align: middle;
+  margin-right: 5px;
+  line-height: 40px;
+  vertical-align: middle;
 }
 
 .form-section select {
-	padding: 3px 1px;
+  padding: 3px 1px;
 }
 
 .form-section input[type=radio] {
-	margin-top: 7px;
+  margin-top: 7px;
 }
 
 a.notselected {
+  background-color: #aaa;
+  color: #fff;
 	background-color : #aaa;
 }
 
@@ -118,4 +155,90 @@ ul.colored a.notselected:hover {
 
 ul.colored a.selected {
 	color : #fff !important;
+}
+
+input.resourceColor {
+  height: 30px;
+  width: 30px;
+  padding: 0px;
+}
+
+div.extendColor {
+  padding-top: 10px;
+}
+
+a.structure {
+  color: black;
+}
+
+a.structure:hover {
+  color: black;
+}
+
+/* Item tooltip */
+.tooltip-container {
+  background-color: white;
+  -webkit-box-shadow: 0px 0px 5px 0px rgba(186, 186, 186, 0.4);
+  -moz-box-shadow: 0px 0px 5px 0px rgba(186, 186, 186, 0.4);
+  box-shadow: 0px 0px 5px 0px rgba(186, 186, 186, 0.4);
+  max-width: 400px;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.tooltip-container .tooltip-title {
+  color: white;
+  padding: 0 5px;
+  display: block;
+  margin-top: 0;
+}
+
+.tooltip-container .orange-text {
+  color: #ff8500;
+}
+
+.tooltip-container .yellow-text {
+  color: #ffd900;
+}
+
+.tooltip-container .green-text {
+  color: #30b32f;
+}
+
+.tooltip-container .red-text {
+  color: red;
+}
+
+.tooltip-container .gray-text {
+  color: #999;
+}
+
+.tooltip-container .start-to-end-container,
+.tooltip-container .author {
+  font-size: 1.1em;
+  color: #78daff;
+}
+
+.tooltip-container .validation-label i {
+  float: right;
+  display: block;
+  width: 20px;
+  text-align: center;
+}
+
+
+.resources-tree a.selected {
+  color: white !important;
+}
+
+.resources-tree a:hover {
+  color: #ff8500 !important;
+}
+
+.this-bell:hover i {
+  visibility: visible;
+}
+
+.warning.resource {
+  margin-top: 10px;
 }

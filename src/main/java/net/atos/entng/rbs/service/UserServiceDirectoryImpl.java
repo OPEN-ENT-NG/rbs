@@ -22,12 +22,20 @@ package net.atos.entng.rbs.service;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
 public class UserServiceDirectoryImpl implements UserService {
 
@@ -40,7 +48,7 @@ public class UserServiceDirectoryImpl implements UserService {
 
 	@Override
 	public void getUsers(final JsonArray userIds, final JsonArray groupIds,
-			final Handler<Either<String, JsonArray>> handler) {
+	                     final Handler<Either<String, JsonArray>> handler) {
 
 		JsonObject action = new JsonObject()
 				.put("action", "list-users")
@@ -49,5 +57,34 @@ public class UserServiceDirectoryImpl implements UserService {
 
 		eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(handler)));
 	}
+    @Override
+    public void getUserMails(final Set<String> userIds,
+                             final Handler<Map<String, String>> handler) {
 
+        final Map<String, String> userMailById = new HashMap<>();
+        for (final String userId : userIds) {
+
+            JsonObject action = new JsonObject()
+                    .put("action", "getUser")
+                    .put("userId", userId);
+
+            eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+                @Override
+                public void handle(Message<JsonObject> res) {
+                    if ("ok".equals(res.body().getString("status"))) {
+                        JsonObject user = res.body().getJsonObject("result", new JsonObject());
+                        String email = user.getString("email");
+                        userMailById.put(userId, email);
+                    } else {
+                        userMailById.put(userId, "");
+                    }
+                    // to be improved once VertX 3 available...
+                    if (userMailById.size() == userIds.size()) {
+                        handler.handle(userMailById);
+                    }
+                }
+            }));
+
+            }
+    }
 }

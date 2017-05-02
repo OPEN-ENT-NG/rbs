@@ -55,6 +55,7 @@ compileTestJava {
 dependencies {
   compileOnly "io.vertx:vertx-core:$vertxVersion"
   compile "org.entcore:common:$entCoreVersion"
+  compile 'org.mnode.ical4j:ical4j:2.0.2'
   testCompile "org.entcore:tests:$entCoreVersion"
   testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
   testCompile "io.vertx:vertx-core:$vertxVersion"

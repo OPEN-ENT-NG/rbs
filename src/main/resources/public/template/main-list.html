@@ -65,8 +65,11 @@
 	</thead>
 	<tbody ng-repeat="booking in bookings.filtered | orderBy:sort.predicate:sort.reverse">
 		<tr>
-			<td>
-				<input type="checkbox" ng-if="hasAnyBookingRight(booking)" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/>
+			<td ng-if="booking.is_periodic" >
+				<input type="checkbox" ng-model="booking.selected" ng-if="canDeleteBookingDateCheck(booking.end_date) && hasAnyBookingRight(booking)" ng-change="switchSelectAllSlots(booking)"/>
+			</td>
+			<td ng-if="booking.is_periodic === false">
+				<input type="checkbox" ng-model="booking.selected" ng-change="switchSelectAllSlots(booking)"/>
 			</td>
 			<td class="[[booking.color]]" ng-click="viewBooking(booking)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 			<td>
@@ -88,7 +91,7 @@
 		</tr>
 		<tr ng-repeat="slot in booking.slots">
 			<td class="invisible"></td>
-			<td><input type="checkbox" ng-model="slot.selected" ng-if="hasAnyBookingRight(booking)" /></td>
+			<td><input type="checkbox" ng-if="canDeleteBookingDateCheck(slot.endMoment) && hasAnyBookingRight(booking)" ng-model="slot.selected" /></td>
 			<td class="[[booking.color]]"></td>
 			<td></td>
 			<td ng-click="viewBooking(slot)">[[booking.owner_name]]</td>

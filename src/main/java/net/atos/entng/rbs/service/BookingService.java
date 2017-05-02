@@ -19,8 +19,9 @@
 
 package net.atos.entng.rbs.service;
 
-import java.util.List;
-
+import fr.wseduc.webutils.Either;
+import net.atos.entng.rbs.model.ExportBooking;
+import net.atos.entng.rbs.model.ExportRequest;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
@@ -29,46 +30,174 @@ import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.models.Booking;
 import fr.wseduc.webutils.Either;
 
+import java.util.Date;
+import java.util.List;
+
 public interface BookingService extends CrudService {
 
+    /**
+     * Create a booking
+     *
+     * @param resourceId : id of current resource
+     * @param data       : object which contains information of booking
+     * @param user       : information of current user logged
+     * @param handler    : handler which contains the response
+     */
 	public void createBooking(final String resourceId, final Booking data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 
+    /**
+     * Create a periodic booking
+     *
+     * @param resourceId       : id of current resource
+     * @param booking          : object which contains information of booking
+     * @param user             : information of current user logged
+     * @param handler          : handler which contains the response
+     */
 	public void createPeriodicBooking(final String resourceId, Booking booking, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler);
 
+    /**
+     * Update a simple booking
+     * @param resourceId        : id of current resource
+     * @param data              : object which contains information of booking
+     * @param handler           : handler which contains the response
+     */
 	public void updateBooking(final String resourceId, final Booking data,
 			final Handler<Either<String, JsonObject>> handler);
 
+    /**
+     * Update a periodic booking
+     * @param resourceId        : id of current resource
+     * @param data              : object which contains information of booking
+     * @param user              : information of current user logged
+     * @param handler           : handler which contains the response
+     */
 	public void updatePeriodicBooking(final String resourceId, final Booking data, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler);
 
+    /**
+     *  Update the status (validated or refused) of a booking which is in Processing status
+     *
+     * @param resourceId        : id of current resource
+     * @param bookingId         : id of current booking
+     * @param newStatus         : new status for the booking
+     * @param data              : object which contains information of periodic booking
+     * @param user              : object which contains information of periodic booking
+     * @param handler           : handler which contains the response
+     */
 	public void processBooking(final String resourceId, final String bookingId, final int newStatus,
 			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
+    /**
+     * Get the list of bookings which are owned by the current user
+     *
+     * @param user    : information of current user logged
+     * @param handler : handler which contains the response
+     */
 	public void listUserBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
+    /**
+     * Get the list of all bookings
+     *
+     * @param user             : information of current user logged
+     * @param groupsAndUserIds : list of groups and id of users who are authorized
+     * @param handler          : handler which contains the response
+     */
 	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds,
 			final Handler<Either<String, JsonArray>> handler);
-
+    /**
+     * Get the list of all bookings sorted by date
+     *
+     * @param user             : information of current user logged
+     * @param groupsAndUserIds : list of groups and id of users who are authorized
+     * @param startDate        : the beginning of booking
+     * @param endDate          : the end of booking
+     * @param handler          : handler which contains the response
+     */
 	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds,
 			final String startDate, final String endDate, final Handler<Either<String, JsonArray>> handler);
-
+    /**
+     * Get the list of all slots of current booking
+     *
+     * @param bookingId : id of current booking
+     * @param handler   : handler which contains the response
+     */
 	public void listFullSlotsBooking(final String bookingId, final Handler<Either<String, JsonArray>> handler);
-
+    /**
+     * Get the booking list for current resource
+     *
+     * @param resourceId : id of current resource
+     * @param handler    : handler which contains the response
+     */
 	public void listBookingsByResource(final String resourceId, final Handler<Either<String, JsonArray>> handler);
 
-	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the list of bookings unprocessed
+	 *
+	 * @param groupsAndUserIds : list of groups and id of users who are authorized
+	 * @param user             : information of current user logged
+	 * @param handler          : handler which contains the response
+	 */
+	void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user,
+	                             final Handler<Either<String, JsonArray>> handler);
 
-	public void getModeratorsIds(final String bookingId, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the moderator list of current booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param user      : information of current user logged
+	 * @param handler   : handler which contains the response
+	 */
+	void getModeratorsIds(final String bookingId, final UserInfos user,
+	                      final Handler<Either<String, JsonArray>> handler);
 
-	public void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Get the resource name of current booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param handler   : handler which contains the response
+	 */
+	void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
-	public void getBookingWithResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Get the information of booking + the resource name of current booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param handler   : handler which contains the response
+	 */
+	void getBookingWithResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
-	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Get the parent booking of current booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param handler   : handler which contains the response
+	 */
+	void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
+	/**
+	 * Get the information of current booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param handler   : handler which contains the response
+	 */
 	void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+
+	/**
+	 * Delete the future bookings for a periodic booking
+	 *
+	 * @param bookingId : id of current booking
+	 * @param startDate : the beggining of booking
+	 * @param handler   : handler which contains the response
+	 */
+	void deleteFuturePeriodicBooking(String bookingId, Date startDate, Handler<Either<String, JsonArray>> handler);
+
+	/**
+	 * Get the list of bookings for the export
+	 *
+	 * @param exportRequest : the export request for generate an export
+	 * @param handler       : handler which contains the response
+	 */
+	void getBookingsForExport(ExportRequest exportRequest, Handler<Either<String, List<ExportBooking>>> handler);
 }
