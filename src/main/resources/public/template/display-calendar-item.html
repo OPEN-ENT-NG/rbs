@@ -1,4 +1,4 @@
-<div class="schedule-item-content [[item.color]]">
+<div class="schedule-item-content" ng-style="(item.resource.color != null) && {'background-color': '[[item.resource.color]]'} || {'background-color': '[[item.color]]'}">
 
 	<i ng-if="item.isPending() === true" ng-click="viewBooking(item)" class="pending-status"></i>
 	<i ng-if="item.isValidated() === true" ng-click="viewBooking(item)" class="validated-status"></i>

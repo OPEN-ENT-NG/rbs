@@ -26,6 +26,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
+import org.vertx.java.core.json.JsonObject;
 
 public interface ResourceTypeService {
 
@@ -33,4 +34,6 @@ public interface ResourceTypeService {
 			Handler<Either<String, JsonArray>> handler);
 
 	public void getModeratorsIds(String typeId, Handler<Either<String, JsonArray>> handler);
+
+	void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler);
 }

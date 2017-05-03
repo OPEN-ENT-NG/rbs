@@ -9,17 +9,19 @@
 	<nav class="vertical row">
 		<ul class="colored">
 			<li ng-repeat="resourceType in resourceTypes.all">
-				<a ng-if="resourceType.expanded !== true" ng-class="resourceType.color" ng-click="expandResourceType(resourceType)">
+				<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
 					<i class="caret"></i>[[resourceType.name]]
 				</a>
-				<a ng-if="resourceType.expanded === true"ng-class="resourceType.color" ng-click="switchSelectResources(resourceType)">
+				<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="switchSelectResources(resourceType)">
 					<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
 				</a>
-				<ul ng-if="resourceType.expanded === true" ng-class="resourceType.color">
+				<ul ng-if="resourceType.expanded === true">
 					<li ng-repeat="resource in resourceType.resources.all">
-						<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
+						<div  ng-style="{'background-color': '[[resource.color]]'}">
+						<a  ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
 							[[resource.name]] <i ng-if="!resource.is_available" class="suspended-icon right-magnet"></i>
 						</a>
+						</div>
 					</li>
 					<li ng-if="resourceType.resources.empty()"><i18n>rbs.resources.empty</i18n></li>
 				</ul>

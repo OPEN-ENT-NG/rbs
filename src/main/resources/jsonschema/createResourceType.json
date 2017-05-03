@@ -12,6 +12,12 @@
     },
     "school_id": {
       "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "extendcolor": {
+      "type": "boolean"
     }
   },
   "required": [

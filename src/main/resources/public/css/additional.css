@@ -119,3 +119,9 @@ ul.colored a.notselected:hover {
 ul.colored a.selected {
 	color : #fff !important;
 }
+
+input.resourceColor {
+    height: 30px;
+    width: 30px;
+    padding: 0px;
+}
