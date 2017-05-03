@@ -19,22 +19,28 @@
 
 package net.atos.entng.rbs.service;
 
+import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.parseShared;
-import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
 
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 
+	protected static final Logger log = LoggerFactory.getLogger(Renders.class);
 	@Override
 	public void list(final List<String> groupsAndUserIds, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler) {
@@ -94,6 +100,19 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		values.add(parseId(typeId));
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
+	public void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler) {
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+		query.append ("UPDATE rbs.resource")
+				.append(" SET color = ?")
+				.append (" WHERE type_id = ?");
+		values.add(color);
+		values.add(parseId(typeId));
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(eitherHandler));
+		log.trace("Children's color for resource type " + typeId + " updated");
 	}
 
 }
