@@ -87,7 +87,7 @@ def configurePom(def pom) {
             new File(it, key).withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
         }
       }
-    }
+    
 }
 
 task generateI18n(description:'Generate missing keys in i18n files') << {
