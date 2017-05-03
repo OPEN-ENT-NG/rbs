@@ -495,6 +495,7 @@ ResourceType.prototype.toJSON = function() {
 	var json = {
 		name : this.name,
 		validation : this.validation,
+		color : this.color,
 	};
 	// Send school id only at creation
 	if (! this.id) {
