@@ -123,4 +123,5 @@ a.notselected {
 input.resourceColor {
 	height: 29px;
 	width: 31px;
+	padding: 0px;
 }
