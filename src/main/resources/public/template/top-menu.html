@@ -4,19 +4,15 @@
 		<a ng-click="showCalendar(display.admin)">
 			<i18n>rbs.title</i18n>
 		</a>
-	</h1>	
+	</h1>
 </div>
 
 <div class="nine cell display-buttons">
 	<div class="row">
 		<drop-down-button ng-if="(!display.admin) && display.create" class="cell">
-			<label class="opener"><i18n>rbs.booking.create</i18n></label>
-			<opts>
-				<li ng-click="newBooking()"><i18n>rbs.single.booking</i18n></li>
-				<li ng-click="newBooking('periodic')"><i18n>rbs.periodic.booking</i18n></li>
-			</opts>
+			<label ng-click="newBooking()" class="opener"><i18n>rbs.booking.create</i18n></label>
 		</drop-down-button>
-		
+
 	      <i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList(display.admin)"
 	      tooltip="rbs.icon.show.booking.list"></i>
 	      <i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="showCalendar(display.admin)"

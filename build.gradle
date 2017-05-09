@@ -93,4 +93,3 @@ def generateMissingI18n() {
 task generateI18n(description:'Generate missing keys in i18n files') << {
   generateMissingI18n()
 }
-
