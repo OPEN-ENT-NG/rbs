@@ -15,6 +15,9 @@
     },
     "color": {
       "type": "string"
+    },
+    "extendcolor": {
+      "type": "boolean"
     }
   },
   "required": [
