@@ -614,9 +614,6 @@ model.build = function(){
 						resourceType.color = model.findColor(index);
 						index++;
 					}
-					else {
-						resourceType.color = resourceType.color;
-					}
 					resourceType._id = resourceType.id;
 
 				});
