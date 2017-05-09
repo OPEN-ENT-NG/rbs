@@ -1,5 +1,5 @@
-model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
-
+//model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
+model.colors = ['#4bafd5', '#46bfaf', '#FF8500', '#b930a2', '#763294', '#4bafd5'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
@@ -608,9 +608,16 @@ model.build = function(){
 					resourceType.structure = structure || model.DETACHED_STRUCTURE;
 
 					// Auto-associate colors to Types
-					resourceType.color = model.findColor(index);
+					//resourceType.color =
+					if(resourceType.color == null) {
+						resourceType.color = model.findColor(index);
+						index++;
+					}
+					else {
+						resourceType.color = resourceType.color;
+					}
 					resourceType._id = resourceType.id;
-					index++;
+
 				});
 
 				// Fill the ResourceType collection and prepare the index
