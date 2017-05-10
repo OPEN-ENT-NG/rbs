@@ -61,8 +61,8 @@
 		</div>
 
 		<div class="row">
-			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n></label>
-			<input class="resourceColor cell" type="color" ng-model="editedResource.color" />
+			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n>  [[editedResource.color]]</label>
+			<input class="resourceColor" ng-init="editedResource.color = currentResourceType.color" type="color" ng-model="editedResource.color" />
 		</div>
 		<hr class="row" />
 		<hr class="row" />
