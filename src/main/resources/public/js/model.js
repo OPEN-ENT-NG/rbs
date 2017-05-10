@@ -1,5 +1,5 @@
                 //  cyan', 'green', 'orange', 'pink', 'purple', 'grey'
-model.colors = ['#4bafd5', '#46bfaf', '#FF8500', '#b930a2', '#763294', '#4bafd5'];
+model.colors = ['#4bafd5', '#46bfaf', '#FF8500', '#b930a2', '#763294'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
