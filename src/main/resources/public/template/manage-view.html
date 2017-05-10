@@ -1,5 +1,5 @@
 <!-- Lightbox -->
-<div ng-if="display.showPanel">
+<div ng-if="display.showPanel" xmlns:filter="http://www.w3.org/1999/xhtml">
 	<lightbox show="display.showPanel" on-close="closeActionErrors()">
 		<container template="lightbox"></container>
 	</lightbox>
@@ -8,20 +8,35 @@
 <section class="cell three">
 	<nav class="vertical row">
 		<ul>
-			<li ng-repeat="resourceType in resourceTypes.all | filter:keepProcessableResourceTypes">
-				<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
-					<resource-right name="manage" resource="resourceType" class="cell">
-						<input
-								type="checkbox"
-								ng-model="resourceType.selected"
-								ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
-								ng-show="currentResourceType.resources.selection().length === 0" />
-					</resource-right>
-
-					[[resourceType.name]]
+			<li ng-repeat="struct in structuresWithTypes | orderBy:'name'">
+				<a ng-if="struct.expanded !== true" class="structure" ng-click="expandStructureSettings(struct)">
+					<i class="caretBlack"></i>[[struct.name]]
 				</a>
+
+				<a ng-if="struct.expanded === true" ng-click="setSelectedStructureForCreation(struct)" ng-class="{ selected: selectedStructure === struct }">
+					<i class="caretBlack expanded" ng-click="collapseStructureSettings(struct)"></i> [[struct.name]]
+				</a>
+				<ul ng-if="struct.expanded === true">
+					<li ng-repeat="resourceType in struct.types | orderBy: 'name' | filter:keepProcessableResourceTypes">
+						<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
+							<resource-right name="manage" resource="resourceType" class="cell">
+								<input
+										type="checkbox"
+										ng-model="resourceType.selected"
+										ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
+										ng-show="currentResourceType.resources.selection().length === 0" />
+							</resource-right>
+
+							[[resourceType.name]]
+						</a>
+					</li>
+					<li ng-if="struct.types.length == 0">
+						<i18n>rbs.resourcetype.empty</i18n>
+					</li>
+				</ul>
 			</li>
 		</ul>
+
 		<a class="classic-link" workflow="rbs.typemanage" ng-click="createResourceType()"><i18n>rbs.manage.type.create</i18n></a>
 	</nav>
 

@@ -19,9 +19,7 @@
 
 package net.atos.entng.rbs.service;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
 
@@ -73,7 +71,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		}
 
 		query.append(" GROUP BY t.id")
-			.append(" ORDER BY t.id");
+			.append(" ORDER BY t.name");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}

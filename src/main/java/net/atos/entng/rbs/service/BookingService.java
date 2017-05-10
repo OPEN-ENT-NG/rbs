@@ -19,6 +19,7 @@
 
 package net.atos.entng.rbs.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.entcore.common.service.CrudService;
@@ -75,4 +76,6 @@ public interface BookingService extends CrudService {
 	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
     void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+
+	void deleteFuturePeriodicBooking(String bookingId, Date startDate, Handler<Either<String,JsonArray>> handler);
 }
