@@ -7,29 +7,45 @@
 
 <section class="cell three">
 	<nav class="vertical row">
-		<ul class="colored">
-			<li ng-repeat="resourceType in resourceTypes.all">
-				<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
-					<i class="caret"></i>[[resourceType.name]]
+		<ul>
+			<li ng-repeat="struct in structuresWithTypes | orderBy:'name'">
+
+				<a ng-if="struct.expanded !== true" class="structure" ng-click="expandStructure(struct)">
+					<i class="caretBlack"></i>[[struct.name]]
 				</a>
-				<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="switchSelectResources(resourceType)">
-					<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
+
+				<a ng-if="struct.expanded === true" class="structure" ng-click="switchSelectStructure(struct)">
+					<i class="caretBlack expanded" ng-click="collapseStructure(struct)"></i> [[struct.name]]
 				</a>
-				<ul ng-if="resourceType.expanded === true">
-					<li ng-repeat="resource in resourceType.resources.all">
-						<div  ng-style="{'background-color': '[[resource.color]]'}">
-						<a  ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
-							[[resource.name]] <i ng-if="!resource.is_available" class="suspended-icon right-magnet"></i>
+
+				<ul ng-if="struct.expanded === true" class="colored resourceType">
+					<li ng-repeat="resourceType in struct.types | orderBy: 'name'">
+						<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
+							<i class="caret"></i>[[resourceType.name]]
 						</a>
-						</div>
+						<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="switchSelectResources(resourceType)">
+							<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
+						</a>
+						<ul ng-if="resourceType.expanded === true">
+							<li ng-repeat="resource in resourceType.resources.all">
+								<div ng-style="{'background-color': '[[resource.color]]'}">
+									<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
+										[[resource.name]] <i ng-if="!resource.is_available" class="suspended-icon right-magnet"></i>
+									</a>
+								</div>
+							</li>
+							<li ng-if="resourceType.resources.empty()">
+								<i18n>rbs.resources.empty</i18n>
+							</li>
+						</ul>
 					</li>
-					<li ng-if="resourceType.resources.empty()"><i18n>rbs.resources.empty</i18n></li>
+					<li ng-if="struct.types.length == 0">
+						<i18n>rbs.resourcetype.empty</i18n>
+					</li>
 				</ul>
 			</li>
-			<div ng-if="resourceTypes.empty()"><i18n>rbs.types.empty</i18n></div>
 		</ul>
-
-	<hr />
+		<hr />
 	</nav>
 </section>
 
@@ -43,8 +59,7 @@
 			<behaviour name="manage" resource="bookings.selection()" class="cell">
 				<button ng-if="canEditBookingSelection()" ng-click="editBooking()"><i18n>edit</i18n></button>
 				<button ng-if="! canEditBookingSelection()" disabled class="disabled"><i18n>edit</i18n></button>
-				<button ng-if="canDeleteBookingSelection()" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-				<button ng-if="! canDeleteBookingSelection()" disabled class="disabled"><i18n>remove</i18n></button>
+				<button ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
 			</behaviour>
 			<behaviour name="process" resource="bookings.selectionResources()" class="cell">
 				<button ng-if="canProcessBookingSelection()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>

@@ -10,7 +10,7 @@
 <div class="nine cell display-buttons">
 	<div class="row">
 		<drop-down-button ng-if="(!display.admin) && display.create" class="cell">
-			<label ng-click="newBooking()" class="opener"><i18n>rbs.booking.create</i18n></label>
+			<button ng-click="newBooking()" class="changeWeekButtonNext"><i18n>rbs.booking.create</i18n></button>
 		</drop-down-button>
 
 	      <i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList(display.admin)"
