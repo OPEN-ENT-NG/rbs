@@ -646,6 +646,9 @@ model.build = function(){
 						var resourceType = resourceTypeIndex[resource.type_id];
 						if (resourceType !== undefined) {
 							resource.type = resourceType;
+                            if(resource.color === null) {
+                                resource.color = resourceType.color;
+                            }
 							resourceType.resources.push(resource, false);
 						}
 
