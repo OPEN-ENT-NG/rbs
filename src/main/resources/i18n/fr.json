@@ -233,6 +233,8 @@
     "rbs.resource.unavailable.flag": "(HS)",
     "rbs.resources.empty": "Aucune ressource",
     "rbs.resourcetype.edit": "Edition du Type de ressources : ",
+    "rbs.resourcetype.edit.color.label": "Couleur",
+    "rbs.resourcetype.edit.color.heritage.label": "Les ressources de ce type ont la même couleur.",
     "rbs.resourcetype.edit.name.label": "Nom du type",
     "rbs.resourcetype.edit.name.placeholder": "Entrez un nom pour le type de ressources",
     "rbs.resourcetype.edit.save.to.configure": "Enregistrez le Type de ressources pour configurer le partage et les valideurs",

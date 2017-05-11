@@ -1,11 +1,11 @@
-model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
-
+                //  cyan', 'green', 'orange', 'pink', 'purple', 'grey'
+model.colors = ['#4bafd5', '#46bfaf', '#FF8500', '#b930a2', '#763294'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 model.STATE_SUSPENDED = 4;
 model.STATE_PARTIAL = 9; // this state is used only in front-end for periodic bookings, it is not saved in database.
-
+model.LAST_DEFAULT_COLOR = '#4bafd5';
 model.DETACHED_STRUCTURE = {
 	id: 'DETACHED',
 	name: 'rbs.structure.detached'
@@ -492,9 +492,14 @@ ResourceType.prototype.getModerators = function(callback) {
 };
 
 ResourceType.prototype.toJSON = function() {
+	if (this.extendcolor === null) {
+		this.extendcolor = false;
+	}
 	var json = {
 		name : this.name,
 		validation : this.validation,
+		color : this.color,
+		extendcolor : this.extendcolor
 	};
 	// Send school id only at creation
 	if (! this.id) {
@@ -607,9 +612,21 @@ model.build = function(){
 					resourceType.structure = structure || model.DETACHED_STRUCTURE;
 
 					// Auto-associate colors to Types
-					resourceType.color = model.findColor(index);
+					//resourceType.color =
+
+					if(resourceType.color == null) {
+						resourceType.color = model.findColor(index);
+                        model.LAST_DEFAULT_COLOR = resourceType.color;
+						index++;
+					}
+					else {
+                        if (model.colors.indexOf(resourceType.color) !== -1) {
+                            model.LAST_DEFAULT_COLOR = resourceType.color;
+                            index = model.colors.indexOf(resourceType.color) + 1;
+                        }
+					}
 					resourceType._id = resourceType.id;
-					index++;
+
 				});
 
 				// Fill the ResourceType collection and prepare the index
@@ -947,6 +964,12 @@ model.refreshBookings = function(isDisplayList) {
 	} else {
 		model.bookings.sync();
 	}
+};
+
+model.getNextColor = function() {
+	var i = model.colors.indexOf(model.LAST_DEFAULT_COLOR);
+	return model.colors[(i+1) % model.colors.length];
+	//return '#FF8500';
 };
 
 model.findColor = function(index) {
