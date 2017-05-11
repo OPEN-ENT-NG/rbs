@@ -31,6 +31,9 @@
 		},
 		"type_id": {
 			"type": "integer"
+		},
+		"color": {
+			"type": "string"
 		}
 	},
 	"required": [
