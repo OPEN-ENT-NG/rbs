@@ -1239,7 +1239,6 @@ function RbsController($scope, template, model, date, route){
 			$scope.currentResourceType = $scope.editedResourceType;
 			$scope.closeResourceType();
 			model.refreshRessourceType();
-			model.setNextColor($scope.editedResourceType.color);
 		}, function(e){
 			$scope.currentErrors.push(e);
 			$scope.display.processing = undefined;
@@ -1443,11 +1442,5 @@ function RbsController($scope, template, model, date, route){
         }
     };
     this.initialize();
-		/**
-		* Enzo : Selfinvokaing method to get the next color
-		* see edit-resource-type.html => ng-init="editedResourceType.color = model.nextColorResourceType"
-		*/
-		(function(){
-		 model.getNextColor();
-		})();
+
 }

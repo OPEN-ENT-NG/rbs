@@ -504,32 +504,7 @@ ResourceType.prototype.toJSON = function() {
 	}
 	return json;
 };
-/**
-* TODO: ENZO
-* Il faut spécifier le chemin de la requête
-* Changer le where en fonction de ce que tu retournes
-*/
-model.getNextColor = function(callback) {
-	http().get('/rbs/type/').done(function(response) {
-		model.nextColorResourceType =  _.where(response);
-		if(typeof callback === 'function'){
-			callback();
-		}
-	}.bind(this));
-};
 
-/**
-* TODO: ENZO
-* Il faut spécifier le chemin de la requête
-*/
-model.setNextColor = function(currentColor, callback) {
-	var i = model.colors.indexOf('currentColor');
-	http().get('/rbs/type',model.colors[i+1]).done(function(response) {
-		if(typeof callback === 'function'){
-			callback();
-		}
-	}
-};
 
 function SelectionHolder() {
 }
