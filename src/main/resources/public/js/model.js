@@ -492,6 +492,9 @@ ResourceType.prototype.getModerators = function(callback) {
 };
 
 ResourceType.prototype.toJSON = function() {
+	if (this.extendcolor === null) {
+		this.extendcolor = false;
+	}
 	var json = {
 		name : this.name,
 		validation : this.validation,
