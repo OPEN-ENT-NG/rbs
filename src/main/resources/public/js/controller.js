@@ -1199,9 +1199,19 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.processing = undefined;
 		$scope.editedResourceType = new ResourceType();
 		$scope.editedResourceType.validation = false;
+		$scope.editedResourceType.color = $scope.resourceTypes.current.color
 		$scope.editedResourceType.structure = $scope.structures[0];
 		template.open('resources', 'edit-resource-type');
 	};
+
+	$scope.createResourceType = function () {
+        $scope.display.processing = undefined;
+        $scope.editedResourceType = new ResourceType();
+        $scope.editedResourceType.validation = false;
+        $scope.editedResourceType.color = model.getNextColor();
+        $scope.editedResourceType.structure = $scope.structures[0];
+        template.open('resources', 'edit-resource-type');
+	}
 
 	$scope.newResource = function() {
         $scope.isCreation = true;

@@ -5,7 +5,7 @@ model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 model.STATE_SUSPENDED = 4;
 model.STATE_PARTIAL = 9; // this state is used only in front-end for periodic bookings, it is not saved in database.
-
+model.LAST_DEFAULT_COLOR = '#4bafd5';
 model.DETACHED_STRUCTURE = {
 	id: 'DETACHED',
 	name: 'rbs.structure.detached'
@@ -610,9 +610,17 @@ model.build = function(){
 
 					// Auto-associate colors to Types
 					//resourceType.color =
+
 					if(resourceType.color == null) {
 						resourceType.color = model.findColor(index);
+                        model.LAST_DEFAULT_COLOR = resourceType.color;
 						index++;
+					}
+					else {
+                        if (model.colors.indexOf(resourceType.color) !== -1) {
+                            model.LAST_DEFAULT_COLOR = resourceType.color;
+                            index = model.colors.indexOf(resourceType.color) + 1;
+                        }
 					}
 					resourceType._id = resourceType.id;
 
@@ -953,6 +961,12 @@ model.refreshBookings = function(isDisplayList) {
 	} else {
 		model.bookings.sync();
 	}
+};
+
+model.getNextColor = function() {
+	var i = model.colors.indexOf(model.LAST_DEFAULT_COLOR);
+	return model.colors[(i+1) % model.colors.length];
+	//return '#FF8500';
 };
 
 model.findColor = function(index) {
