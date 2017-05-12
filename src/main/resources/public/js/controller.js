@@ -1199,7 +1199,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.processing = undefined;
 		$scope.editedResourceType = new ResourceType();
 		$scope.editedResourceType.validation = false;
-		$scope.editedResourceType.color = $scope.resourceTypes.current.color
+		$scope.editedResourceType.color = $scope.resourceTypes.current.color;
 		$scope.editedResourceType.structure = $scope.structures[0];
 		template.open('resources', 'edit-resource-type');
 	};
@@ -1218,6 +1218,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.display.processing = undefined;
 		$scope.editedResource = new Resource();
 		$scope.editedResource.type = $scope.currentResourceType;
+        $scope.editedResource.color = $scope.currentResourceType.color;
 		$scope.editedResource.is_available = true;
 		$scope.editedResource.periodic_booking = true;
 		template.open('resources', 'edit-resource');
@@ -1429,6 +1430,10 @@ function RbsController($scope, template, model, date, route){
         if($scope.currentResourceType != $scope.editedResource.type && !$scope.isCreation) {
             notify.info('rbs.type.info.change');
         }
+        // update color of color picker only in case of creation
+        if ($scope.editedResource.id === undefined){
+            $scope.editedResource.color = $scope.editedResource.type.color;
+		}
     }
 
 	var updateCalendarList = function(start, end){
