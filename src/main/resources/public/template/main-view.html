@@ -17,9 +17,11 @@
 				</a>
 				<ul ng-if="resourceType.expanded === true">
 					<li ng-repeat="resource in resourceType.resources.all">
-						<a ng-style="{'background-color': '[[resource.color]]'}" ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
+						<div  ng-style="{'background-color': '[[resource.color]]'}">
+						<a  ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
 							[[resource.name]] <i ng-if="!resource.is_available" class="suspended-icon right-magnet"></i>
 						</a>
+						</div>
 					</li>
 					<li ng-if="resourceType.resources.empty()"><i18n>rbs.resources.empty</i18n></li>
 				</ul>
