@@ -732,9 +732,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
 			.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
-			.append("OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)) AND (rs.member_id IN ")
+			.append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)")
+			// this part is for reservations across 2 weeks
+			.append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > ?::date)")
+			.append(" OR (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.start_date::date < ?::date)")
+			.append(" OR (b.is_periodic=FALSE AND b.end_date::date >= ?::date AND b.end_date::date < ?::date))")
+			.append(" AND (rs.member_id IN ")
+			//
 			.append(Sql.listPrepared(groupsAndUserIds.toArray()))
 			.append(" OR t.owner = ?");
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
 		values.addString(startDate);
 		values.addString(endDate);
 		values.addString(startDate);
