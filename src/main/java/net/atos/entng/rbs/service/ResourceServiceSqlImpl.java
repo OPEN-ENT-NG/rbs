@@ -90,7 +90,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		}
 
 		query.append(" GROUP BY r.id")
-			.append(" ORDER BY r.id");
+			.append(" ORDER BY r.name");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}
