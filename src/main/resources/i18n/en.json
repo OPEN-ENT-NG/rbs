@@ -93,6 +93,7 @@
     "rbs.booking.edit.toggle.nonperiodic": "Basculer vers une réservation ponctuelle",
     "rbs.booking.edit.toggle.periodic": "Basculer vers une réservation périodique",
     "rbs.booking.edit.type.label": "Type de ressource",
+    "rbs.booking.edit.structure.label": "Etablissement",
     "rbs.booking.headers.end_date": "Date de fin",
     "rbs.booking.headers.moderator": "Traité par",
     "rbs.booking.headers.nb": "Créneau",

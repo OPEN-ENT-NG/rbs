@@ -18,20 +18,27 @@
 </filters>
 
 <div class="row" ng-if="display.create">
-	<calendar 
-		display-template="display-calendar-item" 
+	<calendar
+		display-template="display-calendar-item"
 		create-template="edit-booking"
+		item-tooltip-template="calendarItemTooltipTpl"
 		on-create-open="newBookingCalendar(newItem)"
-		on-create-close="closeBooking()" 
+		on-create-close="closeBooking()"
 		items="bookings.filtered">
 	</calendar>
 </div>
 
 <div class="row" ng-if="! display.create">
-	<calendar 
-		display-template="display-calendar-item" 
+	<calendar
+		display-template="display-calendar-item"
+		item-tooltip-template="calendarItemTooltipTpl"
 		on-create-open="newBookingCalendar(newItem)"
-		on-create-close="closeBooking()" 
+		on-create-close="closeBooking()"
 		items="bookings.filtered">
 	</calendar>
 </div>
+
+
+<script type="text/ng-template" id="calendarItemTooltipTpl">
+  <div class="content">Name: {{item.resource.name}}, Test: {{ 1 + 1 }}</div>
+</script>
