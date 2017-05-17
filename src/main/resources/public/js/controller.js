@@ -82,6 +82,13 @@ function RbsController($scope, template, model, date, route){
 		$scope.periods = model.periods;
 		$scope.structures = model.structures;
 
+		$scope.structureWithTypes = {
+			name: '',
+			types: []
+		};
+
+		$scope.structuresWithTypes = [];
+
 		$scope.currentResourceType = undefined;
 		$scope.selectedBooking = undefined;
 		$scope.editedBooking = null;
@@ -303,6 +310,21 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
+	$scope.coucou = function(){
+		console.log("coucou structures:" + $scope.structures.length);
+		for (var i = 0; i < $scope.structures.length; i++) {
+			$scope.typesInStructure.name = $scope.structures[i].name;
+			console.log("coucou RT:" + $scope.resourceTypes.length());
+			$scope.resourceTypes.forEach(function (resourceType) {
+				console.log(resourceType.resources[0]+ "==" + $scope.structures[i].name)
+				if (resourceType.school_id == $scope.structures[i].id) {
+					console.log("OK!")
+					$scope.typesInStructure.types.push(resourceType);
+				}
+			});
+			$scope.typesInStructures[i] = $scope.typesInStructure;
+		}
+	}
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== true) {
 			resource.selected = true;
