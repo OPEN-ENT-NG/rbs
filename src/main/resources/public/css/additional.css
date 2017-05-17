@@ -54,6 +54,44 @@ nav.vertical ul li i.caret.expanded::before {
 	content: "▾";
 }
 
+nav.vertical ul li i.caretBlack {
+	height: 20px;
+	width: 25px;
+	display: block;
+	float: left !important;
+	color: #000;
+	font-size: 25px;
+	font-family: Arial;
+	font-weight: 900;
+	line-height: 12px;
+	opacity: 1;
+	text-indent: 0;
+}
+
+
+nav.vertical ul li i.caretBlack::before {
+	content: "▸";
+}
+
+nav.vertical ul li i.caretBlack.expanded::before {
+	content: "▾";
+}
+ul.resourceType {
+	padding-left: 20px !important;
+}
+
+table.colored i.pending-icon::before {
+	content: "?";
+	height: 20px;
+	width: 20px;
+	display: block;
+	color: #000;
+	font-size: 21px;
+	font-family: Arial;
+	font-weight: 900;
+	padding-left: 20px;
+}
+
 div.schedule-item-content i.pending-status::before {
 	bottom: 12px !important;
 	right: 12px !important;

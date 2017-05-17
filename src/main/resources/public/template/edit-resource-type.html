@@ -6,7 +6,7 @@
 		<form name="resourceTypeForm" novalidate>
 			<div class="row" ng-if="editedResourceType.id === undefined">
 				<label class="three cell"><i18n>rbs.resourcetype.edit.structure.label</i18n></label>
-				<select ng-if="structures.length > 1" class="nine cell" ng-model="editedResourceType.structure" ng-options="structure.name for structure in structures" required>
+				<select ng-if="structures.length > 1" class="nine cell" ng-model="editedResourceType.structure" ng-options="structure.name for structure in structuresWithTypes | orderBy: 'name'" required>
 				</select>
 				<span ng-if="structures.length == 1" class="nine cell" translate content="[[structures[0].name]]"></span>
 			</div>

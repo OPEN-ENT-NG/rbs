@@ -313,6 +313,7 @@ function RbsController($scope, template, model, date, route){
         template.open('resources', 'manage-resources');
     };
 
+
     $scope.initMain = function() {
         //fixme Why model.recordedSelections.firstResourceType = true;
         model.recordedSelections.allResources = true;
@@ -321,7 +322,6 @@ function RbsController($scope, template, model, date, route){
         model.refresh($scope.display.list);
         template.open('main', 'main-view');
     };
-
 
     // Main view interaction
     $scope.expandResourceType = function(resourceType) {
@@ -722,21 +722,8 @@ function RbsController($scope, template, model, date, route){
             $scope.initPeriodic();
         }
 
-        // resource
-        if ($scope.lastSelectedResource) {
-            $scope.editedBooking.resource = $scope.lastSelectedResource;
-            if ($scope.editedBooking.resource.isBookable($scope.editedBooking.is_periodic)) {
-                $scope.editedBooking.type = $scope.lastSelectedResource.type;
-            }
-            else {
-                $scope.selectedStructure = $scope.structuresWithTypes[0];
-                $scope.autoSelectTypeAndResource();
-            }
-        }
-        else {
-            $scope.selectedStructure = $scope.structuresWithTypes[0];
-            $scope.autoSelectTypeAndResource();
-        }
+        $scope.selectedStructure = $scope.structuresWithTypes[0];
+        $scope.autoSelectTypeAndResource();
 
         // dates
         $scope.editedBooking.startMoment = moment();
@@ -760,15 +747,8 @@ function RbsController($scope, template, model, date, route){
 
         $scope.initModerators();
 
-        // resource
-        if ($scope.lastSelectedResource) {
-            $scope.editedBooking.resource = $scope.lastSelectedResource;
-            $scope.editedBooking.type = $scope.lastSelectedResource.type;
-        }
-        else {
-            $scope.selectedStructure = $scope.structuresWithTypes[0];
-            $scope.autoSelectTypeAndResource();
-        }
+        $scope.selectedStructure = $scope.structuresWithTypes[0];
+        $scope.autoSelectTypeAndResource();
 
         // dates
         if (model.calendar.newItem !== undefined) {
@@ -896,12 +876,11 @@ function RbsController($scope, template, model, date, route){
     };
 
     $scope.autoSelectTypeAndResource = function() {
+        $scope.editedBooking.type = undefined;
+        $scope.editedBooking.resource = undefined;
         if($scope.selectedStructure.types.length > 0){
             $scope.editedBooking.type = $scope.selectedStructure.types[0];
             $scope.autoSelectResource();
-        } else {
-            $scope.editedBooking.type = undefined;
-            $scope.editedBooking.resource = undefined
         }
     }
 
@@ -1196,11 +1175,11 @@ function RbsController($scope, template, model, date, route){
                 }
             }
         }
-		/*}
-		 //Periodic for more than a day
-		 else {
+        /*}
+         //Periodic for more than a day
+         else {
 
-		 }*/
+         }*/
         // nothing to do
     };
 
@@ -1225,7 +1204,6 @@ function RbsController($scope, template, model, date, route){
         _.each($scope.bookings.selection(), function(booking) {
             if(!$scope.isViewBooking) {
                 $scope.currentBookingSelected = booking;
-                $scope.currentBookingSelectedColor = $scope.currentBookingSelected.color;
             }
             if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
                 totalSelectionAsynchroneCall++;
@@ -1281,14 +1259,14 @@ function RbsController($scope, template, model, date, route){
 
     $scope.showConfirmDeleteMessage = function() {
         $scope.processBookings = $scope.bookings.selectionForProcess();
-        $scope.display.showPanel = true;
         template.open('lightbox', 'confirm-delete-booking');
+        $scope.display.showPanel = true;
     };
 
     $scope.showDeletePeriodicBookingMessage = function() {
         $scope.processBookings = $scope.bookings.selectionForProcess();
-        $scope.display.showPanel = true;
         template.open('lightbox', 'delete-periodic-booking');
+        $scope.display.showPanel = true;
     };
 
     $scope.doRemoveBookingSelection = function() {
@@ -1483,9 +1461,9 @@ function RbsController($scope, template, model, date, route){
         if ($scope.editedResourceType !== undefined) {
             $scope.closeResourceType();
         }
-		/*if($scope.structures.length > 1 && $scope.selectedStructure !== undefined){
-		 $scope.editedResourceType.structure = $scope.selectedStructure;
-		 }*/
+        /*if($scope.structures.length > 1 && $scope.selectedStructure !== undefined){
+         $scope.editedResourceType.structure = $scope.selectedStructure;
+         }*/
         template.open('resources', 'manage-resources');
     };
 
@@ -1536,6 +1514,7 @@ function RbsController($scope, template, model, date, route){
         $scope.editedResource.periodic_booking = true;
         template.open('resources', 'edit-resource');
     };
+
 
     $scope.editSelectedResource = function() {
         $scope.isCreation = false;
@@ -1590,6 +1569,7 @@ function RbsController($scope, template, model, date, route){
             $scope.$apply();
         });
     };
+
 
     $scope.deleteResourcesSelection = function() {
         $scope.currentResourceType.resourcesToDelete = $scope.currentResourceType.resources.selection();
