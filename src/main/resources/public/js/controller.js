@@ -619,6 +619,16 @@ function RbsController($scope, template, model, date, route){
 		return date.format('HH[h]mm');
 	};
 
+	$scope.dateToSeconds = function(date) {
+		var momentDate = moment(date);
+		return moment.utc([
+						momentDate.year(),
+						momentDate.month(),
+						momentDate.day(),
+						momentDate.hour(),
+						momentDate.minute()]).unix();
+	};
+
 	$scope.formatBooking = function(date, time){
 		return moment(date).format('DD/MM/YYYY') + ' ' +
 				lang.translate('rbs.booking.details.header.at') + ' ' +
@@ -668,6 +678,16 @@ function RbsController($scope, template, model, date, route){
 			return true;
 		}
 	};
+
+	$scope.canDeleteBookingDateCheck = function(dateToCheck) {
+		var itemDate = moment(dateToCheck);
+		if(moment().diff(itemDate) <= 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 
 	$scope.newBooking = function(periodic) {
 		$scope.display.processing = undefined;
