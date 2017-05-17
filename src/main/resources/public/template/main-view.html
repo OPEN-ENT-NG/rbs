@@ -7,20 +7,21 @@
 
 <section class="cell three">
 	<nav class="vertical row">
-		<ul>
-			<li ng-repeat="structure in structures">
-				<a class="structure"  ng-click="coucou()">
-					<span class="no-style"><i class="caretBlack"></i>
-					[[structure.name]]
-					</span>
-				</a>
 				<ul>
 					<li ng-repeat="struct in structuresWithTypes">
-						[[struct.name]]
-						<ul class="colored resourceType">
+						
+						<a ng-if="struct.expanded !== true" class="structure" ng-click="expandStructure(struct)">
+							<i class="caretBlack"></i>[[struct.name]]
+						</a>
+						
+						<a ng-if="struct.expanded === true" class="structure" ng-click="switchSelectStructure(struct)">
+							<i class="caretBlack expanded" ng-click="collapseStructure(struct)"></i> [[struct.name]]
+						</a>
+						
+						<ul ng-if="struct.expanded === true" class="colored resourceType">
 							<li ng-repeat="resourceType in struct.types">
 								<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
-									<i class="caret"></i>[[structures.length + " : " + structures[0].name]]
+									<i class="caret"></i>[[resourceType.name]]
 								</a>
 								<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="switchSelectResources(resourceType)">
 									<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
@@ -43,10 +44,6 @@
 							</div>
 						</ul>
 					</li>
-			</li>
-			<li>
-
-			</li>
 		</ul>
 	<hr />
 	</nav>

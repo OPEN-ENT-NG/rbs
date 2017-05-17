@@ -84,7 +84,9 @@ function RbsController($scope, template, model, date, route){
 
 		$scope.structureWithTypes = {
 			name: '',
-			types: []
+			types: [],
+			expanded: true,
+			selected: true
 		};
 
 		$scope.structuresWithTypes = [];
@@ -153,6 +155,7 @@ function RbsController($scope, template, model, date, route){
 				}
 			}
 		},true);
+
 	};
 
 	// Initialization
@@ -179,6 +182,7 @@ function RbsController($scope, template, model, date, route){
 		);
 		model.recordedSelections.allResources = false;
 		model.bookings.applyFilters();
+		$scope.initStructures();
 	}
 
 	$scope.initResourcesRouted = function(bookingId, cb) {
@@ -283,6 +287,39 @@ function RbsController($scope, template, model, date, route){
 		$scope.deselectResources(resourceType);
 	};
 
+	$scope.collapseStructure = function(structure) {
+		structure.expanded = undefined;
+		$scope.deselectStructure(structure);
+	}
+
+	$scope.expandStructure = function(structure) {
+		structure.expanded = true;
+		$scope.selectStructure(structure);
+	}
+
+	$scope.selectStructure = function(structure) {
+		structure.selected = true;
+		structure.types.forEach(function(type) {
+			$scope.selectResources(type)
+		})
+	}
+
+	$scope.deselectStructure = function(structure) {
+		structure.selected = false;
+		structure.types.forEach(function(type) {
+			$scope.deselectResources(type)
+		})
+	}
+
+	$scope.switchSelectStructure = function(structure) {
+		if (structure.selected) {
+			$scope.deselectStructure(structure);
+		}
+		else {
+			$scope.selectStructure(structure);
+		}
+	}
+
 	$scope.selectResources = function(resourceType) {
 		resourceType.resources.forEach(function(resource) {
 			if (resource.selected !== true) {
@@ -310,21 +347,18 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
-	$scope.coucou = function(){
-		console.log("coucou structures:" + $scope.structures.length);
+	$scope.initStructures = function(){
 		for (var i = 0; i < $scope.structures.length; i++) {
-			$scope.typesInStructure.name = $scope.structures[i].name;
-			console.log("coucou RT:" + $scope.resourceTypes.length());
+			$scope.structureWithTypes.name = $scope.structures[i].name;
 			$scope.resourceTypes.forEach(function (resourceType) {
-				console.log(resourceType.resources[0]+ "==" + $scope.structures[i].name)
 				if (resourceType.school_id == $scope.structures[i].id) {
-					console.log("OK!")
-					$scope.typesInStructure.types.push(resourceType);
+					$scope.structureWithTypes.types.push(resourceType);
 				}
 			});
-			$scope.typesInStructures[i] = $scope.typesInStructure;
+			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
 		}
 	}
+
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== true) {
 			resource.selected = true;

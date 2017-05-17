@@ -150,6 +150,10 @@ input.resourceColor {
     padding: 0px;
 }
 
-structure{
+a.structure{
+	color: black;
+}
+
+a.structure:hover{
 	color: black;
 }
