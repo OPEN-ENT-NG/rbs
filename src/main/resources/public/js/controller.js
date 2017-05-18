@@ -43,6 +43,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.me = model.me;
 		$scope.date = date;
 		$scope.lang = lang;
+		$scope.firstTime = true;
 
 		$scope.display = {
 			list: false, // calendar by default
@@ -138,7 +139,8 @@ function RbsController($scope, template, model, date, route){
 			if ($scope.display.routed === true) {
 				return;
 			}
-
+            $scope.deleteTypesInStructures();
+            $scope.initStructures();
 			$scope.initResources();
 		});
 
@@ -182,7 +184,30 @@ function RbsController($scope, template, model, date, route){
 		);
 		model.recordedSelections.allResources = false;
 		model.bookings.applyFilters();
-		$scope.initStructures();
+
+	}
+
+    $scope.initStructures = function(){
+		for (var i = 0; i < $scope.structures.length; i++) {
+			$scope.structureWithTypes.name = $scope.structures[i].name;
+            console.log ($scope.structures[i].id);
+			$scope.resourceTypes.forEach(function (resourceType) {
+				if (resourceType.school_id == $scope.structures[i].id) {
+					$scope.structureWithTypes.types.push(resourceType);
+				}
+			});
+            console.log ($scope.structureWithTypes);
+			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
+            console.log ($scope.structuresWithTypes[i]);
+		}
+    }
+
+    $scope.deleteTypesInStructures = function() {
+        for (var i = 0; i < $scope.structures.length; i++) {
+        	if ($scope.structuresWithTypes[i] !== undefined) {
+                $scope.structuresWithTypes[i].types = [];
+			}
+		}
 	}
 
 	$scope.initResourcesRouted = function(bookingId, cb) {
@@ -282,45 +307,23 @@ function RbsController($scope, template, model, date, route){
 		$scope.selectResources(resourceType);
 	};
 
+    $scope.expandStructure = function(structure) {
+        structure.expanded = true;
+        $scope.selectStructure(structure);
+    }
+
 	$scope.collapseResourceType = function(resourceType) {
 		resourceType.expanded = undefined;
 		$scope.deselectResources(resourceType);
 	};
 
-	$scope.collapseStructure = function(structure) {
-		structure.expanded = undefined;
-		$scope.deselectStructure(structure);
-	}
+    $scope.collapseStructure = function(structure) {
+        structure.expanded = undefined;
+        $scope.deselectStructure(structure);
+    }
 
-	$scope.expandStructure = function(structure) {
-		structure.expanded = true;
-		$scope.selectStructure(structure);
-	}
 
-	$scope.selectStructure = function(structure) {
-		structure.selected = true;
-		structure.types.forEach(function(type) {
-			$scope.selectResources(type)
-		})
-	}
-
-	$scope.deselectStructure = function(structure) {
-		structure.selected = false;
-		structure.types.forEach(function(type) {
-			$scope.deselectResources(type)
-		})
-	}
-
-	$scope.switchSelectStructure = function(structure) {
-		if (structure.selected) {
-			$scope.deselectStructure(structure);
-		}
-		else {
-			$scope.selectStructure(structure);
-		}
-	}
-
-	$scope.selectResources = function(resourceType) {
+    $scope.selectResources = function(resourceType) {
 		resourceType.resources.forEach(function(resource) {
 			if (resource.selected !== true) {
 				resource.selected = true;
@@ -330,6 +333,13 @@ function RbsController($scope, template, model, date, route){
 		model.bookings.applyFilters();
 	};
 
+    $scope.selectStructure = function(structure) {
+        structure.selected = true;
+        structure.types.forEach(function(type) {
+            $scope.selectResources(type)
+        })
+    }
+
 	$scope.deselectResources = function(resourceType) {
 		resourceType.resources.forEach(function(resource) {
 			resource.selected = undefined;
@@ -337,6 +347,13 @@ function RbsController($scope, template, model, date, route){
 		$scope.lastSelectedResource = undefined;
 		model.bookings.applyFilters();
 	};
+
+    $scope.deselectStructure = function(structure) {
+        structure.selected = false;
+        structure.types.forEach(function(type) {
+            $scope.deselectResources(type)
+        })
+    }
 
 	$scope.switchSelectResources = function(resourceType) {
 		if (resourceType.resources.every(function(resource) { return resource.selected })) {
@@ -347,17 +364,16 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
-	$scope.initStructures = function(){
-		for (var i = 0; i < $scope.structures.length; i++) {
-			$scope.structureWithTypes.name = $scope.structures[i].name;
-			$scope.resourceTypes.forEach(function (resourceType) {
-				if (resourceType.school_id == $scope.structures[i].id) {
-					$scope.structureWithTypes.types.push(resourceType);
-				}
-			});
-			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
-		}
-	}
+
+    $scope.switchSelectStructure = function(structure) {
+        if (structure.selected) {
+            $scope.deselectStructure(structure);
+        }
+        else {
+            $scope.selectStructure(structure);
+        }
+    }
+
 
 	$scope.switchSelect = function(resource) {
 		if (resource.selected !== true) {

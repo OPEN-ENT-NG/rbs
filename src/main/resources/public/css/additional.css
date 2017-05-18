@@ -64,7 +64,10 @@ nav.vertical ul li i.caretBlack {
 	font-family: Arial;
 	font-weight: 900;
 	line-height: 12px;
+	opacity: 1;
+	text-indent: 0;
 }
+
 
 nav.vertical ul li i.caretBlack::before {
 	content: "▸";
