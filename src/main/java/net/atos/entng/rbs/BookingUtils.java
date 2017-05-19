@@ -19,26 +19,21 @@
 
 package net.atos.entng.rbs;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
+import org.vertx.java.core.json.JsonObject;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class BookingUtils {
 
 	/**
-	 *
 	 * @param lastSelectedDay : index of last selected day
-	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
-	 * @param periodicity : slots are repeated every "periodicity" week
+	 * @param selectedDays    : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
+	 * @param periodicity     : slots are repeated every "periodicity" week
 	 * @return Number of days until next slot
-	 *
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
 	public static int getNextInterval(final int lastSelectedDay, final String selectedDays, final int periodicity) {
@@ -54,8 +49,7 @@ public class BookingUtils {
 			if (k == 1) {
 				// On monday, go to next week
 				count += (periodicity - 1) * 7;
-			}
-			else if (k >= 7) {
+			} else if (k >= 7) {
 				k = k % 7;
 			}
 			count++;
@@ -65,26 +59,24 @@ public class BookingUtils {
 	}
 
 	/**
-	 *
 	 * @param firstSelectedDay : index of the first slot's day
-	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
-	 * @param durationInDays : difference in days between the first slot's end date and the end date of the periodic booking
-	 * @param periodicity : slots are repeated every "periodicity" week
+	 * @param selectedDays     : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
+	 * @param durationInDays   : difference in days between the first slot's end date and the end date of the periodic booking
+	 * @param periodicity      : slots are repeated every "periodicity" week
 	 * @return Number of occurrences
-	 *
 	 * @throws IndexOutOfBoundsException
 	 */
 	public static int getOccurrences(final int firstSelectedDay, final String selectedDays,
-			final long durationInDays, final int periodicity) {
+	                                 final long durationInDays, final int periodicity) {
 		int count = 0;
 		int k = firstSelectedDay;
 		int i = 0;
 
-		while(i <= durationInDays) {
-			if(k >= 7) {
+		while (i <= durationInDays) {
+			if (k >= 7) {
 				k = k % 7;
 			}
-			if(selectedDays.charAt(k) == '1') {
+			if (selectedDays.charAt(k) == '1') {
 				count++;
 			}
 			k++;
@@ -99,21 +91,19 @@ public class BookingUtils {
 	}
 
 	/**
-	 *
-	 * @param occurrences : number of occurrences
-	 * @param periodicity : slots are repeated every "periodicity" week
+	 * @param occurrences   : number of occurrences
+	 * @param periodicity   : slots are repeated every "periodicity" week
 	 * @param firstSlotDate : Unix timestamp of the first slot's date (start or end date)
-	 * @param firstSlotDay : index of the first slot's day
-	 * @param selectedDays : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
+	 * @param firstSlotDay  : index of the first slot's day
+	 * @param selectedDays  : bit string, used like an array of boolean, representing selected days. Char 0 is sunday, char 1 monday...
 	 * @return Unix timestamp of the last slot's date (start or end date)
-	 *
 	 * @throws IllegalArgumentException, IndexOutOfBoundsException
 	 */
 	public static long getLastSlotDate(final int occurrences, final int periodicity,
-			final long firstSlotDate, final int firstSlotDay, final String selectedDays) {
+	                                   final long firstSlotDate, final int firstSlotDay, final String selectedDays) {
 
 		long lastSlotDate = firstSlotDate;
-		if(occurrences > 1) {
+		if (occurrences > 1) {
 			int selectedDay = firstSlotDay;
 			int intervalFromFirstDay = 0;
 
@@ -152,20 +142,18 @@ public class BookingUtils {
 		return TimeUnit.SECONDS.convert(cal.getTimeInMillis(), TimeUnit.MILLISECONDS);
 	}
 
-	 /**
-	  *
-	  * @param unixTimestamp in seconds
-	  * @return 0 for sunday, 1 for monday, etc
-	  */
+	/**
+	 * @param unixTimestamp in seconds
+	 * @return 0 for sunday, 1 for monday, etc
+	 */
 	public static int getDayFromTimestamp(final long unixTimestamp) {
 		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(
-				TimeUnit.MILLISECONDS.convert(unixTimestamp, TimeUnit.SECONDS));
+		cal.setTimeInMillis(TimeUnit.MILLISECONDS.convert(unixTimestamp, TimeUnit.SECONDS));
 		// "- 1", so that sunday is 0, monday is 1, etc
 		int day = cal.get(Calendar.DAY_OF_WEEK) - 1;
 
 		return day;
-	 }
+	}
 
 	public static boolean haveSameTime(final long thisTimestamp, final long thatTimestamp) {
 		TimeZone gmt = TimeZone.getTimeZone("GMT");
@@ -178,19 +166,19 @@ public class BookingUtils {
 		thatCal.setTimeInMillis(
 				TimeUnit.MILLISECONDS.convert(thatTimestamp, TimeUnit.SECONDS));
 
-		 return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
-				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
-				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
-	 }
+		return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
+				&& thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
+				&& thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
+	}
 
 	/**
 	 * @return Return scope (i.e. the list of school_ids) of a local administrator
 	 */
 	public static List<String> getLocalAdminScope(final UserInfos user) {
 		Map<String, UserInfos.Function> functions = user.getFunctions();
-		if (functions != null  && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+		if (functions != null && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
 			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
-			if(adminLocal != null) {
+			if (adminLocal != null) {
 				return adminLocal.getScope();
 			}
 		}
@@ -198,5 +186,23 @@ public class BookingUtils {
 		return new ArrayList<String>();
 	}
 
+	public static boolean isDelayLessThanMin(JsonObject resource, long startDate, long now) {
+		long minDelay = resource.getLong("min_delay", -1);
+		long delay = startDate - now;
 
+		return (minDelay > -1 && minDelay > delay);
+	}
+
+	public static boolean isDelayGreaterThanMax(JsonObject resource, long endDate, long now) {
+		long maxDelay = resource.getLong("max_delay", -1);
+		if (maxDelay == -1) {
+			return false;
+		}
+
+		// Authorize users to book a resource N days in advance, without taking hour/minute/seconds into account
+		maxDelay = (getTomorrowTimestamp() - now) + maxDelay;
+		long delay = endDate - now;
+
+		return (delay > maxDelay);
+	}
 }
