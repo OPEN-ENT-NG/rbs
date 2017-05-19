@@ -611,7 +611,7 @@ model.build = function(){
 						return s.id === resourceType.school_id;
 					});
 					resourceType.structure = structure || model.DETACHED_STRUCTURE;
-
+					console.log ("RESOURCETYPE STRUCTURE = " + resourceType.structure.id);
 					// Auto-associate colors to Types
 					//resourceType.color =
 

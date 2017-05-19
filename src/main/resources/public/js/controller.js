@@ -84,6 +84,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.structures = model.structures;
 
 		$scope.structureWithTypes = {
+		    id: 0,
 			name: '',
 			types: [],
 			expanded: true,
@@ -189,16 +190,17 @@ function RbsController($scope, template, model, date, route){
 
     $scope.initStructures = function(){
 		for (var i = 0; i < $scope.structures.length; i++) {
+		    $scope.structureWithTypes = {};
+            $scope.structureWithTypes.expanded = true;
+            $scope.structureWithTypes.selected = true;
+            $scope.structureWithTypes.types = [];
 			$scope.structureWithTypes.name = $scope.structures[i].name;
-            console.log ($scope.structures[i].id);
 			$scope.resourceTypes.forEach(function (resourceType) {
-				if (resourceType.school_id == $scope.structures[i].id) {
+				if (resourceType.school_id === $scope.structures[i].id) {
 					$scope.structureWithTypes.types.push(resourceType);
 				}
 			});
-            console.log ($scope.structureWithTypes);
 			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
-            console.log ($scope.structuresWithTypes[i]);
 		}
     }
 
@@ -336,6 +338,7 @@ function RbsController($scope, template, model, date, route){
     $scope.selectStructure = function(structure) {
         structure.selected = true;
         structure.types.forEach(function(type) {
+            type.expanded = true;
             $scope.selectResources(type)
         })
     }
