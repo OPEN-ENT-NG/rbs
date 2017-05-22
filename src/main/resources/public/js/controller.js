@@ -288,7 +288,7 @@ function RbsController($scope, template, model, date, route){
 		if (processableResourceTypes && processableResourceTypes.length > 0) {
 			$scope.currentResourceType = processableResourceTypes[0];
 		}
-
+        $scope.initStructures();
 		template.open('main', 'manage-view');
 		template.open('resources', 'manage-resources');
 	};
@@ -314,6 +314,11 @@ function RbsController($scope, template, model, date, route){
         $scope.selectStructure(structure);
     }
 
+    $scope.expandStructureSettings = function(structure) {
+        structure.expanded = true;
+        $scope.selectStructureSettings(structure);
+    }
+
 	$scope.collapseResourceType = function(resourceType) {
 		resourceType.expanded = undefined;
 		$scope.deselectResources(resourceType);
@@ -322,6 +327,11 @@ function RbsController($scope, template, model, date, route){
     $scope.collapseStructure = function(structure) {
         structure.expanded = undefined;
         $scope.deselectStructure(structure);
+    }
+
+    $scope.collapseStructureSettings = function(structure) {
+        structure.expanded = undefined;
+        $scope.deselectStructureSettings(structure);
     }
 
 
@@ -343,6 +353,10 @@ function RbsController($scope, template, model, date, route){
         })
     }
 
+    $scope.selectStructureSettings = function(structure) {
+        structure.selected = true;
+    }
+
 	$scope.deselectResources = function(resourceType) {
 		resourceType.resources.forEach(function(resource) {
 			resource.selected = undefined;
@@ -357,6 +371,20 @@ function RbsController($scope, template, model, date, route){
             $scope.deselectResources(type)
         })
     }
+
+    $scope.deselectStructureSettings = function(structure) {
+        structure.selected = false;
+        structure.types.forEach(function(type) {
+            $scope.deselectTypeResourcesSettings(type)
+        })
+    }
+
+    $scope.deselectTypeResourcesSettings = function(resourceType) {
+        resourceType.selected = false;
+        resourceType.resources.forEach(function(resource) {
+            resource.selected = undefined;
+        });
+    };
 
 	$scope.switchSelectResources = function(resourceType) {
 		if (resourceType.resources.every(function(resource) { return resource.selected })) {
@@ -374,6 +402,15 @@ function RbsController($scope, template, model, date, route){
         }
         else {
             $scope.selectStructure(structure);
+        }
+    }
+
+    $scope.switchSelectStructureSettings = function(structure) {
+        if (structure.selected) {
+            $scope.deselectStructureSettings(structure);
+        }
+        else {
+            $scope.selectStructureSettings(structure);
         }
     }
 
