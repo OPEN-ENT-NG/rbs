@@ -8,7 +8,7 @@
 <section class="cell three">
 	<nav class="vertical row">
 		<ul>
-			<li ng-repeat="struct in structuresWithTypes">
+			<li ng-repeat="struct in structuresWithTypes | orderBy:'name'">
 
 				<a ng-if="struct.expanded !== true" class="structure" ng-click="expandStructure(struct)">
 					<i class="caretBlack"></i>[[struct.name]]

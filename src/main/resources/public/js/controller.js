@@ -141,7 +141,7 @@ function RbsController($scope, template, model, date, route){
 				return;
 			}
             $scope.deleteTypesInStructures();
-            $scope.initStructures();
+            $scope.initStructures(true);
 			$scope.initResources();
 		});
 
@@ -188,11 +188,11 @@ function RbsController($scope, template, model, date, route){
 
 	}
 
-    $scope.initStructures = function(){
+    $scope.initStructures = function(selected){
 		for (var i = 0; i < $scope.structures.length; i++) {
 		    $scope.structureWithTypes = {};
             $scope.structureWithTypes.expanded = true;
-            $scope.structureWithTypes.selected = true;
+            $scope.structureWithTypes.selected = selected;
             $scope.structureWithTypes.types = [];
 			$scope.structureWithTypes.name = $scope.structures[i].name;
 			$scope.resourceTypes.forEach(function (resourceType) {
@@ -202,6 +202,7 @@ function RbsController($scope, template, model, date, route){
 			});
 			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
 		}
+		$scope.structuresWithTypes.sort(function(etablissement1, etablissement2){return etablissement1.name - etablissement2.name});
     }
 
     $scope.deleteTypesInStructures = function() {
@@ -288,7 +289,7 @@ function RbsController($scope, template, model, date, route){
 		if (processableResourceTypes && processableResourceTypes.length > 0) {
 			$scope.currentResourceType = processableResourceTypes[0];
 		}
-        $scope.initStructures();
+        $scope.initStructures(false);
 		template.open('main', 'manage-view');
 		template.open('resources', 'manage-resources');
 	};
@@ -316,7 +317,10 @@ function RbsController($scope, template, model, date, route){
 
     $scope.expandStructureSettings = function(structure) {
         structure.expanded = true;
-        $scope.selectStructureSettings(structure);
+        structure.selected = false;
+        structure.types.forEach(function(type) {
+            type.selected = false;
+        })
     }
 
 	$scope.collapseResourceType = function(resourceType) {
@@ -349,12 +353,15 @@ function RbsController($scope, template, model, date, route){
         structure.selected = true;
         structure.types.forEach(function(type) {
             type.expanded = true;
-            $scope.selectResources(type)
+            $scope.selectResources(type);
         })
     }
 
     $scope.selectStructureSettings = function(structure) {
         structure.selected = true;
+        structure.types.forEach(function(type) {
+            type.selected = true;
+        })
     }
 
 	$scope.deselectResources = function(resourceType) {
@@ -375,7 +382,7 @@ function RbsController($scope, template, model, date, route){
     $scope.deselectStructureSettings = function(structure) {
         structure.selected = false;
         structure.types.forEach(function(type) {
-            $scope.deselectTypeResourcesSettings(type)
+            $scope.deselectTypeResourcesSettings(type);
         })
     }
 
@@ -1535,6 +1542,8 @@ function RbsController($scope, template, model, date, route){
 		model.resourceTypes.removeSelectedTypes();
 		$scope.display.confirmRemoveTypes = false;
 		template.close('resources');
+        $scope.resourceTypes.deselectAllResources();
+        $scope.initStructures(false);
 	};
 
     // display a warning when editing a resource and changing the resource type (not in creation mode).

@@ -72,7 +72,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 			}
 		}
 
-		query.append(" GROUP BY t.id")
+		query.append(" GROUP BY t.school_id")
 			.append(" ORDER BY t.name");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));

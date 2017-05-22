@@ -611,7 +611,6 @@ model.build = function(){
 						return s.id === resourceType.school_id;
 					});
 					resourceType.structure = structure || model.DETACHED_STRUCTURE;
-					console.log ("RESOURCETYPE STRUCTURE = " + resourceType.structure.id);
 					// Auto-associate colors to Types
 					//resourceType.color =
 
@@ -621,10 +620,14 @@ model.build = function(){
 						index++;
 					}
 					else {
-                        if (model.colors.indexOf(resourceType.color) !== -1) {
-                            model.LAST_DEFAULT_COLOR = resourceType.color;
-                            index = model.colors.indexOf(resourceType.color) + 1;
-                        }
+						var nbCouleur = 0;
+                        resourceTypes.forEach(function(resourceType){
+                            if (model.colors.indexOf(resourceType.color) !== -1) {
+                                nbCouleur ++;
+                            }
+                        });
+                        model.LAST_DEFAULT_COLOR = model.findColor(nbCouleur);
+                        index = nbCouleur + 1;
 					}
 					resourceType._id = resourceType.id;
 
