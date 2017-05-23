@@ -1006,6 +1006,7 @@ function RbsController($scope, template, model, date, route){
 
 		var totalSelectionAsynchroneCall = 0;
 		_.each($scope.bookings.selection(), function(booking) {
+			$scope.currentBookingSelected = booking;
 			if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
 				totalSelectionAsynchroneCall++;
 			} else if (booking.isSlot() && booking.booking.selected !== true) {
@@ -1019,7 +1020,11 @@ function RbsController($scope, template, model, date, route){
 		//if all slots are already completed
 		if (totalSelectionAsynchroneCall === 0) {
 			//confirm message
-			$scope.showConfirmDeleteMessage();
+			if ($scope.currentBookingSelected.is_periodic) {
+				$scope.showDeletePeriodicBookingMessage();
+			} else {
+				$scope.showConfirmDeleteMessage();
+			}
 		} else {
 			// All slots for periodic bookings
 			_.each($scope.bookings.selection(), function(booking){
@@ -1030,7 +1035,7 @@ function RbsController($scope, template, model, date, route){
 						booking.booking.selectAllSlots();
 						totalSelectionAsynchroneCall--;
 						if (totalSelectionAsynchroneCall === 0) {
-							$scope.showConfirmDeleteMessage();
+							$scope.showDeletePeriodicBookingMessage();
 						}
 					});
 				}
@@ -1041,6 +1046,12 @@ function RbsController($scope, template, model, date, route){
 	$scope.showConfirmDeleteMessage = function() {
 		$scope.processBookings = $scope.bookings.selectionForProcess();
 		template.open('lightbox', 'confirm-delete-booking');
+		$scope.display.showPanel = true;
+	};
+
+	$scope.showDeletePeriodicBookingMessage = function() {
+		$scope.processBookings = $scope.bookings.selectionForProcess();
+		template.open('lightbox', 'delete-periodic-booking');
 		$scope.display.showPanel = true;
 	};
 
@@ -1076,6 +1087,27 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
+	$scope.doRemoveCurrentPeriodicBookingSelection = function() {
+		$scope.display.processing = true;
+		$scope.currentErrors = [];
+		try {
+				$scope.currentBookingSelected.delete(function(){
+						$scope.display.processing = undefined;
+						$scope.bookings.deselectAll();
+						$scope.closeBooking();
+						model.refreshBookings($scope.display.list);
+				}, function(e){
+					$scope.currentErrors.push(e);
+						$scope.display.processing = undefined;
+						$scope.showActionErrors()
+						model.refreshBookings($scope.display.list);
+				});
+		}
+		catch (e) {
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push({error: "rbs.error.technical"});
+		}
+	};
 
 	// Booking Validation
 	$scope.canProcessBookingSelection = function() {
