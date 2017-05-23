@@ -202,7 +202,6 @@ function RbsController($scope, template, model, date, route){
 			});
 			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
 		}
-		$scope.structuresWithTypes.sort(function(etablissement1, etablissement2){return etablissement1.name - etablissement2.name});
     }
 
     $scope.deleteTypesInStructures = function() {

@@ -19,7 +19,7 @@
 				</a>
 
 				<ul ng-if="struct.expanded === true" class="colored resourceType">
-					<li ng-repeat="resourceType in struct.types">
+					<li ng-repeat="resourceType in struct.types | orderBy: 'name'">
 						<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
 							<i class="caret"></i>[[resourceType.name]]
 						</a>
@@ -39,9 +39,9 @@
 							</li>
 						</ul>
 					</li>
-					<div ng-if="resourceTypes.empty()">
-						<i18n>rbs.types.empty</i18n>
-					</div>
+					<li ng-if="struct.types.length == 0">
+						<i18n>rbs.resourcetype.empty</i18n>
+					</li>
 				</ul>
 			</li>
 		</ul>

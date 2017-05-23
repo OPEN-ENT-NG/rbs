@@ -17,7 +17,7 @@
 					<i class="caretBlack expanded" ng-click="collapseStructureSettings(struct)"></i> [[struct.name]]
 				</a>
 				<ul ng-if="struct.expanded === true">
-					<li ng-repeat="resourceType in struct.types | filter:keepProcessableResourceTypes">
+					<li ng-repeat="resourceType in struct.types | orderBy: 'name' | filter:keepProcessableResourceTypes">
 						<a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
 							<resource-right name="manage" resource="resourceType" class="cell">
 								<input
@@ -29,6 +29,9 @@
 
 							[[resourceType.name]]
 						</a>
+					</li>
+					<li ng-if="struct.types.length == 0">
+						<i18n>rbs.resourcetype.empty</i18n>
 					</li>
 				</ul>
 			</li>

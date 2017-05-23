@@ -233,6 +233,7 @@
     "rbs.resourcetype.edit.validation.true": "Oui",
     "rbs.resourcetype.new": "Nouveau Type de ressources",
     "rbs.route.booking.not.found": "La réservation cherchée n'existe pas ou a été supprimée.",
+    "rbs.resourcetype.empty": "No type resource",
     "rbs.save": "Enregistrer",
     "rbs.selector.dates": "Filtrer de date à date",
     "rbs.selector.mine": "Afficher mes réservations uniquement",

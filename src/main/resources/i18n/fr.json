@@ -232,6 +232,7 @@
     "rbs.resource.new": "Nouvelle Ressource",
     "rbs.resource.unavailable.flag": "(HS)",
     "rbs.resources.empty": "Aucune ressource",
+    "rbs.resourcetype.empty": "Aucun type de ressource",
     "rbs.resource.edit.color.label": "Couleur",
     "rbs.resourcetype.edit": "Edition du Type de ressources : ",
     "rbs.resourcetype.edit.color.label": "Couleur",
