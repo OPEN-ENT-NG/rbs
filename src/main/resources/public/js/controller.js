@@ -202,6 +202,7 @@ function RbsController($scope, template, model, date, route){
 			});
 			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
 		}
+		$scope.selectedStructure = $scope.structuresWithTypes[0];
     }
 
     $scope.deleteTypesInStructures = function() {
@@ -355,6 +356,10 @@ function RbsController($scope, template, model, date, route){
             $scope.selectResources(type);
         })
     }
+
+	$scope.setSelectedStructureForCreation = function(structure){
+		$scope.selectedStructure = structure;
+	}
 
     $scope.selectStructureSettings = function(structure) {
         structure.selected = true;
@@ -1290,6 +1295,9 @@ function RbsController($scope, template, model, date, route){
 		$scope.resourceTypes.current = resourceType;
 		if ($scope.editedResourceType !== undefined) {
 			$scope.closeResourceType();
+		}
+		if($scope.structure.lenght > 1 && $scope.selectedStructure !== undefined){
+			$scope.editedResourceType.structure = $scope.selectedStructure;
 		}
 		template.open('resources', 'manage-resources');
 	};

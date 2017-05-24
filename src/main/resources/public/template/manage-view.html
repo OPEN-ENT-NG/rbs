@@ -13,7 +13,7 @@
 					<i class="caretBlack"></i>[[struct.name]]
 				</a>
 
-				<a ng-if="struct.expanded === true" class="structure" ng-click="switchSelectStructureSettings(struct)">
+				<a ng-if="struct.expanded === true" ng-click="setSelectedStructureForCreation(struct)" ng-class="{ selected: selectedStructure === struct }">
 					<i class="caretBlack expanded" ng-click="collapseStructureSettings(struct)"></i> [[struct.name]]
 				</a>
 				<ul ng-if="struct.expanded === true">
