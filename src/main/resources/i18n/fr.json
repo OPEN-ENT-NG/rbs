@@ -31,6 +31,7 @@
     "rbs.booking.bad.request.minDelay.not.respected.by.firstSlot": "L'intervalle minimum n'est pas respecté par la première réservation : la ressource doit être réservée au moins {0} jour(s) à l'avance.",
     "rbs.booking.bad.request.deletion.periodical.booking.already.terminated": "La suppression d'une réservation périodique déjà terminée est impossible",
     "rbs.booking.bad.request.startdate.in.past.periodic.update": "L'édition d'une réservation périodique déjà démarrée n'est pas possible",
+    "rbs.booking.bad.request.deletion.periodical.booking.without.boolean": "Impossible de supprimer une réservation périodique sans booléen",
     "rbs.booking.create": "Nouvelle réservation",
     "rbs.booking.create.conflict": "Votre demande de réservation n'a pas pu être enregistrée, car il existe une demande concurrente validée.",
     "rbs.booking.delete.confirm.multi": "Suppression des réservations sélectionnées",

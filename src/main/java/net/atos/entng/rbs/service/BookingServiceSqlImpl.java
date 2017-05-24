@@ -547,20 +547,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void deleteFuturePeriodicBooking(String bookingId, Handler<Either<String, JsonArray>> handler) {
+	public void deleteFuturePeriodicBooking(String bookingId, Date startDate, Handler<Either<String, JsonArray>> handler) {
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		Object bId = parseId(bookingId);
 
 		// 1. Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
-
 		// 2. Delete child bookings
 		StringBuilder deleteQuery = new StringBuilder();
 		JsonArray deleteValues = new JsonArray();
 		deleteQuery.append("DELETE FROM rbs.booking")
 				.append(" WHERE parent_booking_id = ?")
-				.append(" AND start_date > NOW()");
+				.append(" AND start_date >= to_timestamp(?) AT TIME ZONE 'UTC'");
 		deleteValues.add(bId);
+		deleteValues.add(startDate.getTime() / 1000);
+
 
 		// 3. Update parent booking with last end date slot
 		StringBuilder parentQuery = new StringBuilder();

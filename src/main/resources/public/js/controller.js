@@ -1233,6 +1233,28 @@ function RbsController($scope, template, model, date, route){
 		}
 	};
 
+	$scope.doRemoveCurrentAndFuturBookingSelection = function() {
+		$scope.display.processing = true;
+		$scope.currentErrors = [];
+		try {
+				$scope.currentBookingSelected.deletePeriodicCurrentToFuture(function(){
+						$scope.display.processing = undefined;
+						$scope.bookings.deselectAll();
+						$scope.closeBooking();
+						model.refreshBookings($scope.display.list);
+				}, function(e){
+					$scope.currentErrors.push(e);
+						$scope.display.processing = undefined;
+						$scope.showActionErrors()
+						model.refreshBookings($scope.display.list);
+				});
+		}
+		catch (e) {
+			$scope.display.processing = undefined;
+			$scope.currentErrors.push({error: "rbs.error.technical"});
+		}
+	};
+
 	// Booking Validation
 	$scope.canProcessBookingSelection = function() {
 		return _.every($scope.bookings.selection(), function(booking){ return booking.isPending(); });

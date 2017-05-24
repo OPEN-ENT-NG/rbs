@@ -16,7 +16,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr ng-repeat="booking in processBookings">
+					<tr ng-repeat="booking in processBookings | orderBy:'id'">
 						<td class="icon" style="color:red"><em ng-if="currentBookingSelected === booking" >*</em></td>
 						<td class="icon" ng-class="booking.color"></td>
 						<td><i ng-if="booking.isSlot()" class="periodic-icon"></i></td>
@@ -44,7 +44,7 @@
 
 		<div class="row">
 			<button class="right-magnet" ng-click="doRemoveCurrentPeriodicBookingSelection()" ng-if="display.processing !== true && processBookings.length > 0"><i18n>rbs.booking.periodic.delete.this_occurrence</i18n></button>
-			<button class="right-magnet" ng-click="doRemoveBookingSelection()" ng-if="display.processing !== true && processBookings.length > 0"><i18n>rbs.booking.periodic.delete.this_and_future_occurrence</i18n></button>
+			<button class="right-magnet" ng-click="doRemoveCurrentAndFuturBookingSelection()" ng-if="display.processing !== true && processBookings.length > 0"><i18n>rbs.booking.periodic.delete.this_and_future_occurrence</i18n></button>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeBooking()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.deleting</i18n></button>

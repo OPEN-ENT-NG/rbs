@@ -27,6 +27,7 @@
     "rbs.booking.bad.request.minDelay.not.respected": "L'intervalle minimum n'est pas respecté : la ressource doit être réservée au moins {0} jour(s) à l'avance.",
     "rbs.booking.bad.request.minDelay.not.respected.by.firstSlot": "L'intervalle minimum n'est pas respecté par la première réservation : la ressource doit être réservée au moins {0} jour(s) à l'avance.",
     "rbs.booking.bad.request.deletion.periodical.booking.already.terminated": "Cannot delete already terminated periodical booking",
+    "rbs.booking.bad.request.deletion.periodical.booking.without.boolean": "Cannot delete periodic booking without boolean",
     "rbs.booking.bad.request.startdate.in.past.periodic.update": "Cannot modify an already started periodical booking",
     "rbs.booking.create": "Nouvelle réservation",
     "rbs.booking.create.conflict": "A validated booking overlaps the booking you tried to create.",
