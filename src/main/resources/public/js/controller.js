@@ -481,9 +481,11 @@ function RbsController($scope, template, model, date, route){
 		$scope.bookings.applyFilters();
 	}
 
-
+	$scope.isViewBooking = false;
 	// Bookings
 	$scope.viewBooking = function(booking) {
+		$scope.currentBookingSelected = booking;
+		$scope.isViewBooking = true;
 		if (booking.isSlot()) {
 			// slot : view booking details and show slot
 			//call back-end to obtain all periodic slots
@@ -1151,7 +1153,9 @@ function RbsController($scope, template, model, date, route){
 
 		var totalSelectionAsynchroneCall = 0;
 		_.each($scope.bookings.selection(), function(booking) {
-			$scope.currentBookingSelected = booking;
+			if(!$scope.isViewBooking) {
+				$scope.currentBookingSelected = booking;
+			}
 			if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
 				totalSelectionAsynchroneCall++;
 			} else if (booking.isSlot() && booking.booking.selected !== true) {
@@ -1165,7 +1169,8 @@ function RbsController($scope, template, model, date, route){
 		//if all slots are already completed
 		if (totalSelectionAsynchroneCall === 0) {
 			//confirm message
-			if ($scope.currentBookingSelected.is_periodic) {
+			if ($scope.currentBookingSelected.isSlot()) {
+				$scope.isViewBooking = false;
 				$scope.showDeletePeriodicBookingMessage();
 			} else {
 				$scope.showConfirmDeleteMessage();
@@ -1173,6 +1178,9 @@ function RbsController($scope, template, model, date, route){
 		} else {
 			// All slots for periodic bookings
 			_.each($scope.bookings.selection(), function(booking){
+				if(!$scope.isViewBooking) {
+					$scope.currentBookingSelected = booking;
+				}
 				if (booking.isSlot() && booking.booking.occurrences !== booking.booking._slots.length) {
 					//call back-end to obtain all periodic slots
 					$scope.bookings.loadSlots(booking, function(){
@@ -1180,6 +1188,7 @@ function RbsController($scope, template, model, date, route){
 						booking.booking.selectAllSlots();
 						totalSelectionAsynchroneCall--;
 						if (totalSelectionAsynchroneCall === 0) {
+							$scope.isViewBooking = false;
 							$scope.showDeletePeriodicBookingMessage();
 						}
 					});
