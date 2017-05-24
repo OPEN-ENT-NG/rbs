@@ -916,6 +916,21 @@ public class BookingController extends ControllerHelper {
 											}
 										} );
 									} else {
+										try {
+											long now = Calendar.getInstance().getTimeInMillis();
+											final String endDate = booking.getString("end_date");
+											//log.warn ("NOW : " + now + " END DATE : " + parseDateFromDB(endDate).getTime());
+											if (booking.getString("parent_booking_id") != null && parseDateFromDB(endDate).getTime() < now) {
+												String errorMessage = i18n.translate(
+														"rbs.booking.bad.request.deletion.periodical.booking.already.terminated",
+														Renders.getHost(request),
+														I18n.acceptLanguage(request));
+												badRequest(request, errorMessage);
+												return;
+											}
+										} catch (ParseException e) {
+											e.printStackTrace();
+										}
 										bookingService.delete(bookingId, user, new Handler<Either<String, JsonObject>>() {
 											@Override
 											public void handle(Either<String, JsonObject> event) {

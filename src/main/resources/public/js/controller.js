@@ -889,7 +889,7 @@ function RbsController($scope, template, model, date, route){
 	$scope.autoSelectTypeAndResource = function() {
 		console.log($scope.selectedStructure.types.length);
 		if($scope.selectedStructure.types.length > 0){
-			console.log("OK")
+			console.log("OK");
 			$scope.editedBooking.type = _.first($scope.selectedStructure.types.filterAvailable());
 			console.log($scope.editBooking.type);
 			$scope.autoSelectResource();
