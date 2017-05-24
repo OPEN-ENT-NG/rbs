@@ -16,7 +16,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr ng-repeat="booking in processBookings">
+					<tr ng-repeat="booking in processBookings | orderBy:'id'">
 						<td class="icon" style="color:red"><em ng-if="currentBookingSelected === booking" >*</em></td>
 						<td class="icon" ng-class="booking.color"></td>
 						<td><i ng-if="booking.isSlot()" class="periodic-icon"></i></td>
