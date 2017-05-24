@@ -188,9 +188,23 @@ function RbsController($scope, template, model, date, route){
 
 	}
 
+	var sort_by = function(field, reverse, primer){
+
+	var key = primer ? 
+		function(x) {return primer(x[field])} : 
+		function(x) {return x[field]};
+
+	reverse = !reverse ? 1 : -1;
+
+	return function (a, b) {
+		return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+		} 
+	}
+
     $scope.initStructures = function(selected){
 		for (var i = 0; i < $scope.structures.length; i++) {
 		    $scope.structureWithTypes = {};
+			$scope.structureWithTypes.id = $scope.structures[i].id;
             $scope.structureWithTypes.expanded = true;
             $scope.structureWithTypes.selected = selected;
             $scope.structureWithTypes.types = [];
@@ -202,6 +216,7 @@ function RbsController($scope, template, model, date, route){
 			});
 			$scope.structuresWithTypes[i] = $scope.structureWithTypes;
 		}
+		$scope.structuresWithTypes.sort(sort_by('name', false, function(a){return a.toUpperCase()}));
 		$scope.selectedStructure = $scope.structuresWithTypes[0];
     }
 
@@ -870,9 +885,15 @@ function RbsController($scope, template, model, date, route){
 		$scope.booking.endDate.setDate(endMoment.date());
 	};
 
+	//TODO ENZO
 	$scope.autoSelectTypeAndResource = function() {
-		$scope.editedBooking.type = _.first($scope.resourceTypes.filterAvailable());
-		$scope.autoSelectResource();
+		console.log($scope.selectedStructure.types.length);
+		if($scope.selectedStructure.types.length > 0){
+			console.log("OK")
+			$scope.editedBooking.type = _.first($scope.selectedStructure.types.filterAvailable());
+			console.log($scope.editBooking.type);
+			$scope.autoSelectResource();
+		}
 	}
 
 	$scope.autoSelectResource = function() {
@@ -1371,7 +1392,7 @@ function RbsController($scope, template, model, date, route){
 		if ($scope.editedResourceType !== undefined) {
 			$scope.closeResourceType();
 		}
-		if($scope.structure.lenght > 1 && $scope.selectedStructure !== undefined){
+		if($scope.structure.length > 1 && $scope.selectedStructure !== undefined){
 			$scope.editedResourceType.structure = $scope.selectedStructure;
 		}
 		template.open('resources', 'manage-resources');

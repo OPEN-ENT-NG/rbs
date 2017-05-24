@@ -20,17 +20,17 @@
 					<div class="content">
 						<div class="row" ng-if="editedBooking.id === undefined">
 						<div class="row">
-							<label class="three cell">rbs.booking.edit.structure.label</label>
+							<label class="three cell"><i18n>rbs.booking.edit.structure.label</i18n></label>
 							<select class="six cell" ng-model="selectedStructure" ng-options="struct.name for struct in structuresWithTypes | orderBy: 'name'" ng-change="autoSelectTypeAndResource()">
 								</select>
-							<div class="six cell warning" ng-if="editedBooking.type === undefined">
+							<div class="six cell warning" ng-if="structuresWithTypes.length < 1">
 								<i18n>rbs.booking.warning.no.structure</i18n>
 							</div>
 						</div>
-						<div class="row" ng-if="selectedStructure.name !== undefined">
+						<div class="row" ng-if="selectedStructure.types.length !== 0">
 							<div class="row">
 								<label class="three cell"><i18n>rbs.booking.edit.type.label</i18n></label>
-								<select class="six cell" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in selectedStructure.types" ng-change="autoSelectResource()" required ng-if="editedBooking.type !== undefined">
+								<select class="six cell" ng-model="editedBooking.type" ng-options="resourceType.name for resourceType in selectedStructure.types" ng-change="autoSelectResource()" required>
 								</select>
 								<div class="six cell warning" ng-if="editedBooking.type === undefined">
 									<i18n>rbs.booking.warning.no.types</i18n>
