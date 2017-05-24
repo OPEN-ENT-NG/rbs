@@ -59,7 +59,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void createBooking(final String resourceId, final JsonObject data, final UserInfos user,
-			final Handler<Either<String, JsonObject>> handler) {
+	                          final Handler<Either<String, JsonObject>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		Object rId = parseId(resourceId);
@@ -88,12 +88,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// Otherwise, it is created with status "validated".
 		// TODO V2 : la reservation doit etre automatiquement validee si le demandeur est valideur
 		query.append(" (SELECT CASE ")
-				.append(  " WHEN (t.validation IS true) THEN ?")
-				.append(  " ELSE ?")
-				.append(  " END")
-				.append(  " FROM rbs.resource_type AS t")
-				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-				.append(  " WHERE r.id = ?),");
+				.append(" WHEN (t.validation IS true) THEN ?")
+				.append(" ELSE ?")
+				.append(" END")
+				.append(" FROM rbs.resource_type AS t")
+				.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(" WHERE r.id = ?),");
 		values.add(CREATED.status())
 				.add(VALIDATED.status())
 				.add(rId);
@@ -130,8 +130,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 */
 	@Override
 	public void createPeriodicBooking(final String resourceId, final String selectedDays,
-			final int firstSelectedDay, final JsonObject data, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler) {
+	                                  final int firstSelectedDay, final JsonObject data, final UserInfos user,
+	                                  final Handler<Either<String, JsonArray>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		statementsBuilder.prepared(UPSERT_USER_QUERY,
@@ -146,27 +146,27 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 1. WITH clause to insert the "parent" booking (i.e. the periodic booking)
 		query.append("WITH parent_booking AS (")
-			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
-			.append(" is_periodic, periodicity, occurrences, days)")
-			.append(" VALUES (?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC',");
+				.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
+				.append(" is_periodic, periodicity, occurrences, days)")
+				.append(" VALUES (?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC',");
 		values.add(rId)
-			.add(user.getUserId())
-			.add(data.getString("booking_reason"))
-			.add(data.getValue("start_date"));
+				.add(user.getUserId())
+				.add(data.getString("booking_reason"))
+				.add(data.getValue("start_date"));
 
 		query.append(" to_timestamp(?) AT TIME ZONE 'UTC',");
-		values.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date, which will be computed
+		values.add(endDate > 0L ? endDate : null); // the null value will be replaced by the last slot's end date, which will be computed
 		final int endDateIndex = values.size() - 1;
 
 		query.append(" ?, ?, ?,");
 		values.add(true)
-			.add(data.getInteger("periodicity"))
-			.add(occurrences!=0 ? occurrences : null);
+				.add(data.getInteger("periodicity"))
+				.add(occurrences != 0 ? occurrences : null);
 
 		// NB : Bit string type cannot be used in a preparedStatement
 		query.append(" B'")
-			.append(selectedDays)
-			.append("') RETURNING id)");
+				.append(selectedDays)
+				.append("') RETURNING id)");
 
 
 		// 2. Insert clause for the child bookings
@@ -191,8 +191,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @return Unix timestamp of the last child booking's end date
 	 */
 	private long appendInsertChildBookingsQuery(StringBuilder query, JsonArray values, final Object resourceId,
-			final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
-			final Object bookingId) {
+	                                            final String selectedDays, final int firstSelectedDay, final JsonObject data, final UserInfos user,
+	                                            final Object bookingId) {
 
 		final boolean isUpdate = (bookingId != null);
 
@@ -205,18 +205,17 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 1. INSERT clause for the first child booking
 		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status, refusal_reason)")
-			.append(" VALUES(?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC',");
+				.append(" VALUES(?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC',");
 		values.add(resourceId)
-			.add(user.getUserId())
-			.add(bookingReason)
-			.add(firstSlotStartDate)
-			.add(firstSlotEndDate);
+				.add(user.getUserId())
+				.add(bookingReason)
+				.add(firstSlotStartDate)
+				.add(firstSlotEndDate);
 
 		if (isUpdate) { // Update of a periodic booking
 			query.append(" ?,");
 			values.add(bookingId);
-		}
-		else { // Creation of a periodic booking
+		} else { // Creation of a periodic booking
 			query.append("(select id from parent_booking),");
 		}
 
@@ -226,65 +225,64 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		 * Validated otherwise
 		 */
 		query.append(" (SELECT CASE")
-			.append(" WHEN (")
-			.append(" EXISTS(SELECT 1 FROM rbs.booking")
-			.append(" WHERE status = ?")
-			.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
-			.append(" AND resource_id = ?")
-			.append(" )) THEN ?");
+				.append(" WHEN (")
+				.append(" EXISTS(SELECT 1 FROM rbs.booking")
+				.append(" WHERE status = ?")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(" AND resource_id = ?")
+				.append(" )) THEN ?");
 		values.add(VALIDATED.status())
-			.add(firstSlotStartDate)
-			.add(firstSlotEndDate)
-			.add(resourceId)
-			.add(REFUSED.status());
+				.add(firstSlotStartDate)
+				.add(firstSlotEndDate)
+				.add(resourceId)
+				.add(REFUSED.status());
 		query.append(" WHEN (t.validation IS true) THEN ?")
-			.append(" ELSE ? END")
-			.append(" FROM rbs.resource_type AS t")
-			.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-			.append(" WHERE r.id = ?")
-			.append("),");
+				.append(" ELSE ? END")
+				.append(" FROM rbs.resource_type AS t")
+				.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(" WHERE r.id = ?")
+				.append("),");
 		values.add(CREATED.status())
-			.add(VALIDATED.status())
-			.add(resourceId);
+				.add(VALIDATED.status())
+				.add(resourceId);
 
-        // refused because of concurrent in case of periodic reservation
-        query.append(" (SELECT CASE")
-                .append(" WHEN (")
-                .append(" EXISTS(SELECT 1 FROM rbs.booking")
-                .append(" WHERE status = ?")
-                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
-                .append(" AND resource_id = ?")
-                .append(" )) THEN ?");
-        values.add(VALIDATED.status())
-                .add(firstSlotStartDate)
-                .add(firstSlotEndDate)
-                .add(resourceId)
-                .add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
+		// refused because of concurrent in case of periodic reservation
+		query.append(" (SELECT CASE")
+				.append(" WHEN (")
+				.append(" EXISTS(SELECT 1 FROM rbs.booking")
+				.append(" WHERE status = ?")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(" AND resource_id = ?")
+				.append(" )) THEN ?");
+		values.add(VALIDATED.status())
+				.add(firstSlotStartDate)
+				.add(firstSlotEndDate)
+				.add(resourceId)
+				.add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
 
-        // finding the conflicted booking id
-        query.append( " || ( SELECT id FROM rbs.booking")
-                .append(" WHERE status = ?")
-                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
-                .append(" AND resource_id = ? LIMIT 1 )");
-        values.add(VALIDATED.status())
-                .add(firstSlotStartDate)
-                .add(firstSlotEndDate)
-                .add(resourceId);
+		// finding the conflicted booking id
+		query.append(" || ( SELECT id FROM rbs.booking")
+				.append(" WHERE status = ?")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(" AND resource_id = ? LIMIT 1 )");
+		values.add(VALIDATED.status())
+				.add(firstSlotStartDate)
+				.add(firstSlotEndDate)
+				.add(resourceId);
 
 
+		query.append(" ELSE ? END)) ");
+		values.add(null);
 
-        query.append(" ELSE ? END)) ");
-        values.add(null);
-
-        // 2. Additional VALUES to insert the other child bookings
+		// 2. Additional VALUES to insert the other child bookings
 		int nbOccurences = data.getInteger("occurrences", -1);
 
-		if(nbOccurences == -1) {
+		if (nbOccurences == -1) {
 			long durationInDays = TimeUnit.DAYS.convert(endDate - firstSlotEndDate, TimeUnit.SECONDS);
 			nbOccurences = getOccurrences(firstSelectedDay, selectedDays, durationInDays, periodicity);
 		}
 
-		if(nbOccurences > 1) {
+		if (nbOccurences > 1) {
 			int selectedDay = firstSelectedDay;
 			int intervalFromFirstDay = 0;
 
@@ -294,88 +292,87 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				selectedDay = (selectedDay + interval) % 7;
 
 				query.append(", (?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-					.append(intervalFromFirstDay) // NB : "interval '? day'" or "interval '?'" is not properly computed by prepared statement
-					.append(" day', ");
+						.append(intervalFromFirstDay) // NB : "interval '? day'" or "interval '?'" is not properly computed by prepared statement
+						.append(" day', ");
 				query.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-					.append(intervalFromFirstDay)
-					.append(" day',");
+						.append(intervalFromFirstDay)
+						.append(" day',");
 				values.add(resourceId)
-					.add(user.getUserId())
-					.add(bookingReason)
-					.add(firstSlotStartDate)
-					.add(firstSlotEndDate);
+						.add(user.getUserId())
+						.add(bookingReason)
+						.add(firstSlotStartDate)
+						.add(firstSlotEndDate);
 
 				if (isUpdate) { // Update of a periodic booking
 					query.append(" ?,");
 					values.add(bookingId);
-				}
-				else { // Creation of a periodic booking
+				} else { // Creation of a periodic booking
 					query.append("(select id from parent_booking),");
 				}
 
 				query.append(" (SELECT CASE")
-					.append(" WHEN (")
-					.append(" EXISTS(SELECT 1 FROM rbs.booking")
-					.append(" WHERE status = ?");
+						.append(" WHEN (")
+						.append(" EXISTS(SELECT 1 FROM rbs.booking")
+						.append(" WHERE status = ?");
 				query.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-					.append(intervalFromFirstDay)
-					.append(" day', ")
-					.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-					.append(intervalFromFirstDay)
-					.append(" day')");
+						.append(intervalFromFirstDay)
+						.append(" day', ")
+						.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+						.append(intervalFromFirstDay)
+						.append(" day')");
 				query.append(" AND resource_id = ?")
-					.append(" )) THEN ?");
+						.append(" )) THEN ?");
 				values.add(VALIDATED.status())
-					.add(firstSlotStartDate)
-					.add(firstSlotEndDate)
-					.add(resourceId)
-					.add(REFUSED.status());
+						.add(firstSlotStartDate)
+						.add(firstSlotEndDate)
+						.add(resourceId)
+						.add(REFUSED.status());
 				query.append(" WHEN (t.validation IS true) THEN ?")
-					.append(" ELSE ? END")
-					.append(" FROM rbs.resource_type AS t")
-					.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-					.append(" WHERE r.id = ?")
-					.append("), ");
+						.append(" ELSE ? END")
+						.append(" FROM rbs.resource_type AS t")
+						.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+						.append(" WHERE r.id = ?")
+						.append("), ");
 				values.add(CREATED.status())
-					.add(VALIDATED.status())
-					.add(resourceId);
+						.add(VALIDATED.status())
+						.add(resourceId);
 
-                // refused because of concurrent in case of periodic reservation
-                query.append(" (SELECT CASE")
-                        .append(" WHEN (")
-                        .append(" EXISTS(SELECT 1 FROM rbs.booking")
-                        .append(" WHERE status = ?")
-                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-                        .append(intervalFromFirstDay)
-                        .append(" day', ")
-                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-                        .append(intervalFromFirstDay)
-                        .append(" day')")
-                        .append(" AND resource_id = ?")
-                        .append(" )) THEN ?");
-                values.add(VALIDATED.status())
-                        .add(firstSlotStartDate)
-                        .add(firstSlotEndDate)
-                        .add(resourceId)
-                        .add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
+				// refused because of concurrent in case of periodic reservation
+				query.append(" (SELECT CASE")
+						.append(" WHEN (")
+						.append(" EXISTS(SELECT 1 FROM rbs.booking")
+						.append(" WHERE status = ?")
+						.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+						.append(intervalFromFirstDay)
+						.append(" day', ")
+						.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+						.append(intervalFromFirstDay)
+						.append(" day')")
+						.append(" AND resource_id = ?")
+						.append(" )) THEN ?");
+				values.add(VALIDATED.status())
+						.add(firstSlotStartDate)
+						.add(firstSlotEndDate)
+						.add(resourceId)
+						.add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
 
-                // finding the conflicted booking id
-                query.append( " || (SELECT id FROM rbs.booking")
-                        .append(" WHERE status = ?")
-                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-                        .append(intervalFromFirstDay)
-                        .append(" day', ")
-                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
-                        .append(intervalFromFirstDay)
-                        .append(" day')")
-                        .append(" AND resource_id = ? LIMIT 1 )");
-                values.add(VALIDATED.status())
-                        .add(firstSlotStartDate)
-                        .add(firstSlotEndDate)
-                        .add(resourceId);
+				// finding the conflicted booking id
+				query.append(" || (SELECT id FROM rbs.booking")
+						.append(" WHERE status = ?")
+						.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+						.append(intervalFromFirstDay)
+						.append(" day', ")
+						.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+						.append(intervalFromFirstDay)
+						.append(" day')")
+						.append(" AND resource_id = ? LIMIT 1 )");
+				values.add(VALIDATED.status())
+						.add(firstSlotStartDate)
+						.add(firstSlotEndDate)
+						.add(resourceId);
 
-                query.append(" ELSE ? END)) ");
-                values.add(null);
+				query.append(" ELSE ? END)) ");
+				values.add(null);
 			}
 
 			lastSlotEndDate += TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS);
@@ -386,7 +383,6 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	/**
-	 *
 	 * @param values
 	 * @param lastSlotEndDate
 	 * @param endDateIndex
@@ -398,8 +394,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		for (Object object : values) {
 			if (i == endDateIndex) {
 				newValues.add(lastSlotEndDate);
-			}
-			else {
+			} else {
 				newValues.add(object);
 			}
 			i++;
@@ -410,7 +405,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
-			final Handler<Either<String, JsonObject>> handler) {
+	                          final Handler<Either<String, JsonObject>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		Object rId = parseId(resourceId);
@@ -435,21 +430,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// If validation is activated, the booking status is updated to "created" (the booking must be validated anew).
 		// Otherwise, it is updated to "validated".
 		query.append(" status = (SELECT CASE ")
-				.append(  " WHEN (t.validation IS true) THEN ?")
-				.append(  " ELSE ?")
-				.append(  " END")
-				.append(  " FROM rbs.resource_type AS t")
-				.append(  " INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-				.append(  " INNER JOIN rbs.booking AS b on b.resource_id = r.id")
-				.append(  " WHERE b.id = ?)");
+				.append(" WHEN (t.validation IS true) THEN ?")
+				.append(" ELSE ?")
+				.append(" END")
+				.append(" FROM rbs.resource_type AS t")
+				.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(" INNER JOIN rbs.booking AS b on b.resource_id = r.id")
+				.append(" WHERE b.id = ?)");
 		values.add(CREATED.status())
 				.add(VALIDATED.status())
 				.add(bId);
 
 		query.append(" WHERE id = ?")
-		.append(" AND resource_id = ?");
+				.append(" AND resource_id = ?");
 		values.add(bId)
-			.add(rId);
+				.add(rId);
 
 
 		// Check that there does not exist a validated booking that overlaps the updated booking.
@@ -480,7 +475,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	private void addFieldToUpdate(StringBuilder sb, String fieldname,
-			JsonObject object, JsonArray values) {
+	                              JsonObject object, JsonArray values) {
 
 		if ("start_date".equals(fieldname) || "end_date".equals(fieldname)) {
 			sb.append(fieldname).append("= to_timestamp(?) AT TIME ZONE 'UTC', ");
@@ -492,8 +487,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void updatePeriodicBooking(final String resourceId, final String bookingId, final String selectedDays,
-			final int firstSelectedDay, final JsonObject data, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler) {
+	                                  final int firstSelectedDay, final JsonObject data, final UserInfos user,
+	                                  final Handler<Either<String, JsonArray>> handler) {
 
 		final long endDate = data.getLong("periodic_end_date", 0L);
 		final int occurrences = data.getInteger("occurrences", 0);
@@ -511,22 +506,22 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		parentQuery.append("UPDATE rbs.booking")
 				.append(" SET booking_reason = ?, start_date = to_timestamp(?) AT TIME ZONE 'UTC', end_date = to_timestamp(?) AT TIME ZONE 'UTC',");
 		parentValues.add(data.getString("booking_reason"))
-			.add(data.getLong("start_date"))
-			.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date
+				.add(data.getLong("start_date"))
+				.add(endDate > 0L ? endDate : null); // the null value will be replaced by the last slot's end date
 		final int endDateIndex = parentValues.size() - 1;
 
 		parentQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");
 		parentValues.add(data.getInteger("periodicity"))
-					.add(occurrences!=0 ? occurrences : null);
+				.add(occurrences != 0 ? occurrences : null);
 
 		parentQuery.append(" days = B'")
-			.append(selectedDays)
-			.append("' WHERE resource_id = ?")
-			.append(" AND id = ?")
-			.append(" AND is_periodic = ?");
+				.append(selectedDays)
+				.append("' WHERE resource_id = ?")
+				.append(" AND id = ?")
+				.append(" AND is_periodic = ?");
 		parentValues.add(rId)
-			.add(bId)
-			.add(true);
+				.add(bId)
+				.add(true);
 
 		// 3. Delete child bookings
 		String deleteQuery = "DELETE FROM rbs.booking WHERE parent_booking_id = ?";
@@ -551,11 +546,46 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(3, handler));
 	}
 
+	@Override
+	public void deleteFuturePeriodicBooking(String bookingId, Date startDate, Handler<Either<String, JsonArray>> handler) {
+		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
+		Object bId = parseId(bookingId);
+
+		// 1. Lock query to avoid race condition
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
+		// 2. Delete child bookings
+		StringBuilder deleteQuery = new StringBuilder();
+		JsonArray deleteValues = new JsonArray();
+		deleteQuery.append("DELETE FROM rbs.booking")
+				.append(" WHERE parent_booking_id = ?")
+				.append(" AND start_date >= to_timestamp(?) AT TIME ZONE 'UTC'");
+		deleteValues.add(bId);
+		deleteValues.add(startDate.getTime() / 1000);
+
+
+		// 3. Update parent booking with last end date slot
+		StringBuilder parentQuery = new StringBuilder();
+		JsonArray parentValues = new JsonArray();
+		parentQuery.append("UPDATE rbs.booking")
+				.append(" SET end_date = (SELECT MAX(end_date) FROM rbs.booking WHERE parent_booking_id = ?)")
+				.append(" , modified = NOW()")
+				.append(" WHERE id = ?");
+		parentValues.add(bId)
+				.add(bId);
+
+		// Add queries to SqlStatementsBuilder
+		statementsBuilder.prepared(deleteQuery.toString(), deleteValues);
+		statementsBuilder.prepared(parentQuery.toString(), parentValues);
+
+		// Send queries to event bus
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(2, handler));
+	}
+
 
 	@Override
 	public void processBooking(final String resourceId, final String bookingId,
-			final int newStatus, final JsonObject data,
-			final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+	                           final int newStatus, final JsonObject data,
+	                           final UserInfos user, final Handler<Either<String, JsonArray>> handler) {
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		Object rId = parseId(resourceId);
@@ -583,23 +613,22 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append("WHERE id = ?")
 				.append(" AND resource_id = ? ");
 		processValues.add(bId)
-			.add(rId);
+				.add(rId);
 
 		StringBuilder returningClause = new StringBuilder(" RETURNING id, status, owner, ")
-			.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
-			.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
+				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
+				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
 		if (newStatus != VALIDATED.status()) {
 			processQuery.append(returningClause);
 			statementsBuilder.prepared(processQuery.toString(), processValues);
-		}
-		else {
+		} else {
 			// 3b. Additional clauses when validating a booking
 			StringBuilder validateQuery = new StringBuilder();
 			validateQuery.append("WITH validated_booking AS (")
-				.append(" SELECT start_date, end_date")
-				.append(" FROM rbs.booking")
-				.append(" WHERE id = ?) ");
+					.append(" SELECT start_date, end_date")
+					.append(" FROM rbs.booking")
+					.append(" WHERE id = ?) ");
 			JsonArray validateValues = new JsonArray();
 			validateValues.add(bId);
 
@@ -614,9 +643,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" WHERE resource_id = ?")
 					.append(" AND status = ?")
 					.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
-					.append(")");;
+					.append(")");
+			;
 			validateValues.add(rId)
-				.add(VALIDATED.status());
+					.add(VALIDATED.status());
 
 			validateQuery.append(returningClause);
 
@@ -629,34 +659,34 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 			// Store start and end dates of validated booking in a temporary table
 			rbQuery.append("WITH validated_booking AS (")
-				.append(" SELECT start_date, end_date")
-				.append(" FROM rbs.booking")
-				.append(" WHERE id = ?)");
+					.append(" SELECT start_date, end_date")
+					.append(" FROM rbs.booking")
+					.append(" WHERE id = ?)");
 			rbValues.add(bId);
 
 			rbQuery.append(" UPDATE rbs.booking")
-				.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
+					.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
 			rbValues.add(REFUSED.status())
-				.add(user.getUserId())
-				.add("<i18n>rbs.booking.automatically.refused.reason</i18n>"+bId);
+					.add(user.getUserId())
+					.add("<i18n>rbs.booking.automatically.refused.reason</i18n>" + bId);
 
 			// Refuse concurrent bookings if and only if the previous query has validated the booking
 			rbQuery.append(" WHERE EXISTS (")
-				.append(" SELECT 1 FROM rbs.booking")
-				.append(" WHERE id = ?")
-				.append(" AND status = ?)");
+					.append(" SELECT 1 FROM rbs.booking")
+					.append(" WHERE id = ?")
+					.append(" AND status = ?)");
 			rbValues.add(bId)
-				.add(VALIDATED.status());
+					.add(VALIDATED.status());
 
 			// Get concurrent bookings' ids that must be refused
 			rbQuery.append(" AND id in (")
-				.append(" SELECT id FROM rbs.booking")
-				.append(" WHERE resource_id = ?")
-				.append(" AND status = ?")
-				.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
-				.append(")");
+					.append(" SELECT id FROM rbs.booking")
+					.append(" WHERE resource_id = ?")
+					.append(" AND status = ?")
+					.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
+					.append(")");
 			rbValues.add(rId)
-				.add(CREATED.status());
+					.add(CREATED.status());
 
 			rbQuery.append(returningClause);
 
@@ -668,14 +698,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listUserBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler){
+	public void listUserBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
-			.append(" FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
-			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE b.owner = ?")
-			.append(" ORDER BY b.start_date, b.end_date");
+				.append(" FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE b.owner = ?")
+				.append(" ORDER BY b.start_date, b.end_date");
 
 		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
@@ -685,7 +715,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler){
+	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -705,7 +735,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
 		List<String> scope = getLocalAdminScope(user);
-		if (scope!=null && !scope.isEmpty()) {
+		if (scope != null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
 				values.addString(schoolId);
@@ -719,22 +749,22 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds, final String startDate, final String endDate,
-								final Handler<Either<String, JsonArray>> handler){
+	                                   final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
 		//find all booking without periodic booking
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
-			.append(" FROM rbs.booking AS b")
-			.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
-			.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
-			.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
-			.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
-			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
-			.append("OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)) AND (rs.member_id IN ")
-			.append(Sql.listPrepared(groupsAndUserIds.toArray()))
-			.append(" OR t.owner = ?");
+				.append(" FROM rbs.booking AS b")
+				.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
+				.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
+				.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
+				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
+				.append("OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)) AND (rs.member_id IN ")
+				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
+				.append(" OR t.owner = ?");
 		values.addString(startDate);
 		values.addString(endDate);
 		values.addString(startDate);
@@ -747,7 +777,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
 		List<String> scope = getLocalAdminScope(user);
-		if (scope!=null && !scope.isEmpty()) {
+		if (scope != null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
 				values.addString(schoolId);
@@ -770,17 +800,17 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 							final JsonObject jo = (JsonObject) o;
 							if (jo.getNumber("parent_booking_id") != null) {
 								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
-                                jsonAllBookingResult.addObject(jo);
+								jsonAllBookingResult.addObject(jo);
 							} else if (jo.getNumber("occurrences") == null) {
 								try {
 									final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("start_date"));
 									final Date currentEndDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("end_date"));
 									final List<String> startSearched = StringUtils.split(startDate, "-");
 									final Date dateStartSearched = DateUtils.create(Integer.parseInt(startSearched.get(0)),
-											Integer.parseInt(startSearched.get(1))-1, Integer.parseInt(startSearched.get(2)));
-									final List<String>  endSearched = StringUtils.split(endDate, "-");
+											Integer.parseInt(startSearched.get(1)) - 1, Integer.parseInt(startSearched.get(2)));
+									final List<String> endSearched = StringUtils.split(endDate, "-");
 									final Date dateEndSearched = DateUtils.create(Integer.parseInt(endSearched.get(0)),
-											Integer.parseInt(endSearched.get(1))-1, Integer.parseInt(endSearched.get(2)));
+											Integer.parseInt(endSearched.get(1)) - 1, Integer.parseInt(endSearched.get(2)));
 									if (DateUtils.isBetween(dateStartSearched, currentStartDate, currentEndDate) ||
 											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate) ||
 											(DateUtils.isBetween(currentStartDate, dateStartSearched, dateEndSearched) &&
@@ -835,7 +865,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void listFullSlotsBooking(final String bookingId,
-								final Handler<Either<String, JsonArray>> handler){
+	                                 final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 
@@ -855,14 +885,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void listBookingsByResource(final String resourceId,
-			final Handler<Either<String, JsonArray>> handler){
+	                                   final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
-			.append(" FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
-			.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-			.append(" WHERE b.resource_id = ?")
-			.append(" ORDER BY b.start_date, b.end_date");
+				.append(" FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE b.resource_id = ?")
+				.append(" ORDER BY b.start_date, b.end_date");
 
 		JsonArray values = new JsonArray();
 		values.add(parseId(resourceId));
@@ -873,7 +903,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	@Override
 	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler){
+	                                    final Handler<Either<String, JsonArray>> handler) {
 
 		// Query
 		StringBuilder query = new StringBuilder();
@@ -894,8 +924,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" WHERE c.parent_booking_id = b.id")
 				.append(" AND c.status = ?)))");
 		values.add(CREATED.status())
-			.add(true)
-			.add(CREATED.status());
+				.add(true)
+				.add(CREATED.status());
 
 		// Restrict results to bookings visible by current user
 		query.append(" AND (ts.member_id IN ")
@@ -929,7 +959,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 */
 	@Override
 	public void getModeratorsIds(final String bookingId, final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler){
+	                             final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
@@ -937,43 +967,43 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Resource owner is a moderator
 		query.append("SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
-			.append(" INNER JOIN rbs.members AS m on r.owner = m.id")
-			.append(" WHERE b.id = ? AND r.owner != ?");
+				.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+				.append(" INNER JOIN rbs.members AS m on r.owner = m.id")
+				.append(" WHERE b.id = ? AND r.owner != ?");
 		values.add(bId)
-			.add(user.getUserId());
+				.add(user.getUserId());
 
 		// Type owner is a moderator
 		query.append(" UNION")
-			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
-			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
-			.append(" INNER JOIN rbs.members AS m on t.owner = m.id ")
-			.append(" WHERE b.id = ? AND t.owner != ?");
+				.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+				.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
+				.append(" INNER JOIN rbs.members AS m on t.owner = m.id ")
+				.append(" WHERE b.id = ? AND t.owner != ?");
 		values.add(bId)
-			.add(user.getUserId());
+				.add(user.getUserId());
 
 		// Users with resource right "processBooking" are moderators
 		query.append(" UNION")
-			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
-			.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
-			.append(" INNER JOIN rbs.members AS m on rs.member_id = m.id")
-			.append(" WHERE b.id = ? AND rs.member_id != ?")
-			.append(" AND rs.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
+				.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+				.append(" INNER JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+				.append(" INNER JOIN rbs.members AS m on rs.member_id = m.id")
+				.append(" WHERE b.id = ? AND rs.member_id != ?")
+				.append(" AND rs.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
 		values.add(bId)
-			.add(user.getUserId());
+				.add(user.getUserId());
 
 		query.append(" UNION")
-			.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
-			.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
-			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-			.append(" INNER JOIN rbs.members AS m on ts.member_id = m.id")
-			.append(" WHERE b.id = ? AND ts.member_id != ?")
-			.append(" AND ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
+				.append(" SELECT DISTINCT m.user_id, m.group_id FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.resource AS r on r.id = b.resource_id")
+				.append(" INNER JOIN rbs.resource_type AS t on t.id = r.type_id")
+				.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+				.append(" INNER JOIN rbs.members AS m on ts.member_id = m.id")
+				.append(" WHERE b.id = ? AND ts.member_id != ?")
+				.append(" AND ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'");
 		values.add(bId)
-			.add(user.getUserId());
+				.add(user.getUserId());
 
 		Sql.getInstance().prepared(query.toString(), values,
 				validResultHandler(handler));
@@ -991,14 +1021,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	private void getResourceName(final String bookingId, final Handler<Either<String, JsonObject>> handler, boolean withBooking) {
 		StringBuilder query = new StringBuilder("SELECT r.name AS resource_name");
-		if(withBooking) {
+		if (withBooking) {
 			query.append(", b.owner, b.is_periodic,")
-				.append("to_char(b.start_date, '").append(DATE_FORMAT).append("') as start_date,")
-				.append("to_char(b.end_date, '").append(DATE_FORMAT).append("') as end_date");
+					.append("to_char(b.start_date, '").append(DATE_FORMAT).append("') as start_date,")
+					.append("to_char(b.end_date, '").append(DATE_FORMAT).append("') as end_date");
 		}
 		query.append(" FROM rbs.resource AS r")
-			.append(" INNER JOIN rbs.booking AS b on r.id = b.resource_id")
-			.append(" WHERE b.id = ?");
+				.append(" INNER JOIN rbs.booking AS b on r.id = b.resource_id")
+				.append(" WHERE b.id = ?");
 
 		Sql.getInstance().prepared(query.toString(), new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
@@ -1009,19 +1039,20 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		StringBuilder query = new StringBuilder();
 
 		query.append("SELECT DISTINCT p.id, r.name as resource_name, ")
-			.append("to_char(p.start_date, '").append(DATE_FORMAT).append("') as start_date,")
-			.append("to_char(p.end_date, '").append(DATE_FORMAT).append("') as end_date")
-			.append(" FROM rbs.booking AS b")
-			.append(" INNER JOIN rbs.booking AS p ON b.parent_booking_id = p.id")
-			.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
-			.append(" WHERE b.id = ?");
+				.append("to_char(p.start_date, '").append(DATE_FORMAT).append("') as start_date,")
+				.append("to_char(p.end_date, '").append(DATE_FORMAT).append("') as end_date")
+				.append(" FROM rbs.booking AS b")
+				.append(" INNER JOIN rbs.booking AS p ON b.parent_booking_id = p.id")
+				.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id")
+				.append(" WHERE b.id = ?");
 
 		Sql.getInstance().prepared(query.toString(), new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 
-    public void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
-        this.retrieve(bookingId, handler);
-    }
+	public void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
+		this.retrieve(bookingId, handler);
+	}
+
 
 }
