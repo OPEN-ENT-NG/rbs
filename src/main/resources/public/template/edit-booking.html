@@ -21,7 +21,7 @@
 						<div class="row" ng-if="editedBooking.id === undefined">
 						<div class="row">
 							<label class="three cell">rbs.booking.edit.structure.label</label>
-							<select class="six cell" ng-model="selectedStructure" ng-options="struct.name for struct in structuresWithTypes">
+							<select class="six cell" ng-model="selectedStructure" ng-options="struct.name for struct in structuresWithTypes | orderBy: 'name'" ng-change="autoSelectTypeAndResource()">
 								</select>
 							<div class="six cell warning" ng-if="editedBooking.type === undefined">
 								<i18n>rbs.booking.warning.no.structure</i18n>

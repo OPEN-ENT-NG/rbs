@@ -358,6 +358,7 @@ function RbsController($scope, template, model, date, route){
     }
 
 	$scope.setSelectedStructureForCreation = function(structure){
+		//$scope.editedResourceType.structure = structure;
 		$scope.selectedStructure = structure;
 	}
 
@@ -1335,7 +1336,7 @@ function RbsController($scope, template, model, date, route){
         $scope.editedResourceType = new ResourceType();
         $scope.editedResourceType.validation = false;
         $scope.editedResourceType.color = model.getNextColor();
-        $scope.editedResourceType.structure = $scope.structures[0];
+        $scope.editedResourceType.structure = $scope.selectedStructure;
         template.open('resources', 'edit-resource-type');
 	}
 
