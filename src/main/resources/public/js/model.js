@@ -1,11 +1,11 @@
-model.colors = ['cyan', 'green', 'orange', 'pink', 'purple', 'grey'];
-
+                //  cyan', 'green', 'orange', 'pink', 'purple', 'grey'
+model.colors = ['#4bafd5', '#46bfaf', '#FF8500', '#b930a2', '#763294'];
 model.STATE_CREATED = 1;
 model.STATE_VALIDATED = 2;
 model.STATE_REFUSED = 3;
 model.STATE_SUSPENDED = 4;
 model.STATE_PARTIAL = 9; // this state is used only in front-end for periodic bookings, it is not saved in database.
-
+model.LAST_DEFAULT_COLOR = '#4bafd5';
 model.DETACHED_STRUCTURE = {
 	id: 'DETACHED',
 	name: 'rbs.structure.detached'
@@ -177,7 +177,22 @@ Booking.prototype.process = function(data, cb, cbe, context) {
 
 Booking.prototype.delete = function(cb, cbe) {
 	var booking = this;
-	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id)
+	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id + "/false")
+			.done(function(){
+				if(typeof cb === 'function'){
+					cb();
+				}
+			})
+			.error(function(e){
+				if(typeof cbe === 'function'){
+					cbe(model.parseError(e, booking, 'delete'));
+				}
+			});
+};
+
+Booking.prototype.deletePeriodicCurrentToFuture = function(cb, cbe) {
+	var booking = this;
+	http().delete('/rbs/resource/' + this.resource.id + '/booking/' + this.id + "/true")
 			.done(function(){
 				if(typeof cb === 'function'){
 					cb();
@@ -377,7 +392,8 @@ Resource.prototype.toJSON = function() {
 		is_available : this.is_available,
 		type_id : this.type_id,
 		min_delay : (this.hasMinDelay) ? this.min_delay : undefined,
-		max_delay : (this.hasMaxDelay) ? this.max_delay : undefined
+		max_delay : (this.hasMaxDelay) ? this.max_delay : undefined,
+		color : this.color
 	};
 	if (this.was_available !== undefined) {
 		json.was_available = this.was_available;
@@ -492,9 +508,14 @@ ResourceType.prototype.getModerators = function(callback) {
 };
 
 ResourceType.prototype.toJSON = function() {
+	if (this.extendcolor === null) {
+		this.extendcolor = false;
+	}
 	var json = {
 		name : this.name,
 		validation : this.validation,
+		color : this.color,
+		extendcolor : this.extendcolor
 	};
 	// Send school id only at creation
 	if (! this.id) {
@@ -605,11 +626,26 @@ model.build = function(){
 						return s.id === resourceType.school_id;
 					});
 					resourceType.structure = structure || model.DETACHED_STRUCTURE;
-
 					// Auto-associate colors to Types
-					resourceType.color = model.findColor(index);
+					//resourceType.color =
+
+					if(resourceType.color == null) {
+						resourceType.color = model.findColor(index);
+                        model.LAST_DEFAULT_COLOR = resourceType.color;
+						index++;
+					}
+					else {
+						var nbCouleur = 0;
+                        resourceTypes.forEach(function(resourceType){
+                            if (model.colors.indexOf(resourceType.color) !== -1) {
+                                nbCouleur ++;
+                            }
+                        });
+                        model.LAST_DEFAULT_COLOR = model.findColor(nbCouleur);
+                        index = nbCouleur + 1;
+					}
 					resourceType._id = resourceType.id;
-					index++;
+
 				});
 
 				// Fill the ResourceType collection and prepare the index
@@ -628,6 +664,9 @@ model.build = function(){
 						var resourceType = resourceTypeIndex[resource.type_id];
 						if (resourceType !== undefined) {
 							resource.type = resourceType;
+                            if(resource.color === null) {
+                                resource.color = resourceType.color;
+                            }
 							resourceType.resources.push(resource, false);
 						}
 
@@ -947,6 +986,12 @@ model.refreshBookings = function(isDisplayList) {
 	} else {
 		model.bookings.sync();
 	}
+};
+
+model.getNextColor = function() {
+	var i = model.colors.indexOf(model.LAST_DEFAULT_COLOR);
+	return model.colors[(i+1) % model.colors.length];
+	//return '#FF8500';
 };
 
 model.findColor = function(index) {

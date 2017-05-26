@@ -26,6 +26,9 @@
 			"description": "In seconds. The resource can be booked at most max_delay in advance",
 			"type": "integer",
 			"minimum": 0
+		},
+		"color": {
+			"type": "string"
 		}
 	},
 	"required": [

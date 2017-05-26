@@ -124,9 +124,33 @@ public class ResourceTypeController extends ControllerHelper {
 				if (user != null) {
 					RequestUtils.bodyToJson(request, pathPrefix + "updateResourceType", new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject object) {
-							String id = request.params().get("id");
-							crudService.update(id, object, user, defaultResponseHandler(request));
+						public void handle(final JsonObject resourceType) {
+							final String id = request.params().get("id");
+							crudService.update(id, resourceType, user, new Handler<Either<String, JsonObject>>() {
+								@Override
+								public void handle(Either<String, JsonObject> event) {
+									if (event.isRight()) {
+										if(resourceType == null || resourceType.size() == 0) {
+											renderJson(request, event.right().getValue());
+										}
+										else {
+											Boolean shouldOverride = resourceType.getBoolean("extendcolor");
+											if (shouldOverride != null && shouldOverride) {
+												resourceTypeService.overrideColorChild(id,resourceType.getString("color"),defaultResponseHandler(request));
+											}
+											else {
+												log.trace("Update resource type " + id + " without overriding color for child");
+												renderJson(request, event.right().getValue());
+											}
+										}
+
+									} else {
+										JsonObject error = new JsonObject()
+												.putString("error", event.left().getValue());
+										renderJson(request, error, 400);
+									}
+								}
+							});
 						}
 					});
 				} else {
