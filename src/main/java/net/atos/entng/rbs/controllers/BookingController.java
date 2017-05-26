@@ -882,9 +882,10 @@ public class BookingController extends ControllerHelper {
 									}
 									final boolean thisAndAfter = testString;
 									if (thisAndAfter) {
-										bookingService.getParentBooking(bookingId, new Handler<Either<String, JsonObject>>() {
-											@Override
-											public void handle(Either<String, JsonObject> event) {
+										if (booking.getLong("parent_booking_id") != null) {
+											bookingService.getParentBooking(bookingId, new Handler<Either<String, JsonObject>>() {
+												@Override
+												public void handle(Either<String, JsonObject> event) {
 													try {
 														JsonObject parentBooking = event.right().getValue();
 														final long pId = parentBooking.getLong("id", 0L);
@@ -902,25 +903,31 @@ public class BookingController extends ControllerHelper {
 														}
 														final Date startDate = parseDateFromDB(booking.getString("start_date"));
 														try {
-															bookingService.deleteFuturePeriodicBooking(String.valueOf(pId),startDate,
+															bookingService.deleteFuturePeriodicBooking(String.valueOf(pId), startDate,
 																	getHandlerForPeriodicNotification(user, request, false));
 														} catch (Exception e) {
 															log.error("Error during service deleteFuturePeriodicBooking", e);
 															renderError(request);
 														}
 														return;
-													}
-													catch (ParseException e) {
+													} catch (ParseException e) {
 														log.error("Can't parse date form RBS DB", e);
 													}
-											}
-										} );
+												}
+											});
+										} else {
+											String errorMessage = i18n.translate(
+													"rbs.booking.bad.request.deletion.booking.with.true",
+													Renders.getHost(request),
+													I18n.acceptLanguage(request));
+											badRequest(request, errorMessage);
+											return;
+										}
 									} else {
 										try {
 											long now = Calendar.getInstance().getTimeInMillis();
 											final String endDate = booking.getString("end_date");
-											//log.warn ("NOW : " + now + " END DATE : " + parseDateFromDB(endDate).getTime());
-											if (booking.getString("parent_booking_id") != null && parseDateFromDB(endDate).getTime() < now) {
+											if (booking.getLong("parent_booking_id") != null && parseDateFromDB(endDate).getTime() < now) {
 												String errorMessage = i18n.translate(
 														"rbs.booking.bad.request.deletion.periodical.booking.already.terminated",
 														Renders.getHost(request),

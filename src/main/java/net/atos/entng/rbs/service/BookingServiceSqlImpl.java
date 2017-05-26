@@ -1024,7 +1024,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		if (withBooking) {
 			query.append(", b.owner, b.is_periodic,")
 					.append("to_char(b.start_date, '").append(DATE_FORMAT).append("') as start_date,")
-					.append("to_char(b.end_date, '").append(DATE_FORMAT).append("') as end_date");
+					.append("to_char(b.end_date, '").append(DATE_FORMAT).append("') as end_date,")
+					.append("b.parent_booking_id");
 		}
 		query.append(" FROM rbs.resource AS r")
 				.append(" INNER JOIN rbs.booking AS b on r.id = b.resource_id")
