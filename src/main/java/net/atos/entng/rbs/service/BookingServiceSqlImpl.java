@@ -765,6 +765,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append("OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)) AND (rs.member_id IN ")
 				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
 				.append(" OR t.owner = ?");
+
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
 		values.addString(startDate);
 		values.addString(endDate);
 		values.addString(startDate);
