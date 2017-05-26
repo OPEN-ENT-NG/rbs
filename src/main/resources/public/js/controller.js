@@ -97,6 +97,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.selectedBooking = undefined;
 		$scope.editedBooking = null;
 		$scope.bookings.refuseReason = undefined;
+		$scope.selectedStructure = undefined;
 		$scope.processBookings = [];
 		$scope.currentErrors = [];
 
@@ -887,20 +888,24 @@ function RbsController($scope, template, model, date, route){
 		$scope.booking.endDate.setDate(endMoment.date());
 	};
 
-	//TODO ENZO
 	$scope.autoSelectTypeAndResource = function() {
-		console.log($scope.selectedStructure.types.length);
 		if($scope.selectedStructure.types.length > 0){
-			console.log("OK");
-			$scope.editedBooking.type = _.first($scope.selectedStructure.types.filterAvailable());
-			console.log($scope.editBooking.type);
+			$scope.editedBooking.type = $scope.selectedStructure.types[0];
 			$scope.autoSelectResource();
+		} else {
+			$scope.editedBooking.type = undefined;
+            $scope.editedBooking.resource = undefined
 		}
 	}
 
 	$scope.autoSelectResource = function() {
 		$scope.editedBooking.resource = $scope.editedBooking.type === undefined ? undefined : _.first($scope.editedBooking.type.resources.filterAvailable($scope.editedBooking.is_periodic));
 	};
+
+	$scope.switchStructure = function (struct) {
+		$scope.selectedStructure = struct;
+		$scope.autoSelectTypeAndResource();
+	}
 
 	$scope.updatePeriodicSummary = function() {
 		$scope.editedBooking.periodicSummary = '';
