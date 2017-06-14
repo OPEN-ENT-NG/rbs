@@ -261,8 +261,8 @@ Booking.prototype.hasAtLeastOneSuspendedSlot = function() {
 
 Booking.prototype.toJSON = function() {
 	var json = {
-		start_date : this.startMoment.unix(),
-		end_date : this.endMoment.unix()
+		start_date : this.startMoment.utc().unix(),
+		end_date : this.endMoment.utc().unix()
 	};
 
 	if (this.is_periodic === true) {
@@ -273,7 +273,7 @@ Booking.prototype.toJSON = function() {
 			json.occurrences = this.occurrences;
 		}
 		else {
-			json.periodic_end_date = this.periodicEndMoment.unix();
+			json.periodic_end_date = this.periodicEndMoment.utc().unix();
 		}
 	}
 
@@ -1018,13 +1018,19 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 model.parseBooking = function(booking, color) {
 	booking.color = color;
+	booking.startMoment = moment.utc(booking.startMoment).local();
+	booking.endMoment = moment.utc(booking.endMoment).local();
+	booking.start_date = moment.utc(booking.start_date).local();
+	booking.end_date = moment.utc(booking.end_date).local();
+
+
 	// periodic booking
 	if (booking.is_periodic === true) {
 		// parse bitmask
 		booking.periodDays = model.bitMaskToDays(booking.days);
 		// date if not by occurrences
 		if (booking.occurrences === undefined || booking.occurrences < 1) {
-			booking.periodicEndMoment =  moment.utc(booking.periodic_end_date);
+			booking.periodicEndMoment =  moment.utc(booking.periodic_end_date).local();
 		}
 	}
 };

@@ -866,39 +866,39 @@ function RbsController($scope, template, model, date, route){
 			$scope.display.processing = true;
 
 			// dates management
-			$scope.editedBooking.startMoment = moment.utc([
+			$scope.editedBooking.startMoment = moment([
 				$scope.booking.startDate.getFullYear(),
 				$scope.booking.startDate.getMonth(),
 				$scope.booking.startDate.getDate(),
 				$scope.booking.startTime.hour(),
-				$scope.booking.startTime.minute()]);
+				$scope.booking.startTime.minute()]).utc();
 			if ($scope.editedBooking.is_periodic === true) {
 				// periodic booking
-				$scope.editedBooking.endMoment = moment.utc([
+				$scope.editedBooking.endMoment = moment([
 					$scope.booking.startDate.getFullYear(),
 					$scope.booking.startDate.getMonth(),
 					$scope.booking.startDate.getDate(),
 					$scope.booking.endTime.hour(),
-					$scope.booking.endTime.minute()]);
+					$scope.booking.endTime.minute()]).utc();
 				if ($scope.editedBooking.byOccurrences !== true) {
 					$scope.editedBooking.occurrences = undefined;
-					$scope.editedBooking.periodicEndMoment = moment.utc([
+					$scope.editedBooking.periodicEndMoment = moment([
 						$scope.booking.periodicEndDate.getFullYear(),
 						$scope.booking.periodicEndDate.getMonth(),
 						$scope.booking.periodicEndDate.getDate(),
 						$scope.booking.endTime.hour(),
-						$scope.booking.endTime.minute()]);
+						$scope.booking.endTime.minute()]).utc();
 				}
 				$scope.resolvePeriodicMoments();
 			}
 			else {
 				// non periodic
-				$scope.editedBooking.endMoment = moment.utc([
+				$scope.editedBooking.endMoment = moment([
 					$scope.booking.endDate.getFullYear(),
 					$scope.booking.endDate.getMonth(),
 					$scope.booking.endDate.getDate(),
 					$scope.booking.endTime.hour(),
-					$scope.booking.endTime.minute()]);
+					$scope.booking.endTime.minute()]).utc();
 			}
 
 			$scope.editedBooking.save(function(){
@@ -950,16 +950,16 @@ function RbsController($scope, template, model, date, route){
 			// search the next following day (higher number)
 			for (var i = $scope.editedBooking.startMoment.day(); i < 7; i++){
 				if (selectedDays[i] !== undefined) {
-					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i);
-					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i);
+					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i).utc();
+					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i).utc();
 					return;
 				}
 			}
 			// search the next following day (lower number)
 			for (var i = 0; i < $scope.editedBooking.startMoment.day(); i++){
 				if (selectedDays[i] !== undefined) {
-					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i + 7); // +7 for days in next week, not current
-					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i + 7);
+					$scope.editedBooking.startMoment = $scope.editedBooking.startMoment.day(i + 7).utc(); // +7 for days in next week, not current
+					$scope.editedBooking.endMoment = $scope.editedBooking.endMoment.day(i + 7).utc();
 					return;
 				}
 			}
