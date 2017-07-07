@@ -91,7 +91,7 @@
 						<div class="row" ng-if="! editedBooking.is_periodic">
 							<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
 							<date-picker class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
-							<div class="one cell centered-text"><i18n>to</i18n></div>
+							<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
 							<div>
 								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
 							</div>
@@ -115,7 +115,7 @@
 						<div class="row" ng-if="! editedBooking.is_periodic">
 							<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
 							<date-picker class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true" past="true" min-date="booking.startDate" required></date-picker>
-							<div class="one cell centered-text"><i18n>to</i18n></div>
+							<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
 							<div>
 								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
 							</div>
