@@ -762,16 +762,16 @@ function RbsController($scope, template, model, date, route){
 			summary += lang.translate('rbs.period.weeks.all') + ", ";
 		}
 		else {
-			summary += lang.translate('rbs.period.weeks.partial') + lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) + ", ";
+			summary += lang.translate('rbs.period.weeks.partial') + ' ' + lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) + ", ";
 		}
 
 		// Occurences or date
 		if ($scope.editedBooking.byOccurrences) {
-			summary += lang.translate('rbs.period.occurences.for') + $scope.editedBooking.occurrences
-					+ lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? 'many' : 'one'));
+			summary += lang.translate('rbs.period.occurences.for') + ' ' + $scope.editedBooking.occurrences + ' '
+					+ lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? ' many' : 'one'));
 		}
 		else {
-			summary += lang.translate('rbs.period.date.until') + $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));
+			summary += lang.translate('rbs.period.date.until') + ' ' + $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));
 		}
 
 		$scope.editedBooking.periodicSummary += summary;
@@ -820,38 +820,38 @@ function RbsController($scope, template, model, date, route){
 			// One day range
 			if (summary === undefined) {
 				// Start the summary
-				return lang.translate('rbs.period.days.one.start') + lang.translate('rbs.period.days.' + first.number);
+				return lang.translate('rbs.period.days.one.start') + ' ' + lang.translate('rbs.period.days.' + first.number);
 			}
 			// Continue the summary
-			return summary + lang.translate('rbs.period.days.one.continue') + lang.translate('rbs.period.days.' + first.number);
+			return summary + lang.translate('rbs.period.days.one.continue') + ' ' + lang.translate('rbs.period.days.' + first.number);
 		}
 		if (first.number + 1 == last.number || first.number - 6 == last.number) {
 			// Two day range
 			if (summary === undefined) {
 				// Start the summary
-				return lang.translate('rbs.period.days.one.start')
-						+ lang.translate('rbs.period.days.' + first.number)
-						+ lang.translate('rbs.period.days.one.continue')
+				return lang.translate('rbs.period.days.one.start') + ' '
+						+ lang.translate('rbs.period.days.' + first.number) + ' '
+						+ lang.translate('rbs.period.days.one.continue') + ' '
 						+ lang.translate('rbs.period.days.' + last.number);
 			}
 			// Continue the summary
-			return summary + lang.translate('rbs.period.days.one.continue')
-					+ lang.translate('rbs.period.days.' + first.number)
-					+ lang.translate('rbs.period.days.one.continue')
+			return summary + lang.translate('rbs.period.days.one.continue') + ' '
+					+ lang.translate('rbs.period.days.' + first.number) + ' '
+					+ lang.translate('rbs.period.days.one.continue') + ' '
 					+ lang.translate('rbs.period.days.' + last.number);
 		}
 		// Multi-day range
 		if (summary === undefined) {
 			// Start the summary
-			return lang.translate('rbs.period.days.range.start')
-					+ lang.translate('rbs.period.days.' + first.number)
-					+ lang.translate('rbs.period.days.range.to')
+			return lang.translate('rbs.period.days.range.start') + ' '
+					+ lang.translate('rbs.period.days.' + first.number) + ' '
+					+ lang.translate('rbs.period.days.range.to') + ' '
 					+ lang.translate('rbs.period.days.' + last.number);
 		}
 		// Continue the summary
-		return summary + lang.translate('rbs.period.days.range.continue')
-				+ lang.translate('rbs.period.days.' + first.number)
-				+ lang.translate('rbs.period.days.range.to')
+		return summary + lang.translate('rbs.period.days.range.continue') + ' '
+				+ lang.translate('rbs.period.days.' + first.number) + ' '
+				+ lang.translate('rbs.period.days.range.to') + ' '
 				+ lang.translate('rbs.period.days.' + last.number);
 	};
 
