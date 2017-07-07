@@ -768,7 +768,7 @@ function RbsController($scope, template, model, date, route){
 		// Occurences or date
 		if ($scope.editedBooking.byOccurrences) {
 			summary += lang.translate('rbs.period.occurences.for') + ' ' + $scope.editedBooking.occurrences + ' '
-					+ lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? ' many' : 'one'));
+					+ lang.translate('rbs.period.occurences.slots.' + ($scope.editedBooking.occurrences > 1 ? 'many' : 'one'));
 		}
 		else {
 			summary += lang.translate('rbs.period.date.until') + ' ' + $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));
