@@ -986,7 +986,9 @@ function RbsController($scope, template, model, date, route) {
       return undefined;
     }
 
-    var booking = model.bookings.all.find(b => b.id === item.parent_booking_id);
+    var booking = model.bookings.all.find(function(b) {
+      return b.id === item.parent_booking_id;
+    });
 
     var periodicSummary = $scope.summaryBuilsDaysSpecialSlot(booking);
 
@@ -1724,16 +1726,6 @@ function RbsController($scope, template, model, date, route) {
     }
   };
 
-  // Management view edition
-  $scope.newResourceType = function() {
-    $scope.display.processing = undefined;
-    $scope.editedResourceType = new ResourceType();
-    $scope.editedResourceType.validation = false;
-    $scope.editedResourceType.color = $scope.resourceTypes.current.color;
-    $scope.editedResourceType.structure = $scope.structures[0];
-    template.open('resources', 'edit-resource-type');
-  };
-
   $scope.createResourceType = function() {
     $scope.display.processing = undefined;
     $scope.editedResourceType = new ResourceType();
@@ -1749,6 +1741,7 @@ function RbsController($scope, template, model, date, route) {
     $scope.editedResource = new Resource();
     $scope.editedResource.type = $scope.currentResourceType;
     $scope.editedResource.color = $scope.currentResourceType.color;
+    $scope.editedResource.validation = $scope.currentResourceType.validation;
     $scope.editedResource.is_available = true;
     $scope.editedResource.periodic_booking = true;
     template.open('resources', 'edit-resource');
@@ -1977,7 +1970,6 @@ function RbsController($scope, template, model, date, route) {
     $scope.display.processing = undefined;
     $scope.editedResourceType = model.resourceTypes.selection()[0];
     template.close('resources');
-    $scope.$apply();
     template.open('resources', 'edit-resource-type');
   };
 

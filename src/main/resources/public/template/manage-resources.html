@@ -3,9 +3,6 @@
 </div>
 
 <article class="twelve cell form-article" ng-if="resourceTypes.empty() !== true">
-	<div class="row">
-		<p ng-if="currentResourceType.validation === true"><i18n>rbs.type.details.validation.true</i18n></p>
-	</div>
 
 	<table class="list-view twelve">
 		<thead>
@@ -17,7 +14,8 @@
 						ng-show="resourceTypes.selection().length === 0"
 						ng-click="resourceTypes.deselectAll()"/>
 				</th>
-				<th class="four"><i18n>rbs.manage.resource.name</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.name</i18n></th>
+				<th class="two"><i18n>rbs.manage.resource.validation</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.is_available</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.periodic_booking</i18n></th>
 				<th class="two"><i18n>rbs.manage.resource.min_delay</i18n></th>
@@ -27,8 +25,14 @@
 		<tbody ng-repeat="resource in currentResourceType.resources.all">
 			<tr>
 				<td><input type="checkbox" ng-model="resource.selected" ng-click="resourceTypes.deselectAll()" ng-show="resourceTypes.selection().length === 0" /></td>
-				<td class="four">
+				<td class="two">
 					<a ng-click="switchExpandResource(resource)">[[resource.name]]</a>
+				</td>
+				<td class="two">
+					<a ng-click="switchExpandResource(resource)">
+						<i18n ng-if="resource.validation === true">rbs.manage.resource.validation.true</i18n>
+						<i18n ng-if="resource.validation !== true">rbs.manage.resource.validation.false</i18n>
+					</a>
 				</td>
 				<td class="two">
 					<a ng-click="switchExpandResource(resource)">
