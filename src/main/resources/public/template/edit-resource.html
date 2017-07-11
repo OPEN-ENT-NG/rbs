@@ -16,6 +16,12 @@
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
+				<input type="checkbox" data-ng-model="editedResource.validation" />
+				<i18n>type.form.validation.required</i18n>
+			</label>
+		</div>
+		<div class="row">
+			<label class="nine cell right-magnet">
 				<input type="checkbox" name="is_available" data-ng-model="editedResource.is_available" />
 				<i18n>rbs.resource.edit.is_available.label</i18n>
 			</label>
@@ -60,6 +66,7 @@
 			</div>
 		</div>
 
+		<hr/>
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n></label>
 			<input class="resourceColor" type="color" ng-model="editedResource.color" />

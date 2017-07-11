@@ -113,4 +113,16 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		log.trace("Children's color for resource type " + typeId + " updated");
 	}
 
+	@Override
+	public void overrideValidationChild(String typeId, Boolean validation, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+		query.append ("UPDATE rbs.resource")
+				.append(" SET validation = ?")
+				.append (" WHERE type_id = ?");
+		values.add(validation);
+		values.add(parseId(typeId));
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+	}
+
 }

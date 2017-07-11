@@ -134,14 +134,19 @@ public class ResourceTypeController extends ControllerHelper {
 											renderJson(request, event.right().getValue());
 										}
 										else {
-											Boolean shouldOverride = resourceType.getBoolean("extendcolor");
-											if (shouldOverride != null && shouldOverride) {
-												resourceTypeService.overrideColorChild(id,resourceType.getString("color"),defaultResponseHandler(request));
-											}
-											else {
-												log.trace("Update resource type " + id + " without overriding color for child");
-												renderJson(request, event.right().getValue());
-											}
+											resourceTypeService.overrideValidationChild(id,resourceType.getBoolean("validation"),new Handler<Either<String, JsonObject>>(){
+												@Override
+												public void handle(Either<String, JsonObject> event) {
+													Boolean shouldOverride = resourceType.getBoolean("extendcolor");
+													if (shouldOverride != null && shouldOverride) {
+														resourceTypeService.overrideColorChild(id,resourceType.getString("color"),defaultResponseHandler(request));
+													}
+													else {
+														log.trace("Update resource type " + id + " without overriding color for child");
+														renderJson(request, event.right().getValue());
+													}
+												}
+											});
 										}
 
 									} else {

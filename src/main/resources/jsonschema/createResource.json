@@ -29,6 +29,9 @@
 		},
 		"color": {
 			"type": "string"
+		},
+		"validation": {
+			"type": "boolean"
 		}
 	},
 	"required": [

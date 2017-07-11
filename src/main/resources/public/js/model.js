@@ -422,7 +422,8 @@ Resource.prototype.toJSON = function() {
         type_id : this.type_id,
         min_delay : (this.hasMinDelay) ? this.min_delay : undefined,
         max_delay : (this.hasMaxDelay) ? this.max_delay : undefined,
-        color : this.color
+        color : this.color,
+        validation : this.validation
     };
     if (this.was_available !== undefined) {
         json.was_available = this.was_available;
