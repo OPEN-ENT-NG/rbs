@@ -19,15 +19,22 @@
 
 package net.atos.entng.rbs;
 
+import net.atos.entng.rbs.service.BookingServiceSqlImpl;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class BookingUtils {
+	private final static String DATE_FORMAT = BookingServiceSqlImpl.DATE_FORMAT;
+	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
 
 	/**
 	 * @param lastSelectedDay : index of last selected day
@@ -204,5 +211,66 @@ public class BookingUtils {
 		long delay = endDate - now;
 
 		return (delay > maxDelay);
+	}
+
+	/**
+	 * Transforms an SQL formatted date to a java date
+	 *
+	 * @param strDate formatted string to be transformed from SQL type
+	 * @return parsed java date
+	 */
+	public static Date parseDateFromDB(String strDate) throws ParseException {
+		String format = DATE_FORMAT;
+		// the format is adapted to SQL. So we have to parse and replace some fields.
+		format = format.replace("MI", "mm");
+		format = format.replace("HH24", "HH");
+		format = format.replace("DD", "dd");
+		format = format.replace("YY", "yy");
+		SimpleDateFormat formatter = new SimpleDateFormat(format);
+		return formatter.parse(strDate);
+	}
+
+	/**
+	 * Transforms an SQL formatted timestamp to a java date
+	 *
+	 * @param strDate formatted string to be transformed from SQL type
+	 * @return parsed java date
+	 */
+	public static Date parseTimestampFromDB(String strDate) throws ParseException {
+		String format = TIMESTAMP_FORMAT;
+
+		SimpleDateFormat formatter = new SimpleDateFormat(format);
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		return formatter.parse(strDate);
+	}
+
+
+	/**
+	 * Owner or managers of a resourceType, as well as local administrators of a resourceType's schoolId,
+	 * do no need to respect constraints on resources' delays
+	 */
+	public static boolean canBypassDelaysConstraints(String owner, String schoolId, UserInfos user, JsonArray managers) {
+		if (user.getUserId().equals(owner)) {
+			return true;
+		}
+
+		List<String> scope = getLocalAdminScope(user);
+		if (scope != null && !scope.isEmpty() && scope.contains(schoolId)) {
+			return true;
+		}
+
+		if (managers != null && managers.size() > 0) {
+			// Create a list containing userId and groupIds of current user
+			List<String> userAndGroupIds = new ArrayList<>();
+			userAndGroupIds.add(user.getUserId());
+			userAndGroupIds.addAll(user.getGroupsIds());
+
+			// Return true if managers and userAndGroupIds have at least one common element
+			if (!Collections.disjoint(userAndGroupIds, managers.toList())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

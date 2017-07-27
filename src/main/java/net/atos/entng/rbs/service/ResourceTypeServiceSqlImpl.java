@@ -20,15 +20,22 @@
 package net.atos.entng.rbs.service;
 
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
 
+import fr.wseduc.rs.ApiDoc;
+import fr.wseduc.rs.Get;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
+import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
@@ -101,7 +108,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 	}
 
 	@Override
-	public void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler) {
+	public void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new JsonArray();
 		query.append ("UPDATE rbs.resource")
@@ -109,7 +116,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 				.append (" WHERE type_id = ?");
 		values.add(color);
 		values.add(parseId(typeId));
-		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(eitherHandler));
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
 		log.trace("Children's color for resource type " + typeId + " updated");
 	}
 
@@ -124,5 +131,4 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		values.add(parseId(typeId));
 		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
 	}
-
 }

@@ -17,6 +17,14 @@
     },
     "extendcolor": {
       "type": "boolean"
+    },
+    "slotprofile": {
+      "type": "string"
     }
-  }
+  },
+  "required": [
+      "name",
+      "validation",
+      "color"
+    ]
 }
