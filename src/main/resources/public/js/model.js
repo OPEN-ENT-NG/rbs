@@ -43,13 +43,13 @@ model.periodsConfig = {
 };
 
 function Booking(book) {
-    this.beginning = this.startMoment = moment.utc(book.start_date);
-    this.end = this.endMoment = moment.utc(book.end_date);
+    this.beginning = this.startMoment = moment(book.start_date);
+    this.end = this.endMoment = moment(book.end_date);
 }
 
 function Booking() {
-    this.beginning = this.startMoment = moment.utc(this.start_date);
-    this.end = this.endMoment = moment.utc(this.end_date);
+    this.beginning = this.startMoment = moment(this.start_date);
+    this.end = this.endMoment = moment(this.end_date);
     this.resource = new Resource();
 }
 
