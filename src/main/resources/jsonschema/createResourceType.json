@@ -18,11 +18,15 @@
     },
     "extendcolor": {
       "type": "boolean"
+    },
+    "slotprofile": {
+      "type": "string"
     }
   },
   "required": [
     "name",
     "validation",
-    "school_id"
+    "school_id",
+    "color"
   ]
 }

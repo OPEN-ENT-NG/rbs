@@ -19,6 +19,7 @@
 
 package net.atos.entng.rbs.controllers;
 
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -26,12 +27,15 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.rbs.service.ResourceTypeService;
 import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
 import net.atos.entng.rbs.service.UserService;
 import net.atos.entng.rbs.service.UserServiceDirectoryImpl;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
@@ -52,6 +56,8 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceTypeController extends ControllerHelper {
 
+	private static final String DIRECTORY_ADDRESS = "directory";
+	private static final I18n i18n = I18n.getInstance();
 	private final ResourceTypeService resourceTypeService;
 	private final UserService userService;
 
@@ -102,8 +108,12 @@ public class ResourceTypeController extends ControllerHelper {
 				if (user != null) {
 					RequestUtils.bodyToJson(request, pathPrefix + "createResourceType",  new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject object) {
-							crudService.create(object, user, notEmptyResponseHandler(request));
+						public void handle(JsonObject resourceType) {
+							String slotprofile = resourceType.getString("slotprofile");
+							if (slotprofile == null || slotprofile.isEmpty()) {
+								resourceType.putString("slotprofile", null);
+							}
+							crudService.create(resourceType, user, notEmptyResponseHandler(request));
 						}
 					});
 				} else {
@@ -126,6 +136,10 @@ public class ResourceTypeController extends ControllerHelper {
 						@Override
 						public void handle(final JsonObject resourceType) {
 							final String id = request.params().get("id");
+							String slotprofile = resourceType.getString("slotprofile");
+							if (slotprofile == null || slotprofile.isEmpty()) {
+								resourceType.putString("slotprofile", null);
+							}
 							crudService.update(id, resourceType, user, new Handler<Either<String, JsonObject>>() {
 								@Override
 								public void handle(Either<String, JsonObject> event) {
@@ -257,4 +271,34 @@ public class ResourceTypeController extends ControllerHelper {
 		super.removeShare(request, false);
 	}
 
+	@ApiDoc("Get all slot profiles for a school")
+	@Get("/slotprofiles/schools/:schoolId")
+	public void listSlotProfilesBySchool(HttpServerRequest request) {
+		final String structureId = request.params().get("schoolId");
+		if (structureId == null) {
+			String errorMessage = i18n.translate(
+					"directory.slot.bad.request.invalid.structure",
+					Renders.getHost(request),
+					I18n.acceptLanguage(request));
+			badRequest(request, errorMessage);
+			return;
+		}
+		JsonObject action = new JsonObject()
+				.putString("action", "list-slotprofiles")
+				.putString("structureId", structureId);
+		Handler<Either<String, JsonArray>> handler = arrayResponseHandler(request);
+		eb.send(DIRECTORY_ADDRESS, action, validResultHandler(handler));
+	}
+
+	@ApiDoc("Get all slots for a slot profile")
+	@Get("/slotprofiles/:idSlotProfile/slots")
+	public void listSlotsInAProfile(HttpServerRequest request) {
+		String idSlotProfile = request.params().get("idSlotProfile");
+		JsonObject action = new JsonObject()
+				.putString("action", "list-slots")
+				.putString("slotProfileId", idSlotProfile);
+
+		Handler<Either<String, JsonObject>> handler = notEmptyResponseHandler(request);
+		eb.send(DIRECTORY_ADDRESS, action, MongoDbResult.validResultHandler(handler));
+	}
 }

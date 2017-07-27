@@ -6,14 +6,29 @@
     "booking_reason": {
       "type": "string"
     },
-    "start_date": {
-      "description": "Unix timestamp representing the start date of the first slot",
-      "type": "integer"
-    },
-    "end_date": {
-      "description": "Unix timestamp representing the end date of the first slot",
-      "type": "integer"
-    },
+	"slots": {
+		"type": "array",
+		"description": "List of slots representing the start/end date of the bookings",
+		"additionalProperties": false,
+		"items": {
+			"type": "object",
+			"properties": {
+				"start_date": {
+					"description": "Unix timestamp representing the start date of the booking",
+					"type": "integer"
+				},
+				"end_date": {
+					"description": "Unix timestamp representing the end date of the booking",
+					"type": "integer"
+				}
+			},
+			"required": [
+				"start_date",
+				"end_date"
+			]
+		},
+		"minItems": 1
+	},
     "periodic_end_date": {
       "description": "Unix timestamp representing the end date of the periodic booking. Either periodic_end_date or occurrences must be filled",
       "type": "integer"
@@ -74,8 +89,7 @@
 	    }
   },
   "required": [
-    "start_date",
-    "end_date",
+    "slots",
     "periodicity",
     "days"
   ]

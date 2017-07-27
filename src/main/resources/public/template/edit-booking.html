@@ -97,50 +97,85 @@
 				</h2>
 				<div class="toggle">
 					<div class="content">
+
 						<!-- Booking start - non periodic -->
 						<div class="row" ng-if="! editedBooking.is_periodic">
 							<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
-							<date-picker class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
-							<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-							<div>
-								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
+							<div ng-if="editedBooking.type.slotprofile === undefined">
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<div>
+									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+								</div>
+							</div>
+						</div>
+						<!-- Booking end - non periodic -->
+						<div class="row" ng-if="! editedBooking.is_periodic">
+							<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
+							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction()" past="true" min-date="booking.startDate" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();showDate = true;" past="true" required></date-picker>
+							<div ng-if="editedBooking.type.slotprofile === undefined">
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<div>
+									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
+								</div>
 							</div>
 						</div>
 
 						<!-- Booking start - periodic -->
 						<div class="row" ng-if="editedBooking.is_periodic">
 							<label class="three cell"><i18n>rbs.booking.edit.period.start.label</i18n></label>
-							<date-picker class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()" past="true" min-date="today.toDate()" exp="true" required></date-picker>
-							<div class="one cell centered-text"><i18n>to</i18n></div>
-							<div>
-								<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()" past="true" min-date="today.toDate()" exp="true" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()" past="true" min-date="today.toDate()" exp="true" required></date-picker>
+							<div ng-if="editedBooking.type.slotprofile === undefined">
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<div>
+									<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+								</div>
 							</div>
 						</div>
+						<!-- Booking end - periodic -->
 						<div class="row" ng-if="editedBooking.is_periodic">
 							<label class="three cell"><i18n>rbs.booking.edit.period.end.label</i18n></label>
-							<date-picker class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction();updatePeriodicSummary()" past="true" min-date="booking.startDate" exp="true" exp-object="booking.periodicEndDate" required></date-picker>
-							<div class="one cell centered-text"><i18n>to</i18n></div>
-							<div>
-								<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.endTime" required></time-picker-rbs>
+							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction();updatePeriodicSummary()" past="true" min-date="booking.startDate" exp="true" exp-object="booking.periodicEndDate" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()" past="true" min-date="today.toDate()" exp="true" required></date-picker>
+							<div ng-if="editedBooking.type.slotprofile === undefined">
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<div>
+									<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.endTime" required></time-picker-rbs>
+								</div>
 							</div>
 						</div>
 
-						<!-- Booking end - non periodic -->
-						<div class="row" ng-if="! editedBooking.is_periodic">
-							<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
-							<date-picker class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true" past="true" min-date="booking.startDate" required></date-picker>
-							<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-							<div>
-								<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
-							</div>
-						</div>
 
 						<!-- Date/time error -->
 						<div class="row" ng-if="booking.invalidDateTimes === true" translate content="booking.invalidDateTimesMessage">
 						</div>
 
-						<!-- Periodicity toggle - new booking -->
+						<div ng-if="editedBooking.type.slotprofile !== undefined">
+							<label class="three cell"><i18n>rbs.booking.edit.slot.label</i18n></label>
+							<hr/>
+							<div class="twelve cell" ng-if="editedBooking.id === undefined">
+								<select style="border: 1px groove" class="four cell" ng-model="selectedSlotStart" ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in slots.slots | orderBy: 'startHour'" ng-change="switchSlotStart(selectedSlotStart)">
+								</select>
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<select style="border: 1px groove" class="four cell" ng-model="selectedSlotEnd" ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in slots.slots | orderBy: 'startHour'" ng-change="switchSlotEnd(selectedSlotEnd)">
+								</select>
+							</div>
+							<div class="twelve cell" ng-if="editedBooking.id !== undefined">
+								<select style="border: 1px groove" class="four cell" ng-model="selectedSlotStart" ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in slots.slots | orderBy: 'startHour'" ng-change="switchSlotStart(selectedSlotStart); switchSlotEnd(selectedSlotStart)">
+								</select>
+								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
+								<select style="border: 1px groove" class="four cell" ng-model="selectedSlotStart" ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in slots.slots | orderBy: 'startHour'" ng-change="switchSlotStart(selectedSlotStart); switchSlotEnd(selectedSlotStart)">
+								</select>
+							</div>
+							<div class="cell warning" ng-if="slotNotFound"><i18n>rbs.booking.warning.slot.not.found</i18n></cell></div>
+							<hr />
+						</div>
+
 						<hr />
+						<!-- Periodicity toggle - new booking -->
 						<div class="row six" ng-if="editedBooking.id === undefined && editedBooking.resource.periodic_booking">
 							<input type="checkbox" ng-model="editedBooking.is_periodic" ng-change="togglePeriodic();checkDateFunction()" class="one cell" />&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n>
 						</div>
@@ -151,7 +186,6 @@
 						</div>
 
 						<!-- Booking reason -->
-						<hr />
 						<div class="row">
 							<textarea ng-model="editedBooking.booking_reason" i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
 						</div>
@@ -237,12 +271,26 @@
 			<behaviour name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
 				<button class="right-magnet"
 						ng-click="saveBooking()"
-						ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING">
+						ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING
+									&& editedBooking.type.slotprofile === undefined">
 					<i18n>rbs.save</i18n>
 				</button>
 				<button class="right-magnet"
 						ng-click="saveBooking()"
-						ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC">
+						ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC
+							&& editedBooking.type.slotprofile === undefined">
+					<i18n>rbs.save</i18n>
+				</button>
+				<button class="right-magnet"
+						ng-click="saveBookingSlotProfile()"
+						ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING
+							&& editedBooking.type.slotprofile !== undefined">
+					<i18n>rbs.save</i18n>
+				</button>
+				<button class="right-magnet"
+						ng-click="saveBookingSlotProfile()"
+						ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC
+							&& editedBooking.type.slotprofile !== undefined">
 					<i18n>rbs.save</i18n>
 				</button>
 				<button class="right-magnet"

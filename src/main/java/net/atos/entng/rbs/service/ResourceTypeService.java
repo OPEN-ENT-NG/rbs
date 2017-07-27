@@ -35,7 +35,7 @@ public interface ResourceTypeService {
 
 	public void getModeratorsIds(String typeId, Handler<Either<String, JsonArray>> handler);
 
-	void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler);
+	public void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler);
 
-    void overrideValidationChild(String typeId, Boolean validation, Handler<Either<String, JsonObject>> handler);
+    public void overrideValidationChild(String typeId, Boolean validation, Handler<Either<String, JsonObject>> handler);
 }
