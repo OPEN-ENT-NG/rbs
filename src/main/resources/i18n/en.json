@@ -135,6 +135,7 @@
     "rbs.booking.warning.slot.not.found": "Attention, la plage horaire prédéfinie et choisie initialement pour cette réservation n'existe plus",
     "rbs.bookings.empty": "Aucune Réservation - Sélectionnez des ressources ou un filtre dans le menu",
     "rbs.bookings.selected.empty": "Aucune Réservation sélectionnée",
+    "rbs.bookings.more": "de plus",
     "rbs.calendar.under.construction": "Calendrier de réservations en cours de développement...",
     "rbs.close": "Fermer",
     "rbs.contrib": "Réserver",

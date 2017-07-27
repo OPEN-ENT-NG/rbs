@@ -116,13 +116,34 @@ function RbsController($scope, template, model, date, route) {
     //Paging start date
     model.bookings.startPagingDate = moment().startOf('isoweek');
     //Paging end date
-    model.bookings.endPagingDate = moment().add(7, 'day').startOf('day');
+    model.bookings.endPagingDate = moment(model.bookings.startPagingDate)
+      .add(1, 'week')
+      .startOf('day');
     //fixme Why started with today date ....
     model.bookings.filters.startMoment = moment().startOf('day');
     //fixme Why two month ?
     model.bookings.filters.endMoment = moment().add('month', 2).startOf('day');
     model.bookings.filters.startDate = model.bookings.filters.startMoment.toDate();
     model.bookings.filters.endDate = model.bookings.filters.endMoment.toDate();
+
+    model.calendar.on('date-change', function() {
+      var start = moment(model.calendar.firstDay);
+      var end = moment(model.calendar.firstDay)
+        .add(1, model.calendar.increment + 's')
+        .startOf('day');
+
+      if (
+        model.bookings.startPagingDate.isSame(start, 'day') &&
+        model.bookings.endPagingDate.isSame(end, 'day')
+      ) {
+        return;
+      }
+
+      model.bookings.startPagingDate = start;
+      model.bookings.endPagingDate = end;
+
+      updateCalendarSchedule(model.calendar.firstDay);
+    });
 
     $scope.resourceTypes.on('sync', function() {
       // check create booking rights
@@ -321,7 +342,6 @@ function RbsController($scope, template, model, date, route) {
     }
     $scope.display.admin = false;
     $scope.display.list = false;
-    $scope.bookings.sync();
     $scope.bookings.filters.booking = undefined;
     $scope.bookings.applyFilters();
     template.open('bookings', 'main-calendar');
@@ -2275,27 +2295,11 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.nextWeekButton = function() {
-    var next = moment(model.calendar.firstDay).add(7, 'day');
-    model.bookings.startPagingDate = moment(model.bookings.startPagingDate).add(
-      7,
-      'day'
-    );
-    model.bookings.endPagingDate = moment(model.bookings.endPagingDate).add(
-      7,
-      'day'
-    );
-    updateCalendarSchedule(next);
+    model.calendar.next();
   };
 
   $scope.previousWeekButton = function() {
-    var prev = moment(model.calendar.firstDay).subtract(7, 'day');
-    model.bookings.startPagingDate = moment(
-      model.bookings.startPagingDate
-    ).subtract(7, 'day');
-    model.bookings.endPagingDate = moment(
-      model.bookings.endPagingDate
-    ).subtract(7, 'day');
-    updateCalendarSchedule(prev);
+    model.calendar.previous();
   };
   $scope.nextWeekBookingButton = function() {
     var nextStart = moment(model.bookings.filters.startMoment).add(7, 'day');
@@ -2372,7 +2376,7 @@ function RbsController($scope, template, model, date, route) {
   };
 
   var updateCalendarSchedule = function(date, skipSync) {
-    model.calendar.setDate(date);
+    // model.calendar.setDate(date);
     if (skipSync === undefined) {
       $scope.bookings.sync();
     }

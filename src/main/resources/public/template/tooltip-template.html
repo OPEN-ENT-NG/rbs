@@ -5,9 +5,9 @@
 
     <div class="tooltip-content">
         <div class="start-to-end-container">
-            <span> [[moment(item.start_date).format('DD')]]/[[moment(item.start_date).format('MM')]]  [[moment(item.start_date).format('HH')]]h[[moment(item.start_date).format('mm')]] </span>
+            <span> [[item.beginning.format('DD/MM HH[h]mm')]] </span>
             <span class="orange-text">—</span>
-            <span> [[moment(item.end_date).format('DD')]]/[[moment(item.end_date).format('MM')]]  [[moment(item.end_date).format('HH')]]h[[moment(item.end_date).format('mm')]]</span>
+            <span> [[item.end.format('DD/MM HH[h]mm')]]</span>
         </div>
         <div ng-if="item.isSlot()">
             <p>[[getPeriodicSummary(item)]]</p>

@@ -19,7 +19,10 @@
 
 <div class="row" ng-if="display.create">
 	<calendar
+		enable-display-modes="true"
 		display-template="display-calendar-item"
+		display-month-template="display-calendar-month-item"
+		more-items-template="display-calendar-more-items"
 		create-template="edit-booking"
 		item-tooltip-template="itemTooltip"
 		on-create-open="newBookingCalendar(newItem)"
@@ -30,7 +33,10 @@
 
 <div class="row" ng-if="! display.create">
 	<calendar
+		enable-display-modes="true"
 		display-template="display-calendar-item"
+		display-month-template="display-calendar-month-item"
+		more-items-template="display-calendar-more-items"
 		item-tooltip-template="itemTooltip"
 		on-create-open="newBookingCalendar(newItem)"
 		on-create-close="closeBooking()"

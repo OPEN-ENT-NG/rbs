@@ -91,6 +91,10 @@ table.colored i.pending-icon::before {
   padding-left: 20px;
 }
 
+.display-buttons {
+  min-height: 100px;
+}
+
 div.schedule-item-content i.pending-status::before {
   bottom: 12px !important;
   right: 12px !important;
@@ -222,4 +226,13 @@ a.structure:hover {
   display: block;
   width: 20px;
   text-align: center;
+}
+
+
+.resources-tree a.selected {
+  color: white !important;
+}
+
+.resources-tree a:hover {
+  color: #ff8500 !important;
 }
