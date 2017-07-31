@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+{{#export}}
+	<head>
+	    <title>Planning</title>
+	    <style type="text/css">
+	    
+	    	@page { size: A4 portrait;}
+	        html, body, .resource { height: 100%; }
+	        .resource {	page-break-after: always; }
+	        .day {	page-break-after: always; }
+	        .title { text-align: center; }
+	        .footer { margin-top: 30px; text-align: center; }
+	        
+	        .calendar-container {
+	        	position: relative;
+	        	width: {{calendar_width}}{{calendar_width_unit}};
+	        	height: {{calendar_height}}{{calendar_height_unit}};
+	        }
+	        
+	        .calendar {
+	        	border-collapse: collapse;
+	        	height: 100%;
+	        	width: 100%;
+	        }
+	        
+			.calendar th, td {
+				padding-left: 0;
+				padding-right: 0;
+	        	text-align: center;
+	        	border: 1px solid #cccccc;
+	        	height: {{slot_height}}{{slot_height_unit}}; 
+	        }
+	        
+	        .calendar tr:nth-child(even) { background-color: #fafafa; }
+	        
+	        .calendar th {
+	        	line-height: 1.4em;
+	        	background-color: #444444;
+	        	color: #ffffff;
+	        }
+	        
+	        .calendar .raw-title {
+	        	line-height: 2em;
+	        	font-weight: bold;
+	        	background-color: #666666;
+	        	color: #ffffff;
+	        	width: 125px;
+	        }
+	        
+	        .booking { 
+	        	position: absolute;
+	        	background-color: #444444;
+	        	border: 1px solid #333333;
+	        	color: #ffffff;
+	        	left: 129px;
+	        	width: {{booking_width}}{{booking_width_unit}};  
+	        	text-align: center;
+	        }
+	        
+	        .booking-container .nbsp-full-height { 
+	        	display: inline-block; 
+	        	width: 0px; 
+	        	margin-left: -4px;
+	        }
+	        
+	        .booking-container .booking-content { 
+	        	display: inline-block; 
+	        	vertical-align: middle; 
+	        	text-align: center;
+	        }
+	        
+	        {{#days}}
+		        {{#resources}}
+			        {{#bookings}}
+			        	.{{booking_class_id}} {
+			        		top: {{booking_top}}{{booking_top_unit}};
+			        		height: {{booking_height}}{{booking_height_unit}};
+			        	}
+			        	
+			        	.{{booking_class_id}} .booking-container .nbsp-full-height-{{booking_class_id}} { line-height: {{booking_height}}{{booking_height_unit}}; }
+			        {{/bookings}}
+		        {{/resources}}
+	        {{/days}}
+	    </style>
+	</head>
+	
+	<body>
+	{{#days}}
+	<div class="day">
+		{{#resources}}
+		<div class="resource">
+			<h2 class="title">{{resource_name}}</h2>
+			<div class="calendar-container">
+				<table class="calendar">
+					<tr><th><!-- Empty --></th><th>{{name}} - {{date}}</th></tr>
+					{{#slot_raw_title}}
+						<tr><td class="raw-title">{{value}}</td><td></td></tr>
+					{{/slot_raw_title}}
+				</table>
+				
+				{{#bookings}}
+					<div class="booking {{booking_class_id}}">
+						<div class="booking-container">
+							<div class="nbsp-full-height nbsp-full-height-{{booking_class_id}}">&nbsp;</div>
+							<div class="booking-content">{{owner_name}}</div>
+						</div>
+					</div>
+				{{/bookings}}
+			</div>
+			<div class="footer">{{school_name}}, le {{edition_date}}</div>
+		</div>
+		{{/resources}}
+	</div>
+	{{/days}}
+	</body>
+{{/export}}
+</html>
+

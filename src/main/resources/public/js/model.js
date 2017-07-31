@@ -301,6 +301,38 @@ Booking.prototype.toJSON = function() {
     return json;
 };
 
+function ExportBooking() {
+    this.format = "PDF";
+    this.exportView = "WEEK";
+    this.startDate = moment().day(1).toDate();
+    this.endDate = moment().day(7).toDate();
+    this.resources = [];
+    this.resourcesToTake = "selected";
+}
+
+ExportBooking.prototype.toJSON = function() {
+  var json = {
+    format: this.format.toUpperCase(),
+    view: this.exportView,
+    startdate: this.startDate,
+    enddate: this.endDate,
+    resourceIds: this.resources
+  };
+  return json;
+};
+
+ExportBooking.prototype.send = function (cb, cbe) {
+  var exportBooking = this;
+
+  return http().postJson('/rbs/bookings/export', this)
+    .done(function(data){
+      returnData (cb, [data]);
+    }).error(function(e){
+      if(typeof cbe === 'function'){
+        cbe(model.parseError(e, exportBooking, 'create'));
+      }
+    });
+};
 
 function Resource() {
     var resource = this;
@@ -740,14 +772,24 @@ model.build = function(){
     // Bookings collection, not auto-synced
     this.collection(Booking, {
         //sync: '/rbs/bookings/all',
-        sync: function(callback){
-            http().get('/rbs/bookings/all/' + model.bookings.startPagingDate.format('YYYY-MM-DD') +
+        sync: function(callback,startDate, endDate){
+            if(startDate) {
+              http().get('/rbs/bookings/all/' + startDate.format('YYYY-MM-DD') +
+                '/' +	endDate.format('YYYY-MM-DD')).done(function(bookings){
+                this.load(bookings);
+                if(typeof callback === 'function'){
+                  callback();
+                }
+              }.bind(this));
+            } else {
+              http().get('/rbs/bookings/all/' + model.bookings.startPagingDate.format('YYYY-MM-DD') +
                 '/' +	model.bookings.endPagingDate.format('YYYY-MM-DD')).done(function(bookings){
                 this.load(bookings);
                 if(typeof callback === 'function'){
-                    callback();
+                  callback();
                 }
-            }.bind(this));
+              }.bind(this));
+            }
         },
         syncForShowList: function(callback){
             http().get('/rbs/bookings/all').done(function(bookings){
