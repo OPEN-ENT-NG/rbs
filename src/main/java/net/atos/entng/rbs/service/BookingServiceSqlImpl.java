@@ -21,6 +21,8 @@ package net.atos.entng.rbs.service;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
+import net.atos.entng.rbs.model.ExportBooking;
+import net.atos.entng.rbs.model.ExportRequest;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -35,10 +37,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static net.atos.entng.rbs.BookingStatus.*;
@@ -651,6 +650,127 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(2, handler));
 	}
 
+	@Override
+	public void getBookingsForExport(final ExportRequest exportRequest, final Handler<Either<String, List<ExportBooking>>> handler) {
+		final String startDate = exportRequest.getStartDate();
+		final String endDate = exportRequest.getEndDate();
+		final UserInfos user = exportRequest.getUserInfos();
+		final List<String> groupsAndUserIds = getUserIdAndGroupIds(user);
+
+		StringBuilder query = new StringBuilder();
+		JsonArray values = new JsonArray();
+
+		// find all booking without periodic booking parents
+		query.append("SELECT b.").append(ExportBooking.BOOKING_ID);
+		query.append(", b.").append(ExportBooking.BOOKING_OWNER_ID);
+		query.append(", b.").append(ExportBooking.BOOKING_START_DATE);
+		query.append(", b.").append(ExportBooking.BOOKING_END_DATE);
+		query.append(", b.").append(ExportBooking.BOOKING_REASON);
+		query.append(", b.").append(ExportBooking.BOOKING_MODERATOR_ID);
+		query.append(", b.").append(ExportBooking.RESOURCE_ID);
+		query.append(", t.").append(ExportBooking.SCHOOL_ID);
+		query.append(", t.id AS ").append(ExportBooking.RESOURCE_TYPE_ID);
+		query.append(", t.color AS ").append(ExportBooking.RESOURCE_TYPE_COLOR);
+		query.append(", r.name AS ").append(ExportBooking.RESOURCE_NAME);
+		query.append(", r.color AS ").append(ExportBooking.RESOURCE_COLOR);
+		query.append(", u.username AS ").append(ExportBooking.BOOKING_OWNER_NAME);
+		query.append(", m.username AS ").append(ExportBooking.BOOKING_MODERATOR_NAME);
+		query.append(" FROM rbs.booking AS b")
+				.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
+				.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
+				.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
+				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
+				.append(" WHERE b.status = ?") // only validated
+				.append(" AND ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < (?::date + interval '1 day')) ")
+				.append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < (?::date + interval '1 day'))")
+				// this part is for reservations across 2 weeks
+				.append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > (?::date + interval '1 day'))")
+				.append(" OR (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.start_date::date < ?::date)")
+				.append(" OR (b.is_periodic=FALSE AND b.end_date::date >= (?::date + interval '1 day') AND b.end_date::date < (?::date + interval '1 day')))")
+				.append(" AND (rs.member_id IN ")
+				//
+				.append(Sql.listPrepared(groupsAndUserIds.toArray()))
+				.append(" OR t.owner = ?");
+		values.addNumber(VALIDATED.status());
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+		values.addString(startDate);
+		values.addString(endDate);
+
+		for (String groupOruser : groupsAndUserIds) {
+			values.add(groupOruser);
+		}
+		values.addString(user.getUserId());
+
+		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
+		List<String> scope = getLocalAdminScope(user);
+		if (scope != null && !scope.isEmpty()) {
+			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+			for (String schoolId : scope) {
+				values.addString(schoolId);
+			}
+		}
+
+		// Add user restriction on resources if any
+		final List<Long> resourceIds = exportRequest.getResourceIds();
+		if (!resourceIds.isEmpty()) {
+			query.append(") AND (r.id IN ")
+					.append(Sql.listPrepared(resourceIds.toArray()));
+			for (Long resourceId : resourceIds) {
+				values.addNumber(resourceId);
+			}
+		}
+
+		query.append(") GROUP BY t.id, b.id, r.id, u.username, m.username ORDER BY b.start_date, b.end_date");
+
+		Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final Either<String, JsonArray> ei = validResult(event);
+				if (ei.isRight()) {
+					final List<ExportBooking> exportBookings = new ArrayList<>();
+					final JsonArray jsonBookingResult = ei.right().getValue();
+					for (final Object o : jsonBookingResult) {
+						if (!(o instanceof JsonObject)) {
+							continue;
+						} else {
+							// keep-it without understanding business rule here...
+							final JsonObject jo = (JsonObject) o;
+							Number parentBookingId = jo.getNumber("parent_booking_id");
+							if (parentBookingId != null) {
+								exportBookings.add(new ExportBooking(jo));
+							} else if (jo.getNumber("occurrences") == null) {
+								if (isSearchOverlapBookingDates(jo, startDate, endDate)) {
+									exportBookings.add(new ExportBooking(jo));
+								}
+							} else {
+								exportBookings.add(new ExportBooking(jo));
+							}
+						}
+					}
+					handler.handle(new Either.Right<String, List<ExportBooking>>(exportBookings));
+				} else {
+					String value = ei.left().getValue();
+					handler.handle(new Either.Left<String, List<ExportBooking>>(value));
+				}
+			}
+		});
+	}
+
+	private boolean searchDatesOverlapBookingDates(Date searchStartDate, Date searchEndDate, Date bookingStartDate, Date bookingEndDate) {
+		return DateUtils.isBetween(searchStartDate, bookingStartDate, bookingEndDate) ||
+				DateUtils.isBetween(searchEndDate, bookingStartDate, bookingEndDate) ||
+				(DateUtils.isBetween(bookingStartDate, searchStartDate, searchEndDate) &&
+						DateUtils.isBetween(bookingEndDate, searchStartDate, searchEndDate));
+	}
+
 
 	@Override
 	public void processBooking(final String resourceId, final String bookingId,
@@ -832,9 +952,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
 				.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
-			    .append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)")
-			    // this part is for reservations across 2 weeks
-			    .append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > ?::date)")
+				.append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)")
+				// this part is for reservations across 2 weeks
+				.append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > ?::date)")
 				.append(" OR (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.start_date::date < ?::date)")
 				.append(" OR (b.is_periodic=FALSE AND b.end_date::date >= ?::date AND b.end_date::date < ?::date))")
 				.append(" AND (rs.member_id IN ")
@@ -884,23 +1004,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
 								jsonAllBookingResult.addObject(jo);
 							} else if (jo.getNumber("occurrences") == null) {
-								try {
-									final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("start_date"));
-									final Date currentEndDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("end_date"));
-									final List<String> startSearched = StringUtils.split(startDate, "-");
-									final Date dateStartSearched = DateUtils.create(Integer.parseInt(startSearched.get(0)),
-											Integer.parseInt(startSearched.get(1)) - 1, Integer.parseInt(startSearched.get(2)));
-									final List<String> endSearched = StringUtils.split(endDate, "-");
-									final Date dateEndSearched = DateUtils.create(Integer.parseInt(endSearched.get(0)),
-											Integer.parseInt(endSearched.get(1)) - 1, Integer.parseInt(endSearched.get(2)));
-									if (DateUtils.isBetween(dateStartSearched, currentStartDate, currentEndDate) ||
-											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate) ||
-											(DateUtils.isBetween(currentStartDate, dateStartSearched, dateEndSearched) &&
-													DateUtils.isBetween(currentEndDate, dateStartSearched, dateEndSearched))) {
-										jsonAllBookingResult.addObject(jo);
-									}
-								} catch (ParseException e) {
-									log.error("Can't parse date form RBS DB", e);
+								if (isSearchOverlapBookingDates(jo, startDate, endDate)) {
+									jsonAllBookingResult.addObject(jo);
 								}
 							} else {
 								jsonAllBookingResult.addObject(jo);
@@ -943,6 +1048,25 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				}
 			}
 		});
+	}
+
+	private boolean isSearchOverlapBookingDates(JsonObject booking, String startDate, String endDate) {
+		boolean overlapBookingDates = false;
+		try {
+			final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(booking.getString("start_date"));
+			final Date currentEndDate = DateUtils.parseTimestampWithoutTimezone(booking.getString("end_date"));
+			final List<String> startSearched = StringUtils.split(startDate, "-");
+			final Date dateStartSearched = DateUtils.create(Integer.parseInt(startSearched.get(0)),
+					Integer.parseInt(startSearched.get(1)) - 1, Integer.parseInt(startSearched.get(2)));
+			final List<String> endSearched = StringUtils.split(endDate, "-");
+			final Date dateEndSearched = DateUtils.create(Integer.parseInt(endSearched.get(0)),
+					Integer.parseInt(endSearched.get(1)) - 1, Integer.parseInt(endSearched.get(2)) + 1);
+			overlapBookingDates = searchDatesOverlapBookingDates(dateStartSearched, dateEndSearched, currentStartDate, currentEndDate);
+
+		} catch (ParseException e) {
+			log.error("Can't parse date form RBS DB", e);
+		}
+		return overlapBookingDates;
 	}
 
 	@Override

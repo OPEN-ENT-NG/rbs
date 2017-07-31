@@ -26,6 +26,8 @@ import net.atos.entng.rbs.controllers.ResourceTypeController;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
+import net.atos.entng.rbs.service.IcalExportService;
+import net.atos.entng.rbs.service.pdf.PdfExportService;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.share.impl.SqlShareService;
@@ -64,7 +66,7 @@ public class Rbs extends BaseServer {
 		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE,
 				new JsonArray().addString("*"), new JsonArray().add("*"), true);
 		typeController.setCrudService(typeSqlCrudService);
-		typeController.setShareService(new SqlShareService(getSchema(),RESOURCE_TYPE_SHARE_TABLE,
+		typeController.setShareService(new SqlShareService(getSchema(), RESOURCE_TYPE_SHARE_TABLE,
 				eb, securedActions, null));
 		addController(typeController);
 
@@ -76,11 +78,15 @@ public class Rbs extends BaseServer {
 		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE,
 				new JsonArray().addString("*"), new JsonArray().add("*"), true);
 		resourceController.setCrudService(resourceSqlCrudService);
-		resourceController.setShareService(new SqlShareService(getSchema(),RESOURCE_SHARE_TABLE,
+		resourceController.setShareService(new SqlShareService(getSchema(), RESOURCE_SHARE_TABLE,
 				eb, securedActions, null));
 		addController(resourceController);
 
-		BookingController bookingController = new BookingController();
+
+		container.deployWorkerVerticle(PdfExportService.class.getName(), config);
+		container.deployWorkerVerticle(IcalExportService.class.getName(), config);
+
+		BookingController bookingController = new BookingController(eb);
 		addController(bookingController);
 
 		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());

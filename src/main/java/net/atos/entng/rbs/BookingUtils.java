@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BookingUtils {
 	private final static String DATE_FORMAT = BookingServiceSqlImpl.DATE_FORMAT;
-	private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+	public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
 
 	/**
@@ -191,6 +191,15 @@ public class BookingUtils {
 		}
 
 		return new ArrayList<String>();
+	}
+
+	public static List<String> getUserIdAndGroupIds(UserInfos user) {
+		final List<String> groupsAndUserIds = new ArrayList<>();
+		groupsAndUserIds.add(user.getUserId());
+		if (user.getGroupsIds() != null) {
+			groupsAndUserIds.addAll(user.getGroupsIds());
+		}
+		return groupsAndUserIds;
 	}
 
 	public static boolean isDelayLessThanMin(JsonObject resource, long startDate, long now) {

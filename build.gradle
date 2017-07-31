@@ -1,19 +1,21 @@
 apply from: "gradle/vertx.gradle"
 apply plugin: 'scala'
-import groovy.json.JsonSlurper
+
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 dependencies {
-	compile "org.entcore:common:$entCoreVersion"
-  testCompile "org.entcore:tests:$entCoreVersion"
-  testCompile 'net.minidev:json-smart:1.1.1'
-  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
+    compile "org.entcore:common:$entCoreVersion"
+    compile 'org.mnode.ical4j:ical4j:2.0.2'
+    testCompile "org.entcore:tests:$entCoreVersion"
+    testCompile 'net.minidev:json-smart:1.1.1'
+    testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
 }
 
 javadoc {
-  options.encoding = 'UTF-8'
-  classpath = configurations.provided
-  classpath += configurations.compile
+    options.encoding = 'UTF-8'
+    classpath = configurations.provided
+    classpath += configurations.compile
 }
 
 if (JavaVersion.current().isJava8Compatible()) {
@@ -25,18 +27,18 @@ if (JavaVersion.current().isJava8Compatible()) {
 }
 
 task testJar(type: Jar) {
-  classifier = 'tests'
-  from sourceSets.test.output
+    classifier = 'tests'
+    from sourceSets.test.output
 }
 
 task deploymentJar(type: Jar) {
-  classifier = 'deployment'
-  from 'deployment'
+    classifier = 'deployment'
+    from 'deployment'
 }
 
 artifacts {
-  archives testJar
-  archives deploymentJar
+    archives testJar
+    archives deploymentJar
 }
 
 repositories {
@@ -46,50 +48,51 @@ repositories {
 }
 
 def configurePom(def pom) {
-	pom.project {
-		description 'RBS'
-		inceptionYear '2014'
-		packaging 'zip'
-		url 'http://code.web-education.net/ong/rbs'
+    pom.project {
+        description 'RBS'
+        inceptionYear '2014'
+        packaging 'zip'
+        url 'http://code.web-education.net/ong/rbs'
 
-		developers {
-			developer {
-				id 'cverdier'
-				name 'Cyril Verdier'
-				email 'cyril.verdier@atos.net'
-			}
-		}
-
-		scm {
-			url 'git@code.web-education.net:ong/rbs.git'
-		}
-
-		properties {
-			setProperty('project.build.sourceEncoding', 'UTF8')
-		}
-	}
-}
-def generateMissingI18n() {
-  JsonSlurper jsonSlurper = new JsonSlurper()
-    File rootDir = new File(".")
-    rootDir.eachFileRecurse {
-      if (it.isDirectory() && ("i18n".equals(it.getName()) || ("timeline".equals(it.getName()) && it.getParent().endsWith("i18n")))) {
-        Map i18n = [:]
-          it.eachFileMatch(~/.+.json/) { file ->
-            def t = file.text
-              i18n.put(file.getName(), (Map) jsonSlurper.parseText((t != null && !t.empty) ? t : "{}"))
-          }
-        Map fr = i18n.remove("fr.json")
-          new File(it, "fr.json").withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(fr.sort())) }
-        i18n.each { key, lang ->
-          Map out = fr.findAll({true})
-            out.putAll(lang)
-            new File(it, key).withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
+        developers {
+            developer {
+                id 'cverdier'
+                name 'Cyril Verdier'
+                email 'cyril.verdier@atos.net'
+            }
         }
-      }
+
+        scm {
+            url 'git@code.web-education.net:ong/rbs.git'
+        }
+
+        properties {
+            setProperty('project.build.sourceEncoding', 'UTF8')
+        }
     }
 }
 
-task generateI18n(description:'Generate missing keys in i18n files') << {
-  generateMissingI18n()
+def generateMissingI18n() {
+    JsonSlurper jsonSlurper = new JsonSlurper()
+    File rootDir = new File(".")
+    rootDir.eachFileRecurse {
+        if (it.isDirectory() && ("i18n".equals(it.getName()) || ("timeline".equals(it.getName()) && it.getParent().endsWith("i18n")))) {
+            Map i18n = [:]
+            it.eachFileMatch(~/.+.json/) { file ->
+                def t = file.text
+                i18n.put(file.getName(), (Map) jsonSlurper.parseText((t != null && !t.empty) ? t : "{}"))
+            }
+            Map fr = i18n.remove("fr.json")
+            new File(it, "fr.json").withWriter { it << JsonOutput.prettyPrint(JsonOutput.toJson(fr.sort())) }
+            i18n.each { key, lang ->
+                Map out = fr.findAll({ true })
+                out.putAll(lang)
+                new File(it, key).withWriter { it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
+            }
+        }
+    }
+}
+
+task generateI18n(description: 'Generate missing keys in i18n files') << {
+    generateMissingI18n()
 }

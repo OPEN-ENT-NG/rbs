@@ -91,10 +91,6 @@ table.colored i.pending-icon::before {
   padding-left: 20px;
 }
 
-.display-buttons {
-  min-height: 100px;
-}
-
 div.schedule-item-content i.pending-status::before {
   bottom: 12px !important;
   right: 12px !important;

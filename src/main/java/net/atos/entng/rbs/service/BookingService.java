@@ -20,6 +20,8 @@
 package net.atos.entng.rbs.service;
 
 import fr.wseduc.webutils.Either;
+import net.atos.entng.rbs.model.ExportBooking;
+import net.atos.entng.rbs.model.ExportRequest;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
@@ -77,4 +79,6 @@ public interface BookingService extends CrudService {
 	void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
 	void deleteFuturePeriodicBooking(String bookingId, Date startDate, Handler<Either<String, JsonArray>> handler);
+
+	void getBookingsForExport(ExportRequest exportRequest, Handler<Either<String, List<ExportBooking>>> handler);
 }
