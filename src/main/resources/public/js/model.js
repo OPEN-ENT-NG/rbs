@@ -418,6 +418,7 @@ Resource.prototype.delete = function(cb, cbe) {
         });
 };
 
+
 Resource.prototype.toJSON = function() {
     var json = {
         name : this.name,
@@ -643,7 +644,6 @@ var returnData = function(hook, params){
 };
 
 function SlotProfile() {
-    this.slotProfileList;
 }
 
 SlotProfile.prototype.getSlotProfiles = function(structId, callback) {
@@ -663,6 +663,77 @@ SlotProfile.prototype.getSlots = function(slotProfileId, callback) {
     }).error(function(e){
       var error = JSON.parse(e.responseText);
       notify.error(error.error);
+    });
+};
+
+function Notification() {
+}
+
+Notification.prototype.getNotifications = function (cb) {
+  return http().get('/rbs/resource/notifications')
+    .done(function(data){
+      returnData (cb, [data]);
+    }).error(function(e){
+      var error = JSON.parse(e.responseText);
+      notify.error(error.error);
+    });
+};
+
+Notification.prototype.postNotification = function (id, cb, cbe) {
+  var notif = this;
+  return http().post('/rbs/resource/notification/add/' + id)
+    .done(function(){
+      if(typeof cb === 'function'){
+        cb();
+      }
+    })
+    .error(function(e){
+      if(typeof cbe === 'function'){
+        cbe(model.parseError(e, notif, 'create'));
+      }
+    });
+};
+
+Notification.prototype.postNotifications = function (id, cb, cbe) {
+  var notif = this;
+  return http().post('/rbs/type/notification/add/' + id)
+    .done(function(){
+      if(typeof cb === 'function'){
+        cb();
+      }
+    })
+    .error(function(e){
+      if(typeof cbe === 'function'){
+        cbe(model.parseError(e, notif, 'create'));
+      }
+    });
+};
+
+Notification.prototype.removeNotification = function (id ,cb, cbe) {
+  return http().delete('/rbs/resource/notification/remove/' + id)
+    .done(function(){
+      if(typeof cb === 'function'){
+        cb();
+      }
+    })
+    .error(function(e){
+      if(typeof cbe === 'function'){
+        cbe(model.parseError(e, booking, 'delete'));
+      }
+    });
+};
+
+Notification.prototype.removeNotifications = function (id ,cb, cbe) {
+  return http().delete('/rbs/type/notification/remove/' + id)
+    .done(function(){
+      if(typeof cb === 'function'){
+        cb();
+      }
+    })
+    .error(function(e){
+      if(typeof cbe === 'function'){
+        cbe(model.parseError(e, booking, 'delete'));
+      }
     });
 };
 

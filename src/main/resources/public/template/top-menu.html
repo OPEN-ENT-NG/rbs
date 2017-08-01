@@ -10,7 +10,7 @@
 <div class="nine cell display-buttons">
 	<div class="row">
 		<button ng-if="(!display.admin) && display.create" class="cell" ng-click="newBooking()"><i18n>rbs.booking.create</i18n></button>
-		<button class="cell" ng-click="exportForm()">export</button>
+		<button ng-if="(!display.admin)" class="cell" ng-click="exportForm()"><i18n>rbs.booking.export</i18n></button>
 
 		<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList(display.admin)"
 		tooltip="rbs.icon.show.booking.list"></i>

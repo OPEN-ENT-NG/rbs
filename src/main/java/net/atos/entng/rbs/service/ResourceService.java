@@ -43,4 +43,12 @@ public interface ResourceService extends CrudService {
 	 * Get max_delay and min_delay of resource, owner, school_id and managers (userIds and groupIds) of resourceType
 	 */
 	public void getDelaysAndTypeProperties(long resourceId, Handler<Either<String, JsonObject>> handler);
+
+	public void addNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+	public void removeNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+    public void getNotifications(UserInfos user, Handler<Either<String, JsonArray>> handler);
+
+    public void getUserNotification (long resourceId, UserInfos user, Handler<Either<String, JsonArray>> handler);
 }

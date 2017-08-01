@@ -140,7 +140,7 @@ public class PeriodicBookingHandlerFactory {
 						try {
 							bookingService.createPeriodicBooking(resourceId, selectedDays,
 									firstSlotDay, booking, user,
-									getHandlerForPeriodicNotification(user, request, true));
+									getHandlerForPeriodicNotification(user, request, true, resourceId));
 						} catch (Exception e) {
 							log.error("Error during service createPeriodicBooking", e);
 							renderError(request);
@@ -358,10 +358,10 @@ public class PeriodicBookingHandlerFactory {
 												public void handle(Either<String, JsonArray> event) {
 													if (event.isRight() && event.right().getValue() != null) {
 														if (event.isRight()) {
-															bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), false);
+															bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(resourceService, request, user, event.right().getValue(), false, Long.parseLong(resourceId));
 															bookingService.createPeriodicBooking(resourceId, selectedDays,
 																	firstSlotDay, booking, user,
-																	getHandlerForPeriodicNotification(user, request, true));
+																	getHandlerForPeriodicNotification(user, request, true, resourceId));
 														} else {
 															badRequest(request, event.left().getValue());
 														}
@@ -373,7 +373,7 @@ public class PeriodicBookingHandlerFactory {
 										} else {
 											bookingService.updatePeriodicBooking(resourceId, bookingId, selectedDays,
 													firstSlotDay, booking, user,
-													getHandlerForPeriodicNotification(user, request, false));
+													getHandlerForPeriodicNotification(user, request, false, resourceId));
 										}
 									} catch (ParseException e) {
 										log.error("Error during service updatePeriodicBooking", e);
@@ -398,12 +398,12 @@ public class PeriodicBookingHandlerFactory {
 
 
 	private Handler<Either<String, JsonArray>> getHandlerForPeriodicNotification(final UserInfos user,
-	                                                                             final HttpServerRequest request, final boolean isCreation) {
+	                                                                             final HttpServerRequest request, final boolean isCreation, final String resourceId) {
 		return new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
-					bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
+					bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(resourceService, request, user, event.right().getValue(), isCreation, Long.parseLong(resourceId));
 					Renders.renderJson(request, event.right().getValue());
 				} else {
 					badRequest(request, event.left().getValue());

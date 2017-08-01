@@ -24,8 +24,7 @@ import static net.atos.entng.rbs.BookingStatus.REFUSED;
 import static net.atos.entng.rbs.BookingStatus.SUSPENDED;
 import static net.atos.entng.rbs.BookingUtils.getLocalAdminScope;
 import static org.entcore.common.sql.Sql.parseId;
-import static org.entcore.common.sql.SqlResult.parseShared;
-import static org.entcore.common.sql.SqlResult.validResultHandler;
+import static org.entcore.common.sql.SqlResult.*;
 import static org.entcore.common.sql.SqlResult.validUniqueResultHandler;
 
 import java.util.List;
@@ -189,9 +188,50 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
 			.append(" WHERE r.id = ?");
 
-		JsonArray values = new JsonArray().add(resourceId);
+		JsonArray values = new JsonArray();
+		values.add(resourceId);
 
 		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void addNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder("INSERT INTO rbs.notifications (resource_id, user_id)" +
+				" SELECT r.id, ? FROM rbs.resource AS r WHERE r.id = ? AND NOT EXISTS (SELECT resource_id, user_id FROM rbs.notifications WHERE user_id = ? AND resource_id = r.id)");
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		values.add(parseId(id));
+		values.add(user.getUserId());
+		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void removeNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder("DELETE FROM rbs.notifications WHERE resource_id = CAST (? AS BIGINT) AND user_id = ?");
+		JsonArray values = new JsonArray();
+		values.add(parseId(id));
+		values.add(user.getUserId());
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+	}
+
+	@Override
+	public void getNotifications(UserInfos user, final Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder("SELECT resource_id FROM rbs.notifications WHERE user_id = ?");
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+	}
+
+	@Override
+	public void getUserNotification(long resourceId, UserInfos user, Handler<Either<String, JsonArray>> handler) {
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT user_id FROM rbs.notifications")
+				.append(" WHERE resource_id = ?")
+				.append(" AND user_id != ?");
+		JsonArray values = new JsonArray();
+		values.add(resourceId);
+		values.add(user.getUserId());
+		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
 	@Override

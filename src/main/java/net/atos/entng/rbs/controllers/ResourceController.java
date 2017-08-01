@@ -245,6 +245,35 @@ public class ResourceController extends ControllerHelper {
 					}
 				}
 			});
+
+			resourceService.getUserNotification(resourceId, user, new Handler<Either<String, JsonArray>>() {
+				@Override
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isRight()) {
+						Set<String> recipientSet = new HashSet<>();
+						for(Object o : event.right().getValue()){
+							if(!(o instanceof JsonObject)){
+								continue;
+							}
+							JsonObject jo = (JsonObject) o;
+							recipientSet.add(jo.getString("user_id"));
+						}
+
+						if(!recipientSet.isEmpty()) {
+							List<String> recipients = new ArrayList<>(recipientSet);
+
+							JsonObject params = new JsonObject();
+							params.putString("resource_name", resourceName);
+
+							notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, String.valueOf(resourceId), params);
+						}
+
+					} else {
+						log.error("Error when calling service getUserNotification. Unable to send timeline "
+								+ eventType + " notification.");
+					}
+				}
+			});
 		}
 	}
 
@@ -260,6 +289,58 @@ public class ResourceController extends ControllerHelper {
 				if (user != null) {
 					String id = request.params().get("id");
 					crudService.delete(id, user, defaultResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Post("/resource/notification/add/:id")
+	@ApiDoc("Add notification")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void addNotification (final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String id = request.params().get("id");
+					resourceService.addNotification (id, user, defaultResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Delete("/resource/notification/remove/:id")
+	@ApiDoc("Remove notification")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void removeNotification (final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String id = request.params().get("id");
+					resourceService.removeNotification (id, user, defaultResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("/resource/notifications")
+	@ApiDoc("Get notification")
+	public void getNotifications (final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					resourceService.getNotifications (user, arrayResponseHandler(request));
 				} else {
 					log.debug("User not found in session.");
 					Renders.unauthorized(request);

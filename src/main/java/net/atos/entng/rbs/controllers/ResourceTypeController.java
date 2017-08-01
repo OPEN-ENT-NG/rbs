@@ -301,4 +301,40 @@ public class ResourceTypeController extends ControllerHelper {
 		Handler<Either<String, JsonObject>> handler = notEmptyResponseHandler(request);
 		eb.send(DIRECTORY_ADDRESS, action, MongoDbResult.validResultHandler(handler));
 	}
+
+	@Post("/type/notification/add/:id")
+	@ApiDoc("Add notifications")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void addNotifications (final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String id = request.params().get("id");
+					resourceTypeService.addNotifications (id, user, defaultResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Delete("/type/notification/remove/:id")
+	@ApiDoc("Remove notifications")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void removeNotifications (final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String id = request.params().get("id");
+					resourceTypeService.removeNotifications (id, user, defaultResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					Renders.unauthorized(request);
+				}
+			}
+		});
+	}
 }

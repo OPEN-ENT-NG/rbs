@@ -20,18 +20,29 @@
 
 				<ul ng-if="struct.expanded === true" class="colored resourceType">
 					<li ng-repeat="resourceType in struct.types | orderBy: 'name'">
-						<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="expandResourceType(resourceType)">
-							<i class="caret"></i>[[resourceType.name]]
-						</a>
-						<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]'}" ng-click="switchSelectResources(resourceType)">
-							<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
-						</a>
+						<div class ="row this-bell">
+							<a ng-if="resourceType.expanded !== true" ng-style="{'background-color': '[[resourceType.color]]', 'color': 'white'}" ng-click="expandResourceType(resourceType)">
+								<i class="caret"></i>[[resourceType.name]]
+							</a>
+
+							<a ng-if="resourceType.expanded === true" ng-style="{'background-color': '[[resourceType.color]]', 'color': 'white'}" ng-click="switchSelectResources(resourceType)">
+								<i class="caret expanded" ng-click="collapseResourceType(resourceType)"></i>[[resourceType.name]]
+							</a>
+							<i ng-if="resourceType.notified === 'all'" tooltip="rbs.unsubscribe" ng-click="switchNotifications(resourceType)"  class="notification-icon bell"></i>
+							<i ng-if="resourceType.notified === 'none'" tooltip="rbs.subscribe" ng-click="switchNotifications(resourceType)" class="notification-icon bell-slash"></i>
+							<i ng-if="resourceType.notified === 'some'" tooltip="rbs.subscribe" ng-click="switchNotifications(resourceType)" class="notification-icon bell-disabled"></i>
+						</div>
 						<ul ng-if="resourceType.expanded === true">
 							<li ng-repeat="resource in resourceType.resources.all">
 								<div ng-style="{'background-color': '[[resource.color]]'}">
-									<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
-										[[resource.name]] <i ng-if="!resource.is_available" class="suspended-icon right-magnet"></i>
-									</a>
+									<div class="row this-bell">
+										<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
+											[[resource.name]]
+											<i ng-if="!resource.is_available" class="suspended-icon"></i>
+										</a>
+										<i ng-if="resource.notified" tooltip="rbs.unsubscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell"></i>
+										<i ng-if="!resource.notified" tooltip="rbs.subscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell-slash"></i>
+									</div>
 								</div>
 							</li>
 							<li ng-if="resourceType.resources.empty()">
