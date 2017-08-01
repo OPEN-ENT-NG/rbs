@@ -24,7 +24,8 @@
 										type="checkbox"
 										ng-model="resourceType.selected"
 										ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
-										ng-show="currentResourceType.resources.selection().length === 0" />
+										ng-show="!currentResourceType || currentResourceType.resources.selection().length === 0"
+										ng-if="resourceType.school_id === selectedStructure.id"/>
 							</resource-right>
 
 							[[resourceType.name]]

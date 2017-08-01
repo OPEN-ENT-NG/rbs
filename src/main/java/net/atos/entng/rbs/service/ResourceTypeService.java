@@ -38,4 +38,8 @@ public interface ResourceTypeService {
 	public void overrideColorChild(String typeId, String color, Handler<Either<String,JsonObject>> eitherHandler);
 
     public void overrideValidationChild(String typeId, Boolean validation, Handler<Either<String, JsonObject>> handler);
+
+	public void addNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+
+    public void removeNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
 }

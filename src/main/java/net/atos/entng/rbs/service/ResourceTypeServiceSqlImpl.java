@@ -26,16 +26,10 @@ import static org.entcore.common.sql.SqlResult.*;
 
 import java.util.List;
 
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Get;
-import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
-import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
@@ -129,6 +123,26 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 				.append (" WHERE type_id = ?");
 		values.add(validation);
 		values.add(parseId(typeId));
+		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
+	}
+
+	@Override
+	public void addNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder("INSERT INTO rbs.notifications (resource_id, user_id)" +
+				" SELECT r.id, ? FROM rbs.resource AS r WHERE type_id = ? AND NOT EXISTS (SELECT resource_id, user_id FROM rbs.notifications WHERE user_id = ? AND resource_id = r.id)");
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		values.add(parseId(id));
+		values.add(user.getUserId());
+		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void removeNotifications(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+		StringBuilder query = new StringBuilder("DELETE FROM rbs.notifications WHERE resource_id IN (SELECT id FROM rbs.resource WHERE type_id = ?) AND user_id = ?");
+		JsonArray values = new JsonArray();
+		values.add(parseId(id));
+		values.add(user.getUserId());
 		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
 	}
 }

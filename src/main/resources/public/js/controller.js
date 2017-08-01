@@ -91,6 +91,7 @@ function RbsController($scope, template, model, date, route) {
     $scope.structures = model.structures;
 
     $scope.slotProfilesComponent = new SlotProfile();
+    $scope.notificationsComponent = new Notification();
 
     $scope.structuresWithTypes = [];
 
@@ -250,46 +251,76 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.initStructures = function(selected) {
-    model.loadTreeState(function(state) {
-      for (var i = 0; i < $scope.structures.length; i++) {
-        var structureState = state.find(function(struct) { return struct.id === $scope.structures[i].id });
-        var structureWithTypes = {};
-        structureWithTypes.id = $scope.structures[i].id;
-        structureWithTypes.expanded = structureState ? structureState.expanded : false;
-        structureWithTypes.selected = structureState ? structureState.selected : selected;
-        structureWithTypes.types = [];
-        structureWithTypes.name = $scope.structures[i].name;
-        $scope.resourceTypes.forEach(function(resourceType) {
-          var typeState = structureState
-            ? structureState.types.find(function(type) { return type.id === resourceType.id })
-            : undefined;
+    $scope.notificationsComponent.getNotifications(function (data) {
+      $scope.notificationsComponent.list = data;
+      model.loadTreeState(function(state) {
+        for (var i = 0; i < $scope.structures.length; i++) {
+          var structureState = state.find(function(struct) { return struct.id === $scope.structures[i].id });
+          var structureWithTypes = {};
+          structureWithTypes.id = $scope.structures[i].id;
+          structureWithTypes.expanded = structureState ? structureState.expanded : false;
+          structureWithTypes.selected = structureState ? structureState.selected : selected;
+          structureWithTypes.types = [];
+          structureWithTypes.name = $scope.structures[i].name;
+          $scope.resourceTypes.forEach(function(resourceType) {
+            resourceType.resources.all.forEach(function (resource) {
+              resource.notified = $scope.notificationsComponent.list.some (function(res) { return res.resource_id == resource.id });
+            });
+            $scope.checkNotificationsResourceType (resourceType);
+            var typeState = structureState
+              ? structureState.types.find(function(type) { return type.id === resourceType.id })
+              : undefined;
 
-          if (typeState) {
-            resourceType.expanded = typeState.expanded;
+            if (typeState) {
+              resourceType.expanded = typeState.expanded;
 
-            resourceType.resources.all.forEach(function(resource) {
-              var resState = typeState.resources.find(function(res) { return res.id === resource.id });
+              resourceType.resources.all.forEach(function(resource) {
+                var resState = typeState.resources.find(function(res) { return res.id === resource.id });
 
-              if (resState) {
-                resource.selected = resState.selected;
-              }
-            })
-          }
+                if (resState) {
+                  resource.selected = resState.selected;
+                }
+              })
+            }
 
-          if (resourceType.school_id === $scope.structures[i].id) {
-            structureWithTypes.types.push(resourceType);
-          }
-        });
-        $scope.structuresWithTypes[i] = structureWithTypes;
-      }
-      $scope.structuresWithTypes.sort(
-        sort_by('name', false, function(a) {
-          return a.toUpperCase();
-        })
-      );
-      $scope.selectedStructure = $scope.structuresWithTypes[0];
+            if (resourceType.school_id === $scope.structures[i].id) {
+              structureWithTypes.types.push(resourceType);
+            }
+          });
+          $scope.structuresWithTypes[i] = structureWithTypes;
+        }
+        $scope.structuresWithTypes.sort(
+          sort_by('name', false, function(a) {
+            return a.toUpperCase();
+          })
+        );
+        $scope.selectedStructure = $scope.structuresWithTypes[0];
+      });
     });
   };
+
+  $scope.initStructuresManage = function(selected) {
+    for (var i = 0; i < $scope.structures.length; i++) {
+      var structureWithTypes = {};
+      structureWithTypes.id = $scope.structures[i].id;
+      structureWithTypes.expanded = true;
+      structureWithTypes.selected = selected;
+      structureWithTypes.types = [];
+      structureWithTypes.name = $scope.structures[i].name;
+      $scope.resourceTypes.forEach(function(resourceType) {
+        if (resourceType.school_id === $scope.structures[i].id) {
+          structureWithTypes.types.push(resourceType);
+        }
+      });
+      $scope.structuresWithTypes[i] = structureWithTypes;
+    }
+    $scope.structuresWithTypes.sort(
+      sort_by('name', false, function(a) {
+        return a.toUpperCase();
+      })
+    );
+    $scope.setSelectedStructureForCreation($scope.structuresWithTypes[0]);
+  }
 
   $scope.deleteTypesInStructures = function() {
     for (var i = 0; i < $scope.structures.length; i++) {
@@ -381,7 +412,7 @@ function RbsController($scope, template, model, date, route) {
     if (processableResourceTypes && processableResourceTypes.length > 0) {
       $scope.currentResourceType = processableResourceTypes[0];
     }
-    $scope.initStructures(false);
+    $scope.initStructuresManage(false);
     template.open('main', 'manage-view');
     template.open('resources', 'manage-resources');
   };
@@ -452,8 +483,21 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.setSelectedStructureForCreation = function(structure) {
-    //$scope.editedResourceType.structure = structure;
+    if ($scope.selectedStructure) {
+      var oldStructure = $scope.selectedStructure;
+      if (oldStructure != structure) {
+        oldStructure.types.forEach(function (resourceType) {
+          resourceType.selected = undefined;
+        });
+      }
+    }
     $scope.selectedStructure = structure;
+    if ($scope.selectedStructure.types.length > 0) {
+      $scope.selectResourceType($scope.selectedStructure.types[0]);
+    } else {
+      $scope.currentResourceType = undefined;
+      template.close('resources');
+    }
   };
 
   $scope.selectStructureSettings = function(structure) {
@@ -483,6 +527,11 @@ function RbsController($scope, template, model, date, route) {
     structure.types.forEach(function(type) {
       $scope.deselectTypeResourcesSettings(type);
     });
+    if ($scope.selectedStructure === structure) {
+      $scope.selectedStructure = undefined;
+      $scope.currentResourceType = undefined;
+      template.close('resources');
+    }
   };
 
   $scope.deselectTypeResourcesSettings = function(resourceType) {
@@ -2093,16 +2142,23 @@ function RbsController($scope, template, model, date, route) {
 
   // Management view interaction
   $scope.selectResourceType = function(resourceType) {
-    $scope.currentResourceType.resources.deselectAll();
-    $scope.currentResourceType.resources.collapseAll();
+    if ($scope.currentResourceType) {
+      $scope.currentResourceType.resources.deselectAll();
+      $scope.currentResourceType.resources.collapseAll();
+    }
     $scope.currentResourceType = resourceType;
     $scope.resourceTypes.current = resourceType;
+    var oldStructure = $scope.selectedStructure;
+    $scope.selectedStructure = $scope.structuresWithTypes.filter(function (struct) { return struct.id === resourceType.school_id}).pop();
+    if (oldStructure != $scope.selectedStructure) {
+      oldStructure.types.forEach(function(resourceType) {
+        resourceType.selected = undefined;
+      });
+    }
     if ($scope.editedResourceType !== undefined) {
       $scope.closeResourceType();
     }
-    /*if($scope.structures.length > 1 && $scope.selectedStructure !== undefined){
-         $scope.editedResourceType.structure = $scope.selectedStructure;
-         }*/
+
     template.open('resources', 'manage-resources');
   };
 
@@ -2590,5 +2646,65 @@ function RbsController($scope, template, model, date, route) {
       xhr.send(angular.toJson($scope.exportComponent.toJSON()));
     }
     $scope.closeExport();
+  }
+
+  $scope.switchNotification = function (resource, resourceType) {
+    //$scope.switchSelect(resource);
+    if (resource.notified) {
+      $scope.notificationsComponent.removeNotification(resource.id);
+      resource.notified = false;
+    } else {
+      $scope.notificationsComponent.postNotification(resource.id);
+      resource.notified = true;
+    }
+    $scope.checkNotificationsResourceType(resourceType);
+  }
+
+  $scope.switchNotifications = function(resourceType) {
+    if (
+      resourceType.resources.every(function(resource) {
+        return resource.notified;
+      })
+    ) {
+      $scope.disableNotificationsResources(resourceType);
+    } else {
+      $scope.enableNotificationsResources(resourceType);
+    }
+  };
+
+  $scope.disableNotificationsResources = function (resourceType) {
+    resourceType.resources.forEach(function(resource) {
+      resource.notified = false;
+    });
+    $scope.notificationsComponent.removeNotifications(resourceType.id);
+    resourceType.notified = 'none';
+  };
+
+  $scope.enableNotificationsResources = function (resourceType) {
+    resourceType.resources.forEach(function(resource) {
+      resource.notified = true;
+    });
+    $scope.notificationsComponent.postNotifications(resourceType.id);
+    resourceType.notified = 'all';
+  };
+
+  $scope.checkNotificationsResourceType = function (resourceType) {
+   if (resourceType.resources.all.length === 0) {
+     resourceType.notified = 'none';
+   } else if (
+      resourceType.resources.every(function(resource) {
+        return resource.notified;
+      })
+    ) {
+      resourceType.notified = 'all';
+    } else if (
+      resourceType.resources.every(function(resource) {
+        return !resource.notified;
+      })
+    ) {
+      resourceType.notified = 'none';
+    } else {
+      resourceType.notified = 'some';
+    }
   }
 }

@@ -168,7 +168,7 @@ public class BookingController extends ControllerHelper {
 										JsonArray storageResponses = extractCreationResponses(storageResponse);
 										if (storageResponses.size() > 0) {
 											for (Object response : storageResponses) {
-												bookingNotificationService.notifyBookingCreatedOrUpdated(request, user, (JsonObject) response, true);
+												bookingNotificationService.notifyBookingCreatedOrUpdated(resourceService, request, user, (JsonObject) response, true, Long.parseLong(resourceId));
 											}
 											Renders.renderJson(request, storageResponses);
 										} else {
@@ -275,7 +275,7 @@ public class BookingController extends ControllerHelper {
 									if (event.isRight()) {
 										JsonObject storageResponse = event.right().getValue();
 										if (storageResponse != null && storageResponse.size() > 0) {
-											bookingNotificationService.notifyBookingCreatedOrUpdated(request, user, storageResponse, false);
+											bookingNotificationService.notifyBookingCreatedOrUpdated(resourceService, request, user, storageResponse, false, Long.parseLong(resourceId));
 											renderJson(request, storageResponse, 200);
 										} else {
 											JsonObject error = new JsonObject()
@@ -369,7 +369,7 @@ public class BookingController extends ControllerHelper {
 					RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject object) {
-							String resourceId = request.params().get("id");
+							final String resourceId = request.params().get("id");
 							final String bookingId = request.params().get("bookingId");
 
 							int newStatus = object.getInteger("status");
@@ -387,7 +387,6 @@ public class BookingController extends ControllerHelper {
 									if (event.isRight()) {
 										if (event.right().getValue() != null && event.right().getValue().size() >= 3) {
 											final JsonArray results = event.right().getValue();
-
 											try {
 												final JsonObject processedBooking = ((JsonArray) results.get(2)).get(0);
 
@@ -398,14 +397,12 @@ public class BookingController extends ControllerHelper {
 																&& event.right().getValue().size() > 0) {
 
 															final String resourceName = event.right().getValue().getString("resource_name");
-
-															bookingNotificationService.notifyBookingProcessed(request, user, processedBooking, resourceName);
-
+															bookingNotificationService.notifyBookingProcessed(resourceService, request, user, processedBooking, resourceName, Long.parseLong(resourceId));
 															if (results.size() >= 4) {
 																JsonArray concurrentBookings = results.get(3);
 																for (Object o : concurrentBookings) {
 																	JsonObject booking = (JsonObject) o;
-																	bookingNotificationService.notifyBookingProcessed(request, user, booking, resourceName);
+																	bookingNotificationService.notifyBookingProcessed(resourceService, request, user, booking, resourceName, Long.parseLong(resourceId));
 																}
 															}
 
@@ -454,6 +451,7 @@ public class BookingController extends ControllerHelper {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					final String bookingId = request.params().get("bookingId");
+					final String resourceId = request.params().get("id");
 					bookingService.getBookingWithResourceName(bookingId, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> event) {
@@ -493,7 +491,7 @@ public class BookingController extends ControllerHelper {
 																		@Override
 																		public void handle(Either<String, JsonArray> event) {
 																			if (event.isRight()) {
-																				bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), false);
+																				bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(resourceService, request, user, event.right().getValue(), false, Long.parseLong(resourceId));
 																				Renders.renderJson(request, event.right().getValue());
 																			} else {
 																				badRequest(request, event.left().getValue());
@@ -538,7 +536,7 @@ public class BookingController extends ControllerHelper {
 											public void handle(Either<String, JsonObject> event) {
 												if (event.isRight()) {
 													if (event.right().getValue() != null && event.right().getValue().size() > 0) {
-														bookingNotificationService.notifyBookingDeleted(request, user, booking, bookingId);
+														bookingNotificationService.notifyBookingDeleted(resourceService, request, user, booking, bookingId, Long.parseLong(resourceId));
 														Renders.renderJson(request, event.right().getValue(), 204);
 													} else {
 														notFound(request);
