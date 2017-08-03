@@ -738,13 +738,11 @@ function RbsController($scope, template, model, date, route) {
       });
       return (
         localSelection.length === 1 &&
-        localSelection[0].owner === model.me.userId &&
         localSelection[0].resource.is_available === true
       );
     } else {
       return (
         $scope.bookings.selection().length === 1 &&
-        $scope.bookings.selection()[0].owner === model.me.userId &&
         $scope.bookings.selection()[0].resource.is_available === true
       );
     }
