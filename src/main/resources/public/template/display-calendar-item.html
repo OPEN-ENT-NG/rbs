@@ -16,12 +16,12 @@
 
 	<!-- periodic -->
 	<behaviour name="process" resource="item" class="cell checkbox" ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date)">
-		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.manage !== undefined" />
+		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.process !== undefined" />
 	</behaviour>
 
 	<!-- non periodic -->
 	<behaviour name="process" resource="item" class="cell checkbox" ng-if="item.isSlot() === false">
-		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.manage !== undefined" />
+		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.process !== undefined" />
 	</behaviour>
 
 	<div class="cell twelve" ng-if="item.isSlot() === false || canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)">

@@ -56,7 +56,7 @@
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
 	<div class="toggle">
 		<div class="row">
-			<behaviour name="manage" resource="bookings.selection()" class="cell">
+			<behaviour name="process" resource="bookings.selection()" class="cell">
 				<button ng-if="canEditBookingSelection()" ng-click="editBooking()"><i18n>edit</i18n></button>
 				<button ng-if="! canEditBookingSelection()" disabled class="disabled"><i18n>edit</i18n></button>
 				<button ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
