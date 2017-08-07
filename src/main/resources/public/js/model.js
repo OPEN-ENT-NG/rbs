@@ -1211,3 +1211,17 @@ model.parseError = function(e, object, context) {
     error.context = context;
     return error;
 };
+
+model.loadTreeState = function(cb) {
+    http().get('/userbook/preference/rbs').done(function(response) {
+        var state = (angular.fromJson(response.preference) || {}).treeState;
+
+        if(typeof cb === 'function'){
+            cb(state || []);
+        }
+    })
+}
+
+model.saveTreeState = function(state) {
+    http().putJson('/userbook/preference/rbs', { treeState: state });
+}
