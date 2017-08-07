@@ -65,11 +65,11 @@
                     <div class="content">
                         <div class="row">
                             <label style="text-align:center" class="three cell"><i18n>rbs.export.date.start</i18n></label>
-                            <date-picker class="two cell horizontal-spacing" ng-model="exportComponent.startDate" ng-change="showDate = true"></date-picker>
+                            <date-picker class="two cell horizontal-spacing" ng-model="exportComponent.startDate" ng-change="checkMinExportDate();showDate = true"></date-picker>
                             <label style="text-align:center" class="three cell"><i18n>rbs.export.date.end</i18n></label>
                             <date-picker class="two cell horizontal-spacing" ng-model="exportComponent.endDate" ng-change="checkMaxExportDate(); showDate = true" min-date="exportComponent.startDate"></date-picker>
                         </div>
-                        <div class="twelve cell warning"><i18n>rbs.export.warning.max.date</i18n> [[maxExportDate.toLocaleDateString()]])</cell></div>
+                        <div class="twelve cell warning"><i18n>rbs.export.warning.max.date</i18n></cell></div>
                     </div>
                 </div>
             </article>

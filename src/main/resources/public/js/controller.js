@@ -250,26 +250,45 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.initStructures = function(selected) {
-    for (var i = 0; i < $scope.structures.length; i++) {
-      var structureWithTypes = {};
-      structureWithTypes.id = $scope.structures[i].id;
-      structureWithTypes.expanded = true;
-      structureWithTypes.selected = selected;
-      structureWithTypes.types = [];
-      structureWithTypes.name = $scope.structures[i].name;
-      $scope.resourceTypes.forEach(function(resourceType) {
-        if (resourceType.school_id === $scope.structures[i].id) {
-          structureWithTypes.types.push(resourceType);
-        }
-      });
-      $scope.structuresWithTypes[i] = structureWithTypes;
-    }
-    $scope.structuresWithTypes.sort(
-      sort_by('name', false, function(a) {
-        return a.toUpperCase();
-      })
-    );
-    $scope.selectedStructure = $scope.structuresWithTypes[0];
+    model.loadTreeState(function(state) {
+      for (var i = 0; i < $scope.structures.length; i++) {
+        var structureState = state.find(function(struct) { return struct.id === $scope.structures[i].id });
+        var structureWithTypes = {};
+        structureWithTypes.id = $scope.structures[i].id;
+        structureWithTypes.expanded = structureState ? structureState.expanded : false;
+        structureWithTypes.selected = structureState ? structureState.selected : selected;
+        structureWithTypes.types = [];
+        structureWithTypes.name = $scope.structures[i].name;
+        $scope.resourceTypes.forEach(function(resourceType) {
+          var typeState = structureState
+            ? structureState.types.find(function(type) { return type.id === resourceType.id })
+            : undefined;
+
+          if (typeState) {
+            resourceType.expanded = typeState.expanded;
+
+            resourceType.resources.all.forEach(function(resource) {
+              var resState = typeState.resources.find(function(res) { return res.id === resource.id });
+
+              if (resState) {
+                resource.selected = resState.selected;
+              }
+            })
+          }
+
+          if (resourceType.school_id === $scope.structures[i].id) {
+            structureWithTypes.types.push(resourceType);
+          }
+        });
+        $scope.structuresWithTypes[i] = structureWithTypes;
+      }
+      $scope.structuresWithTypes.sort(
+        sort_by('name', false, function(a) {
+          return a.toUpperCase();
+        })
+      );
+      $scope.selectedStructure = $scope.structuresWithTypes[0];
+    });
   };
 
   $scope.deleteTypesInStructures = function() {
@@ -380,11 +399,12 @@ function RbsController($scope, template, model, date, route) {
   $scope.expandResourceType = function(resourceType) {
     resourceType.expanded = true;
     $scope.selectResources(resourceType);
+    $scope.saveTreeState();
   };
 
   $scope.expandStructure = function(structure) {
     structure.expanded = true;
-    $scope.selectStructure(structure);
+    $scope.saveTreeState();
   };
 
   $scope.expandStructureSettings = function(structure) {
@@ -398,11 +418,14 @@ function RbsController($scope, template, model, date, route) {
   $scope.collapseResourceType = function(resourceType) {
     resourceType.expanded = undefined;
     $scope.deselectResources(resourceType);
+    $scope.saveTreeState();
   };
 
   $scope.collapseStructure = function(structure) {
     structure.expanded = undefined;
+    structure.types.forEach($scope.collapseResourceType)
     $scope.deselectStructure(structure);
+    $scope.saveTreeState();
   };
 
   $scope.collapseStructureSettings = function(structure) {
@@ -479,6 +502,8 @@ function RbsController($scope, template, model, date, route) {
     } else {
       $scope.selectResources(resourceType);
     }
+
+    $scope.saveTreeState();
   };
 
   $scope.switchSelectStructure = function(structure) {
@@ -495,6 +520,8 @@ function RbsController($scope, template, model, date, route) {
     } else {
       $scope.selectStructureSettings(structure);
     }
+
+    $scope.saveTreeState();
   };
 
   $scope.switchSelect = function(resource) {
@@ -511,6 +538,8 @@ function RbsController($scope, template, model, date, route) {
       }
       model.bookings.applyFilters();
     }
+
+    $scope.saveTreeState();
   };
 
   $scope.switchSelectMine = function() {
@@ -1170,7 +1199,7 @@ function RbsController($scope, template, model, date, route) {
         booking.occurrences +
         lang.translate(
           'rbs.period.occurences.slots.' +
-          (booking.occurrences > 1 ? 'many' : 'one')
+            (booking.occurrences > 1 ? 'many' : 'one')
         );
     } else {
       summary +=
@@ -1431,8 +1460,8 @@ function RbsController($scope, template, model, date, route) {
             saveFirst.booking_reason = $scope.editedBooking.booking_reason;
             saveFirst.resource = $scope.editedBooking.resource;
             saveFirst.slots = [{
-              start_date : $scope.editedBooking.startMoment.unix(),
-              end_date : $scope.editedBooking.endMoment.unix()
+                start_date : $scope.editedBooking.startMoment.unix(),
+                end_date : $scope.editedBooking.endMoment.unix()
             }];
             //Save the 1st no periodic slot
             saveFirst.is_periodic = false;
@@ -1482,8 +1511,8 @@ function RbsController($scope, template, model, date, route) {
       }
 
       $scope.editedBooking.slots = [{
-        start_date : $scope.editedBooking.startMoment.unix(),
-        end_date : $scope.editedBooking.endMoment.unix()
+          start_date : $scope.editedBooking.startMoment.unix(),
+          end_date : $scope.editedBooking.endMoment.unix()
       }];
       $scope.editedBooking.save(
         function() {
@@ -1590,8 +1619,8 @@ function RbsController($scope, template, model, date, route) {
                 saveFirst.booking_reason = $scope.editedBooking.booking_reason;
                 saveFirst.resource = $scope.editedBooking.resource;
                 saveFirst.slots = [{
-                  start_date : $scope.editedBooking.startMoment.unix(),
-                  end_date : $scope.editedBooking.endMoment.unix()
+                    start_date : $scope.editedBooking.startMoment.unix(),
+                    end_date : $scope.editedBooking.endMoment.unix()
                 }];
                 //Save the 1st no periodic slot
                 saveFirst.is_periodic = false;
@@ -2413,6 +2442,30 @@ function RbsController($scope, template, model, date, route) {
     $scope.showDaySelection = true;
   };
 
+  $scope.saveTreeState = function() {
+    var state = $scope.structuresWithTypes.map(function(struct) {
+      return {
+        id: struct.id,
+        expanded: struct.expanded === true,
+        selected: struct.selected === true,
+        types: struct.types.map(function(type) {
+          return {
+            id: type.id,
+            expanded: type.expanded === true,
+            resources: type.resources.all.map(function(resource) {
+              return {
+                id: resource.id,
+                selected: resource.selected === true,
+              };
+            }),
+          };
+        }),
+      };
+    });
+
+    model.saveTreeState(state);
+  };
+
   $scope.initExportDisplay = function() {
     $scope.exportComponent.display = {
       state: 0,
@@ -2450,15 +2503,24 @@ function RbsController($scope, template, model, date, route) {
   $scope.exportForm = function () {
     $scope.exportComponent = new ExportBooking ();
     $scope.initExportDisplay();
+    $scope.minExportDate = moment().week(moment().week() - 12).day(1).toDate();
     $scope.maxExportDate = moment().week(moment().week() + 12).day(7).toDate();
     template.open('lightbox','export-format');
     $scope.display.showPanel = true;
+  }
+
+  $scope.checkMinExportDate = function () {
+    if ($scope.exportComponent.startDate < $scope.minExportDate) {
+      $scope.exportComponent.startDate = $scope.minExportDate;
+    }
+    $scope.maxExportDate = moment($scope.exportComponent.startDate).week(moment($scope.exportComponent.startDate).week() + 12).day(7).toDate();
   }
 
   $scope.checkMaxExportDate = function () {
     if ($scope.exportComponent.endDate > $scope.maxExportDate) {
       $scope.exportComponent.endDate = $scope.maxExportDate;
     }
+    $scope.minExportDate = moment($scope.exportComponent.endDate).week(moment($scope.exportComponent.endDate).week() - 12).day(1).toDate();
   }
 
   $scope.closeExport = function () {

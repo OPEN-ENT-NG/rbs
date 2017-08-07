@@ -190,7 +190,7 @@
     "rbs.export.view.week": "Semaine",
     "rbs.export.view.list": "Liste",
     "rbs.export.view.picked": "4 - Vue : ",
-    "rbs.export.warning.max.date": "L'export des réservations est limité à 12 semaines après la semaine en cours (soit le ",
+    "rbs.export.warning.max.date": "L'export des réservations se limite à une plage de 12 semaines",
     "rbs.filters.date.all": "Toutes les réservations",
     "rbs.filters.date.from": "Du",
     "rbs.filters.date.to": "au",
