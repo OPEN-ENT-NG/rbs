@@ -928,6 +928,13 @@ function RbsController($scope, template, model, date, route){
 			notify.error('rbs.booking.invalid.datetimes.past');
 			hasErrors = true;
 		}
+		if($scope.booking.startDate.getFullYear() == $scope.booking.endDate.getFullYear()
+            && $scope.booking.endTime.hour() == $scope.booking.startTime.hour()
+			&& $scope.booking.endTime.minute() == $scope.booking.startTime.minute()){
+            $scope.currentErrors.push({error: 'rbs.booking.invalid.datetimes.equals'});
+            notify.error('rbs.booking.invalid.datetimes.equals');
+            hasErrors = true;
+		}
 		if ($scope.editedBooking.is_periodic === true
 				&& _.find($scope.editedBooking.periodDays, function(periodDay) { return periodDay.value === true; }) === undefined) {
 			// Error

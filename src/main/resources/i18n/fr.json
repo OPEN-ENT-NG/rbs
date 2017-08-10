@@ -107,6 +107,7 @@
     "rbs.booking.headers.start_date": "Date de début",
     "rbs.booking.headers.status": "Etat",
     "rbs.booking.invalid.datetimes.past": "Créneau non valide : Sélectionnez un créneau supérieur à la date et l'heure courante",
+    "rbs.booking.invalid.datetimes.equals": "Créneau non valide : Sélectionnez une date de début de réservation différente de la date de fin.",
     "rbs.booking.missing.days": "Sélectionnez au moins un jour de la semaine pour répéter la réservation",
     "rbs.booking.new": "Nouvelle réservation",
     "rbs.booking.refuse": "Refuser",
