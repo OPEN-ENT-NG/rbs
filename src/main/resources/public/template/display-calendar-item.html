@@ -1,40 +1,35 @@
 <div class="schedule-item-content" ng-style="(item.resource.color != null) && {'background-color': '[[item.resource.color]]'} || {'background-color': '[[item.color]]'}">
 
-	<i ng-if="item.isPending() && ( canDeleteBookingDateCheck(item.end_date) || item.isSlot() === false )" ng-click="viewBooking(item)" class="pending-status"></i>
-	<i ng-if="item.isValidated() && ( canDeleteBookingDateCheck(item.end_date) || item.isSlot() === false )" ng-click="viewBooking(item)" class="validated-status"></i>
-	<i ng-if="item.isRefused() && ( canDeleteBookingDateCheck(item.end_date) || item.isSlot() === false )" ng-click="viewBooking(item)" class="refused-status"></i>
-	<i ng-if="item.isSuspended() && ( canDeleteBookingDateCheck(item.end_date) || item.isSlot() === false )" ng-click="viewBooking(item)" class="suspended-status"></i>
+	<i ng-if="item.isPending() && canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)" class="pending-status"></i>
+	<i ng-if="item.isValidated() && canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)" class="validated-status"></i>
+	<i ng-if="item.isRefused() && canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)" class="refused-status"></i>
+	<i ng-if="item.isSuspended() && canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)" class="suspended-status"></i>
 
-	<i ng-if="item.isPending() && item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false" class="pending-status"></i>
-	<i ng-if="item.isValidated() && item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false" class="validated-status"></i>
-	<i ng-if="item.isRefused() && item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false" class="refused-status"></i>
-	<i ng-if="item.isSuspended() && item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false" class="suspended-status"></i>
+	<i ng-if="item.isPending() && canDeleteBookingDateCheck(item.end_date) === false" class="pending-status"></i>
+	<i ng-if="item.isValidated() && canDeleteBookingDateCheck(item.end_date) === false" class="validated-status"></i>
+	<i ng-if="item.isRefused() && canDeleteBookingDateCheck(item.end_date) === false" class="refused-status"></i>
+	<i ng-if="item.isSuspended() && canDeleteBookingDateCheck(item.end_date) === false" class="suspended-status"></i>
 
 	<i ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)" class="periodic-status"></i>
 	<i ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false" class="periodic-status"></i>
 
 
-	<!-- periodic -->
-	<behaviour name="process" resource="item" class="cell checkbox" ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date)">
-		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.process !== undefined" />
-	</behaviour>
-
 	<!-- non periodic -->
-	<behaviour name="process" resource="item" class="cell checkbox" ng-if="item.isSlot() === false">
+	<behaviour name="process" resource="item" class="cell checkbox" ng-if="canDeleteBookingDateCheck(item.end_date)">
 		<input type="checkbox" ng-model="item.selected" ng-if="item.owner === me.userId || item.isPending() || item.myRights.process !== undefined" />
 	</behaviour>
 
-	<div class="cell twelve" ng-if="item.isSlot() === false || canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)">
+	<div class="cell twelve" ng-if="canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)">
 		[[item.resource.name]]
 	</div>
-	<div class="cell twelve" ng-if="item.isSlot() === false || canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)">
+	<div class="cell twelve" ng-if="canDeleteBookingDateCheck(item.end_date)" ng-click="viewBooking(item)">
 		[[item.owner_name]]
 	</div>
 
-	<div class="cell twelve" ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date) === false">
+	<div class="cell twelve" ng-if="canDeleteBookingDateCheck(item.end_date) === false">
 		[[item.resource.name]]
 	</div>
-	<div class="cell twelve" ng-if="item.isSlot() && canDeleteBookingDateCheck(item.end_date) === fasle">
+	<div class="cell twelve" ng-if="canDeleteBookingDateCheck(item.end_date) === false">
 		[[item.owner_name]]
 	</div>
 </div>
