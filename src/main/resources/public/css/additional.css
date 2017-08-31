@@ -106,5 +106,13 @@ div.schedule-item-content .checkbox {
 
 a.notselected {
 	background-color : #aaa;
-	color : #fff;
+	color : #fff !important;
+}
+
+a.notselected:hover {
+	color : #fff !important;
+}
+
+a.selected {
+	color : #fff !important;
 }
