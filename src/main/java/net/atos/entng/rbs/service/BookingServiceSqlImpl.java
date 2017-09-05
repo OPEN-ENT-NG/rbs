@@ -99,7 +99,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.add(rId);
 
 		// Unix timestamps are converted into postgresql timestamps.
-		query.append(" to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC'");
+		query.append(" to_timestamp(?), to_timestamp(?)");
 		values.add(newStartDate)
 				.add(newEndDate);
 
@@ -108,7 +108,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append("SELECT 1 FROM rbs.booking")
 				.append(" WHERE resource_id = ?")
 				.append(" AND status = ?")
-				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
 				.append(") RETURNING id, status,")
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
 				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
@@ -148,13 +148,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		query.append("WITH parent_booking AS (")
 			.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
 			.append(" is_periodic, periodicity, occurrences, days)")
-			.append(" VALUES (?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC',");
+			.append(" VALUES (?, ?, ?, to_timestamp(?),");
 		values.add(rId)
 			.add(user.getUserId())
 			.add(data.getString("booking_reason"))
 			.add(data.getValue("start_date"));
 
-		query.append(" to_timestamp(?) AT TIME ZONE 'UTC',");
+		query.append(" to_timestamp(?),");
 		values.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date, which will be computed
 		final int endDateIndex = values.size() - 1;
 
@@ -205,7 +205,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 1. INSERT clause for the first child booking
 		query.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status, refusal_reason)")
-			.append(" VALUES(?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC',");
+			.append(" VALUES(?, ?, ?, to_timestamp(?), to_timestamp(?),");
 		values.add(resourceId)
 			.add(user.getUserId())
 			.add(bookingReason)
@@ -229,7 +229,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			.append(" WHEN (")
 			.append(" EXISTS(SELECT 1 FROM rbs.booking")
 			.append(" WHERE status = ?")
-			.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+			.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
 			.append(" AND resource_id = ?")
 			.append(" )) THEN ?");
 		values.add(VALIDATED.status())
@@ -252,7 +252,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
                 .append(" WHEN (")
                 .append(" EXISTS(SELECT 1 FROM rbs.booking")
                 .append(" WHERE status = ?")
-                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
                 .append(" AND resource_id = ?")
                 .append(" )) THEN ?");
         values.add(VALIDATED.status())
@@ -264,7 +264,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
         // finding the conflicted booking id
         query.append( " || ( SELECT id FROM rbs.booking")
                 .append(" WHERE status = ?")
-                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+                .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
                 .append(" AND resource_id = ? LIMIT 1 )");
         values.add(VALIDATED.status())
                 .add(firstSlotStartDate)
@@ -293,10 +293,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				intervalFromFirstDay += interval;
 				selectedDay = (selectedDay + interval) % 7;
 
-				query.append(", (?, ?, ?, to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+				query.append(", (?, ?, ?, to_timestamp(?) + interval '")
 					.append(intervalFromFirstDay) // NB : "interval '? day'" or "interval '?'" is not properly computed by prepared statement
 					.append(" day', ");
-				query.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+				query.append("to_timestamp(?) + interval '")
 					.append(intervalFromFirstDay)
 					.append(" day',");
 				values.add(resourceId)
@@ -317,10 +317,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append(" WHEN (")
 					.append(" EXISTS(SELECT 1 FROM rbs.booking")
 					.append(" WHERE status = ?");
-				query.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+				query.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) + interval '")
 					.append(intervalFromFirstDay)
 					.append(" day', ")
-					.append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+					.append("to_timestamp(?) + interval '")
 					.append(intervalFromFirstDay)
 					.append(" day')");
 				query.append(" AND resource_id = ?")
@@ -345,10 +345,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
                         .append(" WHEN (")
                         .append(" EXISTS(SELECT 1 FROM rbs.booking")
                         .append(" WHERE status = ?")
-                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) + interval '")
                         .append(intervalFromFirstDay)
                         .append(" day', ")
-                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append("to_timestamp(?) + interval '")
                         .append(intervalFromFirstDay)
                         .append(" day')")
                         .append(" AND resource_id = ?")
@@ -362,10 +362,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
                 // finding the conflicted booking id
                 query.append( " || (SELECT id FROM rbs.booking")
                         .append(" WHERE status = ?")
-                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) + interval '")
                         .append(intervalFromFirstDay)
                         .append(" day', ")
-                        .append("to_timestamp(?) AT TIME ZONE 'UTC' + interval '")
+                        .append("to_timestamp(?) + interval '")
                         .append(intervalFromFirstDay)
                         .append(" day')")
                         .append(" AND resource_id = ? LIMIT 1 )");
@@ -458,7 +458,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" WHERE resource_id = ?")
 				.append(" AND id != ?")
 				.append(" AND status = ?")
-				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?) AT TIME ZONE 'UTC', to_timestamp(?) AT TIME ZONE 'UTC')")
+				.append(" AND (start_date, end_date) OVERLAPS (to_timestamp(?), to_timestamp(?))")
 				.append(") RETURNING id, status,")
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
 				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
@@ -483,7 +483,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			JsonObject object, JsonArray values) {
 
 		if ("start_date".equals(fieldname) || "end_date".equals(fieldname)) {
-			sb.append(fieldname).append("= to_timestamp(?) AT TIME ZONE 'UTC', ");
+			sb.append(fieldname).append("= to_timestamp(?), ");
 		} else {
 			sb.append(fieldname).append("= ?, ");
 		}
@@ -509,7 +509,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		StringBuilder parentQuery = new StringBuilder();
 		JsonArray parentValues = new JsonArray();
 		parentQuery.append("UPDATE rbs.booking")
-				.append(" SET booking_reason = ?, start_date = to_timestamp(?) AT TIME ZONE 'UTC', end_date = to_timestamp(?) AT TIME ZONE 'UTC',");
+				.append(" SET booking_reason = ?, start_date = to_timestamp(?), end_date = to_timestamp(?),");
 		parentValues.add(data.getString("booking_reason"))
 			.add(data.getLong("start_date"))
 			.add(endDate>0L ? endDate : null); // the null value will be replaced by the last slot's end date
