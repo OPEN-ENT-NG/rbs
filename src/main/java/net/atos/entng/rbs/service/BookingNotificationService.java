@@ -92,15 +92,15 @@ public class BookingNotificationService {
 				public void handle(Either<String, JsonArray> event) {
 					if (event.isRight()) {
 						Set<String> recipientSet = new HashSet<>();
-						for(Object o : event.right().getValue()){
-							if(!(o instanceof JsonObject)){
+						for (Object o : event.right().getValue()) {
+							if (!(o instanceof JsonObject)) {
 								continue;
 							}
 							JsonObject jo = (JsonObject) o;
 							recipientSet.add(jo.getString("user_id"));
 						}
 
-						if(!recipientSet.isEmpty()) {
+						if (!recipientSet.isEmpty()) {
 							List<String> recipients = new ArrayList<>(recipientSet);
 							if (!owner.equals(user.getUserId())) {
 								recipients.add(owner);
@@ -178,28 +178,7 @@ public class BookingNotificationService {
 							}
 						});
 
-						resourceService.getUserNotification(resourceId, user, new Handler<Either<String, JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if (event.isRight()) {
-									Set<String> recipientSet = new HashSet<>();
-									for(Object o : event.right().getValue()){
-										if(!(o instanceof JsonObject)){
-											continue;
-										}
-										JsonObject jo = (JsonObject) o;
-										recipientSet.add(jo.getString("user_id"));
-									}
-
-									if(!recipientSet.isEmpty()) {
-										sendNotification(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
-									}
-								} else {
-									log.error("Error when calling service getUserNotification. Unable to send timeline "
-											+ " process notification.");
-								}
-							}
-						});
+						sendNotificationIfUserIsSubscribed(resourceService, request, user, resourceId, resourceName, bookingId, startDate, endDate, notificationName);
 
 					} else {
 						log.error("Error when calling service getResourceName. Unable to send timeline "
@@ -284,28 +263,7 @@ public class BookingNotificationService {
 									}
 								});
 
-						resourceService.getUserNotification(resourceId, user, new Handler<Either<String, JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if (event.isRight()) {
-									Set<String> recipientSet = new HashSet<>();
-									for(Object o : event.right().getValue()){
-										if(!(o instanceof JsonObject)){
-											continue;
-										}
-										JsonObject jo = (JsonObject) o;
-										recipientSet.add(jo.getString("user_id"));
-									}
-
-									if(!recipientSet.isEmpty()) {
-										sendNotification(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
-									}
-								} else {
-									log.error("Error when calling service getUserNotification. Unable to send timeline "
-											+ " process notification.");
-								}
-							}
-						});
+						sendNotificationIfUserIsSubscribed(resourceService, request, user, resourceId, resourceName, bookingId, startDate, endDate, notificationName);
 					} else {
 						log.error("Error when calling service getParentBooking. Unable to send timeline "
 								+ eventType + " notification.");
@@ -314,6 +272,33 @@ public class BookingNotificationService {
 			});
 		}
 
+	}
+
+	private void sendNotificationIfUserIsSubscribed(final ResourceService resourceService, final HttpServerRequest request, final UserInfos user, long resourceId,
+	                                                final String resourceName, final String bookingId, final String startDate, final String endDate,
+	                                                final String notificationName) {
+		resourceService.getUserNotification(resourceId, user, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isRight()) {
+					Set<String> recipientSet = new HashSet<>();
+					for (Object o : event.right().getValue()) {
+						if (!(o instanceof JsonObject)) {
+							continue;
+						}
+						JsonObject jo = (JsonObject) o;
+						recipientSet.add(jo.getString("user_id"));
+					}
+
+					if (!recipientSet.isEmpty()) {
+						sendNotificationToUserTimeline(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
+					}
+				} else {
+					log.error("Error when calling service getUserNotification. Unable to send timeline "
+							+ " process notification.");
+				}
+			}
+		});
 	}
 
 	private void notifyModerators(final HttpServerRequest request, final UserInfos user, JsonArray moderators,
@@ -344,22 +329,22 @@ public class BookingNotificationService {
 								}
 							}
 							if (remaining.decrementAndGet() < 1 && !recipientSet.isEmpty()) {
-								sendNotification(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
+								sendNotificationToUserTimeline(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
 							}
 						}
 					});
 				}
 			}
 			if (remaining.get() < 1 && !recipientSet.isEmpty()) {
-				sendNotification(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
+				sendNotificationToUserTimeline(request, user, bookingId, startDate, endDate, resourceName, notificationName, recipientSet);
 			}
 		}
 
 	}
 
-	private void sendNotification(final HttpServerRequest request, final UserInfos user,
-	                              final String bookingId, final String startDate, final String endDate, final String resourceName,
-	                              final String notificationName, final Set<String> recipientSet) {
+	private void sendNotificationToUserTimeline(final HttpServerRequest request, final UserInfos user,
+	                                            final String bookingId, final String startDate, final String endDate, final String resourceName,
+	                                            final String notificationName, final Set<String> recipientSet) {
 
 		List<String> recipients = new ArrayList<>(recipientSet);
 
@@ -409,15 +394,15 @@ public class BookingNotificationService {
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
 					Set<String> recipientSet = new HashSet<>();
-					for(Object o : event.right().getValue()){
-						if(!(o instanceof JsonObject)){
+					for (Object o : event.right().getValue()) {
+						if (!(o instanceof JsonObject)) {
 							continue;
 						}
 						JsonObject jo = (JsonObject) o;
 						recipientSet.add(jo.getString("user_id"));
 					}
 
-					if(!recipientSet.isEmpty()) {
+					if (!recipientSet.isEmpty()) {
 						List<String> recipients = new ArrayList<>(recipientSet);
 						if (!owner.equals(user.getUserId())) {
 							recipients.add(owner);
