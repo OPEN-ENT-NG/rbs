@@ -19,36 +19,92 @@
 
 package net.atos.entng.rbs.service;
 
-import java.util.List;
-
+import fr.wseduc.webutils.Either;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
+import java.util.List;
 
 public interface ResourceService extends CrudService {
 
-	public void createResource(JsonObject resource, UserInfos user, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Create a resource
+	 *
+	 * @param resource : id of current resource
+	 * @param user     : information of current user logged
+	 * @param handler  : handler which contains the response
+	 */
+	void createResource(JsonObject resource, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
-	public void listResources(List<String> groupsAndUserIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get all resources
+	 *
+	 * @param groupsAndUserIds : list of groups and id of users who are authorized
+	 * @param user             : information of current user logged
+	 * @param handler          : handler which contains the response
+	 */
+	void listResources(List<String> groupsAndUserIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
-	public void updateResource(String id, JsonObject data, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Update a resource
+	 *
+	 * @param id      : id of current resource
+	 * @param data    : object which contains information of resource
+	 * @param handler : handler which contains the response
+	 */
+	void updateResource(String id, JsonObject data, Handler<Either<String, JsonObject>> handler);
 
-	public void getBookingOwnersIds(long resourceId, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the booking owners list of current resource
+	 *
+	 * @param resourceId : id of current resource
+	 * @param handler    : handler which contains the response
+	 */
+	void getBookingOwnersIds(long resourceId, Handler<Either<String, JsonArray>> handler);
 
 	/**
 	 * Get max_delay and min_delay of resource, owner, school_id and managers (userIds and groupIds) of resourceType
+	 *
+	 * @param resourceId : id of current resource
+	 * @param handler    : handler which contains the response
 	 */
-	public void getDelaysAndTypeProperties(long resourceId, Handler<Either<String, JsonObject>> handler);
+	void getDelaysAndTypeProperties(long resourceId, Handler<Either<String, JsonObject>> handler);
 
-	public void addNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Add the notification for current user on current resource
+	 *
+	 * @param id      : id of current resource
+	 * @param user    : information of current user logged
+	 * @param handler : handler which contains the response
+	 */
+	void addNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
-	public void removeNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
+	/**
+	 * Remove the notification for current user on current resource
+	 *
+	 * @param id      : id of current resource
+	 * @param user    : information of current user logged
+	 * @param handler : handler which contains the response
+	 */
+	void removeNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
-    public void getNotifications(UserInfos user, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get notification list for current user
+	 *
+	 * @param user    : information of current user logged
+	 * @param handler : handler which contains the response
+	 */
+	void getNotifications(UserInfos user, Handler<Either<String, JsonArray>> handler);
 
-    public void getUserNotification (long resourceId, UserInfos user, Handler<Either<String, JsonArray>> handler);
+	/**
+	 * Get the user's id for current resource
+	 *
+	 * @param resourceId : id of current resource
+	 * @param user       : information of current user logged
+	 * @param handler    : handler which contains the response
+	 */
+	void getUserNotification(long resourceId, UserInfos user, Handler<Either<String, JsonArray>> handler);
 }

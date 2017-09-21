@@ -105,6 +105,8 @@ public class BookingController extends ControllerHelper {
 	}
 
 	/**
+	 * @param user : informations of the current user logged
+	 * @param request : the request send to the server
 	 * @return Handler to create or update a booking
 	 */
 	private Handler<JsonObject> getCreateBookingHandler(final UserInfos user,
@@ -216,6 +218,8 @@ public class BookingController extends ControllerHelper {
 
 
 	/**
+	 * @param user :  informations of the current user logged
+	 * @param request : the request send to the server
 	 * @return Handler to update a booking
 	 */
 	private Handler<JsonObject> getUpdateBookingHandler(final UserInfos user,
