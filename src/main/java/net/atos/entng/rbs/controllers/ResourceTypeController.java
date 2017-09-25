@@ -273,6 +273,7 @@ public class ResourceTypeController extends ControllerHelper {
 
 	@ApiDoc("Get all slot profiles for a school")
 	@Get("/slotprofiles/schools/:schoolId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void listSlotProfilesBySchool(HttpServerRequest request) {
 		final String structureId = request.params().get("schoolId");
 		if (structureId == null) {
@@ -292,6 +293,7 @@ public class ResourceTypeController extends ControllerHelper {
 
 	@ApiDoc("Get all slots for a slot profile")
 	@Get("/slotprofiles/:idSlotProfile/slots")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void listSlotsInAProfile(HttpServerRequest request) {
 		String idSlotProfile = request.params().get("idSlotProfile");
 		JsonObject action = new JsonObject()
@@ -304,7 +306,7 @@ public class ResourceTypeController extends ControllerHelper {
 
 	@Post("/type/notification/add/:id")
 	@ApiDoc("Add notifications")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void addNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -322,7 +324,7 @@ public class ResourceTypeController extends ControllerHelper {
 
 	@Delete("/type/notification/remove/:id")
 	@ApiDoc("Remove notifications")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void removeNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

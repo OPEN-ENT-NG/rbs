@@ -299,7 +299,8 @@ public class ResourceController extends ControllerHelper {
 
 	@Post("/resource/notification/add/:id")
 	@ApiDoc("Add notification")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void addNotification (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -317,7 +318,8 @@ public class ResourceController extends ControllerHelper {
 
 	@Delete("/resource/notification/remove/:id")
 	@ApiDoc("Remove notification")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	public void removeNotification (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -335,6 +337,7 @@ public class ResourceController extends ControllerHelper {
 
 	@Get("/resource/notifications")
 	@ApiDoc("Get notification")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void getNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
