@@ -161,8 +161,14 @@ function RbsController($scope, template, model, date, route) {
         return;
       }
       $scope.deleteTypesInStructures();
-      $scope.initStructures(true);
+      if ($scope.isManage) {
+        $scope.initStructuresManage(false, $scope.currentResourceType);
+        $scope.isManage = undefined;
+      } else {
+        $scope.initStructures(true);
+      }
       $scope.initResources();
+      $scope.$apply();
     });
 
     //when date picker of calendar directive is used
@@ -234,11 +240,11 @@ function RbsController($scope, template, model, date, route) {
   var sort_by = function(field, reverse, primer) {
     var key = primer
       ? function(x) {
-          return primer(x[field]);
-        }
+        return primer(x[field]);
+      }
       : function(x) {
-          return x[field];
-        };
+        return x[field];
+      };
 
     reverse = !reverse ? 1 : -1;
 
@@ -296,7 +302,8 @@ function RbsController($scope, template, model, date, route) {
     });
   };
 
-  $scope.initStructuresManage = function(selected) {
+  $scope.initStructuresManage = function(selected, currentResourceType) {
+    var thisResourceType = {};
     for (var i = 0; i < $scope.structures.length; i++) {
       var structureWithTypes = {};
       structureWithTypes.id = $scope.structures[i].id;
@@ -308,6 +315,9 @@ function RbsController($scope, template, model, date, route) {
         if (resourceType.school_id === $scope.structures[i].id) {
           structureWithTypes.types.push(resourceType);
         }
+        if (currentResourceType && resourceType.id === currentResourceType.id) {
+          thisResourceType = resourceType;
+        }
       });
       $scope.structuresWithTypes[i] = structureWithTypes;
     }
@@ -316,7 +326,12 @@ function RbsController($scope, template, model, date, route) {
         return a.toUpperCase();
       })
     );
-    $scope.setSelectedStructureForCreation($scope.structuresWithTypes[0]);
+    if (currentResourceType) {
+      $scope.selectResourceType(thisResourceType);
+    } else {
+      $scope.setSelectedStructureForCreation($scope.structuresWithTypes[0]);
+    }
+
   }
 
   $scope.deleteTypesInStructures = function() {
@@ -999,9 +1014,9 @@ function RbsController($scope, template, model, date, route) {
               .filter(function(slot) {
                 return (
                   slot.startHour.split(':')[0] ==
-                    $scope.editedBooking.startMoment.hour() &&
+                  $scope.editedBooking.startMoment.hour() &&
                   slot.startHour.split(':')[1] ==
-                    $scope.editedBooking.startMoment.minute()
+                  $scope.editedBooking.startMoment.minute()
                 );
               })
               .pop();
@@ -1127,10 +1142,10 @@ function RbsController($scope, template, model, date, route) {
       $scope.editedBooking.type === undefined
         ? undefined
         : _.first(
-            $scope.editedBooking.type.resources.filterAvailable(
-              $scope.editedBooking.is_periodic
-            )
-          );
+          $scope.editedBooking.type.resources.filterAvailable(
+            $scope.editedBooking.is_periodic
+          )
+        );
     if (
       $scope.editedBooking.type !== undefined &&
       $scope.editedBooking.type.slotprofile !== undefined
@@ -1245,7 +1260,7 @@ function RbsController($scope, template, model, date, route) {
         booking.occurrences +
         lang.translate(
           'rbs.period.occurences.slots.' +
-            (booking.occurrences > 1 ? 'many' : 'one')
+          (booking.occurrences > 1 ? 'many' : 'one')
         );
     } else {
       summary +=
@@ -1319,7 +1334,7 @@ function RbsController($scope, template, model, date, route) {
         $scope.editedBooking.occurrences +
         lang.translate(
           'rbs.period.occurences.slots.' +
-            ($scope.editedBooking.occurrences > 1 ? 'many' : 'one')
+          ($scope.editedBooking.occurrences > 1 ? 'many' : 'one')
         );
     } else {
       summary +=
@@ -1506,8 +1521,8 @@ function RbsController($scope, template, model, date, route) {
             saveFirst.booking_reason = $scope.editedBooking.booking_reason;
             saveFirst.resource = $scope.editedBooking.resource;
             saveFirst.slots = [{
-                start_date : $scope.editedBooking.startMoment.unix(),
-                end_date : $scope.editedBooking.endMoment.unix()
+              start_date : $scope.editedBooking.startMoment.unix(),
+              end_date : $scope.editedBooking.endMoment.unix()
             }];
             //Save the 1st no periodic slot
             saveFirst.is_periodic = false;
@@ -1557,8 +1572,8 @@ function RbsController($scope, template, model, date, route) {
       }
 
       $scope.editedBooking.slots = [{
-          start_date : $scope.editedBooking.startMoment.unix(),
-          end_date : $scope.editedBooking.endMoment.unix()
+        start_date : $scope.editedBooking.startMoment.unix(),
+        end_date : $scope.editedBooking.endMoment.unix()
       }];
       $scope.editedBooking.save(
         function() {
@@ -1584,14 +1599,14 @@ function RbsController($scope, template, model, date, route) {
     if (
       $scope.booking.startDate.getFullYear() < $scope.today.year() ||
       ($scope.booking.startDate.getFullYear() == $scope.today.year() &&
-        $scope.booking.startDate.getMonth() < $scope.today.month()) ||
+      $scope.booking.startDate.getMonth() < $scope.today.month()) ||
       ($scope.booking.startDate.getFullYear() == $scope.today.year() &&
-        $scope.booking.startDate.getMonth() == $scope.today.month() &&
-        $scope.booking.startDate.getDate() < $scope.today.date()) ||
+      $scope.booking.startDate.getMonth() == $scope.today.month() &&
+      $scope.booking.startDate.getDate() < $scope.today.date()) ||
       ($scope.booking.startDate.getFullYear() == $scope.today.year() &&
-        $scope.booking.startDate.getMonth() == $scope.today.month() &&
-        $scope.booking.startDate.getDate() == $scope.today.date() &&
-        $scope.booking.startTime.hour() < moment().hour())
+      $scope.booking.startDate.getMonth() == $scope.today.month() &&
+      $scope.booking.startDate.getDate() == $scope.today.date() &&
+      $scope.booking.startTime.hour() < moment().hour())
     ) {
       $scope.currentErrors.push({
         error: 'rbs.booking.invalid.datetimes.past',
@@ -1665,8 +1680,8 @@ function RbsController($scope, template, model, date, route) {
                 saveFirst.booking_reason = $scope.editedBooking.booking_reason;
                 saveFirst.resource = $scope.editedBooking.resource;
                 saveFirst.slots = [{
-                    start_date : $scope.editedBooking.startMoment.unix(),
-                    end_date : $scope.editedBooking.endMoment.unix()
+                  start_date : $scope.editedBooking.startMoment.unix(),
+                  end_date : $scope.editedBooking.endMoment.unix()
                 }];
                 //Save the 1st no periodic slot
                 saveFirst.is_periodic = false;
@@ -2139,12 +2154,9 @@ function RbsController($scope, template, model, date, route) {
 
   // Management view interaction
   $scope.selectResourceType = function(resourceType) {
-    if ($scope.currentResourceType) {
-      $scope.currentResourceType.resources.deselectAll();
-      $scope.currentResourceType.resources.collapseAll();
-    }
+    $scope.resourceTypes.deselectAllResources();
+    $scope.display.selectAllRessources = undefined;
     $scope.currentResourceType = resourceType;
-    $scope.resourceTypes.current = resourceType;
     var oldStructure = $scope.selectedStructure;
     $scope.selectedStructure = $scope.structuresWithTypes.filter(function (struct) { return struct.id === resourceType.school_id}).pop();
     if (oldStructure != $scope.selectedStructure) {
@@ -2223,6 +2235,7 @@ function RbsController($scope, template, model, date, route) {
   $scope.saveResourceType = function() {
     $scope.display.processing = true;
     $scope.currentErrors = [];
+    $scope.isManage = true;
     $scope.editedResourceType.save(
       function() {
         $scope.display.processing = undefined;
@@ -2240,6 +2253,7 @@ function RbsController($scope, template, model, date, route) {
 
   $scope.saveResource = function() {
     $scope.display.processing = true;
+    $scope.isManage = true;
     if ($scope.editedResource.is_available === 'true') {
       $scope.editedResource.is_available = true;
     } else if ($scope.editedResource.is_available === 'false') {
@@ -2268,6 +2282,7 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.doDeleteResource = function() {
+    $scope.isManage = true;
     $scope.display.processing = true;
     $scope.currentErrors = [];
     var actions = $scope.currentResourceType.resourcesToDelete.length;
@@ -2345,7 +2360,7 @@ function RbsController($scope, template, model, date, route) {
     var workflowRights = workflowRight.split('.');
     return (
       (model.me.workflow[workflowRights[0]] !== undefined &&
-        model.me.workflow[workflowRights[0]][workflowRights[1]] === true) ||
+      model.me.workflow[workflowRights[0]][workflowRights[1]] === true) ||
       model.resourceTypes.find(function(resourceType) {
         return (
           resourceType.resources.find(function(resource) {
@@ -2429,8 +2444,10 @@ function RbsController($scope, template, model, date, route) {
     model.resourceTypes.removeSelectedTypes();
     $scope.display.confirmRemoveTypes = false;
     template.close('resources');
-    $scope.resourceTypes.deselectAllResources();
-    $scope.initStructures(false);
+    $scope.closeResourceType();
+    $scope.isManage = true;
+    $scope.currentResourceType = undefined;
+    model.refreshRessourceType();
   };
 
   // display a warning when editing a resource and changing the resource type (not in creation mode).
@@ -2686,9 +2703,9 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.checkNotificationsResourceType = function (resourceType) {
-   if (resourceType.resources.all.length === 0) {
-     resourceType.notified = 'none';
-   } else if (
+    if (resourceType.resources.all.length === 0) {
+      resourceType.notified = 'none';
+    } else if (
       resourceType.resources.every(function(resource) {
         return resource.notified;
       })
