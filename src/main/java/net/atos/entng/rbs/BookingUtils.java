@@ -163,20 +163,23 @@ public class BookingUtils {
 	}
 
 	public static boolean haveSameTime(final long thisTimestamp, final long thatTimestamp) {
-		TimeZone gmt = TimeZone.getTimeZone("GMT");
+		TimeZone utc = TimeZone.getTimeZone("UTC");
 
-		Calendar thisCal = Calendar.getInstance(gmt);
+		Calendar thisCal = Calendar.getInstance(utc);
+		thisCal.setTimeZone(utc);
 		thisCal.setTimeInMillis(
 				TimeUnit.MILLISECONDS.convert(thisTimestamp, TimeUnit.SECONDS));
 
-		Calendar thatCal = Calendar.getInstance(gmt);
+		Calendar thatCal = Calendar.getInstance(utc);
+		thatCal.setTimeZone(utc);
 		thatCal.setTimeInMillis(
 				TimeUnit.MILLISECONDS.convert(thatTimestamp, TimeUnit.SECONDS));
 
-		return (thisCal.get(Calendar.HOUR_OF_DAY) == thatCal.get(Calendar.HOUR_OF_DAY)
-				&& thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
-				&& thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
-	}
+		return (thisCal.getTime().getHours() == thatCal.getTime().getHours()
+				 && thisCal.get(Calendar.MINUTE) == thatCal.get(Calendar.MINUTE)
+				 && thisCal.get(Calendar.SECOND) == thatCal.get(Calendar.SECOND));
+	 }
+
 
 	/**
 	 * @return Return scope (i.e. the list of school_ids) of a local administrator
