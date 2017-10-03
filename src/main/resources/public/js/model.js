@@ -43,14 +43,14 @@ model.periodsConfig = {
 };
 
 function Booking(book) {
-  this.beginning = this.startMoment = moment(book.start_date);
-  this.end = this.endMoment = moment(book.end_date);
+	this.beginning = this.startMoment = moment.utc(book.start_date);
+	this.end = this.endMoment = moment.utc(book.end_date);
 }
 
 function Booking() {
-  this.beginning = this.startMoment = moment(this.start_date);
-  this.end = this.endMoment = moment(this.end_date);
-  this.resource = new Resource();
+	this.beginning = this.startMoment = moment.utc(this.start_date);
+	this.end = this.endMoment = moment.utc(this.end_date);
+	this.resource = new Resource();
 }
 
 Booking.prototype.save = function(cb, cbe) {
@@ -1206,16 +1206,21 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 };
 
 model.parseBooking = function(booking, color) {
-  booking.color = color;
-  // periodic booking
-  if (booking.is_periodic === true) {
-    // parse bitmask
-    booking.periodDays = model.bitMaskToDays(booking.days);
-    // date if not by occurrences
-    if (booking.occurrences === undefined || booking.occurrences < 1) {
-      booking.periodicEndMoment =  moment.utc(booking.periodic_end_date);
-    }
-  }
+	booking.color = color;
+	booking.startMoment = moment.utc(booking.startMoment);
+	booking.endMoment = moment.utc(booking.endMoment);
+	booking.start_date = moment.utc(booking.start_date);
+	booking.end_date = moment.utc(booking.end_date);
+
+	// periodic booking
+	if (booking.is_periodic === true) {
+		// parse bitmask
+		booking.periodDays = model.bitMaskToDays(booking.days);
+		// date if not by occurrences
+		if (booking.occurrences === undefined || booking.occurrences < 1) {
+			booking.periodicEndMoment =  moment.utc(booking.periodic_end_date);
+		}
+	}
 };
 
 model.bitMaskToDays = function(bitMask) {
