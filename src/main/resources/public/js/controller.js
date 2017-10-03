@@ -1447,6 +1447,16 @@ function RbsController($scope, template, model, date, route){
         if( skipSync === undefined) {
             $scope.bookings.sync();
         }
+	};
+
+	var updateCalendarSchedule = function(newDate){
+        model.calendar.firstDay.date(newDate.date());
+        model.calendar.firstDay.month(newDate.month());
+        model.calendar.firstDay.year(newDate.year());
+        $scope.bookings.sync();
+        $('.hiddendatepickerform').datepicker('setValue', newDate.format("DD/MM/YYYY")).datepicker('update');
+        $('.hiddendatepickerform').trigger({type: 'changeDate', date: newDate});
+
     };
     this.initialize();
 
