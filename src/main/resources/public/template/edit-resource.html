@@ -5,6 +5,12 @@
 	<form ng-submit="saveResource()">
 	<article class="twelve cell">
 		<div class="row">
+			<div class="row">
+				<label class="three cell"><i18n>rbs.resource.edit.structure.label</i18n></label>
+				<span class="nine cell" translate content="[[editedResource.type.structure.name]]"></span>
+			</div>
+		</div>
+		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.type.label</i18n></label>
 			<select class="nine cell" ng_init="editedResource.type = currentResourceType" ng-model="editedResource.type" ng-change="resourceTypeModified()"
 				ng-options="resourceType.name for resourceType in resourceTypes.all | filter:keepManageableResourceTypes" required>
