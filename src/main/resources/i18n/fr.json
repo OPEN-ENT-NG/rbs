@@ -266,6 +266,7 @@
     "rbs.resource.edit.periodic_booking.false": "Non",
     "rbs.resource.edit.periodic_booking.label": "Autoriser les réservations périodiques",
     "rbs.resource.edit.periodic_booking.true": "Oui",
+    "rbs.resource.edit.structure.label": "Etablissement",
     "rbs.resource.edit.type.label": "Type de ressource",
     "rbs.resource.must.be.booked.at.least": "La ressource doit être réservée au minimum",
     "rbs.resource.new": "Nouvelle Ressource",
