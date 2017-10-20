@@ -183,6 +183,7 @@
     "rbs.export.resource.all": "Toutes les ressources",
     "rbs.export.resource.all.summary": "Toutes",
     "rbs.export.resource.picked": "2 - Ressources : ",
+    "rbs.export.resource.warning": "Les ressources en attente de validation ne seront pas exportées",
     "rbs.export.date": "3 - Période",
     "rbs.export.date.start": "Du ",
     "rbs.export.date.end": "Au ",

@@ -238,5 +238,9 @@ a.structure:hover {
 }
 
 .this-bell:hover i {
-    visibility: visible;
+  visibility: visible;
+}
+
+.warning.resource {
+  margin-top: 10px;
 }

@@ -337,7 +337,6 @@ public class ResourceController extends ControllerHelper {
 
 	@Get("/resource/notifications")
 	@ApiDoc("Get notification")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void getNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
