@@ -165,10 +165,10 @@ function RbsController($scope, template, model, date, route) {
         $scope.initStructuresManage(false, $scope.currentResourceType);
         $scope.isManage = undefined;
       } else {
-        $scope.initStructures(false);
+        $scope.initStructures();
       }
       $scope.initResources();
-
+      $scope.$apply();
     });
 
     //when date picker of calendar directive is used
@@ -252,7 +252,7 @@ function RbsController($scope, template, model, date, route) {
     };
   };
 
-  $scope.initStructures = function(selected) {
+  $scope.initStructures = function() {
     $scope.notificationsComponent.getNotifications(function (data) {
       $scope.notificationsComponent.list = data;
       model.loadTreeState(function(state) {
@@ -261,7 +261,7 @@ function RbsController($scope, template, model, date, route) {
           var structureWithTypes = {};
           structureWithTypes.id = $scope.structures[i].id;
           structureWithTypes.expanded = structureState ? structureState.expanded : false;
-          structureWithTypes.selected = structureState ? structureState.selected : selected;
+          structureWithTypes.selected = structureState ? structureState.selected : false;
           structureWithTypes.types = [];
           structureWithTypes.name = $scope.structures[i].name;
           $scope.resourceTypes.forEach(function(resourceType) {
@@ -283,6 +283,9 @@ function RbsController($scope, template, model, date, route) {
                   resource.selected = resState.selected;
                 }
               })
+            }
+            if (state.length == 0) {
+              resourceType.resources.deselectAll();
             }
 
             if (resourceType.school_id === $scope.structures[i].id) {
