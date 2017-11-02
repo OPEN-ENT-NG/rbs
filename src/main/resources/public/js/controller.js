@@ -662,7 +662,6 @@ function RbsController($scope, template, model, date, route) {
     $scope.selectedBooking = booking;
     $scope.selectedBooking.displaySection = displaySection;
     $scope.initModerators();
-
     template.open('lightbox', 'booking-details');
     $scope.display.showPanel = true;
   };
