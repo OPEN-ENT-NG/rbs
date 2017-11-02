@@ -124,9 +124,10 @@
 								<th><i18n>rbs.booking.headers.status</i18n></th>
 							</tr>
 						</thead>
-						<tbody ng-repeat="slot in selectedBooking._slots">
+						<tbody ng-repeat="slot in selectedBooking._slots | orderBy: 'startMoment'">
 							<tr>
-								<td>[[$index + 1]]</td>
+                                <td ng-if="slot == currentBookingSelected">[[$index + 1]] <em style="color:red">*</em></td>
+                                <td ng-if="slot != currentBookingSelected">[[$index + 1]]</td>
 								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a></td>
 								<td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
 
@@ -153,6 +154,7 @@
 							</tr>
 						</tbody>
 					</table>
+                    <em style="color:red; margin-right:10px ">*</em><i18n>rbs.booking.periodic.delete.details</i18n>
 
 					<div class="row details" ng-if="selectedBooking.hasAtLeastOnePendingSlot()">
 						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>

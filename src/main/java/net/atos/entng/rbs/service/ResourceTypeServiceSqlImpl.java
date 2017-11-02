@@ -30,6 +30,7 @@ import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
@@ -84,21 +85,27 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		JsonArray values = new JsonArray();
 
 		query.append("SELECT DISTINCT m.*")
-			.append(" FROM rbs.resource_type AS t")
-			.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-			.append(" INNER JOIN rbs.members AS m ON (ts.member_id = m.id)")
-			.append(" WHERE ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'")
-			.append(" AND t.id = ?")
-			.append(" GROUP BY m.id");
+				.append(" FROM rbs.resource_type AS t")
+				.append(" INNER JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+				.append(" INNER JOIN rbs.members AS m ON (ts.member_id = m.id)")
+				.append(" WHERE ts.action = 'net-atos-entng-rbs-controllers-BookingController|processBooking'")
+				.append(" AND t.id = ?")
+				.append(" GROUP BY m.id");
 		values.add(parseId(typeId));
 
 		query.append(" UNION")
-			.append(" SELECT t.owner as id, t.owner as user_id, null as group_id")
-			.append(" FROM rbs.resource_type AS t")
-			.append(" WHERE t.id = ?");
+				.append(" SELECT t.owner as id, t.owner as user_id, null as group_id")
+				.append(" FROM rbs.resource_type AS t")
+				.append(" WHERE t.id = ?");
 		values.add(parseId(typeId));
 
-		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
+		Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final Either<String, JsonArray> res = validResult(event);
+				handler.handle(res);
+			}
+		});
 	}
 
 	@Override
