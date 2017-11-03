@@ -642,9 +642,16 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" WHERE id = ?");
 		parentValues.add(bId);
 
+		// 4. Purge parent bookings
+		StringBuilder deleteParentQuery = new StringBuilder();
+		deleteParentQuery.append("DELETE FROM rbs.booking B1")
+				.append(" WHERE B1.is_periodic = true")
+				.append(" AND NOT EXISTS (SELECT * FROM rbs.booking B2 WHERE B2.parent_booking_id = B1.id)");
+
 		// Add queries to SqlStatementsBuilder
 		statementsBuilder.prepared(deleteQuery.toString(), deleteValues);
 		statementsBuilder.prepared(parentQuery.toString(), parentValues);
+		statementsBuilder.raw(deleteParentQuery.toString());
 
 		// Send queries to event bus
 		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(2, handler));
