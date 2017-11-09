@@ -100,10 +100,10 @@ public class PeriodicBookingHandlerFactory {
 				}
 
 				firstSlotDayTmp = getDayFromTimestamp(firstSlotStartDate);
-				boolean isMultiDayPeriod = getDayFromTimestamp(firstSlotEndDate) - firstSlotDayTmp >= 1;
+				int firstSlotDayTmp2 = getDayFromTimestamp(firstSlotEndDate);
+				boolean isMultiDayPeriod = Math.abs(firstSlotDayTmp2 - firstSlotDayTmp) >= 1;
 				JsonArray days = booking.getArray("days", new JsonArray());
 				selectedDaysArray = getSelectedDaysArray(days, firstSlotDayTmp, isMultiDayPeriod);
-
 				if (selectedDaysArray.size() != 7) {
 					badRequest(request, "rbs.booking.bad.request.invalid.days");
 					return;

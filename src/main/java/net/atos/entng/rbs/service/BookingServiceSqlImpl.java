@@ -638,10 +638,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		StringBuilder parentQuery = new StringBuilder();
 		JsonArray parentValues = new JsonArray();
 		parentQuery.append("UPDATE rbs.booking")
-				.append(" SET modified = NOW()")
+				.append(" SET end_date = (SELECT CASE WHEN MAX(end_date) IS NULL THEN (SELECT end_date FROM rbs.booking WHERE id = ?) ELSE MAX(end_date) END FROM rbs.booking WHERE parent_booking_id = ?)")
+				.append(" , modified = NOW()")
 				.append(" WHERE id = ?");
 		parentValues.add(bId);
-
+		parentValues.add(bId);
+		parentValues.add(bId);
 		// 4. Purge parent bookings
 		StringBuilder deleteParentQuery = new StringBuilder();
 		deleteParentQuery.append("DELETE FROM rbs.booking B1")
