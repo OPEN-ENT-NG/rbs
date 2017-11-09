@@ -233,12 +233,10 @@
 	</div>
 	<hr />
 
-	<div class="row" ng-if="canDeleteBookingDateCheck(selectedBooking.end_date)">
+	<div class="row" ng-if="canDeleteBookingDateCheck(currentBookingSelected.end_date)">
 		<behaviour name="process" resource="selectedBooking.resource">
 			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
 			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
-		</behaviour>
-		<behaviour name="process" resource="selectedBooking">
 			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
 			<button class="right-magnet" nf-if="selectedBooking.resource.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
 		</behaviour>

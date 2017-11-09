@@ -243,16 +243,21 @@ public class BookingController extends ControllerHelper {
 							String schoolId = resource.getString("school_id", null);
 							String jsonString = resource.getString("managers", null);
 							JsonArray managers = (jsonString != null) ? new JsonArray(jsonString) : null;
-
+							JsonObject slot = slots.get(0);
+							
+							if (slot.getLong("start_date", 0L)< getCurrentTimestamp()) {
+								badRequest(request, "rbs.booking.bad.request.invalid.dates");
+								return;
+							}
 							if (owner == null || schoolId == null) {
 								log.warn("Could not get owner or school_id for type of resource " + resourceId);
 							}
 
 							if (!canBypassDelaysConstraints(owner, schoolId, user, managers)) {
-								JsonObject slot = slots.get(0);
 								long startDate = slot.getLong("start_date", 0L);
 								long endDate = slot.getLong("end_date", 0L);
 								// check that booking dates respect min and max delays
+
 								if (isDelayLessThanMin(resource, startDate, now)) {
 									long nbDays = TimeUnit.DAYS.convert(resource.getLong("min_delay"), TimeUnit.SECONDS);
 									String errorMessage = i18n.translate(
