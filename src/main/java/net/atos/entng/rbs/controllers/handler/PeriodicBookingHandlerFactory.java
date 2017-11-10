@@ -100,8 +100,7 @@ public class PeriodicBookingHandlerFactory {
 				}
 
 				firstSlotDayTmp = getDayFromTimestamp(firstSlotStartDate);
-				int firstSlotDayTmp2 = getDayFromTimestamp(firstSlotEndDate);
-				boolean isMultiDayPeriod = Math.abs(firstSlotDayTmp2 - firstSlotDayTmp) >= 1;
+				boolean isMultiDayPeriod = Math.abs(getDayFromTimestamp(firstSlotEndDate) - firstSlotDayTmp) >= 1;
 				JsonArray days = booking.getArray("days", new JsonArray());
 				selectedDaysArray = getSelectedDaysArray(days, firstSlotDayTmp, isMultiDayPeriod);
 				if (selectedDaysArray.size() != 7) {
@@ -127,7 +126,7 @@ public class PeriodicBookingHandlerFactory {
 							JsonObject slot = slots.get(i);
 							final long firstSlotStartDate = slot.getLong("start_date", 0L);
 							final long firstSlotEndDate = slot.getLong("end_date", 0L);
-							Either<Boolean, String> checkResult = checkResourceConstraintsRespectedByPeriodicBooking(request, user, resourceId, resourceDelayAndType, booking, firstSlotStartDate, firstSlotEndDate);
+							Either<Boolean, String> checkResult = checkResourceConstraintsRespectedByPeriodicBooking(request, user, resourceId, resourceDelayAndType, booking, firstSlotStartDate, firstSlotEndDate, selectedDays);
 							if (checkResult.isRight() && checkResult.right().getValue() != null) {
 								badRequest(request, checkResult.right().getValue());
 								return;
@@ -173,7 +172,7 @@ public class PeriodicBookingHandlerFactory {
 
 
 	private Either<Boolean, String> checkResourceConstraintsRespectedByPeriodicBooking(HttpServerRequest request, UserInfos user, String resourceId, JsonObject resourceDelayAndType,
-	                                                                                   JsonObject booking, long firstSlotStartDate, long firstSlotEndDate) {
+	                                                                                   JsonObject booking, long firstSlotStartDate, long firstSlotEndDate, String selectedDays) {
 
 		String owner = resourceDelayAndType.getString("owner", null);
 		String schoolId = resourceDelayAndType.getString("school_id", null);
@@ -200,7 +199,6 @@ public class PeriodicBookingHandlerFactory {
 				long lastSlotEndDate;
 				final long endDate = booking.getLong("periodic_end_date", 0L);
 				final int periodicity = booking.getInteger("periodicity");
-				String selectedDays = booleanArrayToBitString(selectedDaysArray);
 
 				if (endDate > 0L) { // Case when end_date is supplied
 					try {
@@ -332,7 +330,7 @@ public class PeriodicBookingHandlerFactory {
 						JsonObject resourceDelayAndType = event.right().getValue();
 						final long firstSlotStartDate = slot.getLong("start_date", 0L);
 						final long firstSlotEndDate = slot.getLong("end_date", 0L);
-						Either<Boolean, String> checkResult = checkResourceConstraintsRespectedByPeriodicBooking(request, user, resourceId, resourceDelayAndType, booking, firstSlotStartDate, firstSlotEndDate);
+						Either<Boolean, String> checkResult = checkResourceConstraintsRespectedByPeriodicBooking(request, user, resourceId, resourceDelayAndType, booking, firstSlotStartDate, firstSlotEndDate, selectedDays);
 						if (checkResult.isRight() && checkResult.right().getValue() != null) {
 							badRequest(request, checkResult.right().getValue());
 							return;
