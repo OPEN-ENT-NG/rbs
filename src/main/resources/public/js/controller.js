@@ -148,6 +148,10 @@ function RbsController($scope, template, model, date, route){
 		},true);
 	};
 
+	$scope.hasAnyBookingRight = function(booking){
+		return booking.resource.myRights.process || booking.resource.myRights.manage || booking.owner === model.me.userId;
+	}
+
 	// Initialization
 	$scope.initResources = function() {
 		var remanentBookingId = ($scope.selectedBooking !== undefined ? $scope.selectedBooking.id : undefined);
