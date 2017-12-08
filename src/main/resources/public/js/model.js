@@ -47,8 +47,37 @@ function Booking(book) {
 }
 
 function Booking() {
-	this.beginning = this.startMoment = moment.utc(this.start_date);
-	this.end = this.endMoment = moment.utc(this.end_date);
+	var startDate;
+	if (this.start_date) {
+		var aStartDate = this.start_date.split("T");
+		if (aStartDate.length === 2) {
+			startDate = moment(aStartDate[0]);
+			startDate.set('hour', aStartDate[1].split(":")[0]);
+			startDate.set('minute', aStartDate[1].split(":")[1]);
+		}
+	}
+
+	if (!startDate) {
+		startDate = moment();
+	}
+
+	var endDate;
+	if (this.end_date) {
+		var aEndDate = this.end_date.split("T");
+		if (aEndDate.length === 2) {
+			endDate = moment(aEndDate[0]);
+			endDate.set('hour', aEndDate[1].split(":")[0]);
+			endDate.set('minute', aEndDate[1].split(":")[1]);
+		}
+	}
+
+	if (!endDate) {
+		endDate = moment();
+	}
+
+    this.beginning = this.startMoment = startDate;
+    this.end = this.endMoment = endDate;
+
 	this.resource = new Resource();
 }
 
@@ -1018,11 +1047,6 @@ model.parseBookingsAndSlots = function(rows, resourceIndex, color) {
 
 model.parseBooking = function(booking, color) {
 	booking.color = color;
-	booking.startMoment = moment.utc(booking.startMoment);
-	booking.endMoment = moment.utc(booking.endMoment);
-	booking.start_date = moment.utc(booking.start_date);
-	booking.end_date = moment.utc(booking.end_date);
-
 
 	// periodic booking
 	if (booking.is_periodic === true) {

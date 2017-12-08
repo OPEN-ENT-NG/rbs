@@ -724,10 +724,7 @@ function RbsController($scope, template, model, date, route){
 		$scope.booking.endDate.setFullYear(endMoment.years());
 		$scope.booking.endDate.setMonth(endMoment.months());
 		$scope.booking.endDate.setDate(endMoment.date());
-		$scope.booking.periodicEndDate = endMoment.toDate();
-		$scope.booking.endDate.setFullYear(endMoment.years());
-		$scope.booking.endDate.setMonth(endMoment.months());
-		$scope.booking.endDate.setDate(endMoment.date());
+		$scope.booking.periodicEndDate = endMoment.toDate();		
 	};
 
 	$scope.autoSelectTypeAndResource = function() {
