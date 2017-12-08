@@ -1135,9 +1135,6 @@ function RbsController($scope, template, model, date, route) {
     $scope.booking.endDate.setMonth(endMoment.months());
     $scope.booking.endDate.setDate(endMoment.date());
     $scope.booking.periodicEndDate = endMoment.toDate();
-    $scope.booking.endDate.setFullYear(endMoment.years());
-    $scope.booking.endDate.setMonth(endMoment.months());
-    $scope.booking.endDate.setDate(endMoment.date());
   };
 
   $scope.autoSelectTypeAndResource = function() {
@@ -2701,7 +2698,6 @@ function RbsController($scope, template, model, date, route) {
       STATE_RESOURCES: 1,
       STATE_DATE: 2,
       STATE_VIEW: 3
-=======
 	  };
   };
 
