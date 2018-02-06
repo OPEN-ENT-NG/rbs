@@ -1508,7 +1508,7 @@ function RbsController($scope, template, model, date, route) {
       $scope.display.processing = true;
 
       // dates management
-      $scope.editedBooking.startMoment = moment.utc([
+      $scope.editedBooking.startMoment = moment([
         $scope.booking.startDate.getFullYear(),
         $scope.booking.startDate.getMonth(),
         $scope.booking.startDate.getDate(),
@@ -1520,7 +1520,7 @@ function RbsController($scope, template, model, date, route) {
         if ($scope.showDaySelection === true) {
           var dow = moment($scope.booking.startDate).day();
           if ($scope.editedBooking.periodDays[dow - 1].value === false) {
-            $scope.editedBooking.endMoment = moment.utc([
+            $scope.editedBooking.endMoment = moment([
               $scope.booking.endDate.getFullYear(),
               $scope.booking.endDate.getMonth(),
               $scope.booking.endDate.getDate(),
@@ -1553,7 +1553,7 @@ function RbsController($scope, template, model, date, route) {
           }
         }
         $scope.editedBooking.is_periodic = true;
-        $scope.editedBooking.endMoment = moment.utc([
+        $scope.editedBooking.endMoment = moment([
           $scope.booking.endDate.getFullYear(),
           $scope.booking.endDate.getMonth(),
           $scope.booking.endDate.getDate(),
@@ -1562,7 +1562,7 @@ function RbsController($scope, template, model, date, route) {
         ]);
         if ($scope.editedBooking.byOccurrences !== true) {
           $scope.editedBooking.occurrences = undefined;
-          $scope.editedBooking.periodicEndMoment = moment.utc([
+          $scope.editedBooking.periodicEndMoment = moment([
             $scope.booking.periodicEndDate.getFullYear(),
             $scope.booking.periodicEndDate.getMonth(),
             $scope.booking.periodicEndDate.getDate(),
@@ -1573,7 +1573,7 @@ function RbsController($scope, template, model, date, route) {
         $scope.resolvePeriodicMoments();
       } else {
         // non periodic
-        $scope.editedBooking.endMoment = moment.utc([
+        $scope.editedBooking.endMoment = moment([
           $scope.booking.endDate.getFullYear(),
           $scope.booking.endDate.getMonth(),
           $scope.booking.endDate.getDate(),
@@ -1668,7 +1668,7 @@ function RbsController($scope, template, model, date, route) {
           $scope.display.processing = true;
 
           // dates management
-          $scope.editedBooking.startMoment = moment.utc([
+          $scope.editedBooking.startMoment = moment([
             $scope.booking.startDate.getFullYear(),
             $scope.booking.startDate.getMonth(),
             $scope.booking.startDate.getDate(),
@@ -1683,7 +1683,7 @@ function RbsController($scope, template, model, date, route) {
               }
               var dow = moment($scope.booking.startDate).day();
               if ($scope.editedBooking.periodDays[dow - 1].value === false && $scope.editedBooking.id === undefined) {
-                $scope.editedBooking.endMoment = moment.utc([
+                $scope.editedBooking.endMoment = moment([
                   $scope.booking.endDate.getFullYear(),
                   $scope.booking.endDate.getMonth(),
                   $scope.booking.endDate.getDate(),
@@ -1716,7 +1716,7 @@ function RbsController($scope, template, model, date, route) {
               }
             }
             $scope.editedBooking.is_periodic = true;
-            $scope.editedBooking.endMoment = moment.utc([
+            $scope.editedBooking.endMoment = moment([
               $scope.booking.endDate.getFullYear(),
               $scope.booking.endDate.getMonth(),
               $scope.booking.endDate.getDate(),
@@ -1728,7 +1728,7 @@ function RbsController($scope, template, model, date, route) {
               $scope.multipleDaysPeriodic = true;
               var periodDays = model.bitMaskToDays();
               var diffDays = $scope.editedBooking.endMoment.dayOfYear() - $scope.editedBooking.startMoment.dayOfYear();
-              var start = moment.utc([
+              var start = moment([
                 $scope.editedBooking.startMoment.year(),
                 $scope.editedBooking.startMoment.month(),
                 $scope.editedBooking.startMoment.date(),
@@ -1762,7 +1762,7 @@ function RbsController($scope, template, model, date, route) {
 
             if ($scope.editedBooking.byOccurrences !== true) {
               $scope.editedBooking.occurrences = undefined;
-              $scope.editedBooking.periodicEndMoment = moment.utc([
+              $scope.editedBooking.periodicEndMoment = moment([
                 $scope.booking.periodicEndDate.getFullYear(),
                 $scope.booking.periodicEndDate.getMonth(),
                 $scope.booking.periodicEndDate.getDate(),
@@ -1770,7 +1770,7 @@ function RbsController($scope, template, model, date, route) {
                 $scope.booking.endTime.minute()
               ]);
             }
-            var start = moment.utc([
+            var start = moment([
               $scope.editedBooking.startMoment.year(),
               $scope.editedBooking.startMoment.month(),
               $scope.editedBooking.startMoment.date(),
@@ -1778,7 +1778,7 @@ function RbsController($scope, template, model, date, route) {
               $scope.editedBooking.startMoment.minute()
             ]);
 
-            var end = moment.utc([
+            var end = moment([
               $scope.editedBooking.startMoment.year(),
               $scope.editedBooking.startMoment.month(),
               $scope.editedBooking.startMoment.date(),
@@ -1846,7 +1846,7 @@ function RbsController($scope, template, model, date, route) {
             }
           } else {
             // non periodic
-            $scope.editedBooking.endMoment = moment.utc([
+            $scope.editedBooking.endMoment = moment([
               $scope.booking.endDate.getFullYear(),
               $scope.booking.endDate.getMonth(),
               $scope.booking.endDate.getDate(),
@@ -1858,14 +1858,14 @@ function RbsController($scope, template, model, date, route) {
               if ($scope.checkSaveBooking()) {
                 return;
               }
-              var start = moment.utc([
+              var start = moment([
                 $scope.editedBooking.startMoment.year(),
                 $scope.editedBooking.startMoment.month(),
                 $scope.editedBooking.startMoment.date(),
                 $scope.editedBooking.startMoment.hour(),
                 $scope.editedBooking.startMoment.minute()
               ]);
-              var end = moment.utc([
+              var end = moment([
                 $scope.editedBooking.endMoment.year(),
                 $scope.editedBooking.endMoment.month(),
                 $scope.editedBooking.endMoment.date(),
@@ -1878,14 +1878,14 @@ function RbsController($scope, template, model, date, route) {
               });
             } else {
               for (var i = 0; i <= diffDays; i++) {
-                var start = moment.utc([
+                var start = moment([
                   $scope.editedBooking.startMoment.year(),
                   $scope.editedBooking.startMoment.month(),
                   $scope.editedBooking.startMoment.date(),
                   $scope.editedBooking.startMoment.hour(),
                   $scope.editedBooking.startMoment.minute()
                 ]);
-                var end = moment.utc([
+                var end = moment([
                   $scope.editedBooking.endMoment.year(),
                   $scope.editedBooking.endMoment.month(),
                   $scope.editedBooking.endMoment.date(),

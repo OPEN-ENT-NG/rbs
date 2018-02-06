@@ -32,6 +32,8 @@ import org.vertx.java.core.json.JsonObject;
 import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -53,9 +55,11 @@ public class IcalExportServiceTest {
 		ExportBooking booking = new ExportBooking(jsonBooking);
 
 		UserInfos userInfos = new UserInfos();
+		Map<String, String> userMailById = new HashMap<>();
+		userMailById.put(userInfos.getUserId(), email);
 
 		IcalExportService icalExportService = new IcalExportService();
-		VEvent meeting = icalExportService.convert(userInfos, booking);
+		VEvent meeting = icalExportService.convert(userMailById, booking);
 
 		Property organizer = meeting.getProperties().getProperty(Organizer.ORGANIZER);
 		assertThat(organizer, notNullValue());
@@ -81,9 +85,10 @@ public class IcalExportServiceTest {
 		ExportBooking booking = new ExportBooking(jsonBooking);
 
 		UserInfos userInfos = getUserInfos(email);
-
+		Map<String, String> userMailById = new HashMap<>();
+		userMailById.put(userInfos.getUserId(), email);
 		IcalExportService icalExportService = new IcalExportService();
-		VEvent meeting = icalExportService.convert(userInfos, booking);
+		VEvent meeting = icalExportService.convert(userMailById, booking);
 
 		Summary summary = meeting.getSummary();
 		assertThat(summary, notNullValue());
