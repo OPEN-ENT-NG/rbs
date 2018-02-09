@@ -17,7 +17,7 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="booking in processBookings">
-						<td class="icon" ng-class="booking.color"></td>
+						<td class="icon" style="background:[[booking.color]]"></td>
 						<td><i ng-if="booking.isSlot()" class="periodic-icon"></i></td>
 						<td>[[booking.owner_name]]</td>
 						<td>[[booking.resource.name]]</td>

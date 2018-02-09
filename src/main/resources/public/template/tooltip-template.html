@@ -1,0 +1,36 @@
+<div class="tooltip-container">
+    <h2 class="tooltip-title" style="background: [[item.resource.color]]">
+            [[item.resource.name]]
+    </h2>
+
+    <div class="tooltip-content">
+        <div class="start-to-end-container">
+            <span> [[item.beginning.format('DD/MM HH[h]mm')]] </span>
+            <span class="orange-text">—</span>
+            <span> [[item.end.format('DD/MM HH[h]mm')]]</span>
+        </div>
+        <div ng-if="item.isSlot()">
+            <p>[[getPeriodicSummary(item)]]</p>
+        </div>
+        <p class="author">Par [[item.owner_name]] </p>
+        <div ng-if="item.booking_reason">
+            <p>[[item.booking_reason]]</p>
+        </div>
+        <div ng-if="item.isPending()" class="validation-label">
+            <span class="orange-text">En attente de validation</span>
+            <i class="orange-text pending-action"></i>
+        </div>
+        <div ng-if="item.isValidated()" class="validation-label">
+            <span class="green-text">Réservation validée</span>
+            <i class="green-text validated-status"></i>
+        </div>
+        <div ng-if="item.isRefused()" class="validation-label">
+            <span class="red-text">Réservation refusée</span>
+            <i class="red-text refused-status"></i>
+        </div>
+        <div ng-if="item.isSuspended()" class="validation-label">
+            <span class="yellow-text">Réservation suspendue</span>
+            <i class="yellow-text suspended-status"></i>
+        </div>
+    </div>
+</div>

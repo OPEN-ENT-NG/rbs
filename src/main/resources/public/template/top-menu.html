@@ -4,25 +4,20 @@
 		<a ng-click="showCalendar(display.admin)">
 			<i18n>rbs.title</i18n>
 		</a>
-	</h1>	
+	</h1>
 </div>
 
 <div class="nine cell display-buttons">
 	<div class="row">
-		<drop-down-button ng-if="(!display.admin) && display.create" class="cell">
-			<label class="opener"><i18n>rbs.booking.create</i18n></label>
-			<opts>
-				<li ng-click="newBooking()"><i18n>rbs.single.booking</i18n></li>
-				<li ng-click="newBooking('periodic')"><i18n>rbs.periodic.booking</i18n></li>
-			</opts>
-		</drop-down-button>
-		
-	      <i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList(display.admin)"
-	      tooltip="rbs.icon.show.booking.list"></i>
-	      <i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="showCalendar(display.admin)"
-	      tooltip="rbs.icon.show.booking.calendar"></i>
-	      <i class="show-admin" ng-click="showManage()" ng-class="{ selected: display.admin === true }"
-	      ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'manage')"
-	      tooltip="rbs.icon.show.manage.type.and.resource"></i>
+		<button ng-if="(!display.admin) && display.create" class="cell" ng-click="newBooking()"><i18n>rbs.booking.create</i18n></button>
+		<button ng-if="(!display.admin)" class="cell" ng-click="exportForm()"><i18n>rbs.booking.export</i18n></button>
+
+		<i class="show-list" ng-class="{ selected: display.list === true }" ng-click="showList(display.admin)"
+		tooltip="rbs.icon.show.booking.list"></i>
+		<i class="show-calendar" ng-class="{ selected: display.list === false }" ng-click="showCalendar(display.admin)"
+		tooltip="rbs.icon.show.booking.calendar"></i>
+		<i class="show-admin" ng-click="showManage()" ng-class="{ selected: display.admin === true }"
+		ng-if="hasWorkflowOrAnyResourceHasBehaviour('rbs.typemanage', 'manage')"
+		tooltip="rbs.icon.show.manage.type.and.resource"></i>
 	</div>
 </div>

@@ -11,6 +11,20 @@
     },
     "school_id": {
       "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "extendcolor": {
+      "type": "boolean"
+    },
+    "slotprofile": {
+      "type": "string"
     }
-  }
+  },
+  "required": [
+      "name",
+      "validation",
+      "color"
+    ]
 }
