@@ -12,7 +12,7 @@ import io.gatling.http.request.StringBody
 object RbsScenario {
 
   def getSlotAsStringBody(slot: Tuple2[Long, Long]): StringBody = {
-    return StringBody("""{"start_date" : """ + slot._1 + """, "end_date" : """ + slot._2 + "}")
+    return StringBody("""{"slots" : [{"start_date" : """ + slot._1 + """, "end_date" : """ + slot._2 + "}]}")
   }
 
   // Slots to create concurrent bookings
@@ -165,7 +165,7 @@ object RbsScenario {
       // ResourceType
       .exec(http("Create type")
         .post("/rbs/type")
-        .body(StringBody("""{"name" : "type created", "validation" : true, "school_id" : "${schoolId}"}"""))
+        .body(StringBody("""{"name" : "type created", "color" : "#FF8500", "validation" : true, "school_id" : "${schoolId}"}"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("typeId")))
       // Resource
@@ -174,6 +174,7 @@ object RbsScenario {
         .body(StringBody("""{"name" : "resource created",
     					"description" : "resource created desc",
     					"periodic_booking" : true,
+    					"validation" : true,
     					"is_available" : true }"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("resourceId")))
@@ -191,6 +192,7 @@ object RbsScenario {
         .body(StringBody("""{"name" : "resource updated",
         					"description" : "resource updated desc",
         					"type_id" : ${typeId},
+        					"validation" : true,
             				"is_available" : true,
         					"was_available" : true }"""))
         .check(status.is(200)))
@@ -316,9 +318,7 @@ object RbsScenario {
       // 2a. Create a periodic booking (with field 'occurrences' supplied) and check that slots' start and end dates are correct
       .exec(http("Create periodic booking")
         .post("/rbs/resource/${resourceId}/booking/periodic")
-        .body(StringBody("""{"booking_reason":"Résa périodique",
-            "start_date" : """ + pSlotStartDate + """,
-            "end_date" : """ + pSlotEndDate + """,
+        .body(StringBody("""{"booking_reason":"Résa périodique", "slots":[{"start_date" : """ + pSlotStartDate + """, "end_date" : """ + pSlotEndDate + """}],
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
             "occurrences":10
@@ -353,9 +353,7 @@ object RbsScenario {
        // 2b. Create a periodic booking (with field 'periodic_end_date' supplied) and check that slots' start and end dates are correct
        .exec(http("Create periodic booking")
         .post("/rbs/resource/${resourceId}/booking/periodic")
-        .body(StringBody("""{"booking_reason":"Résa périodique",
-            "start_date" : """ + pSlotStartDate + """,
-            "end_date" : """ + pSlotEndDate + """,
+        .body(StringBody("""{"booking_reason":"Résa périodique", "slots":[{"start_date" : """ + pSlotStartDate + """, "end_date" : """ + pSlotEndDate + """}],
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
             "periodic_end_date": """ + pLastSlotEndDate + """
@@ -395,7 +393,7 @@ object RbsScenario {
       // ResourceType
       .exec(http("ADML creates type")
         .post("/rbs/type")
-        .body(StringBody("""{"name" : "type created by ADML", "validation" : true, "school_id" : "${schoolId}"}"""))
+        .body(StringBody("""{"name" : "type created by ADML", "color" : "#FF8500", "validation" : true, "school_id" : "${schoolId}"}"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("admlTypeId")))
       .exec(http("ADML lists types")
@@ -419,6 +417,7 @@ object RbsScenario {
         .body(StringBody("""{"name" : "resource created by ADML in teacher type",
     					"description" : "resource created by ADML in teacher type description",
     					"periodic_booking" : true,
+    					"validation" : true,
     					"is_available" : true }"""))
         .check(status.is(200),
           jsonPath("$.id").find.saveAs("admlResourceIdInTeacherType")))
@@ -448,6 +447,7 @@ object RbsScenario {
         					"description" : "resource created by teacher and updated by adml description",
         					"type_id" : ${typeId},
             				"is_available" : true,
+            				"validation" : true,
         					"was_available" : true }"""))
         .check(status.is(200)))
       .exec(http("ADML gets updated resource")
@@ -511,24 +511,21 @@ object RbsScenario {
         .post("/rbs/resource/${resourceId}/booking")
         .body(getSlotAsStringBody(secondNonConcurrentSlot))
         .check(status.is(200),
-          jsonPath("$.id").find.saveAs("admlBookingId")))
+          jsonPath("$..id").find.saveAs("admlBookingId")))
       .exec(http("ADML lists bookings")
         .get("/rbs/resource/${resourceId}/bookings")
         .check(status.is(200),
           jsonPath("$[?(@.id == ${admlBookingId})].status").is("1")))
       .exec(http("ADML updates booking")
         .put("/rbs/resource/${resourceId}/booking/${admlBookingId}")
-        .body(StringBody("""{
-            "start_date" : """ + pSlotStartDate + """,
+        .body(StringBody("""{"slots" : [{"start_date" : """ + pSlotStartDate + """,
             "end_date" : """ + pSlotEndDate + """
-            }"""))
+            }]}"""))
         .check(status.is(200)))
 
       .exec(http("ADML creates periodic booking")
         .post("/rbs/resource/${admlResourceIdInTeacherType}/booking/periodic")
-        .body(StringBody("""{"booking_reason":"Résa périodique",
-            "start_date" : """ + pSlotStartDate + """,
-            "end_date" : """ + pSlotEndDate + """,
+        .body(StringBody("""{"booking_reason":"Résa périodique",  "slots":[{"start_date" : """ + pSlotStartDate + """, "end_date" : """ + pSlotEndDate + """}],
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
             "occurrences":10
