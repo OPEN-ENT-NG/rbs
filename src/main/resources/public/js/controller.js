@@ -46,6 +46,7 @@ function RbsController($scope, template, model, date, route) {
     $scope.date = date;
     $scope.lang = lang;
     $scope.firstTime = true;
+    model.calendar.name = 'rbs';
 
     $scope.display = {
       list: false, // calendar by default
@@ -815,10 +816,14 @@ function RbsController($scope, template, model, date, route) {
   };
 
   $scope.composeTitle = function(typeTitle, resourceTitle) {
-    var title = typeTitle + ' - ' + resourceTitle;
-    return _.isString(title)
-      ? title.trim().length > 50 ? title.substring(0, 47) + '...' : title.trim()
-      : '';
+    if (typeTitle && resourceTitle) {
+      var title = typeTitle + ' - ' + resourceTitle;
+    } else {
+      var title = lang.translate('rbs.booking.no.resource');
+    }
+      return _.isString(title)
+        ? title.trim().length > 50 ? title.substring(0, 47) + '...' : title.trim()
+        : '';
   };
 
   $scope.countValidatedSlots = function(slots) {
@@ -893,6 +898,7 @@ function RbsController($scope, template, model, date, route) {
   $scope.newBooking = function(periodic) {
     $scope.display.processing = undefined;
     $scope.editedBooking = new Booking();
+    $scope.saveTime = undefined;
     $scope.initEditBookingDisplay();
     $scope.initModerators();
 
@@ -941,6 +947,10 @@ function RbsController($scope, template, model, date, route) {
       $scope.editedBooking.startMoment.minutes(0);
       $scope.editedBooking.endMoment = model.calendar.newItem.end;
       $scope.editedBooking.endMoment.minutes(0);
+      $scope.saveTime = {
+        startHour : model.calendar.newItem.beginning._d.getHours(),
+        endHour : model.calendar.newItem.end._d.getHours()
+      }
     } else {
       $scope.editedBooking.startMoment = moment();
       $scope.editedBooking.endMoment = moment();
@@ -1195,6 +1205,11 @@ function RbsController($scope, template, model, date, route) {
           $scope.$apply();
         }
       );
+    } else if ($scope.editedBooking.type !== undefined && $scope.saveTime) {
+      $scope.booking.startTime.set('hour', $scope.saveTime.startHour - 1);
+      $scope.booking.startTime.set('minute', 0);
+      $scope.booking.endTime.set('hour', $scope.saveTime.endHour - 1);
+      $scope.booking.endTime.set('minute', 0);
     }
   };
 
@@ -1259,7 +1274,7 @@ function RbsController($scope, template, model, date, route) {
       summary += lang.translate('rbs.period.weeks.all') + ', ';
     } else {
       summary +=
-        lang.translate('rbs.period.weeks.partial') +
+        lang.translate('rbs.period.weeks.partial') + ' ' +
         lang.translate('rbs.period.weeks.' + booking.periodicity) +
         ', ';
     }
@@ -1267,7 +1282,7 @@ function RbsController($scope, template, model, date, route) {
     // Occurences or date
     if (booking.byOccurrences) {
       summary +=
-        lang.translate('rbs.period.occurences.for') +
+        lang.translate('rbs.period.occurences.for') + ' ' +
         booking.occurrences +
         lang.translate(
           'rbs.period.occurences.slots.' +
@@ -1275,7 +1290,7 @@ function RbsController($scope, template, model, date, route) {
         );
     } else {
       summary +=
-        lang.translate('rbs.period.date.until') +
+        lang.translate('rbs.period.date.until') + ' ' +
         $scope.formatMomentDayLong(moment(booking.end_date));
     }
 
@@ -1333,7 +1348,7 @@ function RbsController($scope, template, model, date, route) {
       summary += lang.translate('rbs.period.weeks.all') + ', ';
     } else {
       summary +=
-        lang.translate('rbs.period.weeks.partial') +
+        lang.translate('rbs.period.weeks.partial') + ' ' +
         lang.translate('rbs.period.weeks.' + $scope.editedBooking.periodicity) +
         ', ';
     }
@@ -1341,7 +1356,7 @@ function RbsController($scope, template, model, date, route) {
     // Occurences or date
     if ($scope.editedBooking.byOccurrences) {
       summary +=
-        lang.translate('rbs.period.occurences.for') +
+        lang.translate('rbs.period.occurences.for') + ' ' +
         $scope.editedBooking.occurrences +
         lang.translate(
           'rbs.period.occurences.slots.' +
@@ -1349,12 +1364,15 @@ function RbsController($scope, template, model, date, route) {
         );
     } else {
       summary +=
-        lang.translate('rbs.period.date.until') +
+        lang.translate('rbs.period.date.until') + ' ' +
         $scope.formatMomentDayLong(moment($scope.booking.periodicEndDate));
     }
 
     $scope.editedBooking.periodicSummary += summary;
     $scope.editedBooking.periodicShortSummary += summary;
+    $scope.editedBooking.periodicSummary = $scope.editedBooking.periodicSummary.toLowerCase();
+    $scope.editedBooking.periodicSummary = $scope.editedBooking.periodicSummary.charAt(0).toUpperCase() +
+      $scope.editedBooking.periodicSummary.slice(1);
   };
 
   $scope.summaryBuildDays = function(days) {
@@ -1413,6 +1431,7 @@ function RbsController($scope, template, model, date, route) {
         ' ' +
         lang.translate('rbs.period.days.' + startDOW);
       summary +=
+        ' ' +
         lang.translate('rbs.period.days.range.to') +
         ' ' +
         lang.translate('rbs.period.days.' + endDOW);
@@ -1432,6 +1451,7 @@ function RbsController($scope, template, model, date, route) {
       if (summary === undefined) {
         // Start the summary
         return (
+          ' ' +
           lang.translate('rbs.period.days.one.start') +
           ' ' +
           lang.translate('rbs.period.days.' + first.number)
@@ -1450,6 +1470,7 @@ function RbsController($scope, template, model, date, route) {
       if (summary === undefined) {
         // Start the summary
         return (
+          ' ' +
           lang.translate('rbs.period.days.one.start') +
           ' ' +
           lang.translate('rbs.period.days.' + first.number) +
@@ -1475,6 +1496,7 @@ function RbsController($scope, template, model, date, route) {
     if (summary === undefined) {
       // Start the summary
       return (
+        ' ' +
         lang.translate('rbs.period.days.range.start') +
         ' ' +
         lang.translate('rbs.period.days.' + first.number) +
