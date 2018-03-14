@@ -40,7 +40,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 			final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		query.append("SELECT t.*,")
 			.append(" json_agg(row_to_json(row(ts.member_id,ts.action)::rbs.share_tuple)) as shared,")
@@ -76,7 +76,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 	public void getModeratorsIds(final String typeId, final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		query.append("SELECT DISTINCT m.*")
 			.append(" FROM rbs.resource_type AS t")

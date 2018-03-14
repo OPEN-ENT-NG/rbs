@@ -53,7 +53,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		query.append("SELECT r.*,")
 			.append(" json_agg(row_to_json(row(rs.member_id,rs.action)::rbs.share_tuple)) as shared,")
@@ -100,7 +100,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			final Handler<Either<String, JsonObject>> handler) {
 
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : resource.fieldNames()) {
 			if ("was_available".equals(attr)) {
 				continue;
@@ -139,7 +139,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 				.append(" AND start_date >= now()")
 				.append(" AND is_periodic = false");
 
-			JsonArray bookingValues = new JsonArray().add(parseId(resourceId));
+			JsonArray bookingValues = new fr.wseduc.webutils.collections.JsonArray().add(parseId(resourceId));
 
 			statementsBuilder.prepared(bookingQuery.toString(), bookingValues);
 
@@ -166,7 +166,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" AND start_date >= now()")
 			.append(" AND is_periodic = false");
 
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(resourceId)
 			.add(REFUSED.status());
 
@@ -189,7 +189,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
 			.append(" WHERE r.id = ?");
 
-		JsonArray values = new JsonArray().add(resourceId);
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(resourceId);
 
 		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
