@@ -36,9 +36,9 @@ import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
@@ -85,7 +85,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		if (scope!=null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
-				values.addString(schoolId);
+				values.add(schoolId);
 			}
 		}
 
@@ -101,7 +101,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
-		for (String attr : resource.getFieldNames()) {
+		for (String attr : resource.fieldNames()) {
 			if ("was_available".equals(attr)) {
 				continue;
 			}
@@ -151,9 +151,9 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	private void unsetFieldIfNull(final JsonObject data, final StringBuilder sb,
 			final JsonArray values, final String fieldname){
 
-		if(data.getField(fieldname) == null) {
+		if(data.getValue(fieldname) == null) {
 			sb.append(fieldname).append(" = ?, ");
-			values.add(null);
+			values.addNull();
 		}
 	}
 
@@ -199,7 +199,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			final Handler<Either<String, JsonObject>> handler) {
 
 		String typeId = resource.getString("type_id");
-		resource.putValue("type_id", parseId(typeId));
+		resource.put("type_id", parseId(typeId));
 
 		super.create(resource, user, handler);
 	}

@@ -19,8 +19,8 @@
 
 package net.atos.entng.rbs.service;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
 

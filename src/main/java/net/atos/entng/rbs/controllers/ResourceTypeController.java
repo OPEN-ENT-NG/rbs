@@ -34,11 +34,11 @@ import net.atos.entng.rbs.service.UserServiceDirectoryImpl;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
@@ -178,10 +178,10 @@ public class ResourceTypeController extends ControllerHelper {
 							String uId = member.getString("user_id", null);
 							String gId = member.getString("group_id", null);
 							if(uId != null) {
-								userIds.addString(uId);
+								userIds.add(uId);
 							}
 							else if(gId != null) {
-								groupIds.addString(gId);
+								groupIds.add(gId);
 							}
 						}
 
@@ -195,7 +195,7 @@ public class ResourceTypeController extends ControllerHelper {
 
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
+							.put("error", event.left().getValue());
 					renderJson(request, error, 400);
 				}
 			}

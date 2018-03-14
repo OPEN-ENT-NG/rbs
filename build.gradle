@@ -1,14 +1,121 @@
-apply from: "gradle/vertx.gradle"
-apply plugin: 'scala'
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
-
-dependencies {
-	compile "org.entcore:common:$entCoreVersion"
-  testCompile "org.entcore:tests:$entCoreVersion"
-  testCompile 'net.minidev:json-smart:1.1.1'
-  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
+plugins {
+  id 'java'
+  id 'scala'
+  id 'maven'
+  id 'maven-publish'
+  id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
+
+if (!hasProperty('odeUsername')) {
+  ext.odeUsername = ''
+}
+if (!hasProperty('odePassword')) {
+  ext.odePassword = ''
+}
+
+repositories {
+  mavenLocal()
+    maven {
+      url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
+    }
+  mavenCentral()
+    maven {
+      url "https://oss.sonatype.org/content/repositories/iovertx-3720/"
+    }
+    maven {
+      url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+configurations {
+  provided
+    runtime.exclude module: 'vertx-core'
+}
+
+sourceSets {
+  main { compileClasspath += configurations.provided }
+}
+
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+compileJava {
+  sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+}
+
+compileTestJava {
+  sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+}
+dependencies {
+  compileOnly "io.vertx:vertx-core:$vertxVersion"
+  compile "org.entcore:common:$entCoreVersion"
+  testCompile "org.entcore:tests:$entCoreVersion"
+  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+}
+
+jar {
+  manifest {
+    attributes(
+        "Main-Verticle": "service:mod"
+        )
+  }
+}
+
+shadowJar {
+  classifier = 'fat'
+    archiveName = "${modowner}~${modname}~$version-$classifier.$extension"
+    mergeServiceFiles {
+      include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
+
+publishing {
+  repositories {
+    if (version.endsWith("SNAPSHOT")) {
+      maven {
+        name 'Snapshots'
+          url 'https://maven.opendigitaleducation.com/nexus/content/repositories/snapshots/'
+          credentials {
+            username "${odeUsername}"
+              password "${odePassword}"
+          }
+      }
+    } else {
+      maven {
+        name 'Releases'
+          url 'https://maven.opendigitaleducation.com/nexus/content/repositories/releases/'
+          credentials {
+            username "${odeUsername}"
+              password "${odePassword}"
+          }
+      }
+    }
+  }
+  publications {
+    maven(MavenPublication) {
+      groupId "${modowner}"
+      artifactId "${modname}"
+      artifact("build/libs/${modowner}~${modname}~$version-fat.jar") { classifier "fat" }
+    }
+    maven(MavenPublication) {
+      groupId "${modowner}"
+      artifactId "${modname}"
+      artifact("build/libs/${modname}-$version-deployment.jar") { classifier "deployment" }
+    }
+    maven(MavenPublication) {
+      groupId "${modowner}"
+      artifactId "${modname}"
+      artifact("build/libs/${modname}-$version-tests.jar") { classifier "tests" }
+    }
+  }
+}
+
 
 javadoc {
   options.encoding = 'UTF-8'
@@ -16,74 +123,23 @@ javadoc {
   classpath += configurations.compile
 }
 
+test {
+}
+
 task testJar(type: Jar) {
   classifier = 'tests'
+  baseName = "${modname}"
   from sourceSets.test.output
 }
 
 task deploymentJar(type: Jar) {
   classifier = 'deployment'
+  baseName = "${modname}"
   from 'deployment'
 }
 
 artifacts {
   archives testJar
   archives deploymentJar
-}
-
-repositories {
-    maven {
-        url "http://maven.web-education.net/nexus/content/groups/public"
-    }
-}
-
-def configurePom(def pom) {
-	pom.project {
-		description 'RBS'
-		inceptionYear '2014'
-		packaging 'zip'
-		url 'http://code.web-education.net/ong/rbs'
-
-		developers {
-			developer {
-				id 'cverdier'
-				name 'Cyril Verdier'
-				email 'cyril.verdier@atos.net'
-			}
-		}
-
-		scm {
-			url 'git@code.web-education.net:ong/rbs.git'
-		}
-
-		properties {
-			setProperty('project.build.sourceEncoding', 'UTF8')
-		}
-	}
-}
-
-def generateMissingI18n() {
-  JsonSlurper jsonSlurper = new JsonSlurper()
-    File rootDir = new File(".")
-    rootDir.eachFileRecurse {
-      if (it.isDirectory() && ("i18n".equals(it.getName()) || ("timeline".equals(it.getName()) && it.getParent().endsWith("i18n")))) {
-        Map i18n = [:]
-          it.eachFileMatch(~/.+.json/) { file ->
-            def t = file.text
-              i18n.put(file.getName(), (Map) jsonSlurper.parseText((t != null && !t.empty) ? t : "{}"))
-          }
-        Map fr = i18n.remove("fr.json")
-          new File(it, "fr.json").withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(fr.sort())) }
-        i18n.each { key, lang ->
-          Map out = fr.findAll({true})
-            out.putAll(lang)
-            new File(it, key).withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
-        }
-      }
-    }
-}
-
-task generateI18n(description:'Generate missing keys in i18n files') << {
-  generateMissingI18n()
 }
 

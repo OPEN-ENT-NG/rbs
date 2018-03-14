@@ -38,10 +38,10 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
@@ -128,7 +128,7 @@ public class ResourceController extends ControllerHelper {
 								badRequest(request, "rbs.resource.bad.request.min_delay.greater.than.max_delay");
 							}
 							String resourceTypeId = request.params().get("id");
-							resource.putString("type_id", resourceTypeId);
+							resource.put("type_id", resourceTypeId);
 
 							resourceService.createResource(resource, user, notEmptyResponseHandler(request));
 						}
@@ -173,7 +173,7 @@ public class ResourceController extends ControllerHelper {
 												isAvailable, wasAvailable);
 									} else {
 										JsonObject error = new JsonObject()
-												.putString("error", event.left().getValue());
+												.put("error", event.left().getValue());
 										Renders.renderJson(request, error, 400);
 									}
 								}
@@ -234,7 +234,7 @@ public class ResourceController extends ControllerHelper {
 							List<String> recipients = new ArrayList<>(recipientSet);
 
 							JsonObject params = new JsonObject();
-							params.putString("resource_name", resourceName);
+							params.put("resource_name", resourceName);
 
 							notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, String.valueOf(resourceId), params);
 						}

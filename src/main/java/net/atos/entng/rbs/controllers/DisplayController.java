@@ -21,14 +21,15 @@ package net.atos.entng.rbs.controllers;
 
 import java.util.Map;
 
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.Rbs;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.platform.Container;
+
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.SecuredAction;
@@ -40,9 +41,9 @@ public class DisplayController extends BaseController {
 	private enum RbsEvent { ACCESS }
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+		super.init(vertx, config, rm, securedActions);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Rbs.class.getSimpleName());
 	}
 

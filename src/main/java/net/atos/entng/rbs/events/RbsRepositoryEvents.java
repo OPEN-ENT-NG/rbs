@@ -23,11 +23,11 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.RepositoryEvents;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.webutils.Either;
 
@@ -53,14 +53,14 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 			}
 			if (groupsIds.size() > 0) {
 				SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
-				statementsBuilder.prepared("DELETE FROM rbs.groups WHERE id IN " + Sql.listPrepared(groupsIds.toArray()), groupsIds);
+				statementsBuilder.prepared("DELETE FROM rbs.groups WHERE id IN " + Sql.listPrepared(groupsIds.getList()), groupsIds);
 				Sql.getInstance().transaction(statementsBuilder.build(), SqlResult.validRowsResultHandler(new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
-							log.info("Removed share on ResourceTypes and Resources for groups : " + groupsIds.toList().toString());
+							log.info("Removed share on ResourceTypes and Resources for groups : " + groupsIds.getList().toString());
 						} else {
-							log.error("Failed to remove share on ResourceTypes and Resources for groups : " + groupsIds.toList().toString() + " Error message : " + event.left().getValue());
+							log.error("Failed to remove share on ResourceTypes and Resources for groups : " + groupsIds.getList().toString() + " Error message : " + event.left().getValue());
 						}
 					}
 				}));
@@ -80,15 +80,15 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 			}
 			if (userIds.size() > 0) {
 				SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
-				statementsBuilder.prepared("DELETE FROM rbs.members WHERE user_id IN " + Sql.listPrepared(userIds.toArray()), userIds);
-				statementsBuilder.prepared("UPDATE rbs.users SET deleted = TRUE WHERE id IN " + Sql.listPrepared(userIds.toArray()), userIds);
+				statementsBuilder.prepared("DELETE FROM rbs.members WHERE user_id IN " + Sql.listPrepared(userIds.getList()), userIds);
+				statementsBuilder.prepared("UPDATE rbs.users SET deleted = TRUE WHERE id IN " + Sql.listPrepared(userIds.getList()), userIds);
 				Sql.getInstance().transaction(statementsBuilder.build(), SqlResult.validRowsResultHandler(new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
-							log.info("Removed share on ResourceTypes and Resources for users : " + userIds.toList().toString());
+							log.info("Removed share on ResourceTypes and Resources for users : " + userIds.getList().toString());
 						} else {
-							log.error("Failed to remove share on ResourceTypes and Resources for users : " + userIds.toList().toString() + " Error message : " + event.left().getValue());
+							log.error("Failed to remove share on ResourceTypes and Resources for users : " + userIds.getList().toString() + " Error message : " + event.left().getValue());
 						}
 					}
 				}));

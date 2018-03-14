@@ -25,12 +25,12 @@ import fr.wseduc.webutils.I18n;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
@@ -56,12 +56,12 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 							   final String locale, final Handler<Either<String, JsonArray>> handler) {
 		if (appFilters.contains(RbsSearchingEvents.class.getSimpleName())) {
 
-			final List<String> idsUsers = new ArrayList<String>(groupIds.toList());
+			final List<String> idsUsers = new ArrayList<String>(groupIds.getList());
 			idsUsers.add(userId);
 
 			final StringBuilder query = new StringBuilder();
 
-			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
+			final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.getList().toArray(), true);
 			final List<String> searchFields = new ArrayList<String>();
 			searchFields.add("r.name");
 			searchFields.add("t.name");
@@ -82,24 +82,24 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 			if (scope!=null && !scope.isEmpty()) {
 				query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 				for (String schoolId : scope) {
-					values.addString(schoolId);
+					values.add(schoolId);
 				}
 			}
 			*/
 			query.append(")  GROUP BY b.id, u.username, r.name, t.name ORDER BY modified DESC LIMIT ? OFFSET ?");
 			final JsonArray values = new JsonArray();
-			final List<String> valuesWildcard = searchValuesWildcard(searchWords.toList());
+			final List<String> valuesWildcard = searchValuesWildcard(searchWords.getList());
 			for (int i=0;i<searchFields.size();i++) {
 				for (final String value : valuesWildcard) {
-					values.addString(value);
+					values.add(value);
 				}
 			}
 
 			for (String groupOruser : idsUsers) {
-				values.addString(groupOruser);
+				values.add(groupOruser);
 			}
 
-			values.addString(userId);
+			values.add(userId);
 
 			final int offset = page * limit;
 			values.add(limit).add(offset);
@@ -125,14 +125,14 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 	}
 
 	private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, String locale) {
-		final List<String> aHeader = columnsHeader.toList();
+		final List<String> aHeader = columnsHeader.getList();
 		final JsonArray traity = new JsonArray();
 
 		final String dateFormat = "EEEEE dd MMMMM yyyy " + i18n.translate("rbs.search.date.to", I18n.DEFAULT_DOMAIN, locale) + " HH:mm";
 		final DateFormat dateFormatFromDB = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 		for (int i=0;i<results.size();i++) {
-			final JsonObject j = results.get(i);
+			final JsonObject j = results.getJsonObject(i);
 			final JsonObject jr = new JsonObject();
 			if (j != null) {
 				Long start = 0L;
@@ -143,13 +143,13 @@ public class RbsSearchingEvents extends SqlCrudService implements SearchingEvent
 				} catch (ParseException e) {
 					log.error("Can't parse date form RBS DB", e);
 				}
-				jr.putString(aHeader.get(0), formatTitle(j, start, end, dateFormat, locale));
-				jr.putString(aHeader.get(1), j.getString("booking_reason"));
-				jr.putObject(aHeader.get(2), new JsonObject().putValue("$date",
+				jr.put(aHeader.get(0), formatTitle(j, start, end, dateFormat, locale));
+				jr.put(aHeader.get(1), j.getString("booking_reason"));
+				jr.put(aHeader.get(2), new JsonObject().put("$date",
 						DatatypeConverter.parseDateTime(j.getString("modified")).getTime().getTime()));
-				jr.putString(aHeader.get(3), j.getString("owner_name"));
-				jr.putString(aHeader.get(4), j.getString("owner"));
-				jr.putString(aHeader.get(5), formatUrl(j.getNumber("id",0), start));
+				jr.put(aHeader.get(3), j.getString("owner_name"));
+				jr.put(aHeader.get(4), j.getString("owner"));
+				jr.put(aHeader.get(5), formatUrl(j.getLong("id",0l), start));
 				traity.add(jr);
 			}
 		}

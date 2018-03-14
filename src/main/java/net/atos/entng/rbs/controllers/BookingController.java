@@ -35,10 +35,10 @@ import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -160,7 +160,7 @@ public class BookingController extends ControllerHelper {
                                             String errorMessage = isCreation ?
                                                     "rbs.booking.create.conflict" : "rbs.booking.update.conflict";
                                             JsonObject error = new JsonObject()
-                                                    .putString("error", errorMessage);
+                                                    .put("error", errorMessage);
                                             renderJson(request, error, 409);
                                         }
                                     } else {
@@ -208,7 +208,7 @@ public class BookingController extends ControllerHelper {
             userAndGroupIds.addAll(user.getGroupsIds());
 
             // Return true if managers and userAndGroupIds have at least one common element
-            if (!Collections.disjoint(userAndGroupIds, managers.toList())) {
+            if (!Collections.disjoint(userAndGroupIds, managers.getList())) {
                 return true;
             }
         }
@@ -217,14 +217,14 @@ public class BookingController extends ControllerHelper {
     }
 
     private boolean isDelayLessThanMin(HttpServerRequest request, JsonObject resource, long startDate, long now) {
-        long minDelay = resource.getLong("min_delay", -1);
+        long minDelay = resource.getLong("min_delay", -1l);
         long delay = startDate - now;
 
         return (minDelay > -1 && minDelay > delay);
     }
 
     private boolean isDelayGreaterThanMax(HttpServerRequest request, JsonObject resource, long endDate, long now) {
-        long maxDelay = resource.getLong("max_delay", -1);
+        long maxDelay = resource.getLong("max_delay", -1l);
         if(maxDelay == -1) {
             return false;
         }
@@ -350,13 +350,13 @@ public class BookingController extends ControllerHelper {
                     return;
                 }
 
-                final JsonArray selectedDaysArray = booking.getArray("days", null);
+                final JsonArray selectedDaysArray = booking.getJsonArray("days", null);
                 if (selectedDaysArray == null || selectedDaysArray.size() != 7) {
                     badRequest(request, "rbs.booking.bad.request.invalid.days");
                     return;
                 }
                 try {
-                    Object firstSlotDayIsSelected = selectedDaysArray.toList().get(firstSlotDay);
+                    Object firstSlotDayIsSelected = selectedDaysArray.getList().get(firstSlotDay);
                     // The day of the first slot must be a selected day
                     if(!(Boolean) firstSlotDayIsSelected) {
                         badRequest(request, "rbs.booking.bad.request.first.day.not.selected");
@@ -416,7 +416,7 @@ public class BookingController extends ControllerHelper {
                                     if (endDate > 0L) { // Case when end_date is supplied
                                         try {
                                             int endDateDay = getDayFromTimestamp(endDate);
-                                            Object endDateDayIsSelected = selectedDaysArray.toList().get(endDateDay);
+                                            Object endDateDayIsSelected = selectedDaysArray.getList().get(endDateDay);
                                             if((Boolean) endDateDayIsSelected) {
                                                 lastSlotEndDate = endDate;
                                             }
@@ -427,9 +427,9 @@ public class BookingController extends ControllerHelper {
                                                 lastSlotEndDate = getLastSlotDate(nbOccurrences, periodicity, firstSlotEndDate, firstSlotDay, selectedDays);
 
                                                 // Replace the end date with the last slot's end date
-                                                booking.putNumber("periodic_end_date", lastSlotEndDate);
+                                                booking.put("periodic_end_date", lastSlotEndDate);
                                                 // Put the computed value of occurrences
-                                                booking.putNumber("occurrences", nbOccurrences);
+                                                booking.put("occurrences", nbOccurrences);
                                             }
                                         } catch (Exception e) {
                                             log.error("Error when checking that the day of the end date is selected", e);
@@ -521,8 +521,8 @@ public class BookingController extends ControllerHelper {
             return;
         }
 
-        if(sendNotification && childBookings!=null && childBookings.get(0)!=null) {
-            JsonObject firstBooking = (JsonObject) childBookings.get(0);
+        if(sendNotification && childBookings!=null && childBookings.getJsonObject(0) != null) {
+            JsonObject firstBooking = childBookings.getJsonObject(0);
             final long id = firstBooking.getLong("id", 0L);
 
             final String eventType;
@@ -633,13 +633,13 @@ public class BookingController extends ControllerHelper {
         List<String> recipients = new ArrayList<>(recipientSet);
 
         JsonObject params = new JsonObject();
-        params.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-        params.putString("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate))
-                .putString("username", user.getUsername())
-                .putString("startdate", startDate)
-                .putString("enddate", endDate)
-                .putString("resourcename", resourceName);
-        params.putString("resourceUri", params.getString("bookingUri"));
+        params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+        params.put("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate))
+                .put("username", user.getUsername())
+                .put("startdate", startDate)
+                .put("enddate", endDate)
+                .put("resourcename", resourceName);
+        params.put("resourceUri", params.getString("bookingUri"));
 
         notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
     }
@@ -713,7 +713,7 @@ public class BookingController extends ControllerHelper {
                                 return;
                             }
 
-                            object.putString("moderator_id", user.getUserId());
+                            object.put("moderator_id", user.getUserId());
 
                             Handler<Either<String, JsonArray>> handler = new Handler<Either<String, JsonArray>>() {
                                 @Override
@@ -723,7 +723,7 @@ public class BookingController extends ControllerHelper {
                                             final JsonArray results = event.right().getValue();
 
                                             try {
-                                                final JsonObject processedBooking = ((JsonArray) results.get(2)).get(0);
+                                                final JsonObject processedBooking = results.getJsonArray(2).getJsonObject(0);
 
                                                 Handler<Either<String, JsonObject>> notifHandler = new Handler<Either<String,JsonObject>>() {
                                                     @Override
@@ -736,7 +736,7 @@ public class BookingController extends ControllerHelper {
                                                             notifyBookingProcessed(request, user, processedBooking, resourceName);
 
                                                             if (results.size() >= 4) {
-                                                                JsonArray concurrentBookings = results.get(3);
+                                                                JsonArray concurrentBookings = results.getJsonArray(3);
                                                                 for (Object o : concurrentBookings) {
                                                                     JsonObject booking = (JsonObject) o;
                                                                     notifyBookingProcessed(request, user, booking, resourceName);
@@ -811,13 +811,13 @@ public class BookingController extends ControllerHelper {
 
         if(!owner.equals(user.getUserId())) {
             JsonObject params = new JsonObject();
-            params.putString("username", user.getUsername())
-                    .putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-                    .putString("startdate", startDate)
-                    .putString("enddate", endDate)
-                    .putString("resourcename", resourceName)
-                    .putString("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
-            params.putString("resourceUri", params.getString("bookingUri"));
+            params.put("username", user.getUsername())
+                    .put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+                    .put("startdate", startDate)
+                    .put("enddate", endDate)
+                    .put("resourcename", resourceName)
+                    .put("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
+            params.put("resourceUri", params.getString("bookingUri"));
 
             List<String> recipients = new ArrayList<>();
             recipients.add(owner);
@@ -911,11 +911,11 @@ public class BookingController extends ControllerHelper {
             }
 
             JsonObject params = new JsonObject();
-            params.putString("username", user.getUsername())
-                    .putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-                    .putString("startdate", startDate)
-                    .putString("enddate", endDate)
-                    .putString("resourcename", resourceName);
+            params.put("username", user.getUsername())
+                    .put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+                    .put("startdate", startDate)
+                    .put("enddate", endDate)
+                    .put("resourcename", resourceName);
 
             List<String> recipients = new ArrayList<>();
             recipients.add(owner);
@@ -963,7 +963,7 @@ public class BookingController extends ControllerHelper {
                             if (event.isRight()) {
                                 Renders.renderJson(request,  event.right().getValue());
                             } else {
-                                Renders.renderError(request, new JsonObject().putString("error", event.left().getValue()));
+                                Renders.renderError(request, new JsonObject().put("error", event.left().getValue()));
                             }
                         }
                     });
@@ -1000,7 +1000,7 @@ public class BookingController extends ControllerHelper {
                                     Renders.renderJson(request, event.right().getValue());
                                 } else {
                                     JsonObject error = new JsonObject()
-                                            .putString("error", event.left().getValue());
+                                            .put("error", event.left().getValue());
                                     Renders.renderJson(request, error, 400);
                                 }
                             }
@@ -1034,7 +1034,7 @@ public class BookingController extends ControllerHelper {
                                     Renders.renderJson(request, event.right().getValue());
                                 } else {
                                     JsonObject error = new JsonObject()
-                                            .putString("error", event.left().getValue());
+                                            .put("error", event.left().getValue());
                                     Renders.renderJson(request, error, 400);
                                 }
                             }

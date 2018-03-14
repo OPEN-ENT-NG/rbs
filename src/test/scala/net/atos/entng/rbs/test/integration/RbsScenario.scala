@@ -1,17 +1,17 @@
 package net.atos.entng.rbs.test.integration
 
 import io.gatling.core.Predef._
+import io.gatling.core.body.{Body, StringBody}
 import io.gatling.http.Predef._
 
 import org.entcore.test.appregistry.Role
 import net.minidev.json.{ JSONValue, JSONObject }
 import scala.collection.JavaConverters._
 import java.util.concurrent.TimeUnit
-import io.gatling.http.request.StringBody
 
 object RbsScenario {
 
-  def getSlotAsStringBody(slot: Tuple2[Long, Long]): StringBody = {
+  def getSlotAsStringBody(slot: Tuple2[Long, Long]): Body = {
     return StringBody("""{"start_date" : """ + slot._1 + """, "end_date" : """ + slot._2 + "}")
   }
 

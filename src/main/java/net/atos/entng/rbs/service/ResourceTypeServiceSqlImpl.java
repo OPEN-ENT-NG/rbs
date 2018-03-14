@@ -28,8 +28,8 @@ import java.util.List;
 
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.webutils.Either;
 
@@ -62,7 +62,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		if (scope!=null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
-				values.addString(schoolId);
+				values.add(schoolId);
 			}
 		}
 

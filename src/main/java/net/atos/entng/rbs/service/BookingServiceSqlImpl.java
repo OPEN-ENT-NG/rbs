@@ -27,18 +27,15 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static net.atos.entng.rbs.BookingStatus.*;
@@ -274,7 +271,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
         query.append(" ELSE ? END)) ");
-        values.add(null);
+        values.addNull();
 
         // 2. Additional VALUES to insert the other child bookings
 		int nbOccurences = data.getInteger("occurrences", -1);
@@ -375,7 +372,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
                         .add(resourceId);
 
                 query.append(" ELSE ? END)) ");
-                values.add(null);
+                values.addNull();
 			}
 
 			lastSlotEndDate += TimeUnit.SECONDS.convert(intervalFromFirstDay, TimeUnit.DAYS);
@@ -422,7 +419,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// Update query
 		JsonArray values = new JsonArray();
 		StringBuilder sb = new StringBuilder();
-		for (String fieldname : data.getFieldNames()) {
+		for (String fieldname : data.fieldNames()) {
 			addFieldToUpdate(sb, fieldname, data, values);
 		}
 
@@ -571,7 +568,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// 3. Query to validate or refuse booking
 		StringBuilder sb = new StringBuilder();
 		JsonArray processValues = new JsonArray();
-		for (String attr : data.getFieldNames()) {
+		for (String attr : data.fieldNames()) {
 			sb.append(attr).append(" = ?, ");
 			processValues.add(data.getValue(attr));
 		}
@@ -701,14 +698,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
-		values.addString(user.getUserId());
+		values.add(user.getUserId());
 
 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
 		List<String> scope = getLocalAdminScope(user);
 		if (scope!=null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
-				values.addString(schoolId);
+				values.add(schoolId);
 			}
 		}
 
@@ -741,28 +738,28 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			//
 			.append(Sql.listPrepared(groupsAndUserIds.toArray()))
 			.append(" OR t.owner = ?");
-		values.addString(startDate);
-		values.addString(endDate);
-		values.addString(startDate);
-		values.addString(endDate);
-		values.addString(startDate);
-		values.addString(endDate);
-		values.addString(startDate);
-		values.addString(endDate);
-		values.addString(startDate);
-		values.addString(endDate);
+		values.add(startDate);
+		values.add(endDate);
+		values.add(startDate);
+		values.add(endDate);
+		values.add(startDate);
+		values.add(endDate);
+		values.add(startDate);
+		values.add(endDate);
+		values.add(startDate);
+		values.add(endDate);
 
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
-		values.addString(user.getUserId());
+		values.add(user.getUserId());
 
 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
 		List<String> scope = getLocalAdminScope(user);
 		if (scope!=null && !scope.isEmpty()) {
 			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 			for (String schoolId : scope) {
-				values.addString(schoolId);
+				values.add(schoolId);
 			}
 		}
 		query.append(")  GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
@@ -780,10 +777,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 							continue;
 						} else {
 							final JsonObject jo = (JsonObject) o;
-							if (jo.getNumber("parent_booking_id") != null) {
-								setIdsPeriodicBooking.add(jo.getNumber("parent_booking_id"));
-                                jsonAllBookingResult.addObject(jo);
-							} else if (jo.getNumber("occurrences") == null) {
+							if (jo.getLong("parent_booking_id") != null) {
+								setIdsPeriodicBooking.add(jo.getLong("parent_booking_id"));
+                                jsonAllBookingResult.add(jo);
+							} else if (jo.getValue("occurrences") == null) {
 								try {
 									final Date currentStartDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("start_date"));
 									final Date currentEndDate = DateUtils.parseTimestampWithoutTimezone(jo.getString("end_date"));
@@ -797,13 +794,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 											DateUtils.isBetween(dateEndSearched, currentStartDate, currentEndDate) ||
 											(DateUtils.isBetween(currentStartDate, dateStartSearched, dateEndSearched) &&
 													DateUtils.isBetween(currentEndDate, dateStartSearched, dateEndSearched))) {
-										jsonAllBookingResult.addObject(jo);
+										jsonAllBookingResult.add(jo);
 									}
 								} catch (ParseException e) {
 									log.error("Can't parse date form RBS DB", e);
 								}
 							} else {
-								jsonAllBookingResult.addObject(jo);
+								jsonAllBookingResult.add(jo);
 							}
 						}
 					}
@@ -815,7 +812,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 								.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 								.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
 								.append(" WHERE b.id IN ").append(Sql.listPrepared(setIdsPeriodicBooking.toArray()));
-						final JsonArray values = new JsonArray(setIdsPeriodicBooking.toArray());
+						final JsonArray values = new JsonArray(new ArrayList<>(setIdsPeriodicBooking));
 
 						Sql.getInstance().prepared(queryPeriodicBooking.toString(), values, new Handler<Message<JsonObject>>() {
 							@Override
