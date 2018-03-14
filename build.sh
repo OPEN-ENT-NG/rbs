@@ -60,7 +60,7 @@ do
       buildGradle
       ;;
     install)
-      buildNode && buildGradle
+      buildGradle # buildNode && buildGradle
       ;;
     publish)
       publish
