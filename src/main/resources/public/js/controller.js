@@ -1283,7 +1283,7 @@ function RbsController($scope, template, model, date, route) {
     if (booking.byOccurrences) {
       summary +=
         lang.translate('rbs.period.occurences.for') + ' ' +
-        booking.occurrences +
+        booking.occurrences + ' ' +
         lang.translate(
           'rbs.period.occurences.slots.' +
           (booking.occurrences > 1 ? 'many' : 'one')
@@ -1357,7 +1357,7 @@ function RbsController($scope, template, model, date, route) {
     if ($scope.editedBooking.byOccurrences) {
       summary +=
         lang.translate('rbs.period.occurences.for') + ' ' +
-        $scope.editedBooking.occurrences +
+        $scope.editedBooking.occurrences + ' ' +
         lang.translate(
           'rbs.period.occurences.slots.' +
           ($scope.editedBooking.occurrences > 1 ? 'many' : 'one')
