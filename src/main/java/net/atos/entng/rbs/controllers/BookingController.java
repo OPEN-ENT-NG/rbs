@@ -46,6 +46,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static net.atos.entng.rbs.BookingStatus.*;
 import static net.atos.entng.rbs.BookingUtils.*;
 import static net.atos.entng.rbs.Rbs.RBS_NAME;
@@ -217,14 +218,14 @@ public class BookingController extends ControllerHelper {
     }
 
     private boolean isDelayLessThanMin(HttpServerRequest request, JsonObject resource, long startDate, long now) {
-        long minDelay = resource.getLong("min_delay", -1l);
+        long minDelay = getOrElse(resource.getLong("min_delay"), -1l);
         long delay = startDate - now;
 
         return (minDelay > -1 && minDelay > delay);
     }
 
     private boolean isDelayGreaterThanMax(HttpServerRequest request, JsonObject resource, long endDate, long now) {
-        long maxDelay = resource.getLong("max_delay", -1l);
+        long maxDelay = getOrElse(resource.getLong("max_delay"), -1l);
         if(maxDelay == -1) {
             return false;
         }
