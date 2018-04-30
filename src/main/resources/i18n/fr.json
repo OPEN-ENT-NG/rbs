@@ -1,5 +1,5 @@
 {
-    "group.AdminLocal": "Tous les administrateurs locaux du groupe {0}.",
+    "group.AdminLocal": "Tous les administrateurs locaux de {0}.",
     "group.Personnel": "Tous les personnels du groupe {0}.",
     "group.Relative": "Tous les parents du groupe {0}.",
     "group.Student": "Tous les élèves du groupe {0}.",
@@ -197,7 +197,7 @@
     "rbs.manage.type.create": "Créer un type de ressources",
     "rbs.manage.type.delete.confirm": "Suppression du type de ressources : ",
     "rbs.manage.type.delete.details.empty": "Ce type ne contient aucune ressource. Aucune réservation ne sera impactée.",
-    "rbs.manage.type.delete.details.notempty": "Toutes les ressources de ce type seront supprimées, ainsi que les réservations les concernant.<br>Les personnes ayant effectué des réservations et celles en charge de la validation et de la gestion de ce type seront notifiées des suppressions.<br>Si vous souhaitez conserver les ressources, vous devez les réaffecter à un autre type de ressource au préalable.",
+    "rbs.manage.type.delete.details.notempty": "Toutes les ressources de ce type seront supprimées, ainsi que les réservations les concernant.<br>Les personnes ayant effectué des réservations et celles en charge de la validation et de la gestion de ce type seront notifiées des suppressions.<br>Si vous souhaitez conserver les ressources, vous devez les réaffecter à un autre type de ressources au préalable.",
     "rbs.manage.type.delete.resources": "Ressources appartenant à ce type :",
     "rbs.manage.type.edit": "Editer le type",
     "rbs.manage.type.remove": "Supprimer le type",
