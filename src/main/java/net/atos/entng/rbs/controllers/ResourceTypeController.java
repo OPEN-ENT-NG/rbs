@@ -22,6 +22,7 @@ package net.atos.entng.rbs.controllers;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.user.UserUtils.getUserInfos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -226,6 +227,12 @@ public class ResourceTypeController extends ControllerHelper {
 	public void removeShare(final HttpServerRequest request){
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.removeShare(request, false);
+	}
+
+	@Put("/share/resource/:id")
+	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	public void shareResource(final HttpServerRequest request) {
+		super.shareResource(request, null, false, null, null);
 	}
 
 }
