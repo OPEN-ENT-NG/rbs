@@ -29,7 +29,7 @@ Déclarer l'application dans la liste :
         "port" : 8026,
         "sql" : true,
         "mongodb" : false,
-        "neo4j" : false,
+        "neo4j" : true,
         "app-name" : "Réservation de ressources",
         "app-address" : "/rbs",
         "app-icon" : "rbs-large",
