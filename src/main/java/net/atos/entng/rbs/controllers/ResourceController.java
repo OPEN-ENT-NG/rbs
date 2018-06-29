@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
@@ -68,6 +69,19 @@ public class ResourceController extends ControllerHelper {
 		resourceService = new ResourceServiceSqlImpl();
 	}
 	// TODO : refactor ResourceController to use resourceService instead of crudService
+
+    private JsonObject getPushNotification(HttpServerRequest request, String notificationName,
+                                           String resourceName) {
+        JsonObject notification = new JsonObject()
+                .put("title", "rbs.push.notif." + notificationName);
+        String body = I18n.getInstance().translate(
+                "rbs.push.notif." + notificationName + ".body",
+                getHost(request),
+                I18n.acceptLanguage(request),
+                resourceName);
+        notification.put("body", body);
+        return notification;
+    }
 
 	@Override
 	@Get("/resources")
@@ -235,6 +249,8 @@ public class ResourceController extends ControllerHelper {
 
 							JsonObject params = new JsonObject();
 							params.put("resource_name", resourceName);
+
+							params.put("pushNotif", getPushNotification(request, notificationName, resourceName));
 
 							notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, String.valueOf(resourceId), params);
 						}

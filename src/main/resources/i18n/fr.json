@@ -294,5 +294,15 @@
     "type.form.validation.required": "Les demandes de réservation doivent être validées",
     "VALIDATION_ERROR": "Données non valides.",
     "rbs.search.title" : "Réservation du {0} au {1} sur la ressource {2} ({3})",
-    "rbs.search.date.to" : "à"
+    "rbs.search.date.to" : "à",
+    "rbs.push.notif.booking-created.body": "{0} a créé une demande de réservation sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.periodic-booking-created.body": "{0} a créé une demande de réservation périodique sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.booking-refused.body": "{0} a refusé une demande de réservation sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.booking-validated.body": "{0} a validé une demande de réservation sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.booking-deleted.body": "{0} a supprimé une demande de réservation sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.booking-updated.body": "{0} a mis à jour une demande de réservation sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.periodic-booking-deleted.body": "{0} a supprimé une demande de réservation périodique sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.periodic-booking-updated.body": "{0} a mis à jour une demande de réservation périodique sur la ressource {1} du {2} au {3}",
+    "rbs.push.notif.resource-available.body": "La ressource {0} est à nouveau disponible",
+    "rbs.push.notif.resource-unavailable.body": "La ressource {0} n'est plus disponible"
 }

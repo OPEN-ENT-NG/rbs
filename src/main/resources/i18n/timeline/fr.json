@@ -22,5 +22,15 @@
     "timeline.rbs.on.resource": " sur la ressource ",
     "timeline.rbs.periodic.booking": "demande de réservation périodique",
     "timeline.rbs.resource": "La ressource",
-    "timeline.rbs.to": "au"
+    "timeline.rbs.to": "au",
+    "rbs.push.notif.booking-created": "Réservation de ressources: Création d'une réservation",
+    "rbs.push.notif.booking-updated": "Réservation de ressources: Mise à jour d'une réservation",
+    "rbs.push.notif.booking-refused": "Réservation de ressources: Refus d'une réservation",
+    "rbs.push.notif.booking-validated": "Réservation de ressources: Validation d'une réservation",
+    "rbs.push.notif.booking-deleted": "Réservation de ressources: Suppression d'une réservation",
+    "rbs.push.notif.periodic-booking-created": "Réservation de ressources: Création d'une réservation périodique",
+    "rbs.push.notif.periodic-booking-updated": "Réservation de ressources: Mise à jour d'une réservation périodique",
+    "rbs.push.notif.periodic-booking-deleted": "Réservation de ressources: Suppression d'une réservation périodique",
+    "rbs.push.notif.resource-available": "Réservation de ressources: Disponibilité d'une ressource",
+    "rbs.push.notif.resource-unavailable": "Réservation de ressources: Indisponibilité d'une ressource"
 }

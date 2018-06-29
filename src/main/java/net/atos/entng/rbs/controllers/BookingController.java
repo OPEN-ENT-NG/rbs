@@ -641,8 +641,28 @@ public class BookingController extends ControllerHelper {
                 .put("enddate", endDate)
                 .put("resourcename", resourceName);
         params.put("resourceUri", params.getString("bookingUri"));
+        params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDate, endDate));
 
         notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
+    }
+
+    private JsonObject getPushNotification(HttpServerRequest request, String notificationName,
+                                           UserInfos user,
+                                           String resourceName,
+                                           String startDate,
+                                           String endDate) {
+        JsonObject notification = new JsonObject()
+                .put("title", "rbs.push.notif." + notificationName);
+        String body = I18n.getInstance().translate(
+                        "rbs.push.notif." + notificationName + ".body",
+                        getHost(request),
+                        I18n.acceptLanguage(request),
+                        user.getUsername(),
+                        resourceName,
+                        startDate,
+                        endDate);
+        notification.put("body", body);
+        return notification;
     }
 
     private String booleanArrayToBitString(JsonArray selectedDaysArray) {
@@ -819,6 +839,7 @@ public class BookingController extends ControllerHelper {
                     .put("resourcename", resourceName)
                     .put("bookingUri", "/rbs#/booking/" + bookingId + "/" +  formatStringForRoute(startDate));
             params.put("resourceUri", params.getString("bookingUri"));
+            params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDate, endDate));
 
             List<String> recipients = new ArrayList<>();
             recipients.add(owner);
@@ -917,6 +938,7 @@ public class BookingController extends ControllerHelper {
                     .put("startdate", startDate)
                     .put("enddate", endDate)
                     .put("resourcename", resourceName);
+            params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDate, endDate));
 
             List<String> recipients = new ArrayList<>();
             recipients.add(owner);
