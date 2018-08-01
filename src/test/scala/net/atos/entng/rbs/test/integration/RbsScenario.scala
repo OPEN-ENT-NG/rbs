@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 object RbsScenario {
 
   def getSlotAsStringBody(slot: Tuple2[Long, Long]): Body = {
-    return StringBody("""{"start_date" : """ + slot._1 + """, "end_date" : """ + slot._2 + "}")
+    return StringBody("""{"start_date" : """ + slot._1 + """, "end_date" : """ + slot._2 + ""","iana":"Europe/Paris"}""")
   }
 
   // Slots to create concurrent bookings
@@ -321,7 +321,8 @@ object RbsScenario {
             "end_date" : """ + pSlotEndDate + """,
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
-            "occurrences":10
+            "occurrences":10,
+            "iana":"Europe/Paris"
             }"""))
         .check(status.is(200),
           jsonPath("$[?(@.status != 1)]").notExists,
@@ -358,6 +359,7 @@ object RbsScenario {
             "end_date" : """ + pSlotEndDate + """,
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
+            "iana":"Europe/Paris",
             "periodic_end_date": """ + pLastSlotEndDate + """
             }"""))
         .check(status.is(200),
@@ -520,7 +522,8 @@ object RbsScenario {
         .put("/rbs/resource/${resourceId}/booking/${admlBookingId}")
         .body(StringBody("""{
             "start_date" : """ + pSlotStartDate + """,
-            "end_date" : """ + pSlotEndDate + """
+            "end_date" : """ + pSlotEndDate + """,
+            "iana": "Europe/Paris"
             }"""))
         .check(status.is(200)))
 
@@ -531,6 +534,7 @@ object RbsScenario {
             "end_date" : """ + pSlotEndDate + """,
             "days":[false, true, false, false, true, true, false],
             "periodicity":2,
+            "iana":"Europe/Paris",
             "occurrences":10
             }"""))
         .check(status.is(200),

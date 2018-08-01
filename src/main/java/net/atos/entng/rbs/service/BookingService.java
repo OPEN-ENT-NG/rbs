@@ -26,41 +26,37 @@ import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
+import net.atos.entng.rbs.models.Booking;
 import fr.wseduc.webutils.Either;
 
 public interface BookingService extends CrudService {
 
-	public void createBooking(final String resourceId, final JsonObject data, final UserInfos user,
+	public void createBooking(final String resourceId, final Booking data, final UserInfos user,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public void createPeriodicBooking(final String resourceId, final String selectedDays, final int firstSelectedDay,
+	public void createPeriodicBooking(final String resourceId, Booking booking, final UserInfos user,
+			final Handler<Either<String, JsonArray>> handler);
+
+	public void updateBooking(final String resourceId, final Booking data,
+			final Handler<Either<String, JsonObject>> handler);
+
+	public void updatePeriodicBooking(final String resourceId, final Booking data, final UserInfos user,
+			final Handler<Either<String, JsonArray>> handler);
+
+	public void processBooking(final String resourceId, final String bookingId, final int newStatus,
 			final JsonObject data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
-	public void updateBooking(final String resourceId, final String bookingId, final JsonObject data,
-			final Handler<Either<String, JsonObject>> handler);
+	public void listUserBookings(final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
-	public void updatePeriodicBooking(final String resourceId, final String bookingId, final String selectedDays,
-			final int firstSelectedDay, final JsonObject data, final UserInfos user,
+	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds,
 			final Handler<Either<String, JsonArray>> handler);
 
-	public void processBooking(final String resourceId, final String bookingId,
-			final int newStatus, final JsonObject data,
-			final UserInfos user, final Handler<Either<String, JsonArray>> handler);
+	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds,
+			final String startDate, final String endDate, final Handler<Either<String, JsonArray>> handler);
 
-	public void listUserBookings(final UserInfos user,
-			final Handler<Either<String, JsonArray>> handler);
+	public void listFullSlotsBooking(final String bookingId, final Handler<Either<String, JsonArray>> handler);
 
-	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds, final Handler<Either<String, JsonArray>> handler);
-
-	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds, final String startDate, final String endDate,
-									   final Handler<Either<String, JsonArray>> handler);
-
-	public void listFullSlotsBooking(final String bookingId,
-									 final Handler<Either<String, JsonArray>> handler);
-
-	public void listBookingsByResource(final String resourceId,
-			final Handler<Either<String, JsonArray>> handler);
+	public void listBookingsByResource(final String resourceId, final Handler<Either<String, JsonArray>> handler);
 
 	public void listUnprocessedBookings(final List<String> groupsAndUserIds, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler);
@@ -74,5 +70,5 @@ public interface BookingService extends CrudService {
 
 	public void getParentBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 
-    void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
+	void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler);
 }

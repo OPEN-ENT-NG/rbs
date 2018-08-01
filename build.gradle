@@ -57,6 +57,8 @@ dependencies {
   compile "org.entcore:common:$entCoreVersion"
   testCompile "org.entcore:tests:$entCoreVersion"
   testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+  testCompile "io.vertx:vertx-core:$vertxVersion"
+  testCompile 'junit:junit:4.12'
 }
 
 jar {

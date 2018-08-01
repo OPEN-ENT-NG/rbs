@@ -13,9 +13,14 @@
     "end_date": {
       "description": "Unix timestamp representing the end date of the booking",
       "type": "integer"
+    },
+    "iana": {
+      "description": "IANA identifier of the booking owner",
+      "type": "string"
     }
   },
   "required": [
+    "iana",
     "start_date",
     "end_date"
   ]

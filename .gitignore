@@ -23,3 +23,5 @@ mods
 data
 developer.id
 *.mod.json
+.cache-main
+.cache-tests

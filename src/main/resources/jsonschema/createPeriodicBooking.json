@@ -28,6 +28,10 @@
       "type": "integer",
       "minimum": 1
     },
+    "iana": {
+      "description": "IANA identifier of the booking owner",
+      "type": "string"
+    },
 	"days": {
 	      "description": "Array of booleans, representing selected days. Index 0 corresponds to Sunday, index 1 to Monday, etc",
 	      "type": "array",
@@ -77,6 +81,7 @@
     "start_date",
     "end_date",
     "periodicity",
-    "days"
+    "days",
+    "iana"
   ]
 }

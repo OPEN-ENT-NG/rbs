@@ -49,12 +49,7 @@ function Booking(book) {
 function Booking() {
 	var startDate;
 	if (this.start_date) {
-		var aStartDate = this.start_date.split("T");
-		if (aStartDate.length === 2) {
-			startDate = moment(aStartDate[0]);
-			startDate.set('hour', aStartDate[1].split(":")[0]);
-			startDate.set('minute', aStartDate[1].split(":")[1]);
-		}
+		startDate = moment.utc(this.start_date).tz(moment.tz.guess());
 	}
 
 	if (!startDate) {
@@ -63,12 +58,7 @@ function Booking() {
 
 	var endDate;
 	if (this.end_date) {
-		var aEndDate = this.end_date.split("T");
-		if (aEndDate.length === 2) {
-			endDate = moment(aEndDate[0]);
-			endDate.set('hour', aEndDate[1].split(":")[0]);
-			endDate.set('minute', aEndDate[1].split(":")[1]);
-		}
+		endDate = moment.utc(this.end_date).tz(moment.tz.guess());
 	}
 
 	if (!endDate) {
@@ -291,7 +281,8 @@ Booking.prototype.hasAtLeastOneSuspendedSlot = function() {
 Booking.prototype.toJSON = function() {
 	var json = {
 		start_date : this.startMoment.utc().unix(),
-		end_date : this.endMoment.utc().unix()
+		end_date : this.endMoment.utc().unix(),
+		iana: moment.tz.guess()
 	};
 
 	if (this.is_periodic === true) {
