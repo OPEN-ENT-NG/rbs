@@ -27,6 +27,11 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -34,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.vertx.core.buffer.Buffer;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
@@ -555,15 +561,24 @@ public class BookingController extends ControllerHelper {
 
 		List<String> recipients = new ArrayList<>(recipientSet);
 
-		JsonObject params = new JsonObject();
-		params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-		params.put("bookingUri", "/rbs#/booking/" + bookingId + "/" + formatStringForRoute(startDate))
-				.put("username", user.getUsername()).put("startdate", startDate).put("enddate", endDate)
-				.put("resourcename", resourceName);
-		params.put("resourceUri", params.getString("bookingUri"));
-		params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDate, endDate));
+        request.bodyHandler(new Handler<Buffer>() {
+            public void handle(Buffer event) {
 
-		notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
+                String iana = event.toJsonObject().getString("iana");
+                String startDateTZ = ZonedDateTime.of(LocalDateTime.parse(startDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
+                String endDateTZ = ZonedDateTime.of(LocalDateTime.parse(endDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
+
+                JsonObject params = new JsonObject();
+                params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+                params.put("bookingUri", "/rbs#/booking/" + bookingId + "/" + formatStringForRoute(startDate))
+                        .put("username", user.getUsername()).put("startdate", startDateTZ).put("enddate", endDateTZ)
+                        .put("resourcename", resourceName);
+                params.put("resourceUri", params.getString("bookingUri"));
+                params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDateTZ, endDateTZ));
+
+                notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
+            }
+        });
 	}
 
 	private JsonObject getPushNotification(HttpServerRequest request, String notificationName, UserInfos user,
