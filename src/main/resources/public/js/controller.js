@@ -10,7 +10,7 @@ routes.define(function($routeProvider) {
 
 function RbsController($scope, template, model, date, route, $timeout) {
   route({
-    viewBooking: function(param) {
+    viewBooking:  function(param) {
       if (param.start) {
         loadBooking(param.start, param.bookingId);
       } else {
@@ -25,7 +25,8 @@ function RbsController($scope, template, model, date, route, $timeout) {
           }
         );
       }
-    },
+      $scope.showCalendar(true);
+    }
   });
 
   function placingButton(exit){
@@ -51,7 +52,7 @@ function RbsController($scope, template, model, date, route, $timeout) {
                 updateCalendarScheduleBooking(moment(date), true);
             });
         });
-    }
+    };
 
   this.initialize = function() {
     $scope.template = template;
@@ -2179,8 +2180,11 @@ function RbsController($scope, template, model, date, route, $timeout) {
     }
 
     $scope.processBookings = $scope.bookings.selectionForProcess();
-    $scope.display.showPanel = true;
-    template.open('lightbox', 'validate-booking');
+      if(!$scope.processBookings.length){
+          $scope.processBookings = $scope.selectBooking( $scope.selectedBooking);
+      }
+      $scope.display.showPanel = true;
+      template.open('lightbox', 'validate-booking');
   };
 
   $scope.refuseBookingSelection = function() {
@@ -2720,7 +2724,7 @@ function RbsController($scope, template, model, date, route, $timeout) {
     } else {
       return lang.translate('rbs.export.resource.all.summary');
     }
-  }
+  };
 
   $scope.checkViewExport = function (view) {
     if (view === "DAY") {
@@ -2732,7 +2736,7 @@ function RbsController($scope, template, model, date, route, $timeout) {
     else {
       return lang.translate('rbs.export.view.list')
     }
-  }
+  };
 
   $scope.exportForm = function () {
     $scope.exportComponent = new ExportBooking ();
@@ -2884,5 +2888,13 @@ function RbsController($scope, template, model, date, route, $timeout) {
     } else {
       resourceType.notified = 'some';
     }
-  }
+  };
+    $scope.selectBooking = function (currentBooking) {
+        if (currentBooking.is_periodic === true) {
+            return $scope.selectedBooking._slots;
+        } else {
+            return [$scope.selectedBooking];
+        }
+
+    }
 }
