@@ -2199,7 +2199,11 @@ function RbsController($scope, template, model, date, route, $timeout) {
       }
     }
 
-    $scope.processBookings = $scope.bookings.selectionForProcess();
+
+      $scope.processBookings = $scope.bookings.selectionForProcess();
+      if(!$scope.processBookings.length){
+          $scope.processBookings = $scope.selectBooking( $scope.selectedBooking);
+      }
     $scope.display.showPanel = true;
     $scope.bookings.refuseReason = '';
     template.open('lightbox', 'refuse-booking');
