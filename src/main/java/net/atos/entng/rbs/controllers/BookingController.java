@@ -582,6 +582,9 @@ public class BookingController extends ControllerHelper {
             public void handle(Buffer event) {
 
                 String iana = event.toJsonObject().getString("iana");
+                if(null == iana){
+                    iana = event.toJsonObject().getJsonArray("slots").getJsonObject(0).getString("iana");
+                }
                 String startDateTZ = ZonedDateTime.of(LocalDateTime.parse(startDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
                 String endDateTZ = ZonedDateTime.of(LocalDateTime.parse(endDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
 
