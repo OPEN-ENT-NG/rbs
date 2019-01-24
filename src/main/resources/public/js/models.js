@@ -673,16 +673,16 @@ function Slot(book) {
 }
 function SlotJson(start, end) {
   return {
-    start_date : moment.utc(start).unix(),
-    end_date :  moment.utc(end).unix(),
+    start_date : (moment.utc(start._i).add('hours',- moment().format('Z').split(':')[0])).unix(),
+    end_date :  (moment.utc(end._i).add('hours',- moment().format('Z').split(':')[0])).unix(),
     iana :  moment.tz.guess()
 }
 }
 
 Slot.prototype.toJson = function() {
   return {
-      start_date : this.startMoment.unix(),
-      end_date : this.endMoment.unix(),
+      start_date : (moment.utc(this.startMoment._i).add('hours',- moment().format('Z').split(':')[0])).unix(),
+      end_date : (moment.utc(this.endMoment._i).add('hours',- moment().format('Z').split(':')[0])).unix(),
       iana:  moment.tz.guess()
   }
 };
