@@ -1225,13 +1225,23 @@ function RbsController($scope, template, model, date, route, $timeout) {
         }
       );
     } else if ($scope.editedBooking.type !== undefined && $scope.saveTime) {
-      $scope.booking.startTime.set('hour', $scope.saveTime.startHour - moment().format('Z').split(':')[0]);
+      $scope.booking.startTime.set('hour',
+          $scope.saveTime.startHour - $scope.getMomentFromDate($scope.booking.startDate, $scope.booking.startTime).format('Z').split(':')[0]);
       $scope.booking.startTime.set('minute', 0);
-      $scope.booking.endTime.set('hour', $scope.saveTime.endHour - moment().format('Z').split(':')[0]);
+      $scope.booking.endTime.set('hour',
+          $scope.saveTime.endHour - $scope.getMomentFromDate($scope.booking.startDate, $scope.booking.startTime).format('Z').split(':')[0]);
       $scope.booking.endTime.set('minute', 0);
     }
   };
-
+  $scope.getMomentFromDate = function (date,time) {
+    return  moment([
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        time.hour(),
+        time.minute()
+      ])
+  };
   $scope.switchSlotStart = function(slot) {
     $scope.selectedSlotStart = slot;
     $scope.booking.startTime.set(
