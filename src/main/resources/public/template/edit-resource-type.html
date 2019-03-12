@@ -37,7 +37,7 @@
 				</label>
 			</div>
 			<hr/>
-			<div class="row">
+			<div class="row" ng-if="slotprofiles.length > 0" >
 				<label class="three cell"><i18n>rbs.resourcetype.edit.slotprofile.label</i18n></label>
 				<select class="nine cell"
 					ng-model="editedResourceType.slotprofile"

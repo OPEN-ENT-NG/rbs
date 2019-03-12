@@ -267,12 +267,24 @@ function RbsController($scope, template, model, date, route, $timeout) {
       return (a = key(a)), (b = key(b)), reverse * ((a > b) - (b > a));
     };
   };
-
+    $scope.getSharedResources = function (state) {
+        $scope.sharedStructure = model.DETACHED_STRUCTURE;
+        var structureState = state.find(function(struct) { return struct.id === $scope.sharedStructure.id });
+        $scope.sharedStructure.expanded = structureState ? structureState.expanded : false;
+        $scope.sharedStructure.selected = structureState ? structureState.selected : false;
+        $scope.sharedStructure.types = [];
+        $scope.resourceTypes.all.forEach(function (resource) {
+            var find = _.findWhere( $scope.structures,{id: resource.school_id });
+            if(!find) {
+                $scope.sharedStructure.types.push(resource);
+            }
+        });
+    };
   $scope.initStructures = function() {
     $scope.notificationsComponent.getNotifications(function (data) {
       $scope.notificationsComponent.list = data;
-      model.loadTreeState(function(state) {
-        for (var i = 0; i < $scope.structures.length; i++) {
+        model.loadTreeState(function(state) {
+        for (var i = 0; i < $scope.structures.length ; i++) {
           var structureState = state.find(function(struct) { return struct.id === $scope.structures[i].id });
           var structureWithTypes = {};
           structureWithTypes.id = $scope.structures[i].id;
@@ -317,6 +329,7 @@ function RbsController($scope, template, model, date, route, $timeout) {
         );
         $scope.selectedStructure = $scope.structuresWithTypes[0];
         model.bookings.applyFilters();
+       $scope.getSharedResources(state);
       });
     });
   };
@@ -2207,7 +2220,10 @@ function RbsController($scope, template, model, date, route, $timeout) {
     $scope.display.selectAllRessources = undefined;
     $scope.currentResourceType = resourceType;
     var oldStructure = $scope.selectedStructure;
-    $scope.selectedStructure = $scope.structuresWithTypes.filter(function (struct) { return struct.id === resourceType.school_id}).pop();
+    $scope.selectedStructure =  $scope.structuresWithTypes.filter(function (struct) { return struct.id === resourceType.school_id}).pop() ;
+    if(!$scope.selectedStructure){
+        $scope.selectedStructure = $scope.sharedStructure;
+    }
     if (oldStructure != $scope.selectedStructure) {
       oldStructure.types.forEach(function(resourceType) {
         resourceType.selected = undefined;
@@ -2623,12 +2639,29 @@ function RbsController($scope, template, model, date, route, $timeout) {
                 id: resource.id,
                 selected: resource.selected === true,
               };
-            }),
+            })
           };
-        }),
+        })
       };
     });
-
+    state.push(
+       {  id: $scope.sharedStructure.id,
+          expanded: $scope.sharedStructure.expanded === true,
+          selected: $scope.sharedStructure.selected === true,
+          types: $scope.sharedStructure.types.map(function(type) {
+              return {
+                  id: type.id,
+                  expanded: type.expanded === true,
+                  resources: type.resources.all.map(function(resource) {
+                      return {
+                          id: resource.id,
+                          selected: resource.selected === true
+                      };
+                  })
+              };
+          })
+      }
+    );
     model.saveTreeState(state);
   };
 

@@ -308,7 +308,7 @@
   "rbs.selector.unprocessed": "Afficher les réservations à valider uniquement",
   "rbs.selector.unprocessed.button": "En attente",
   "rbs.single.booking": "Réservation ponctuelle",
-  "rbs.structure.detached": "Aucun établissement",
+  "rbs.structure.detached": "Autres établissements",
   "rbs.title": "Réservation de ressources",
   "rbs.type.details.name.label": "Nom du type : ",
   "rbs.type.details.resources": "Ressources",
@@ -364,5 +364,6 @@
   "rbs.push.notif.periodic-booking-deleted.body": "{0} a supprimé une demande de réservation périodique sur la ressource {1} du {2} au {3}",
   "rbs.push.notif.periodic-booking-updated.body": "{0} a mis à jour une demande de réservation périodique sur la ressource {1} du {2} au {3}",
   "rbs.push.notif.resource-available.body": "La ressource {0} est à nouveau disponible",
-  "rbs.push.notif.resource-unavailable.body": "La ressource {0} n'est plus disponible"
+  "rbs.push.notif.resource-unavailable.body": "La ressource {0} n'est plus disponible",
+  "shared.resources":"Ressources partagées"
 }

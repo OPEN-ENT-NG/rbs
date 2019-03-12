@@ -36,6 +36,33 @@
 					</li>
 				</ul>
 			</li>
+            <li ng-if="sharedStructure.types.length !==0">
+                <a ng-if="sharedStructure.expanded !== true" class="structure" ng-click="expandStructureSettings(sharedStructure)">
+                    <i class="caretBlack"> </i>[[lang.translate('shared.resources')]]
+                </a>
+                <a ng-if="sharedStructure.expanded === true" ng-click="setSelectedStructureForCreation(sharedStructure)" ng-class="{ selected: selectedStructure === sharedStructure }">
+                    <i class="caretBlack expanded" ng-click="collapseStructureSettings(sharedStructure)"></i> [[lang.translate('shared.resources')]]
+                </a>
+                <ul ng-if="sharedStructure.expanded === true">
+                    <li ng-repeat="resourceType in sharedStructure.types | orderBy: 'name' | filter:keepProcessableResourceTypes">
+                        <a ng-click="selectResourceType(resourceType)" ng-class="{ selected: resourceType === currentResourceType && editedResourceType !== resourceType }">
+                            <resource-right name="manage" resource="resourceType" class="cell">
+                                <input
+                                        type="checkbox"
+                                        ng-model="resourceType.selected"
+                                        ng-click="currentResourceType.resources.deselectAll(); $event.stopPropagation()"
+                                        ng-show="!currentResourceType || currentResourceType.resources.selection().length === 0"
+                                        ng-if="selectedStructure.id === sharedStructure.id"/>
+                            </resource-right>
+
+                            [[resourceType.name]]
+                        </a>
+                    </li>
+                    <li ng-if="sharedStructure.types.length == 0">
+                        <i18n>rbs.resourcetype.empty</i18n>
+                    </li>
+                </ul>
+            </li>
 		</ul>
 
 		<a class="classic-link" workflow="rbs.typemanage" ng-click="createResourceType()"><i18n>rbs.manage.type.create</i18n></a>
