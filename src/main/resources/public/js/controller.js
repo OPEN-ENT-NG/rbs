@@ -542,9 +542,10 @@ function RbsController($scope, template, model, date, route, $timeout) {
         });
       }
     }
-    $scope.selectedStructure = structure;
-    if ($scope.selectedStructure.types.length > 0) {
-      $scope.selectResourceType($scope.selectedStructure.types[0]);
+    $scope.selectedStructure = structure ;
+    var type = $scope.filteredType(structure);
+    if (type.length > 0) {
+      $scope.selectResourceType(type[0]);
     } else {
       $scope.currentResourceType = undefined;
       template.close('resources');
@@ -2251,7 +2252,10 @@ function RbsController($scope, template, model, date, route, $timeout) {
       resource.expanded = true;
     }
   };
-
+  $scope.filteredType = function (structure) {
+     return _.filter(structure.types, function(type){
+         return $scope.keepProcessableResourceTypes(type)});
+  };
   $scope.createResourceType = function() {
     $scope.display.processing = undefined;
     $scope.editedResourceType = new ResourceType();

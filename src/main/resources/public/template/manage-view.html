@@ -36,7 +36,7 @@
 					</li>
 				</ul>
 			</li>
-            <li ng-if="sharedStructure.types.length !==0">
+            <li ng-if="filteredType(sharedStructure).length !== 0">
                 <a ng-if="sharedStructure.expanded !== true" class="structure" ng-click="expandStructureSettings(sharedStructure)">
                     <i class="caretBlack"> </i>[[lang.translate('shared.resources')]]
                 </a>
