@@ -100,79 +100,47 @@
 
 						<!-- Booking start - non periodic -->
 						<div class="row" ng-if="! editedBooking.is_periodic">
-							<label class="three cell"><i18n>rbs.booking.edit.start.label</i18n></label>
-							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
-							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
-							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
-							<div ng-if="editedBooking.type.slotprofile === undefined">
-								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-								<div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
-      									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
-								</div>
-								<div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
-      									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
-								</div>
-							</div>
-						</div>
-						<!-- Booking end - non periodic -->
-						<div class="row" ng-if="! editedBooking.is_periodic">
-							<label class="three cell"><i18n>rbs.booking.edit.end.label</i18n></label>
-							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction()" past="true" min-date="booking.startDate" required></date-picker>
-							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined" class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction()" past="true" min-date="booking.startDate" required></date-picker>
-							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="startDateModif();showDate = true;" past="true" required></date-picker>
-							<div ng-if="editedBooking.type.slotprofile === undefined">
-								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-								<div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
-      									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
-								</div>
-								<div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
-      									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
-								</div>
-							</div>
+							<label class="three cell"><i18n>rbs.booking.edit.date.label</i18n></label>
+							<date-picker ng-if="editedBooking.id === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="booking.endDate = booking.startDate; showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="booking.endDate = booking.startDate; showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
+							<date-picker ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile !== undefined" class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="booking.endDate = booking.startDate; startDateModif();showDate = true" past="true" min-date="today.toDate()" exp="true" exp-object="booking.endDate" required></date-picker>
 						</div>
 
 						<!-- Booking start - periodic -->
 						<div class="row" ng-if="editedBooking.is_periodic">
-							<label class="three cell"><i18n>rbs.booking.edit.period.start.label</i18n></label>
+							<label class="three cell"><i18n>rbs.booking.edit.date.label</i18n></label>
 							<date-picker class="two cell horizontal-spacing" ng-model="booking.startDate" ng-change="editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()" past="true" min-date="today.toDate()" exp="true" required></date-picker>
-							<div ng-if="editedBooking.type.slotprofile === undefined">
-								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-								<div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
-      									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
-								</div>
-								<div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
-      									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
-								</div>
-							</div>
 						</div>
-						<!-- Booking end - periodic -->
-						<div class="row" ng-if="editedBooking.is_periodic">
-							<label class="three cell"><i18n>rbs.booking.edit.period.end.label</i18n></label>
-							<date-picker class="two cell horizontal-spacing" ng-model="booking.endDate" ng-change="showDate = true;checkDateFunction();updatePeriodicSummary()" past="true" min-date="booking.startDate" exp="true" exp-object="booking.periodicEndDate" required></date-picker>
-							<div ng-if="editedBooking.type.slotprofile === undefined">
-								<div class="one cell centered-text"><i18n>rbs.booking.details.header.at</i18n></div>
-								<div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
+
+                        <!-- Booking end - without Slots  -->
+                        <div class="row" ng-if=" editedBooking.type.slotprofile === undefined">
+                            <label class="three cell"><i18n>rbs.booking.edit.time.label</i18n></label>
+                            <label class="one cell centered-text "><i18n>from</i18n> </label>
+                            <div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
       									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
-								</div>
-								<div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+                            </div>
+                            <div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
       									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
-									<time-picker-rbs class="two cell horizontal-spacing" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
-								</div>
-							</div>
-						</div>
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-begin="true" ng-model="booking.startTime" required></time-picker-rbs>
+                            </div>
+                            <label class="one cell centered-text"><i18n>to</i18n> </label>
+                            <div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
+      									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
+                            </div>
+                            <div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
+      									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
+                            </div>
+
+                        </div>
 
 
 						<!-- Date/time error -->
 						<div class="row" ng-if="booking.invalidDateTimes === true" translate content="booking.invalidDateTimesMessage">
 						</div>
-
+                        <!-- Booking end - with Slots  -->
 						<div ng-if="editedBooking.type.slotprofile !== undefined">
 							<label class="three cell"><i18n>rbs.booking.edit.slot.label</i18n></label>
 							<hr/>
