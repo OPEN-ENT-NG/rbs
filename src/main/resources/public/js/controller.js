@@ -2003,14 +2003,20 @@ function RbsController($scope, template, model, date, route, $timeout) {
   };
 
   $scope.showConfirmDeleteMessage = function() {
-    $scope.processBookings = $scope.bookings.selectionForProcess();
-    template.open('lightbox', 'confirm-delete-booking');
-    $scope.display.showPanel = true;
+      $scope.processBookings = $scope.bookings.selectionForProcess();
+      if(!$scope.processBookings.length){
+          $scope.processBookings = $scope.selectBooking( $scope.selectedBooking);
+      }
+      template.open('lightbox', 'confirm-delete-booking');
+      $scope.display.showPanel = true;
       $scope.$apply();
   };
 
   $scope.showDeletePeriodicBookingMessage = function() {
-    $scope.processBookings = $scope.bookings.selectionForProcess();
+      $scope.processBookings = $scope.bookings.selectionForProcess();
+      if(!$scope.processBookings.length){
+          $scope.processBookings = $scope.selectBooking( $scope.selectedBooking);
+      }
     template.open('lightbox', 'delete-periodic-booking');
     $scope.display.showPanel = true;
     $scope.$apply();
@@ -2020,6 +2026,9 @@ function RbsController($scope, template, model, date, route, $timeout) {
     $scope.display.processing = true;
     $scope.currentErrors = [];
     $scope.processBookings = $scope.bookings.selectionForDelete();
+      if(!$scope.processBookings.length){
+          $scope.processBookings = $scope.selectBooking( $scope.selectedBooking);
+      }
     try {
       var actions = $scope.processBookings.length;
       _.each($scope.processBookings, function(booking) {
