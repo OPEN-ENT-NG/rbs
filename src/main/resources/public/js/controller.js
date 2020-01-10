@@ -2786,8 +2786,22 @@ function RbsController($scope, template, model, date, route, $timeout) {
         saveAs(blob, moment().format("YYYY-MM-DD") + '_export-reservations.ics');
       });
     } else {
+
+      var xsrfCookie;
+      if (document.cookie) {
+        var cookies = _.map(document.cookie.split(';'), function (c) {
+              return {
+                  name: c.split('=')[0].trim(),
+                  val: c.split('=')[1].trim()
+              };
+          });
+          xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+      }
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '/rbs/bookings/export', true);
+      if(xsrfCookie){
+        xhr.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+      }
       xhr.responseType = "arraybuffer";
       xhr.setRequestHeader("Content-type", "application/pdf");
 

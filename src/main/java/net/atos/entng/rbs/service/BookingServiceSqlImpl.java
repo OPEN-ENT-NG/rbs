@@ -735,54 +735,69 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
 
+	private String listBaseQuery(boolean withShares, String afterWhere){
+		final StringBuilder baseQuery = new StringBuilder();
+		baseQuery.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name FROM rbs.booking AS b ")
+				.append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id ")
+				.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id ")
+				.append(withShares ? " LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id " : "")
+				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner ")
+				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id ")
+				.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
+				.append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
+				// this part is for reservations across 2 weeks
+				.append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > ?::date) ")
+				.append(" OR (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.start_date::date < ?::date) ")
+				.append(" OR (b.is_periodic=FALSE AND b.end_date::date >= ?::date AND b.end_date::date < ?::date)) ")
+				.append(afterWhere)
+				.append(" GROUP BY b.id, u.username, m.username ");
+		return baseQuery.toString();
+	}
+
 	@Override
 	public void listAllBookingsByDates(final UserInfos user, final List<String> groupsAndUserIds,
 			final String startDate, final String endDate, final Handler<Either<String, JsonArray>> handler) {
-		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-
-		// find all booking without periodic booking
-		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
-				.append(" FROM rbs.booking AS b").append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
-				.append(" LEFT JOIN rbs.resource_type AS t ON r.type_id = t.id")
-				.append(" LEFT JOIN rbs.resource_type_shares AS rs ON rs.resource_id = r.type_id")
-				.append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
-				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id")
-				.append(" WHERE ((b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.end_date::date < ?::date) ")
-				.append(" OR (b.occurrences IS NULL AND b.start_date::date >= ?::date AND b.end_date::date < ?::date)")
-				// this part is for reservations across 2 weeks
-				.append(" OR (b.is_periodic=FALSE AND b.start_date::date <= ?::date AND b.end_date::date > ?::date)")
-				.append(" OR (b.is_periodic=FALSE AND b.start_date::date >= ?::date AND b.start_date::date < ?::date)")
-				.append(" OR (b.is_periodic=FALSE AND b.end_date::date >= ?::date AND b.end_date::date < ?::date))")
-				.append(" AND (rs.member_id IN ")
-				//
-				.append(Sql.listPrepared(groupsAndUserIds.toArray())).append(" OR t.owner = ?");
-		values.add(startDate);
-		values.add(endDate);
-		values.add(startDate);
-		values.add(endDate);
-		values.add(startDate);
-		values.add(endDate);
-		values.add(startDate);
-		values.add(endDate);
-		values.add(startDate);
-		values.add(endDate);
-
+		//=== base values
+		final JsonArray baseValue = new JsonArray();
+		baseValue.add(startDate);
+		baseValue.add(endDate);
+		baseValue.add(startDate);
+		baseValue.add(endDate);
+		baseValue.add(startDate);
+		baseValue.add(endDate);
+		baseValue.add(startDate);
+		baseValue.add(endDate);
+		baseValue.add(startDate);
+		baseValue.add(endDate);
+		// A local administrator of a given school can see all resources of the school's
+		// types, even if he is not owner or manager of these types or resources
+		final List<String> scope = getLocalAdminScope(user);
+		final boolean isLocalAdmin = scope != null && !scope.isEmpty();
+		//===query find all booking without periodic booking
+		final StringBuilder query = new StringBuilder();
+		query.append("SELECT * FROM ( ");
+		query.append(listBaseQuery(true, " AND rs.member_id IN " + Sql.listPrepared(groupsAndUserIds.toArray())));
+		query.append(" UNION ").append(listBaseQuery(false, " AND t.owner = ? "));
+		if(isLocalAdmin){
+			query.append(" UNION ").append(listBaseQuery(false," AND t.school_id IN " + Sql.listPrepared(scope.toArray())));
+		}
+		query.append(" ) AS tmp ORDER BY tmp.start_date, tmp.end_date ");
+		//===values
+		final JsonArray values = new JsonArray();
+		// by member
+		values.addAll(baseValue);
 		for (String groupOruser : groupsAndUserIds) {
 			values.add(groupOruser);
 		}
-		values.add(user.getUserId());
-
-		// A local administrator of a given school can see all resources of the school's
-		// types, even if he is not owner or manager of these types or resources
-		List<String> scope = getLocalAdminScope(user);
-		if (scope != null && !scope.isEmpty()) {
-			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+		// by owner
+		values.addAll(baseValue).add(user.getUserId());
+		// by school
+		if (isLocalAdmin) {
+			values.addAll(baseValue);
 			for (String schoolId : scope) {
 				values.add(schoolId);
 			}
 		}
-		query.append(")  GROUP BY b.id, u.username, m.username ORDER BY b.start_date, b.end_date");
 
 		Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
 			@Override
