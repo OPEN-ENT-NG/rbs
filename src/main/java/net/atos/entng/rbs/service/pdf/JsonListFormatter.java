@@ -1,5 +1,6 @@
 package net.atos.entng.rbs.service.pdf;
 
+import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.model.ExportBooking;
 import org.joda.time.DateTime;
 import io.vertx.core.json.JsonArray;
@@ -8,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 
 public class JsonListFormatter extends JsonFormatter {
 
@@ -46,8 +48,8 @@ public class JsonListFormatter extends JsonFormatter {
 	private final int CALENDAR_WIDTH = 680;
     private final int NUMBER_OF_BOOKINGS_BY_PAGE = 25;
 
-	public JsonListFormatter(JsonObject jsonFileObject) {
-        super(jsonFileObject);
+	public JsonListFormatter(JsonObject jsonFileObject, String host, Locale locale) {
+        super(jsonFileObject, host, locale);
 	}
 
 	public JsonObject format(){
@@ -58,11 +60,14 @@ public class JsonListFormatter extends JsonFormatter {
         // General calendar settings
         convertedObject.put(CALENDAR_WIDTH_FIELD_NAME, CALENDAR_WIDTH);
         convertedObject.put(CALENDAR_WIDTH_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
+        convertedObject.put(I18N_TITLE, I18n.getInstance().translate(MAP_I18N.get(I18N_TITLE), this.host, this.locale));
         JsonArray exportBookingList = exportObject.getJsonArray(BOOKING_LIST_FIELD_NAME);
 
         // Building resource list
         ArrayList<Long> performedResourceId = new ArrayList<Long>();
         JsonArray resourceList = new fr.wseduc.webutils.collections.JsonArray();
+
+        final String i18nTo = I18n.getInstance().translate(MAP_I18N.get(I18N_TO), this.host, this.locale);
 
         for (int i = 0; i < exportBookingList.size(); i++) {
             JsonObject bookingIterator = exportBookingList.getJsonObject(i);
@@ -96,8 +101,8 @@ public class JsonListFormatter extends JsonFormatter {
                     JsonObject jsonBooking = new JsonObject();
 
                     jsonBooking.put(ExportBooking.BOOKING_OWNER_NAME, b.getOwnerName());
-                    jsonBooking.put(ExportBooking.BOOKING_START_DATE, b.getStartDate().toString("dd/MM/YYYY à kk:mm").replace(':', 'h'));
-                    jsonBooking.put(ExportBooking.BOOKING_END_DATE, b.getEndDate().toString("dd/MM/YYYY à kk:mm").replace(':', 'h'));
+                    jsonBooking.put(ExportBooking.BOOKING_START_DATE, b.getStartDate().toString("dd/MM/YYYY à kk:mm").replace("à", i18nTo).replace(':', 'h'));
+                    jsonBooking.put(ExportBooking.BOOKING_END_DATE, b.getEndDate().toString("dd/MM/YYYY à kk:mm").replace("à", i18nTo).replace(':', 'h'));
 
                     jsonBookingList.add(jsonBooking);
                     cpt++;
@@ -138,6 +143,10 @@ public class JsonListFormatter extends JsonFormatter {
         resource.put(ExportBooking.RESOURCE_COLOR, color);
         resource.put(ExportBooking.SCHOOL_NAME, schoolName);
         resource.put(BOOKING_LIST_FIELD_NAME, bookingList);
+        resource.put(I18N_HEADER_OWNER, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_OWNER), this.host, this.locale));
+        resource.put(I18N_HEADER_START, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_START), this.host, this.locale));
+        resource.put(I18N_HEADER_END, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_END), this.host, this.locale));
+        resource.put(I18N_FOOTER, I18n.getInstance().translate(MAP_I18N.get(I18N_FOOTER), this.host, this.locale));
 
         return resource;
     }

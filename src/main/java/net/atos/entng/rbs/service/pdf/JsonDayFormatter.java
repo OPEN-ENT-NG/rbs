@@ -1,5 +1,6 @@
 package net.atos.entng.rbs.service.pdf;
 
+import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import org.joda.time.DateTime;
@@ -7,16 +8,18 @@ import org.joda.time.Days;
 import org.joda.time.Seconds;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.joda.time.format.DateTimeFormat;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class JsonDayFormatter extends JsonFormatter {
 
 	private final int CALENDAR_HEIGHT = 900;
 	private final int CALENDAR_WIDTH = 680;
 
-	public JsonDayFormatter(JsonObject jsonFileObject) {
-		super(jsonFileObject);
+	public JsonDayFormatter(JsonObject jsonFileObject, String host, Locale locale) {
+		super(jsonFileObject, host, locale);
 	}
 
 	public JsonObject format() {
@@ -40,6 +43,7 @@ public class JsonDayFormatter extends JsonFormatter {
 		convertedObject.put(SLOT_HEIGHT_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
 		convertedObject.put(SLOT_WIDTH_FIELD_NAME, slotWidth);
 		convertedObject.put(SLOT_WIDTH_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
+		convertedObject.put(I18N_TITLE, I18n.getInstance().translate(MAP_I18N.get(I18N_TITLE), this.host, this.locale));
 
 		DateTime exportStart = new DateTime(exportObject.getString(ExportRequest.START_DATE));
 		DateTime exportEnd = new DateTime(exportObject.getString(ExportRequest.END_DATE)).plusDays(1);
@@ -70,6 +74,7 @@ public class JsonDayFormatter extends JsonFormatter {
 					resource.put(ExportBooking.RESOURCE_NAME, bookingIterator.getString(ExportBooking.RESOURCE_NAME));
 					resource.put(ExportBooking.RESOURCE_COLOR, bookingIterator.getString(ExportBooking.RESOURCE_COLOR));
 					resource.put(ExportBooking.SCHOOL_NAME, bookingIterator.getString(ExportBooking.SCHOOL_NAME));
+					resource.put(I18N_FOOTER, I18n.getInstance().translate(MAP_I18N.get(I18N_FOOTER), this.host, this.locale));
 					resource.put(SLOT_RAW_TITLE_FIELD_NAME, slotRawTitle);
 
 					// Adding resource bookings
@@ -126,7 +131,7 @@ public class JsonDayFormatter extends JsonFormatter {
 			}
 			dayObject.put(RESOURCES_FIELD_NAME, resourceList);
 
-			String dayName = dayIterator.toString("EEEE");
+			String dayName = DateTimeFormat.forPattern("EEEE").withLocale(this.locale).print(dayIterator);
 			dayName = dayName.substring(0, 1).toUpperCase() + dayName.substring(1);
 			dayObject.put("name", dayName);
 			dayObject.put("date", dayIterator.toString("dd/MM/YYYY"));

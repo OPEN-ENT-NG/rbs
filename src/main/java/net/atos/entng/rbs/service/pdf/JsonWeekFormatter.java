@@ -1,21 +1,24 @@
 package net.atos.entng.rbs.service.pdf;
 
+import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.model.ExportResponse;
 import org.joda.time.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.joda.time.format.DateTimeFormat;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class JsonWeekFormatter extends JsonFormatter {
 
 	private final int CALENDAR_HEIGHT = 560;
 	private final int CALENDAR_WIDTH = 1000;
 
-	public JsonWeekFormatter(JsonObject jsonFileObject) {
-		super(jsonFileObject);
+	public JsonWeekFormatter(JsonObject jsonFileObject, String host, Locale locale) {
+		super(jsonFileObject, host, locale);
 	}
 
 	public JsonObject format() {
@@ -37,6 +40,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 		convertedObject.put(SLOT_HEIGHT_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
 		convertedObject.put(SLOT_WIDTH_FIELD_NAME, slotWidth);
 		convertedObject.put(SLOT_WIDTH_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
+		convertedObject.put(I18N_TITLE, I18n.getInstance().translate(MAP_I18N.get(I18N_TITLE), this.host, this.locale));
 
 		DateTime exportStart = new DateTime(exportObject.getString(ExportRequest.START_DATE)).withDayOfWeek(DateTimeConstants.MONDAY);
 		DateTime exportEnd = new DateTime(exportObject.getString(ExportRequest.END_DATE)).withDayOfWeek(DateTimeConstants.SUNDAY).plusDays(1);
@@ -66,6 +70,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 					resource.put(ExportBooking.RESOURCE_NAME, bookingIterator.getString(ExportBooking.RESOURCE_NAME));
 					resource.put(ExportBooking.RESOURCE_COLOR, bookingIterator.getString(ExportBooking.RESOURCE_COLOR));
 					resource.put(ExportBooking.SCHOOL_NAME, bookingIterator.getString(ExportBooking.SCHOOL_NAME));
+					resource.put(I18N_FOOTER, I18n.getInstance().translate(MAP_I18N.get(I18N_FOOTER), this.host, this.locale));
 					resource.put(SLOT_RAW_TITLE_FIELD_NAME, slotRawTitle);
 					resource.put(DAYS_FIELD_NAME, dayList);
 
@@ -171,7 +176,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 
 		for (int i = 0; i < 7; i++) {
 			JsonObject oneDay = new JsonObject();
-			String dayName = firstDayOfWeek.plusDays(i).toString("EEEE");
+			String dayName = DateTimeFormat.forPattern("EEEE").withLocale(this.locale).print(firstDayOfWeek.plusDays(i));
 			dayName = dayName.substring(0, 1).toUpperCase() + dayName.substring(1);
 			oneDay.put("name", dayName);
 			oneDay.put("date", firstDayOfWeek.plusDays(i).toString("dd/MM/YYYY"));

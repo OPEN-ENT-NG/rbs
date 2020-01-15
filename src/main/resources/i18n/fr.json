@@ -367,5 +367,6 @@
   "rbs.push.notif.resource-unavailable.body": "La ressource {0} n'est plus disponible",
   "shared.resources":"Ressources partagées",
   "rbs.booking.edit.date.label":"Date de réservation : ",
-  "rbs.booking.edit.time.label":"Horaire de réservation : "
+  "rbs.booking.edit.time.label":"Horaire de réservation : ",
+  "rbs.pdf.title":"Planning"
 }

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 {{#export}}
 	<head>
-	    <title>Planning</title>
+	    <title>{{i18n_title}}</title>
 	    <style type="text/css">
 	    
 	    	@page { size: A4 portrait;}
@@ -43,13 +43,13 @@
 		<h2 class="title">{{resource_name}}</h2>
 		<div class="calendar-container">
 			<table class="calendar">
-				<tr><th>Demandeur</th><th>Date de début</th><th>Date de fin</th></tr>
+				<tr><th>{{i18n_owner}}</th><th>{{i18n_start}}</th><th>{{i18n_end}}</th></tr>
 				{{#bookings}}
 					<tr><td>{{owner_name}}</td><td>{{start_date}}</td><td>{{end_date}}</td></tr>
 				{{/bookings}}
 			</table>
 		</div>
-		<div class="footer">{{school_name}}, le {{edition_date}}</div>
+		<div class="footer">{{school_name}}, {{i18n_footer}} {{edition_date}}</div>
 	</div>
 	{{/resources}}
 	</body>

@@ -16,6 +16,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.io.StringWriter;
+import java.util.Locale;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -51,9 +52,17 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		JsonObject exportResponse = message.body().getJsonObject("data", new JsonObject());
 		String scheme = message.body().getString("scheme", "");
 		String host = message.body().getString("host", "");
+		String acceptLanguage = message.body().getString("acceptLanguage", "");
+		if(acceptLanguage == null || acceptLanguage.isEmpty()) {
+			acceptLanguage = "fr";
+		}
+
+		String[] langs = acceptLanguage.split(",");
+		Locale locale =  Locale.forLanguageTag(langs[0].split("-")[0]);
+
 		switch (action) {
 			case ACTION_CONVERT:
-				generatePdfFile(exportResponse, scheme, host, message);
+				generatePdfFile(exportResponse, scheme, host, locale, message);
 				break;
 			default:
 				JsonObject results = new JsonObject();
@@ -63,7 +72,8 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		}
 	}
 
-	private void generatePdfFile(final JsonObject exportResponse, final String scheme, final String host, final Message<JsonObject> message) {
+	private void generatePdfFile(final JsonObject exportResponse, final String scheme, final String host, final Locale locale,
+								 final Message<JsonObject> message) {
 		final String htmlTemplateFile = getTemplate(exportResponse);
 
 		String absolutePath = FileResolver.absolutePath(htmlTemplateFile);
@@ -82,7 +92,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 				}
 
 				try {
-					JsonObject preparedData = prepareData(exportResponse);
+					JsonObject preparedData = prepareData(exportResponse, host, locale);
 
 					String filledTemplate = fillTemplate(result.result().toString("UTF-8"), preparedData);
 					LocalMap<Object, Object> skins = vertx.sharedData().getLocalMap("skins");
@@ -131,8 +141,8 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		});
 	}
 
-	private JsonObject prepareData(JsonObject jsonExportResponse) {
-		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse);
+	private JsonObject prepareData(JsonObject jsonExportResponse, String host, Locale locale) {
+		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse, host, locale);
 
 		JsonObject convertedJson = formatter.format();
 		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();
