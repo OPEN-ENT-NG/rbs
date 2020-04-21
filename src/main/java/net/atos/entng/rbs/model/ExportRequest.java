@@ -19,9 +19,9 @@
 
 package net.atos.entng.rbs.model;
 
-import org.entcore.common.user.UserInfos;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,9 +42,9 @@ public class ExportRequest {
 	public static final String VIEW = "view";
 	public static final String RESOURCE_IDS = "resourceIds";
 
-	public enum Format {ICAL, PDF}
+    public enum Format {ICAL, PDF}
 
-	public enum View {DAY, WEEK, LIST, NA}
+    public enum View {DAY, WEEK, LIST, NA}
 
 	private UserInfos userInfos;
 	private View view = View.WEEK;
@@ -54,9 +54,9 @@ public class ExportRequest {
 	private String startDate;
 	private String endDate;
 
-	public ExportRequest(JsonObject data) {
-		this(data, null);
-	}
+    public ExportRequest(JsonObject data) {
+        this(data, null);
+    }
 
 	public ExportRequest(JsonObject userExportRequest, UserInfos userInfos) {
 		this.userInfos = userInfos;
@@ -65,75 +65,75 @@ public class ExportRequest {
 		
 		this.userTz = userExportRequest.getString(USER_TZ);
 
-		this.startDate = userExportRequest.getString(START_DATE);
-		this.endDate = userExportRequest.getString(END_DATE);
-		checkPeriodValid(startDate, endDate);
+        this.startDate = userExportRequest.getString(START_DATE);
+        this.endDate = userExportRequest.getString(END_DATE);
+        checkPeriodValid(startDate, endDate);
 
-		try {
-			JsonArray userExportResourceArray = userExportRequest.getJsonArray(RESOURCE_IDS, new fr.wseduc.webutils.collections.JsonArray());
-			for (Object resourceId : userExportResourceArray) {
-				this.resourceIds.add(new Long((Integer) resourceId));
-			}
-		} catch (NumberFormatException | NullPointerException | ClassCastException e) {
-			throw new IllegalArgumentException("params resources must be defined with an array of Integer");
-		}
+        try {
+            JsonArray userExportResourceArray = userExportRequest.getJsonArray(RESOURCE_IDS, new fr.wseduc.webutils.collections.JsonArray());
+            for (Object resourceId : userExportResourceArray) {
+                this.resourceIds.add(new Long((Integer) resourceId));
+            }
+        } catch (NumberFormatException | NullPointerException | ClassCastException e) {
+            throw new IllegalArgumentException("params resources must be defined with an array of Integer");
+        }
 
-	}
+    }
 
-	private void checkPeriodValid(String startInput, String endInput) {
-		Date start;
-		Date end;
-		try {
-			start = DATE_FORMATTER.parse(startInput);
-			end = DATE_FORMATTER.parse(endInput);
-		} catch (NullPointerException | ParseException e) {
-			throw new IllegalArgumentException("params start and end date must be defined with YYYY-MM-DD format !");
-		}
-		if (start.after(end)) {
-			throw new IllegalArgumentException("Param startdate must be before enddate");
-		}
-	}
+    private void checkPeriodValid(String startInput, String endInput) {
+        Date start;
+        Date end;
+        try {
+            start = DATE_FORMATTER.parse(startInput);
+            end = DATE_FORMATTER.parse(endInput);
+        } catch (NullPointerException | ParseException e) {
+            throw new IllegalArgumentException("params start and end date must be defined with YYYY-MM-DD format !");
+        }
+        if (start.after(end)) {
+            throw new IllegalArgumentException("Param startdate must be before enddate");
+        }
+    }
 
-	public UserInfos getUserInfos() {
-		return userInfos;
-	}
+    public UserInfos getUserInfos() {
+        return userInfos;
+    }
 
-	public View getView() {
-		return view;
-	}
+    public View getView() {
+        return view;
+    }
 
-	public Format getFormat() {
-		return format;
-	}
+    public Format getFormat() {
+        return format;
+    }
 
-	public List<Long> getResourceIds() {
-		return resourceIds;
-	}
+    public List<Long> getResourceIds() {
+        return resourceIds;
+    }
 
-	public String getStartDate() {
-		return startDate;
-	}
+    public String getStartDate() {
+        return startDate;
+    }
 
-	public String getEndDate() {
-		return endDate;
-	}
+    public String getEndDate() {
+        return endDate;
+    }
 
 
-	public void setFormat(Format format) {
-		this.format = format;
-	}
+    public void setFormat(Format format) {
+        this.format = format;
+    }
 
-	public void setView(View view) {
-		this.view = view;
-	}
+    public void setView(View view) {
+        this.view = view;
+    }
 
-	public void setResourceIds(List<Long> resourceIds) {
-		this.resourceIds = resourceIds;
-	}
+    public void setResourceIds(List<Long> resourceIds) {
+        this.resourceIds = resourceIds;
+    }
 
-	public void setStartDate(String startDate) {
-		this.startDate = startDate;
-	}
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
 
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;

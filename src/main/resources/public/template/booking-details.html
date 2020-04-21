@@ -1,246 +1,338 @@
 <div class="row">
-	<h2><i18n>rbs.booking.title</i18n></h2>
+    <h2>
+        <i18n>rbs.booking.title</i18n>
+    </h2>
 
-	<div class="row accordions">
-		<article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 1 }">
+    <div class="row accordions">
+        <article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 1 }">
 
-			<h2 ng-click="selectedBooking.displaySection = 1;">
-				<i18n>rbs.booking.title.booking</i18n>
-				<span class="right-magnet" ng-if="selectedBooking.displaySection !== 1 && selectedBooking.is_periodic !== true">
+            <h2 ng-click="selectedBooking.displaySection = 1;">
+                <i18n>rbs.booking.title.booking</i18n>
+                <span class="right-magnet"
+                      ng-if="selectedBooking.displaySection !== 1 && selectedBooking.is_periodic !== true">
 					<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[formatMoment(selectedBooking.startMoment)]]&nbsp;
 					<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[formatMoment(selectedBooking.endMoment)]]
 				</span>
-				<span class="right-magnet" ng-if="selectedBooking.displaySection !== 1 && selectedBooking.is_periodic === true">
+                <span class="right-magnet"
+                      ng-if="selectedBooking.displaySection !== 1 && selectedBooking.is_periodic === true">
 					<i18n>rbs.booking.details.header.periodic</i18n>&nbsp;[[formatMoment(selectedBooking.startMoment)]]
 				</span>
-			</h2>
+            </h2>
 
-			<div class="toggle">
-				<div class="content">
-					<div class="row details">
-						<div class="six cell form-element">
-							<label class="row"><i18n>rbs.booking.details.start.label</i18n></label>
-							<p>[[formatMomentLong(selectedBooking.startMoment)]]</p>
-						</div>
-						<div class="six cell form-element">
-							<label class="row"><i18n>rbs.booking.details.end.label</i18n></label>
-							<p>[[formatMomentLong(selectedBooking.endMoment)]]</p>
-						</div>
-					</div>
+            <div class="toggle">
+                <div class="content">
+                    <div class="row details">
+                        <div class="six cell form-element">
+                            <label class="row">
+                                <i18n>rbs.booking.details.start.label</i18n>
+                            </label>
+                            <p>[[formatMomentLong(selectedBooking.startMoment)]]</p>
+                        </div>
+                        <div class="six cell form-element">
+                            <label class="row">
+                                <i18n>rbs.booking.details.end.label</i18n>
+                            </label>
+                            <p>[[formatMomentLong(selectedBooking.endMoment)]]</p>
+                        </div>
+                    </div>
 
-					<div class="row details">
-						<div class="six cell form-element">
-							<label class="row"><i18n>rbs.booking.details.owner.label</i18n></label>
-							<p>[[selectedBooking.owner_name]]</p>
-						</div>
-						<div class="six cell form-element">
-							<label class="row"><i18n>rbs.booking.details.created.label</i18n></label>
-							<p>[[formatDateLong(selectedBooking.created)]]</p>
-						</div>
-					</div>
+                    <div class="row details">
+                        <div class="six cell form-element">
+                            <label class="row">
+                                <i18n>rbs.booking.details.owner.label</i18n>
+                            </label>
+                            <p>[[selectedBooking.owner_name]]</p>
+                        </div>
+                        <div class="six cell form-element">
+                            <label class="row">
+                                <i18n>rbs.booking.details.created.label</i18n>
+                            </label>
+                            <p>[[formatDateLong(selectedBooking.created)]]</p>
+                        </div>
+                    </div>
 
-					<div class="row details">
-						<label class="twelve cell"><i18n>rbs.booking.details.reason</i18n></label>
-						<p class="twelve cell"  ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">[[selectedBooking.booking_reason]]</p>
-						<p class="twelve cell placeholder"  ng-if="! (selectedBooking.booking_reason && selectedBooking.booking_reason !== '')"><i18n>rbs.booking.details.reason.empty</i18n></p>
-					</div>
-				</div>
-			</div>
-		</article>
+                    <div class="row details">
+                        <label class="twelve cell">
+                            <i18n>rbs.booking.details.reason</i18n>
+                        </label>
+                        <p class="twelve cell"
+                           ng-if="selectedBooking.booking_reason && selectedBooking.booking_reason !== ''">
+                            [[selectedBooking.booking_reason]]</p>
+                        <p class="twelve cell placeholder"
+                           ng-if="! (selectedBooking.booking_reason && selectedBooking.booking_reason !== '')">
+                            <i18n>rbs.booking.details.reason.empty</i18n>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </article>
 
-		<article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 2 }">
+        <article class="accordion" ng-class="{ opened: selectedBooking.displaySection === 2 }">
 
-			<h2 ng-click="selectedBooking.displaySection = 2;">
-				<i18n>rbs.booking.title.resource</i18n>
-				<span class="right-magnet" ng-if="selectedBooking.displaySection !== 2">
+            <h2 ng-click="selectedBooking.displaySection = 2;">
+                <i18n>rbs.booking.title.resource</i18n>
+                <span class="right-magnet" ng-if="selectedBooking.displaySection !== 2">
 					[[composeTitle(selectedBooking.resource.type.name, selectedBooking.resource.name)]]
 				</span>
-			</h2>
+            </h2>
 
-			<div class="toggle">
-				<div class="content">
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
-						<i18n>rbs.booking.details.resource.unavailable</i18n>
-					</div>
+            <div class="toggle">
+                <div class="content">
+                    <div class="warning row details" ng-if="selectedBooking.resource.is_available !== true">
+                        <i18n>rbs.booking.details.resource.unavailable</i18n>
+                    </div>
 
-					<div class="row details">
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.type.label</i18n></label>
-							<p>[[selectedBooking.resource.type.name]]</p>
-						</div>
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.resource.label</i18n></label>
-							<p>[[selectedBooking.resource.name]]</p>
-						</div>
-					</div>
+                    <div class="row details">
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.type.label</i18n>
+                            </label>
+                            <p>[[selectedBooking.resource.type.name]]</p>
+                        </div>
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.resource.label</i18n>
+                            </label>
+                            <p>[[selectedBooking.resource.name]]</p>
+                        </div>
+                    </div>
 
-					<div class="row details">
-						<label class="twelve cell"><i18n>rbs.booking.details.description.label</i18n></label>
-						<p class="twelve cell" ng-if="selectedBooking.resource.description && selectedBooking.resource.description !== ''" bind-html="selectedBooking.resource.description"></p>
-						<p class="twelve cell placeholder"  ng-if="! (selectedBooking.resource.description && selectedBooking.resource.description !== '')"><i18n>rbs.booking.details.description.empty</i18n></p>
-					</div>
-				</div>
-			</div>
-		</article>
+                    <div class="row details">
+                        <label class="twelve cell">
+                            <i18n>rbs.booking.details.description.label</i18n>
+                        </label>
+                        <p class="twelve cell"
+                           ng-if="selectedBooking.resource.description && selectedBooking.resource.description !== ''"
+                           bind-html="selectedBooking.resource.description"></p>
+                        <p class="twelve cell placeholder"
+                           ng-if="! (selectedBooking.resource.description && selectedBooking.resource.description !== '')">
+                            <i18n>rbs.booking.details.description.empty</i18n>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </article>
 
-		<article ng-if="selectedBooking.is_periodic === true" class="accordion" ng-class="{ opened: selectedBooking.displaySection === 3 }">
+        <article ng-if="selectedBooking.is_periodic === true" class="accordion"
+                 ng-class="{ opened: selectedBooking.displaySection === 3 }">
 
-			<h2 ng-click="selectedBooking.displaySection = 3;">
-				<i18n>rbs.booking.title.periodic</i18n>
-				<span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) <= 1">
+            <h2 ng-click="selectedBooking.displaySection = 3;">
+                <i18n>rbs.booking.title.periodic</i18n>
+                <span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) <= 1">
 					[[countRefusedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.refused.one</i18n>
 				</span>
-				<span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) > 1">
+                <span class="right-magnet" ng-if="countRefusedSlots(selectedBooking._slots) > 1">
 					[[countRefusedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.refused.many</i18n>
 				</span>
-				<span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) <= 1">
+                <span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) <= 1">
 					[[countValidatedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.validated.one</i18n>&nbsp;-&nbsp;
 				</span>
-				<span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) > 1">
+                <span class="right-magnet" ng-if="countValidatedSlots(selectedBooking._slots) > 1">
 					[[countValidatedSlots(selectedBooking._slots)]]&nbsp;<i18n>rbs.booking.details.header.validated.many</i18n>&nbsp;-&nbsp;
 				</span>
-				<span class="right-magnet" ng-if="selectedBooking._slots.length <= 1">
+                <span class="right-magnet" ng-if="selectedBooking._slots.length <= 1">
 					[[selectedBooking._slots.length]]&nbsp;<i18n>rbs.booking.details.header.slots.one</i18n>&nbsp;-&nbsp;
 				</span>
-				<span class="right-magnet" ng-if="selectedBooking._slots.length > 1">
+                <span class="right-magnet" ng-if="selectedBooking._slots.length > 1">
 					[[selectedBooking._slots.length]]&nbsp;<i18n>rbs.booking.details.header.slots.many</i18n>&nbsp;-&nbsp;
 				</span>
-			</h2>
+            </h2>
 
-			<div class="toggle">
-				<div class="content">
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true || selectedBooking.hasAtLeastOneSuspendedSlot()">
-						<i18n ng-if="! selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.resource.unavailable</i18n>
-						<i18n ng-if="selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots</i18n>
-					</div>
+            <div class="toggle">
+                <div class="content">
+                    <div class="warning row details"
+                         ng-if="selectedBooking.resource.is_available !== true || selectedBooking.hasAtLeastOneSuspendedSlot()">
+                        <i18n ng-if="! selectedBooking.hasAtLeastOneSuspendedSlot()">
+                            rbs.booking.details.resource.unavailable
+                        </i18n>
+                        <i18n ng-if="selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots
+                        </i18n>
+                    </div>
 
-					<table class="list-view twelve">
-						<thead>
-							<tr>
-								<th><i18n>rbs.booking.headers.nb</i18n></th>
-								<th><i18n>rbs.booking.headers.start_date</i18n></th>
-								<th><i18n>rbs.booking.headers.end_date</i18n></th>
-								<th><i18n>rbs.booking.headers.moderator</i18n></th>
-								<th><i18n>rbs.booking.headers.status</i18n></th>
-							</tr>
-						</thead>
-						<tbody ng-repeat="slot in selectedBooking._slots | orderBy: 'startMoment'">
-							<tr>
-                                <td ng-if="slot == currentBookingSelected">[[$index + 1]] <em style="color:red">*</em></td>
-                                <td ng-if="slot != currentBookingSelected">[[$index + 1]]</td>
-								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a></td>
-								<td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
+                    <table class="list-view twelve">
+                        <thead>
+                        <tr>
+                            <th>
+                                <i18n>rbs.booking.headers.nb</i18n>
+                            </th>
+                            <th>
+                                <i18n>rbs.booking.headers.start_date</i18n>
+                            </th>
+                            <th>
+                                <i18n>rbs.booking.headers.end_date</i18n>
+                            </th>
+                            <th>
+                                <i18n>rbs.booking.headers.moderator</i18n>
+                            </th>
+                            <th>
+                                <i18n>rbs.booking.headers.status</i18n>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody ng-repeat="slot in selectedBooking._slots | orderBy: 'startMoment'">
+                        <tr>
+                            <td ng-if="slot == currentBookingSelected">[[$index + 1]] <em style="color:red">*</em></td>
+                            <td ng-if="slot != currentBookingSelected">[[$index + 1]]</td>
+                            <td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.startMoment)]]</a>
+                            </td>
+                            <td ng-if="! slot.isRefused()">[[formatMoment(slot.startMoment)]]</td>
 
-								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a></td>
-								<td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
+                            <td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[formatMoment(slot.endMoment)]]</a>
+                            </td>
+                            <td ng-if="! slot.isRefused()">[[formatMoment(slot.endMoment)]]</td>
 
-								<td ng-if="slot.isPending() || slot.isSuspended()"></td>
-								<td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
-								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
+                            <td ng-if="slot.isPending() || slot.isSuspended()"></td>
+                            <td ng-if="slot.isValidated()">[[slot.moderator_name]]</td>
+                            <td ng-if="slot.isRefused()"><a
+                                    ng-click="switchExpandSlot(slot)">[[slot.moderator_name]]</a></td>
 
-								<td ng-if="slot.isPending()"><i18n>rbs.booking.status.created</i18n></td>
-								<td ng-if="slot.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></td>
-								<td ng-if="slot.isValidated()"><i18n>rbs.booking.status.validated</i18n></td>
-								<td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)"><i18n>rbs.booking.status.refused</i18n></a></td>
-							</tr>
-							<tr ng-if="slot.expanded === true" class="minor">
-								<td></td>
-								<td colspan="4">
-									<div class="row form-element">
-										<p class="twelve cell" ng-if="slot.refusal_reason && slot.refusal_reason !== ''" bind-html="slot.refusal_reason"></p>
-										<p class="twelve cell placeholder" ng-if="! (slot.refusal_reason && slot.refusal_reason !== '')"><i18n>rbs.booking.details.refused.reason.empty</i18n></p>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-                    <em style="color:red; margin-right:10px ">*</em><i18n>rbs.booking.periodic.delete.details</i18n>
+                            <td ng-if="slot.isPending()">
+                                <i18n>rbs.booking.status.created</i18n>
+                            </td>
+                            <td ng-if="slot.isSuspended()">
+                                <i18n>rbs.booking.status.suspended</i18n>
+                            </td>
+                            <td ng-if="slot.isValidated()">
+                                <i18n>rbs.booking.status.validated</i18n>
+                            </td>
+                            <td ng-if="slot.isRefused()"><a ng-click="switchExpandSlot(slot)">
+                                <i18n>rbs.booking.status.refused</i18n>
+                            </a></td>
+                        </tr>
+                        <tr ng-if="slot.expanded === true" class="minor">
+                            <td></td>
+                            <td colspan="4">
+                                <div class="row form-element">
+                                    <p class="twelve cell" ng-if="slot.refusal_reason && slot.refusal_reason !== ''"
+                                       bind-html="slot.refusal_reason"></p>
+                                    <p class="twelve cell placeholder"
+                                       ng-if="! (slot.refusal_reason && slot.refusal_reason !== '')">
+                                        <i18n>rbs.booking.details.refused.reason.empty</i18n>
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <em style="color:red; margin-right:10px ">*</em>
+                    <i18n>rbs.booking.periodic.delete.details</i18n>
 
-					<div class="row details" ng-if="selectedBooking.hasAtLeastOnePendingSlot()">
-						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
-						<div class="row" ng-if="selectedBooking.resource.type.moderators">
-							<p class="row">
-								<span ng-repeat="moderator in selectedBooking.resource.type.moderators" class="cell four cell-ellipsis horizontal-spacing-twice"
-									  title="[[moderator.username+' ('+lang.translate(moderator.type)+')']]">
+                    <div class="row details" ng-if="selectedBooking.hasAtLeastOnePendingSlot()">
+                        <p class="four cell">
+                            <i18n>rbs.booking.details.pending</i18n>
+                        </p>
+                        <div class="row" ng-if="selectedBooking.resource.type.moderators">
+                            <p class="row">
+								<span ng-repeat="moderator in selectedBooking.resource.type.moderators"
+                                      class="cell four cell-ellipsis horizontal-spacing-twice"
+                                      title="[[moderator.username+' ('+lang.translate(moderator.type)+')']]">
 										[[moderator.username]] <em class="small-text">([[lang.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
 								</span>
-							</p>
-						</div>
-					</div>
+                            </p>
+                        </div>
+                    </div>
 
-				</div>
-			</div>
-		</article>
+                </div>
+            </div>
+        </article>
 
-		<article ng-if="selectedBooking.is_periodic !== true" class="accordion" ng-class="{ opened: selectedBooking.displaySection === 3 }">
+        <article ng-if="selectedBooking.is_periodic !== true" class="accordion"
+                 ng-class="{ opened: selectedBooking.displaySection === 3 }">
 
-			<h2 ng-click="selectedBooking.displaySection = 3;">
-				<i18n>rbs.booking.title.process</i18n>
-				<span class="right-magnet" ng-if="selectedBooking.isPending()"><i18n>rbs.booking.status.created</i18n></span>
-				<span class="right-magnet" ng-if="selectedBooking.isValidated()"><i18n>rbs.booking.status.validated</i18n></span>
-				<span class="right-magnet" ng-if="selectedBooking.isRefused()"><i18n>rbs.booking.status.refused</i18n></span>
-				<span class="right-magnet" ng-if="selectedBooking.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></span>
-			</h2>
+            <h2 ng-click="selectedBooking.displaySection = 3;">
+                <i18n>rbs.booking.title.process</i18n>
+                <span class="right-magnet" ng-if="selectedBooking.isPending()"><i18n>rbs.booking.status.created</i18n></span>
+                <span class="right-magnet" ng-if="selectedBooking.isValidated()"><i18n>rbs.booking.status.validated</i18n></span>
+                <span class="right-magnet" ng-if="selectedBooking.isRefused()"><i18n>rbs.booking.status.refused</i18n></span>
+                <span class="right-magnet" ng-if="selectedBooking.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></span>
+            </h2>
 
-			<div class="toggle">
-				<div class="content">
-					<div class="warning row details" ng-if="selectedBooking.resource.is_available !== true || selectedBooking.isSuspended()">
-						<i18n ng-if="! selectedBooking.isSuspended()">rbs.booking.details.resource.unavailable</i18n>
-						<i18n ng-if="selectedBooking.isSuspended()">rbs.booking.details.suspended.booking</i18n>
-					</div>
+            <div class="toggle">
+                <div class="content">
+                    <div class="warning row details"
+                         ng-if="selectedBooking.resource.is_available !== true || selectedBooking.isSuspended()">
+                        <i18n ng-if="! selectedBooking.isSuspended()">rbs.booking.details.resource.unavailable</i18n>
+                        <i18n ng-if="selectedBooking.isSuspended()">rbs.booking.details.suspended.booking</i18n>
+                    </div>
 
-					<div class="row details" ng-if="selectedBooking.isPending()">
-						<p class="four cell"><i18n>rbs.booking.details.pending</i18n></p>
-						<div class="row" ng-if="selectedBooking.resource.type.moderators">
-							<p class="row">
+                    <div class="row details" ng-if="selectedBooking.isPending()">
+                        <p class="four cell">
+                            <i18n>rbs.booking.details.pending</i18n>
+                        </p>
+                        <div class="row" ng-if="selectedBooking.resource.type.moderators">
+                            <p class="row">
 								<span ng-repeat="moderator in selectedBooking.resource.type.moderators">
 										[[moderator.username]][[$last ? '' : ', ']]
 								</span>
-							</p>
-						</div>
-					</div>
+                            </p>
+                        </div>
+                    </div>
 
-					<div class="row details" ng-if="selectedBooking.isValidated()">
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.validated.moderator.label</i18n></label>
-							<p>[[selectedBooking.moderator_name]]</p>
-						</div>
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
-							<p>[[formatDateLong(selectedBooking.modified)]]</p>
-						</div>
-					</div>
+                    <div class="row details" ng-if="selectedBooking.isValidated()">
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.validated.moderator.label</i18n>
+                            </label>
+                            <p>[[selectedBooking.moderator_name]]</p>
+                        </div>
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.validated.date.label</i18n>
+                            </label>
+                            <p>[[formatDateLong(selectedBooking.modified)]]</p>
+                        </div>
+                    </div>
 
-					<div class="row details" ng-if="selectedBooking.isRefused()">
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
-							<p>[[selectedBooking.moderator_name]]</p>
-						</div>
-						<div class="six cell">
-							<label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
-							<p>[[formatDateLong(selectedBooking.modified)]]</p>
-						</div>
-					</div>
+                    <div class="row details" ng-if="selectedBooking.isRefused()">
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.refused.moderator.label</i18n>
+                            </label>
+                            <p>[[selectedBooking.moderator_name]]</p>
+                        </div>
+                        <div class="six cell">
+                            <label class="row">
+                                <i18n>rbs.booking.details.refused.date.label</i18n>
+                            </label>
+                            <p>[[formatDateLong(selectedBooking.modified)]]</p>
+                        </div>
+                    </div>
 
-					<div class="row details" ng-if="selectedBooking.isRefused()">
-						<label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
-						<p class="twelve cell" ng-if="selectedBooking.refusal_reason && selectedBooking.refusal_reason !== ''" bind-html="selectedBooking.refusal_reason"></p>
-						<p class="twelve cell placeholder" ng-if="! (selectedBooking.refusal_reason && selectedBooking.refusal_reason !== '')"><i18n>rbs.booking.details.refused.reason.empty</i18n></p>
-					</div>
-				</div>
-			</div>
-		</article>
-	</div>
-	<hr />
+                    <div class="row details" ng-if="selectedBooking.isRefused()">
+                        <label class="twelve cell">
+                            <i18n>rbs.booking.details.refused.reason</i18n>
+                        </label>
+                        <p class="twelve cell"
+                           ng-if="selectedBooking.refusal_reason && selectedBooking.refusal_reason !== ''"
+                           bind-html="selectedBooking.refusal_reason"></p>
+                        <p class="twelve cell placeholder"
+                           ng-if="! (selectedBooking.refusal_reason && selectedBooking.refusal_reason !== '')">
+                            <i18n>rbs.booking.details.refused.reason.empty</i18n>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    <hr/>
 
-	<div class="row" ng-if="canDeleteBookingDateCheck(currentBookingSelected.end_date)">
-		<behaviour name="process" resource="selectedBooking.resource">
-			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
-			<button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
-		</behaviour>
-		<behaviour name="process" resource="selectedBooking">
-			<button class="right-magnet" ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-			<button class="right-magnet" nf-if="selectedBooking.resource.is_available === true" ng-click="editBooking()"><i18n>edit</i18n></button>
-		</behaviour>
-	</div>
+    <div class="row" ng-if="canDeleteBookingDateCheck(currentBookingSelected.end_date)">
+        <div ng-if="hasResourceRight(selectedBooking.resource, 'process')">
+            <button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="refuseBookingSelection()">
+                <i18n>rbs.booking.refuse</i18n>
+            </button>
+            <button class="right-magnet" ng-if="selectedBooking.isPending()" ng-click="validateBookingSelection()">
+                <i18n>rbs.booking.validate</i18n>
+            </button>
+        </div>
+        <div ng-if="hasResourceRight(selectedBooking, 'process')">
+            <button class="right-magnet" ng-click="removeBookingSelection()">
+                <i18n>remove</i18n>
+            </button>
+            <button class="right-magnet" nf-if="selectedBooking.resource.is_available === true"
+                    ng-click="editBooking()">
+                <i18n>edit</i18n>
+            </button>
+        </div>
+    </div>
 </div>
