@@ -1244,14 +1244,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     $scope.editedBooking.type.slotprofile,
                     function (data) {
                         if (data.slots.length > 0) {
-                            $scope.slots = data;
-                            $scope.slots.slots.sort(
+                            $scope.editedBooking.slotsLit = data;
+                            $scope.editedBooking.slotsLit.slots.sort(
                                 sort_by('startHour', false, function (a) {
                                     return a.toUpperCase();
                                 })
                             );
-                            $scope.selectedSlotStart = $scope.slots.slots[0];
-                            $scope.selectedSlotEnd = $scope.slots.slots[0];
+                            $scope.selectedSlotStart = $scope.editedBooking.slotsLit.slots[0];
+                            $scope.selectedSlotEnd = $scope.editedBooking.slotsLit.slots[0];
                             $scope.booking.startTime.set(
                                 'hour',
                                 $scope.selectedSlotStart.startHour.split(':')[0]
@@ -1691,14 +1691,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.saveBookingSlotProfile = function () {
             $scope.currentErrors = [];
             $scope.editedBooking.slots = [];
-            var debut = $scope.slots.slots.indexOf($scope.selectedSlotStart);
-            var fin = $scope.slots.slots.indexOf($scope.selectedSlotEnd);
+            var debut = $scope.editedBooking.slotsLit.slots.indexOf($scope.selectedSlotStart);
+            var fin = $scope.editedBooking.slotsLit.slots.indexOf($scope.selectedSlotEnd);
             $scope.multipleDaysPeriodic = undefined;
             try {
                 if ($scope.resolveSlotsSelected(debut, fin)) {
                     return;
                 }
-                $scope.slots.slots.forEach(function (slot) {
+                $scope.editedBooking.slotsLit.slots.forEach(function (slot) {
                     if (slot.selected === true) {
                         $scope.booking.startTime.set('hour', slot.startHour.split(':')[0]);
                         $scope.booking.startTime.set('minute', slot.startHour.split(':')[1]);
@@ -1754,7 +1754,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                 var nbDay = 0;
                                 for (var i = 0; i <= diffDays; i++) {
                                     var dow = start.day();
-                                    if (i == 0 && $scope.slots.slots.indexOf(slot) >= debut) {
+                                    if (i == 0 && $scope.editedBooking.slotsLit.slots.indexOf(slot) >= debut) {
                                         if (start.year() > $scope.today.year() ||
                                             (start.year() == $scope.today.year() && start.month() > $scope.today.month()) ||
                                             (start.year() == $scope.today.year() && start.month() == $scope.today.month() && start.date() > $scope.today.date()) ||
@@ -1790,7 +1790,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                 bookingPeriodicToSave.booking_reason = $scope.editedBooking.booking_reason;
                                 bookingPeriodicToSave.resource = $scope.editedBooking.resource;
                                 bookingPeriodicToSave.slots = [];
-                                if ($scope.slots.slots.indexOf(slot) >= debut) {
+                                if ($scope.editedBooking.slotsLit.slots.indexOf(slot) >= debut) {
                                     if (start.year() > $scope.today.year() ||
                                         (start.year() == $scope.today.year() && start.month() > $scope.today.month()) ||
                                         (start.year() == $scope.today.year() && start.month() == $scope.today.month() && start.date() > $scope.today.date()) ||
@@ -1862,7 +1862,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                         $scope.editedBooking.endMoment.minute()
                                     ]);
 
-                                    if (i == 0 && $scope.slots.slots.indexOf(slot) >= debut) {
+                                    if (i == 0 && $scope.editedBooking.slotsLit.slots.indexOf(slot) >= debut) {
                                         if (start.year() > $scope.today.year() ||
                                             (start.year() == $scope.today.year() && start.month() > $scope.today.month()) ||
                                             (start.year() == $scope.today.year() && start.month() == $scope.today.month() && start.date() > $scope.today.date()) ||
@@ -1876,7 +1876,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                             notify.error(lang.translate('rbs.booking.slot.time') + slot.startHour + lang.translate('rbs.booking.slot.to')
                                                 + slot.endHour + lang.translate('rbs.booking.slot.day') + start.format('MM-DD-YYYY') + lang.translate('rbs.booking.slot.less'));
                                         }
-                                    } else if (i == diffDays && $scope.slots.slots.indexOf(slot) <= fin) {
+                                    } else if (i == diffDays && $scope.editedBooking.slotsLit.slots.indexOf(slot) <= fin) {
                                         $scope.editedBooking.slots.push({
                                             start_date: start.add(i, 'd').unix(),
                                             end_date: end.subtract(diffDays - i, 'd').unix()
@@ -1914,7 +1914,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             var hasErrors = false;
             if (debut <= fin) {
                 for (var i = debut; i <= fin; i++) {
-                    $scope.slots.slots[i].selected = true;
+                    $scope.editedBooking.slotsLit.slots[i].selected = true;
                 }
             } else {
                 $scope.currentErrors.push({
