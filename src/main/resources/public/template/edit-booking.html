@@ -329,7 +329,7 @@
                                 <i18n>rbs.booking.edit.period.end.after</i18n>
                             </label>
                             <select class="two cell" ng-model="editedBooking.occurrences"
-                                    ng-options="occurrence for occurrence in periods.occurrences"
+                                    ng-options="occurrence for occurrence in periods.occurrences|orderBy"
                                     ng-change="updatePeriodicSummary()">
                             </select>
                             <label class="six cell horizontal-spacing-twice">

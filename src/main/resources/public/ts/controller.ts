@@ -68,7 +68,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         this.initialize = function () {
             model.makeModels(RBS);
-            model.build();
             $scope.template = template;
             $scope.me = model.me;
             $scope.date = new Date();
