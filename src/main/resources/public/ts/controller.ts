@@ -37,7 +37,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         }
                     );
                 }
-                $scope.showCalendar(true);
+                $scope.showCalendar(false);
             }
         });
 
@@ -58,10 +58,12 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             model.bookings.startPagingDate = moment(date).startOf('isoweek');
             //Paging end date
             model.bookings.endPagingDate = moment(date).add(7, 'day').startOf('day');
+
             $scope.display.routed = true;
             $scope.resourceTypes.one('sync', function () {
                 $scope.initResourcesRouted(id, function () {
-                    updateCalendarScheduleBooking(moment(date), true);
+                    // updateCalendarScheduleBooking(moment(date), true);
+                    updateCalendarSchedule(moment(date));
                 });
             });
         };
@@ -75,7 +77,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.firstTime = true;
             model.calendar.name = 'rbs';
             moment.locale(window.navigator.language);
-            model.calendar.firstDay = model.calendar.firstDay.lang(window.navigator.language)
+            model.calendar.firstDay = model.calendar.firstDay.lang(window.navigator.language);
 
             $scope.display = {
                 list: false, // calendar by default
@@ -173,7 +175,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 model.bookings.startPagingDate = start;
                 model.bookings.endPagingDate = end;
 
-
                 updateCalendarSchedule(model.calendar.firstDay);
             });
 
@@ -192,16 +193,16 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     placingButton(0);
                 }
 
-                // Do not restore if routed
-                if ($scope.display.routed === true) {
-                    return;
-                }
                 $scope.deleteTypesInStructures();
                 if ($scope.isManage) {
                     $scope.initStructuresManage(false, $scope.currentResourceType);
                     $scope.isManage = undefined;
                 } else {
                     $scope.initStructures();
+                }
+                // Do not restore if routed
+                if ($scope.display.routed === true) {
+                    return;
                 }
                 $scope.initResources();
                 $scope.$apply();
@@ -424,6 +425,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         });
                         if (routedBooking !== undefined) {
                             $scope.bookings.pushAll(routedBooking.resource.bookings.all);
+                            var struct = $scope.structures.find(s => s.id === routedBooking.resource.type.structure.id);
+                            struct.expanded = true;
                             routedBooking.resource.type.expanded = true;
                             routedBooking.resource.selected = true;
                             $scope.viewBooking(routedBooking);
@@ -723,6 +726,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.showBookingDetail = function (booking, displaySection) {
+            booking = $scope.bookings.find(b => b.id === booking.id);
             $scope.selectedBooking = booking;
             $scope.selectedBooking.displaySection = displaySection;
             $scope.initModerators();
@@ -2201,8 +2205,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 }
             }
 
-
-            $scope.processBookings = $scope.selectedBooking._slots;
+            $scope.processBookings = $scope.selectedBooking && '_slots' in $scope.selectedBooking ? $scope.selectedBooking._slots : $scope.bookings.selectionForProcess();
             if (!$scope.processBookings.length) {
                 $scope.processBookings = $scope.selectBooking($scope.selectedBooking);
             }
@@ -2521,7 +2524,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
 // Get Moderators
         $scope.initModerators = function () {
-            if ($scope.resourceTypes.first().moderators === undefined) {
+            if ($scope.resourceTypes.first() === undefined || $scope.resourceTypes.first().moderators === undefined) {
                 $scope.resourceTypes.forEach(function (resourceType) {
                     resourceType.getModerators(function () {
                         $scope.$apply('resourceTypes');
@@ -2577,6 +2580,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             updateCalendarSchedule(prev);
         };
+
         $scope.nextWeekBookingButton = function () {
             var nextStart = moment(model.bookings.filters.startMoment).add(7, 'day');
             var nextEnd = moment(model.bookings.filters.endMoment).add(7, 'day');
@@ -2657,7 +2661,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.bookings.sync();
             ($('.hiddendatepickerform') as any).datepicker('setValue', newDate.format("DD/MM/YYYY")).datepicker('update');
             ($('.hiddendatepickerform') as any).trigger({type: 'changeDate', date: newDate});
-        }
+        };
 
         this.initialize();
 
@@ -2927,6 +2931,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 resourceType.notified = 'some';
             }
         };
+
         $scope.selectBooking = function (currentBooking) {
             if (currentBooking.is_periodic === true) {
                 return $scope.selectedBooking._slots;

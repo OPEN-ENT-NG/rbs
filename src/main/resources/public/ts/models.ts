@@ -858,7 +858,8 @@ model.build = function () {
     this.makeModels(RBS);
     // Model.prototype.inherits(Booking, window.calendar.ScheduleItem);
 
-    model.loadStructures();
+    model.loadStructures()
+    ;
     // ResourceTypes collection with embedded Resources
     this.collection(RBS.ResourceType, {
         sync: function () {
