@@ -63,7 +63,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.resourceTypes.one('sync', function () {
                 $scope.initResourcesRouted(id, function () {
                     // updateCalendarScheduleBooking(moment(date), true);
-                    updateCalendarSchedule(moment(date));
                 });
             });
         };
@@ -432,6 +431,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                             $scope.viewBooking(routedBooking);
                             $scope.display.routed = undefined;
                             model.recordedSelections.firstResourceType = undefined;
+                            updateCalendarSchedule(model.bookings.startPagingDate);
                             found = true;
                         }
                         if (
@@ -730,8 +730,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.selectedBooking = booking;
             $scope.selectedBooking.displaySection = displaySection;
             $scope.initModerators();
-            template.open('lightbox', 'booking-details');
             $scope.display.showPanel = true;
+            template.open('lightbox', 'booking-details');
         };
 
         $scope.closeBooking = function () {
@@ -2659,6 +2659,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             model.calendar.firstDay.month(newDate.month());
             model.calendar.firstDay.year(newDate.year());
             $scope.bookings.sync();
+            $scope.fixViewFromNotification();
             ($('.hiddendatepickerform') as any).datepicker('setValue', newDate.format("DD/MM/YYYY")).datepicker('update');
             ($('.hiddendatepickerform') as any).trigger({type: 'changeDate', date: newDate});
         };
@@ -2939,6 +2940,15 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 return [$scope.selectedBooking];
             }
 
+        };
+
+        $scope.fixViewFromNotification = function () {
+            var list = document.getElementsByTagName("lightbox");
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].getAttribute("show") === 'display.showPanel') {
+                    list[i].getElementsByTagName("section")[0].setAttribute('style','display:block;');
+                }
+            }
         };
     }])
 ;
