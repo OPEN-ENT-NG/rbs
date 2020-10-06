@@ -28,3 +28,4 @@ developer.id
 copy.sh
 .cache-main
 .cache-tests
+gradle*
