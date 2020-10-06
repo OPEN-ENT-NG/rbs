@@ -37,8 +37,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.buffer.Buffer;
 import net.atos.entng.rbs.BookingUtils;
+import net.atos.entng.rbs.Rbs;
 import net.atos.entng.rbs.models.Slots;
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -82,6 +86,7 @@ import net.atos.entng.rbs.service.ResourceService;
 import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
 
 public class BookingController extends ControllerHelper {
+	static final String RESOURCE_NAME = "resource_booking";
 
 	private static final String BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_BOOKING_CREATED";
 	private static final String BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_BOOKING_UPDATED";
@@ -99,6 +104,7 @@ public class BookingController extends ControllerHelper {
 	private final BookingService bookingService;
 	private final ResourceService resourceService;
 	private BookingNotificationService bookingNotificationService;
+	private final EventHelper eventHelper;
 
 
 	public BookingController(EventBus eb) {
@@ -106,6 +112,8 @@ public class BookingController extends ControllerHelper {
 		bookingService = new BookingServiceSqlImpl();
 		resourceService = new ResourceServiceSqlImpl();
 		schoolService = new SchoolService(eb);
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Rbs.class.getSimpleName());
+		eventHelper = new EventHelper(eventStore);
 	}
 
 	@Override
@@ -197,6 +205,7 @@ public class BookingController extends ControllerHelper {
 													notifyBookingCreatedOrUpdated(request, user,
 															event.right().getValue(), isCreation);
 													renderJson(request, event.right().getValue(), 200);
+													eventHelper.onCreateResource(request, RESOURCE_NAME);
 												} else {
 													String errorMessage = isCreation ? "rbs.booking.create.conflict"
 															: "rbs.booking.update.conflict";
@@ -437,6 +446,7 @@ public class BookingController extends ControllerHelper {
 				if (event.isRight()) {
 					notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
 					Renders.renderJson(request, event.right().getValue());
+					eventHelper.onCreateResource(request, RESOURCE_NAME);
 				} else {
 					badRequest(request, event.left().getValue());
 				}

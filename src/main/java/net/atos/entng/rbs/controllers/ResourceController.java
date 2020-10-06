@@ -30,12 +30,16 @@ import java.util.List;
 import java.util.Set;
 
 import fr.wseduc.webutils.I18n;
+import net.atos.entng.rbs.Rbs;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
 import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -56,7 +60,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 public class ResourceController extends ControllerHelper {
-
+	static final String RESOURCE_NAME = "resource";
 	private static final String RESOURCE_AVAILABLE_EVENT_TYPE = RBS_NAME + "_RESOURCE_AVAILABLE";
 	private static final String RESOURCE_UNAVAILABLE_EVENT_TYPE = RBS_NAME + "_RESOURCE_UNAVAILABLE";
 
@@ -64,9 +68,12 @@ public class ResourceController extends ControllerHelper {
 	private static final String SCHEMA_RESOURCE_UPDATE = "updateResource";
 
 	private final ResourceService resourceService;
+	private final EventHelper eventHelper;
 
 	public ResourceController() {
 		resourceService = new ResourceServiceSqlImpl();
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Rbs.class.getSimpleName());
+		this.eventHelper = new EventHelper(eventStore);
 	}
 	// TODO : refactor ResourceController to use resourceService instead of crudService
 
@@ -143,8 +150,8 @@ public class ResourceController extends ControllerHelper {
 							}
 							String resourceTypeId = request.params().get("id");
 							resource.put("type_id", resourceTypeId);
-
-							resourceService.createResource(resource, user, notEmptyResponseHandler(request));
+							final Handler<Either<String, JsonObject>> handler = notEmptyResponseHandler(request);
+							resourceService.createResource(resource, user, eventHelper.onCreateResource(request, RESOURCE_NAME, handler));
 						}
 					});
 				} else {
