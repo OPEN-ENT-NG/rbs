@@ -56,13 +56,14 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		if(acceptLanguage == null || acceptLanguage.isEmpty()) {
 			acceptLanguage = "fr";
 		}
+		String userTimeZone = message.body().getString("userTimeZone", "");
 
 		String[] langs = acceptLanguage.split(",");
 		Locale locale =  Locale.forLanguageTag(langs[0].split("-")[0]);
 
 		switch (action) {
 			case ACTION_CONVERT:
-				generatePdfFile(exportResponse, scheme, host, locale, message);
+				generatePdfFile(exportResponse, scheme, host, locale, userTimeZone, message);
 				break;
 			default:
 				JsonObject results = new JsonObject();
@@ -73,7 +74,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 	}
 
 	private void generatePdfFile(final JsonObject exportResponse, final String scheme, final String host, final Locale locale,
-								 final Message<JsonObject> message) {
+								 final String userTimeZone, final Message<JsonObject> message) {
 		final String htmlTemplateFile = getTemplate(exportResponse);
 
 		String absolutePath = FileResolver.absolutePath(htmlTemplateFile);
@@ -92,7 +93,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 				}
 
 				try {
-					JsonObject preparedData = prepareData(exportResponse, host, locale);
+					JsonObject preparedData = prepareData(exportResponse, host, locale, userTimeZone);
 
 					String filledTemplate = fillTemplate(result.result().toString("UTF-8"), preparedData);
 					LocalMap<Object, Object> skins = vertx.sharedData().getLocalMap("skins");
@@ -141,8 +142,8 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		});
 	}
 
-	private JsonObject prepareData(JsonObject jsonExportResponse, String host, Locale locale) {
-		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse, host, locale);
+	private JsonObject prepareData(JsonObject jsonExportResponse, String host, Locale locale, String userTimeZone) {
+		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse, host, locale, userTimeZone);
 
 		JsonObject convertedJson = formatter.format();
 		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();

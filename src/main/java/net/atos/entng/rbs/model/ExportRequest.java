@@ -35,6 +35,7 @@ import java.util.List;
 public class ExportRequest {
 
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+	public static final String USER_TZ = "usertimezone";
 	public static final String START_DATE = "startdate";
 	public static final String END_DATE = "enddate";
 	public static final String FORMAT = "format";
@@ -49,6 +50,7 @@ public class ExportRequest {
 	private View view = View.WEEK;
 	private Format format = Format.ICAL;
 	private List<Long> resourceIds = new ArrayList<>();
+	private String userTz; // Needed for dates to be expressed in the user time zone. (UTC by default)
 	private String startDate;
 	private String endDate;
 
@@ -60,6 +62,8 @@ public class ExportRequest {
 		this.userInfos = userInfos;
 		this.format = Format.valueOf(userExportRequest.getString(FORMAT));
 		this.view = View.valueOf(userExportRequest.getString(VIEW));
+		
+		this.userTz = userExportRequest.getString(USER_TZ);
 
 		this.startDate = userExportRequest.getString(START_DATE);
 		this.endDate = userExportRequest.getString(END_DATE);
@@ -133,5 +137,13 @@ public class ExportRequest {
 
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
+	}
+
+	public String getUserTz() {
+		return userTz;
+	}
+
+	public void setUserTz(String userTz) {
+		this.userTz = userTz;
 	}
 }

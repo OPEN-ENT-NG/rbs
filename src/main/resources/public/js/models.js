@@ -336,7 +336,8 @@ ExportBooking.prototype.toJSON = function() {
     view: this.exportView,
     startdate: this.startDate,
     enddate: this.endDate,
-    resourceIds: this.resources
+		resourceIds: this.resources,
+		usertimezone: moment.tz.guess()
   };
   return json;
 };

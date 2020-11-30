@@ -1250,6 +1250,7 @@ public class BookingController extends ControllerHelper {
 		conversionRequest.put("scheme", getScheme(request));
 		conversionRequest.put("host", Renders.getHost(request));
 		conversionRequest.put("acceptLanguage", I18n.acceptLanguage(request));
+		conversionRequest.put("userTimeZone", exportResponse.getRequest().getUserTz() );
 
 		eb.send(PdfExportService.PDF_HANDLER_ADDRESS, conversionRequest, (Handler<AsyncResult<Message<JsonObject>>>) event -> {
 			JsonObject body = event.result().body();

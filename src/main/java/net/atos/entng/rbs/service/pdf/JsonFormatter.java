@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 public abstract class JsonFormatter {
 	protected static final String EDITION_DATE_FIELD_NAME = "edition_date";
 	protected static final String CALENDAR_HEIGHT_FIELD_NAME = "calendar_height";
@@ -60,8 +63,10 @@ public abstract class JsonFormatter {
 	protected JsonObject exportObject = null;
 	protected  Locale locale;
 	protected  String host;
+	protected  String userTimeZone;
+	
 
-	protected JsonFormatter(JsonObject jsonFileObject, String host, Locale locale) {
+	protected JsonFormatter(JsonObject jsonFileObject, String host, Locale locale, String userTimeZone) {
 		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();
 		jsonFileArray.add(jsonFileObject);
 
@@ -71,6 +76,7 @@ public abstract class JsonFormatter {
 
 		this.locale = locale;
 		this.host = host;
+		this.userTimeZone = userTimeZone;
 	}
 
 	abstract JsonObject format();
@@ -86,21 +92,38 @@ public abstract class JsonFormatter {
 		return Math.round(number * Math.pow(10, precision)) / Math.pow(10, precision);
 	}
 
-	public static JsonFormatter buildFormater(JsonObject jsonExportResponse, String host, Locale locale) {
+	/**
+	 * When exported if PDF, dates must be in the user's time zone... 
+	 * @param utcInstant
+	 * @return DateTime of the UTC instant, expressed in the user's time zone
+	 */
+	protected DateTime toUserTimeZone( final String utcInstant ) {
+		DateTime dt = new DateTime( utcInstant, DateTimeZone.UTC );
+		if( userTimeZone!=null && !userTimeZone.isEmpty() ) {
+			try {
+				dt = dt.withZone( DateTimeZone.forID(userTimeZone) );
+			} catch (IllegalArgumentException e) {
+				// Unknown time zone
+			}
+		}
+		return dt;
+	}
+	
+	public static JsonFormatter buildFormater(JsonObject jsonExportResponse, String host, Locale locale, String userTimeZone) {
 		ExportRequest.View view = ExportResponse.getView(jsonExportResponse);
 		JsonFormatter formatter;
 		switch (view) {
 			case DAY:
-				formatter = new JsonDayFormatter(jsonExportResponse, host, locale);
+				formatter = new JsonDayFormatter(jsonExportResponse, host, locale, userTimeZone);
 				break;
 			case LIST:
-				formatter = new JsonListFormatter(jsonExportResponse, host, locale);
+				formatter = new JsonListFormatter(jsonExportResponse, host, locale, userTimeZone);
 				break;
 			case WEEK:
-				formatter = new JsonWeekFormatter(jsonExportResponse, host, locale);
+				formatter = new JsonWeekFormatter(jsonExportResponse, host, locale, userTimeZone);
 				break;
 			default:
-				formatter = new JsonWeekFormatter(jsonExportResponse, host, locale);
+				formatter = new JsonWeekFormatter(jsonExportResponse, host, locale, userTimeZone);
 				break;
 		}
 		return formatter;

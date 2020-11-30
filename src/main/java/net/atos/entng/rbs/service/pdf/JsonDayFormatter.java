@@ -18,8 +18,8 @@ public class JsonDayFormatter extends JsonFormatter {
 	private final int CALENDAR_HEIGHT = 900;
 	private final int CALENDAR_WIDTH = 680;
 
-	public JsonDayFormatter(JsonObject jsonFileObject, String host, Locale locale) {
-		super(jsonFileObject, host, locale);
+	public JsonDayFormatter(JsonObject jsonFileObject, String host, Locale locale, String userTimeZone) {
+		super(jsonFileObject, host, locale, userTimeZone);
 	}
 
 	public JsonObject format() {
@@ -45,8 +45,8 @@ public class JsonDayFormatter extends JsonFormatter {
 		convertedObject.put(SLOT_WIDTH_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
 		convertedObject.put(I18N_TITLE, I18n.getInstance().translate(MAP_I18N.get(I18N_TITLE), this.host, this.locale));
 
-		DateTime exportStart = new DateTime(exportObject.getString(ExportRequest.START_DATE));
-		DateTime exportEnd = new DateTime(exportObject.getString(ExportRequest.END_DATE)).plusDays(1);
+		DateTime exportStart = toUserTimeZone(exportObject.getString(ExportRequest.START_DATE));
+		DateTime exportEnd = toUserTimeZone(exportObject.getString(ExportRequest.END_DATE)).plusDays(1);
 		JsonArray exportBookingList = exportObject.getJsonArray(BOOKING_LIST_FIELD_NAME);
 
 		DateTime dayIterator = exportStart;
@@ -84,8 +84,8 @@ public class JsonDayFormatter extends JsonFormatter {
 
 						if (exportBooking.getLong(ExportBooking.RESOURCE_ID).equals(currentResourceId)) { // This booking belongs to the current resource
 							// Split booking into several bookings if booked on several days
-							DateTime exportBookingStartDate = new DateTime(exportBooking.getString(ExportBooking.BOOKING_START_DATE));
-							DateTime exportBookingEndDate = new DateTime(exportBooking.getString(ExportBooking.BOOKING_END_DATE));
+							DateTime exportBookingStartDate = toUserTimeZone(exportBooking.getString(ExportBooking.BOOKING_START_DATE));
+							DateTime exportBookingEndDate = toUserTimeZone(exportBooking.getString(ExportBooking.BOOKING_END_DATE));
 							int daysBetweenStartAndEnd = Days.daysBetween(exportBookingStartDate, exportBookingEndDate).getDays();
 
 							for (int k = 0; k != Math.abs(daysBetweenStartAndEnd) + 1; k++) {

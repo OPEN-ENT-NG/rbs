@@ -37,7 +37,11 @@
       },
       "additionalProperties": false,
       "minItems": 0
-    }
+		},
+		"usertimezone": {
+      "description": "Optional: time zone of the user, needed for PDF export, for example Europe/Paris",
+      "type": "string"
+		}
   },
   "required": [
     "startdate",

@@ -18,10 +18,10 @@ public class JsonListFormatter extends JsonFormatter {
         private DateTime startDate;
         private DateTime endDate;
 
-        private Booking(String ownerName, String startDate, String endDate) {
+        private Booking(JsonFormatter thisFormatter, String ownerName, String startDate, String endDate) {
             this.ownerName = ownerName;
-            this.startDate = new DateTime(startDate);
-            this.endDate= new DateTime(endDate);
+            this.startDate = thisFormatter.toUserTimeZone(startDate);
+            this.endDate= thisFormatter.toUserTimeZone(endDate);
         }
 
         private String getOwnerName() {
@@ -48,8 +48,8 @@ public class JsonListFormatter extends JsonFormatter {
 	private final int CALENDAR_WIDTH = 680;
     private final int NUMBER_OF_BOOKINGS_BY_PAGE = 25;
 
-	public JsonListFormatter(JsonObject jsonFileObject, String host, Locale locale) {
-        super(jsonFileObject, host, locale);
+	public JsonListFormatter(JsonObject jsonFileObject, String host, Locale locale, String userTimeZone) {
+        super(jsonFileObject, host, locale, userTimeZone);
 	}
 
 	public JsonObject format(){
@@ -88,7 +88,7 @@ public class JsonListFormatter extends JsonFormatter {
                         String startDate = exportBooking.getString(ExportBooking.BOOKING_START_DATE);
                         String endDate = exportBooking.getString(ExportBooking.BOOKING_END_DATE);
 
-                        bookingList.add(new Booking(ownerName, startDate, endDate));
+                        bookingList.add(new Booking(this, ownerName, startDate, endDate));
                     }
                 }
 
