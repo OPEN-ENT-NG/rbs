@@ -1,5 +1,4 @@
-import {_, angular, idiom as lang, ng, notify, routes, template} from 'entcore';
-import moment from './moment';
+import {_, angular, moment, idiom as lang, ng, notify, routes, template} from 'entcore';
 import {isBookingSlot, RBS} from './models';
 
 
