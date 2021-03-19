@@ -48,7 +48,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 	@Override
 	public void deleteGroups(JsonArray groups) {
 		if(groups == null)
-			return
+			return;
 
 		for(int i = groups.size(); i-- > 0;)
 		{
