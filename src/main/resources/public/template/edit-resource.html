@@ -20,9 +20,11 @@
 			<label class="three cell"><i18n>rbs.resource.edit.name.label</i18n></label>
 			<input class="nine cell" type="text" i18n-placeholder="rbs.resource.edit.name.placeholder" ng-model="editedResource.name" required />
 		</div>
+
+		<!-- prevent interacting with checkbox since it is auto set with type of resource -->
 		<div class="row">
 			<label class="nine cell right-magnet">
-				<input type="checkbox" data-ng-model="editedResource.validation" />
+				<input type="checkbox" data-ng-model="editedResource.validation" ng-disabled="true"/>
 				<i18n>type.form.validation.required</i18n>
 			</label>
 		</div>

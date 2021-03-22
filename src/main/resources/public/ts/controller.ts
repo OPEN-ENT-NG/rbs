@@ -2636,6 +2636,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
             // update color of color picker only in case of creation
             if ($scope.editedResource.id === undefined) {
+                $scope.editedResource.validation = $scope.editedResource.type.validation;
                 $scope.editedResource.color = $scope.editedResource.type.color;
             }
         };
