@@ -1,3 +1,7 @@
+input[type="radio"], .contentTab {
+    display: inline-block;
+}
+
 .details label {
     font-weight: bold;
 }
