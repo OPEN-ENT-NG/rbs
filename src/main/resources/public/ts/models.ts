@@ -1,4 +1,5 @@
-import {_, angular, moment, Behaviours, http, Model, notify} from 'entcore';
+import {_, angular, Behaviours, http, Model, notify} from 'entcore';
+import moment from './moment';
 
 declare let window: any;
 declare let model: any;

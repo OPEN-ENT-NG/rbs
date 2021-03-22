@@ -1,4 +1,5 @@
-import {_, angular, moment, idiom as lang, ng, notify, routes, template} from 'entcore';
+import {_, angular, idiom as lang, ng, notify, routes, template} from 'entcore';
+import moment from './moment';
 import {isBookingSlot, RBS} from './models';
 
 
@@ -1907,6 +1908,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     );
                 }
             } catch (e) {
+                console.error(e);
                 $scope.display.processing = undefined;
                 $scope.currentErrors.push({error: 'rbs.error.technical'});
             }

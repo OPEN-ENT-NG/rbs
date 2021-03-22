@@ -20,14 +20,16 @@
     "webpack": "3.1.0",
     "webpack-stream": "3.2.0",
     "yargs": "^8.0.2",
+    "moment": "~2.18.1",
+    "moment-timezone": "0.5.23",
     "json-loader": "^0.5.7"
   },
   "devDependencies": {
     "@types/jquery": "^2.0.34",
-    "natives": "^1.1.6",
     "@types/angular": "^1.6.55",
     "@types/core-js": "0.9.42",
     "@types/jest": "^22.2.0",
+    "natives": "^1.1.6",
     "gulp-append-prepend": "^1.0.8"
   },
   "scripts": {
