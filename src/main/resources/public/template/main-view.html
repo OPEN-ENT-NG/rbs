@@ -111,17 +111,17 @@
 <section class="toggle-buttons" ng-class="{ hide: bookings.selection().length === 0 }">
 	<div class="toggle">
 		<div class="row">
-			<behaviour name="process" resource="bookings.selection()" class="cell">
+			<authorize name="process" resource="bookings.selection()" class="cell">
 				<button ng-if="canEditBookingSelection()" ng-click="editBooking()"><i18n>edit</i18n></button>
 				<button ng-if="! canEditBookingSelection()" disabled class="disabled"><i18n>edit</i18n></button>
 				<button ng-click="removeBookingSelection()"><i18n>remove</i18n></button>
-			</behaviour>
-			<behaviour name="process" resource="bookings.selectionResources()" class="cell">
+			</authorize>
+			<authorize name="process" resource="bookings.selectionResources()" class="cell">
 				<button ng-if="canProcessBookingSelection()" ng-click="validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
 				<button ng-if="! canProcessBookingSelection()" disabled class="disabled"><i18n>rbs.booking.validate</i18n></button>
 				<button ng-if="canProcessBookingSelection()" ng-click="refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
 				<button ng-if="! canProcessBookingSelection()" disabled class="disabled"><i18n>rbs.booking.refuse</i18n></button>
-			</behaviour>
+			</authorize>
 		</div>
 	</div>
 </section>

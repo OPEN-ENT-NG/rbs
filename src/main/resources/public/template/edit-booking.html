@@ -369,7 +369,7 @@
         </div>
 
         <div class="row">
-            <behaviour name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
+            <authorize name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
                 <button class="right-magnet"
                         ng-click="saveBooking()"
                         ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING
@@ -404,7 +404,7 @@
                         ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_BOOKING">
                     <i18n>rbs.next</i18n>
                 </button>
-            </behaviour>
+            </authorize>
             <input type="button" class="cancel right-magnet" i18n-value="cancel"
                    ng-click="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true"/>
 
