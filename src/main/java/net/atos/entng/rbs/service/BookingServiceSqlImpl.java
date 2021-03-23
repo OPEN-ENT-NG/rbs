@@ -334,8 +334,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		StringBuilder query = new StringBuilder();
 		query.append("UPDATE rbs.booking").append(" SET ").append(sb.toString()).append("modified = NOW()")
+				.append(", booking_reason = ?")
 				.append(", start_date = ?")
 				.append(", end_date = ?" );
+		values.add(booking.getBookingReason());
 		values.add(toSQLTimestamp(slot.getStartUTC()));
 		values.add(toSQLTimestamp(slot.getEndUTC()));
 
