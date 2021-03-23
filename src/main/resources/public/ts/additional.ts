@@ -23,6 +23,7 @@ export const timePicker = ng.directive('timePickerRbs', function ($compile) {
                 }
                 timepicker.hideWidget();
             };
+
             $('body, lightbox').on('click', hideFunction);
             $('body, lightbox').on('focusin', hideFunction);
             $element.timepicker({
@@ -43,9 +44,9 @@ export const timePicker = ng.directive('timePickerRbs', function ($compile) {
 
                 $scope.ngModel = newVal;
                 $element.val($scope.ngModel.format("HH:mm"));
+
                 if (($scope.ngLimit !== undefined && !newVal.isSame($scope.ngLimit))
-                    && (($scope.ngBegin === true && newVal.isAfter($scope.ngLimit))
-                        || ($scope.ngEnd === true && newVal.isBefore($scope.ngLimit)))
+                    && (($scope.ngBegin === true && newVal.isAfter($scope.ngLimit)))
                 ) {
                     $scope.ngLimit = moment(newVal);
                 }

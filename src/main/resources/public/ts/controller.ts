@@ -1636,6 +1636,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         model.refreshBookings($scope.display.list);
                     },
                     function (e) {
+                        handleErrorType(e);
                         notify.error(e.error);
                         $scope.display.processing = undefined;
                         $scope.currentErrors.push(e);
@@ -1646,6 +1647,26 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.display.processing = undefined;
                 $scope.currentErrors.push({error: 'rbs.error.technical'});
                 throw e;
+            }
+        };
+
+        /**
+         * Customize your error type you wish to display by specifying the key word found in your sql/other error
+         * (e.g: fetching an error with "valid_dates" key words handled by your psql will turn into bad request invalid dates)
+         *
+         * @param e Error Type ({context: string, error: string, object: any, status: number})
+         */
+        const handleErrorType = (e: {context: string, error: string, object: any, status: number}): void => {
+            const error: string = e.error;
+            const findTerm = (term: string): string => {
+                if (error.includes(term)) {
+                    return error;
+                }
+            };
+            switch (error) {
+                case findTerm('valid_dates'): {
+                    e.error = "rbs.booking.bad.request.invalid.dates";
+                }
             }
         };
 
