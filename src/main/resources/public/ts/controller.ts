@@ -41,12 +41,17 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         });
 
+        /**
+         * Change position of calendar's button filter to the head (see main-calendar.html) directive <filters>
+         *
+         * @param exit
+         */
         function placingButton(exit) {
             var done = false;
+            let $calendarOptionButtonGroup: JQuery = $('.calendarOptionButtonGroup');
             $timeout(function () {
-                console.log('placing button');
-                if ($('.changeDisplayModeButtons').length > 0 && $('.filters-icons > ul').length > 0) {
-                    $('.changeDisplayModeButtons').children().appendTo('.filters-icons > ul');
+                if ($calendarOptionButtonGroup.length > 0 && $('.filters-icons > ul').length > 0) {
+                    $calendarOptionButtonGroup.children().appendTo('.filters-icons > ul');
                     done = true;
                 }
             }, 50).then(function () {
@@ -2556,6 +2561,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.nextWeekButton = function () {
+            model.calendar.next();
             var calendarMode = model.calendar.increment;
             var next = undefined;
             switch (calendarMode) {
@@ -2580,6 +2586,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.previousWeekButton = function () {
+            model.calendar.previous();
             var calendarMode = model.calendar.increment;
             var prev = undefined;
             switch (calendarMode) {

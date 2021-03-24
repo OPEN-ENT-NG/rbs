@@ -2,6 +2,10 @@ input[type="radio"], .contentTab {
     display: inline-block;
 }
 
+.schedule .days .day.single {
+    width: 100%!important;
+}
+
 .details label {
     font-weight: bold;
 }

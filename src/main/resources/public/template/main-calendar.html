@@ -25,10 +25,10 @@
             more-items-template="display-calendar-more-items"
             create-template="edit-booking"
             item-tooltip-template="tooltip-template"
+            on-create-open="newBookingCalendar(newItem)"
             on-create-close="closeBooking()"
             items="bookings.filtered">
     </calendar>
-    <!--		on-create-open="newBookingCalendar(newItem)"-->
 </div>
 
 <div class="row" ng-if="! display.create">
