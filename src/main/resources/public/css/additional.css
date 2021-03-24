@@ -1,5 +1,5 @@
 input[type="radio"], .contentTab {
-    display: inline-block;
+    display: inline-block!important;
 }
 
 .schedule .days .day.single {

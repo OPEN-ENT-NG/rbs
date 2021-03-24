@@ -2185,6 +2185,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     }
                 );
             } catch (e) {
+                console.error(e);
                 $scope.display.processing = undefined;
                 $scope.currentErrors.push({error: 'rbs.error.technical'});
             }
