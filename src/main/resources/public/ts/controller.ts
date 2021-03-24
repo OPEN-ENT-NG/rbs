@@ -911,7 +911,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }).length;
         };
 
-// Booking edition
+        // Booking edition
         $scope.canCreateBooking = function () {
             if (
                 undefined !==
@@ -957,6 +957,16 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             } else {
                 return true;
             }
+        };
+
+        /**
+         * Trick that will use the "selected" field from ScheduleItem (calendar model)
+         * for setting our "selected" field from the model Booking
+         *
+         * @param item: any but actually is ScheduleItem from calendar item
+         */
+        $scope.setSelectedItem = (item: any): void => {
+            $scope.bookings.filtered.find(b => b.id === item.id).selected = item.selected;
         };
 
         $scope.canDeleteBookingDateCheck = function (dateToCheck) {
@@ -2191,7 +2201,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-// Booking Validation
+        // Booking Validation
         $scope.canProcessBookingSelection = function () {
             return _.every($scope.bookings.selection(), function (booking) {
                 return booking.isPending();
