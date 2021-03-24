@@ -706,7 +706,11 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         // Bookings
         $scope.viewBooking = function (booking) {
             // booking = semanticObject(booking, Booking);
-            $scope.currentBookingSelected = booking;
+
+            // Booking's type model is ScheduleItem so we reassign correct Model (Booking and Resource) to currentBookingSelected
+            $scope.currentBookingSelected = new Booking(booking);
+            $scope.currentBookingSelected.resource = new Resource(booking.resource);
+
             $scope.isViewBooking = true;
             if (booking.isSlot()) {
                 // slot : view booking details and show slot
