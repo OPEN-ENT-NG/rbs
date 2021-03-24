@@ -1106,6 +1106,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     function (data) {
                         if (data.slots.length > 0) {
                             $scope.slots = data;
+                            $scope.editedBooking.slotsLit = data;
                             $scope.slots.slots.sort(
                                 sort_by('startHour', false, function (a) {
                                     return a;
