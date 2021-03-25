@@ -756,6 +756,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if ($scope.display.list !== true) {
                 // In calendar view, deselect all when closing lightboxes
                 $scope.bookings.deselectAll();
+                $scope.bookings.applyFilters();
             }
             $scope.selectedBooking = undefined;
             $scope.editedBooking = null;
