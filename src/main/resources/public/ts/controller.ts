@@ -741,6 +741,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.initModerators();
             $scope.display.showPanel = true;
             template.open('lightbox', 'booking-details');
+            $scope.$apply();
         };
 
         $scope.closeBooking = function () {
@@ -1106,10 +1107,10 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.editedBooking.startMoment.year($scope.editedBooking.beginning.year());
                 $scope.editedBooking.endMoment = $scope.editedBooking._slots[0].endMoment;
             }
-            $scope.initBookingDates(
-                $scope.editedBooking.startMoment,
-                $scope.editedBooking.endMoment
-            );
+
+            $scope.initBookingDates($scope.editedBooking.startMoment, $scope.editedBooking.endMoment);
+            // change periodicEndDate (will affect ocurence/recurence end_date)
+            $scope.booking.periodicEndDate = new Date($scope.editedBooking.end_date);
 
             $scope.editedBooking.type = $scope.editedBooking.resource.type;
             if (
@@ -1229,14 +1230,20 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
 
             // dates management
+
+            // setter startDate booking
             $scope.booking.startDate = startMoment.toDate();
             $scope.booking.startDate.setFullYear(startMoment.years());
             $scope.booking.startDate.setMonth(startMoment.months());
             $scope.booking.startDate.setDate(startMoment.date());
+
+            // setter endDate booking
             $scope.booking.endDate = endMoment.toDate();
             $scope.booking.endDate.setFullYear(endMoment.years());
             $scope.booking.endDate.setMonth(endMoment.months());
             $scope.booking.endDate.setDate(endMoment.date());
+
+            // setter periodicEndDate
             $scope.booking.periodicEndDate = endMoment.toDate();
         };
 
