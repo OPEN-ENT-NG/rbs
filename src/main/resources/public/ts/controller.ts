@@ -1152,6 +1152,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
             template.open('lightbox', 'edit-booking');
             $scope.display.showPanel = true;
+            $scope.updatePeriodicSummary();
         };
 
         $scope.initEditBookingDisplay = function () {
@@ -1352,7 +1353,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.autoSelectTypeAndResource();
         };
 
-        $scope.getPeriodicSummary = function (item) {
+        $scope.getPeriodicSummary = function (item): string {
             if (!isBookingSlot(item)) {
                 return undefined;
             }
@@ -2036,22 +2037,28 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
 
             var totalSelectionAsynchroneCall = 0;
-            _.each($scope.bookings.selection(), function (booking) {
+
+            $scope.bookings.selection().forEach(booking => {
                 if (!$scope.isViewBooking) {
                     $scope.currentBookingSelected = booking;
                 }
-                if (
-                    isBookingSlot(booking) &&
-                    booking.booking.occurrences !== booking.booking._slots.length
-                ) {
+                if (isBookingSlot(booking) && booking.booking.occurrences !== booking.booking._slots.length) {
                     totalSelectionAsynchroneCall++;
                 } else if (isBookingSlot(booking) && booking.booking.selected !== true) {
                     booking.booking.selected = true;
                     booking.booking.selectAllSlots();
                 } else if (booking.is_periodic) {
                     booking.selectAllSlots();
+                    // trick to refresh correctly `selectAllSlots`'s field select methods
+                    const currentBookingSlotsMap: Map<number, boolean> = new Map(booking._slots.map(s => [s.id, s.selected]));
+                    $scope.bookings.all.forEach(booking => {
+                        if (currentBookingSlotsMap.has(booking.id)) {
+                            booking.selected = currentBookingSlotsMap.get(booking.id);
+                        }
+                    });
                 }
             });
+
 
             //if all slots are already completed
             if (totalSelectionAsynchroneCall === 0) {
