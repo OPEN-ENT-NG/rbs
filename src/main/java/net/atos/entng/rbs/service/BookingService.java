@@ -28,7 +28,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.models.Booking;
-import fr.wseduc.webutils.Either;
 
 import java.util.Date;
 import java.util.List;
@@ -43,8 +42,7 @@ public interface BookingService extends CrudService {
      * @param user       : information of current user logged
      * @param handler    : handler which contains the response
      */
-	public void createBooking(final String resourceId, final Booking data, final UserInfos user,
-			final Handler<Either<String, JsonObject>> handler);
+    void createBooking(final String resourceId, final Booking data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
     /**
      * Create a periodic booking
@@ -54,7 +52,7 @@ public interface BookingService extends CrudService {
      * @param user             : information of current user logged
      * @param handler          : handler which contains the response
      */
-	public void createPeriodicBooking(final String resourceId, Booking booking, final UserInfos user,
+    void createPeriodicBooking(final String resourceId, Booking booking, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler);
 
     /**
@@ -63,7 +61,7 @@ public interface BookingService extends CrudService {
      * @param data              : object which contains information of booking
      * @param handler           : handler which contains the response
      */
-	public void updateBooking(final String resourceId, final Booking data,
+    void updateBooking(final String resourceId, final Booking data,
 			final Handler<Either<String, JsonObject>> handler);
 
     /**

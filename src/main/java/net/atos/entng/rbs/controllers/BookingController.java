@@ -34,6 +34,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import io.vertx.core.buffer.Buffer;
 import net.atos.entng.rbs.BookingUtils;
@@ -70,7 +71,6 @@ import net.atos.entng.rbs.model.ExportResponse;
 import net.atos.entng.rbs.service.*;
 import net.atos.entng.rbs.service.pdf.PdfExportService;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
@@ -143,96 +143,98 @@ public class BookingController extends ControllerHelper {
 	}
 
 	/**
-	 * @param isCreation : true when creating a booking, false when updating a
-	 *                   booking.
+	 * @param isCreation : true when creating a booking, false when updating a booking.
+	 *
 	 * @return Handler to create or update a booking
 	 */
-	private Handler<JsonObject> getBookingHandler(final UserInfos user, final HttpServerRequest request,
-												  final boolean isCreation) {
+	private Handler<JsonObject> getBookingHandler(final UserInfos user, final HttpServerRequest request, final boolean isCreation) {
+		return json -> {
+			final String resourceId = request.params().get("id");
+			final String bookingId = request.params().get("bookingId");
+			Slots slots = new Slots(json.getJsonArray("slots")) ;
+			Booking booking = new Booking(json, bookingId, slots);
 
-		return new Handler<JsonObject>() {
-			@Override
-			public void handle(final JsonObject json) {
-				final String resourceId = request.params().get("id");
-				final String bookingId = request.params().get("bookingId");
-				Slots slots = new Slots(json.getJsonArray("slots")) ;
-				final long now = getCurrentTimestamp();
-				Booking booking = new Booking(json, bookingId, slots);
+			resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId), event -> {
+				if (event.isRight() && event.right().getValue() != null) {
+					JsonObject json1 = event.right().getValue();
+					Resource resource = new Resource(json1);
+					booking.setResource(resource);
+					if (resource.hasNotOwnerOrSchoolId()) {
+						log.warn("Could not get owner or school_id for type of resource " + resourceId);
+					}
 
-				resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId),
-						new Handler<Either<String, JsonObject>>() {
-							@Override
-							public void handle(Either<String, JsonObject> event) {
-								if (event.isRight() && event.right().getValue() != null) {
+					if (!resource.canBypassDelaysConstraints(user)) {
+						// check that booking dates respect min and max delays
+						if (booking.hasMinDelay() && booking.slotsNotRespectingMinDelay()) {
+							long nbDays = booking.minDelayAsDay();
+							String errorMessage = i18n.translate("rbs.booking.bad.request.minDelay.not.respected",
+									Renders.getHost(request), I18n.acceptLanguage(request), Long.toString(nbDays));
+							badRequest(request, errorMessage);
+							return;
+						} else if (booking.hasMaxDelay() && booking.slotsNotRespectingMaxDelay()) {
+							long nbDays = booking.maxDelayAsDay();
+							String errorMessage = i18n.translate(
+									"rbs.booking.bad.request.maxDelay.not.respected",
+									Renders.getHost(request), I18n.acceptLanguage(request),
+									Long.toString(nbDays));
 
-									JsonObject json = event.right().getValue();
-									Resource resource = new Resource(json);
-									booking.setResource(resource);
-									if (resource.hasNotOwnerOrSchoolId()) {
-										log.warn("Could not get owner or school_id for type of resource " + resourceId);
-									}
+							badRequest(request, errorMessage);
+							return;
+						}
+					}
 
-									if (!resource.canBypassDelaysConstraints(user)) {
-										// check that booking dates respect min and max delays
-										if (booking.hasMinDelay() && booking.slotsNotRespectingMinDelay()) {
-											long nbDays = booking.minDelayAsDay();
-											String errorMessage = i18n.translate(
-													"rbs.booking.bad.request.minDelay.not.respected",
-													Renders.getHost(request), I18n.acceptLanguage(request),
-													Long.toString(nbDays));
+					if (isCreation) {
+						bookingService.createBooking(resourceId, booking, user, getBookingCreationResponse(user, request, isCreation));
+					} else {
+						bookingService.updateBooking(resourceId, booking, getBookingUpdateResponse(user, request, isCreation));
+					}
 
-											badRequest(request, errorMessage);
-											return;
-										} else if (booking.hasMaxDelay()
-												&& booking.slotsNotRespectingMaxDelay()) {
-											long nbDays = booking.maxDelayAsDay();
-											String errorMessage = i18n.translate(
-													"rbs.booking.bad.request.maxDelay.not.respected",
-													Renders.getHost(request), I18n.acceptLanguage(request),
-													Long.toString(nbDays));
+				} else {
+					badRequest(request, event.left().getValue());
+				}
+			});
+		};
+	}
 
-											badRequest(request, errorMessage);
-											return;
-										}
-									}
-
-									Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
-										@Override
-										public void handle(Either<String, JsonObject> event) {
-											if (event.isRight()) {
-												if (event.right().getValue() != null
-														&& event.right().getValue().size() > 0) {
-													notifyBookingCreatedOrUpdated(request, user,
-															event.right().getValue(), isCreation);
-													renderJson(request, event.right().getValue(), 200);
-													eventHelper.onCreateResource(request, RESOURCE_NAME);
-												} else {
-													String errorMessage = isCreation ? "rbs.booking.create.conflict"
-															: "rbs.booking.update.conflict";
-													JsonObject error = new JsonObject().put("error", errorMessage);
-													renderJson(request, error, 409);
-												}
-											} else {
-												badRequest(request, event.left().getValue());
-											}
-										}
-									};
-
-									if (isCreation) {
-										bookingService.createBooking(resourceId, booking, user, handler);
-									} else {
-										bookingService.updateBooking(resourceId, booking, handler);
-									}
-
-								} else {
-									badRequest(request, event.left().getValue());
-								}
-							}
-
-						});
+	private Handler<Either<String, JsonArray>> getBookingCreationResponse(UserInfos user, HttpServerRequest request, boolean isCreation) {
+		return event -> {
+			if (event.isRight()) {
+				if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+					List<JsonObject> bookings = event.right().getValue().stream().map(JsonObject.class::cast).collect(Collectors.toList());
+					bookings.forEach(booking -> notifyBookingCreatedOrUpdated(request, user, booking, isCreation));
+					renderJson(request, event.right().getValue().getJsonObject(0), 200);
+					eventHelper.onCreateResource(request, RESOURCE_NAME);
+				} else {
+					getBookingErrorHandler(request, isCreation);
+				}
+			} else {
+				badRequest(request, event.left().getValue());
 			}
 		};
 	}
+
+	private Handler<Either<String, JsonObject>> getBookingUpdateResponse(UserInfos user, HttpServerRequest request, boolean isCreation) {
+		return event -> {
+			if (event.isRight()) {
+				if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+					notifyBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
+					renderJson(request, event.right().getValue(), 200);
+					eventHelper.onCreateResource(request, RESOURCE_NAME);
+				} else {
+					getBookingErrorHandler(request, isCreation);
+				}
+			} else {
+				badRequest(request, event.left().getValue());
+			}
+		};
+	}
+
+	private void getBookingErrorHandler(HttpServerRequest request, boolean isCreation) {
+		String errorMessage = isCreation ? "rbs.booking.create.conflict" : "rbs.booking.update.conflict";
+		JsonObject error = new JsonObject().put("error", errorMessage);
+		renderJson(request, error, 409);
+	}
+
 
 	/**
 	 * Notify moderators that a booking has been created or updated

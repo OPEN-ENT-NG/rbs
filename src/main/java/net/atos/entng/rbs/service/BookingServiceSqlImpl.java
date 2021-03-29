@@ -26,6 +26,7 @@ import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.models.Slots;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.DateUtils;
@@ -67,25 +68,46 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	}
 
 	@Override
-	public void createBooking(final String resourceId, final Booking booking, final UserInfos user,
-			final Handler<Either<String, JsonObject>> handler) {
+	public void createBooking(final String resourceId, final Booking booking, final UserInfos user, final Handler<Either<String, JsonArray>> handler) {
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
-// Upsert current user
-		statementsBuilder.prepared(UPSERT_USER_QUERY,
-				new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUsername()));
+		// Upsert current user
+		statementsBuilder.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 		// Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
-		booking.getSlots().forEach(slot->{
-			JsonObject statment = getCreationBooking( resourceId, booking, slot,   user);
-			statementsBuilder.prepared(statment.getString("query"),statment.getJsonArray("values") );
+
+		booking.getSlots().forEach(slot-> {
+			JsonObject statement = getCreationBooking(resourceId, booking, slot, user);
+			statementsBuilder.prepared(statement.getString("query"), statement.getJsonArray("values"));
 		});
 
 		// Send queries to eventbus
-		Sql.getInstance().transaction(statementsBuilder.build(), validUniqueResultHandler(2, handler));
+		Sql.getInstance().transaction(statementsBuilder.build(), event -> {
+			Either<String, JsonArray> result = SqlResult.validResults(event);
+			if (result.isLeft()) {
+				String message = "[RBS@BookingServiceSqlImpl::createBooking] An error has occured during statements transaction";
+				log.error(message, result.left().getValue());
+				handler.handle(new Either.Left<>(result.left().getValue()));
+			} else {
+				JsonArray statementsResults = result.right().getValue();
+				// Removing the first (upsert current user) and second statements (lock query)
+				statementsResults.remove(0);
+				statementsResults.remove(0);
+
+				JsonArray bookings = new JsonArray();
+				// Looping our statementsResult as each JsonObject is inside a JsonArray then we clear data by creating
+				// new JsonArray
+				for (int i = 0; i < statementsResults.size(); i++) {
+					bookings.add(statementsResults.getJsonArray(i).getJsonObject(0));
+				}
+				handler.handle(new Either.Right<>(bookings));
+			}
+		});
+
+
 	}
 
-	private JsonObject getCreationBooking(final String resourceId, final Booking booking, final Slot slot, final UserInfos user){
+	private JsonObject getCreationBooking(final String resourceId, final Booking booking, final Slot slot, final UserInfos user) {
 
 
 		Object rId = parseId(resourceId);
