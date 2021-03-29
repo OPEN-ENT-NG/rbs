@@ -49,6 +49,11 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         function placingButton(exit) {
             var done = false;
             let $calendarOptionButtonGroup: JQuery = $('.calendarOptionButtonGroup');
+            /* trigger tooltip to show up */
+            let $scheduleItems: JQuery = $('.schedule-items');
+            $scheduleItems.mousemove(() => {
+                $timeout(() => $scope.$apply(), 500)
+            });
             $timeout(function () {
                 if ($calendarOptionButtonGroup.length > 0 && $('.filters-icons > ul').length > 0) {
                     $calendarOptionButtonGroup.children().appendTo('.filters-icons > ul');
