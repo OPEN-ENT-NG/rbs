@@ -608,7 +608,7 @@ public class BookingController extends ControllerHelper {
                 params.put("resourceUri", params.getString("bookingUri"));
                 params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDateTZ, endDateTZ));
 
-                notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, bookingId, params);
+                notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, resourceName, bookingId, params, true);
             }
         });
 	}
