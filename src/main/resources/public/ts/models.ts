@@ -1272,6 +1272,8 @@ model.parseBookingsAndSlots = function (rows, resourceIndex, color) {
 
     // Process
     _.each(rows, function (row) {
+        // Calendar lock card to prevent draggable/resize
+        row.locked = true;
         if (row.parent_booking_id === null) {
             // Is a Booking
             bookingIndex.bookings[row.id] = row;
