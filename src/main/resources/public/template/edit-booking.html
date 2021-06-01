@@ -1,7 +1,8 @@
-<div class="row form-section" ng-if="editedBooking">
+<div class="row form-section" ng-if="editedBooking" guard-root="editBookingRoot">
     <h2>
         <i18n>rbs.booking.new</i18n>
     </h2>
+
     <section class="twelve cell">
 
         <div class="row accordions">
@@ -44,7 +45,7 @@
                                     <select class="six cell" ng-model="editedBooking.type"
                                             ng-options="resourceType.name for resourceType in selectedStructure.types | orderBy: 'name'"
                                             ng-change="autoSelectResource()" required
-                                            ng-if="selectedStructure.types.length > 0">
+                                            ng-if="selectedStructure.types.length > 0" input-guard>
                                     </select>
                                     <div class="six cell warning" ng-if="editedBooking.type === undefined">
                                         <i18n>rbs.booking.warning.no.types</i18n>
@@ -56,7 +57,7 @@
                                     </label>
                                     <select class="six cell" ng-model="editedBooking.resource"
                                             ng-options="resource.name for resource in editedBooking.type.resources.filterAvailable(editedBooking.is_periodic)"
-                                            required ng-if="editedBooking.resource !== undefined">
+                                            required ng-if="editedBooking.resource !== undefined" input-guard>
                                     </select>
                                     <div class="six cell warning" ng-if="editedBooking.resource === undefined">
                                         <i18n>rbs.booking.warning.no.resources</i18n>
@@ -70,14 +71,14 @@
                                     <i18n>rbs.booking.edit.type.label</i18n>
                                 </label>
                                 <input class="six cell disabled" type="text" disabled
-                                       value="[[editedBooking.resource.type.name]]"/>
+                                       value="[[editedBooking.resource.type.name]]" input-guard/>
                             </div>
                             <div class="row">
                                 <label class="three cell">
                                     <i18n>rbs.booking.edit.resource.label</i18n>
                                 </label>
                                 <input class="six cell disabled" type="text" disabled
-                                       value="[[editedBooking.resource.name]]"/>
+                                       value="[[editedBooking.resource.name]]" input-guard/>
                             </div>
                         </div>
                         <div ng-include="template.containers.editBookingErrors"></div>
@@ -137,19 +138,19 @@
                                          ng-model="booking.startDate"
                                          ng-change="booking.endDate = booking.startDate; showDate = true" past="true"
                                          exp="true" exp-object="booking.endDate"
-                                         required></date-picker>
+                                         required input-guard></date-picker>
                             <date-picker
                                     ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined"
                                     class="two cell horizontal-spacing" ng-model="booking.startDate"
                                     ng-change="booking.endDate = booking.startDate; showDate = true" past="true"
                                     exp="true" exp-object="booking.endDate"
-                                    required></date-picker>
+                                    required input-guard></date-picker>
                             <date-picker
                                     ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile !== undefined"
                                     class="two cell horizontal-spacing" ng-model="booking.startDate"
                                     ng-change="booking.endDate = booking.startDate; startDateModif();showDate = true"
                                     past="true" exp="true" exp-object="booking.endDate"
-                                    required></date-picker>
+                                    required input-guard></date-picker>
                         </div>
 
                         <!-- Booking start - periodic -->
@@ -159,7 +160,7 @@
                             </label>
                             <date-picker class="two cell horizontal-spacing" ng-model="booking.startDate"
                                          ng-change="editPeriodicStartDate();checkDateFunction();updatePeriodicSummary()"
-                                         past="true" exp="true" required></date-picker>
+                                         past="true" exp="true" required input-guard></date-picker>
                         </div>
 
                         <!-- Booking end - without Slots  -->
@@ -174,12 +175,12 @@
       									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.endTime"
                                                  ng-begin="true" ng-model="booking.startTime"
-                                                 required></time-picker-rbs>
+                                                 required input-guard></time-picker-rbs>
                             </div>
                             <div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
       									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-begin="true"
-                                                 ng-model="booking.startTime" required></time-picker-rbs>
+                                                 ng-model="booking.startTime" required input-guard></time-picker-rbs>
                             </div>
                             <label class="one cell centered-text">
                                 <i18n>to</i18n>
@@ -187,12 +188,12 @@
                             <div ng-if="booking.startDate.getDate() == booking.endDate.getDate() && booking.startDate.getMonth() == booking.endDate.getMonth()
       									&& booking.startDate.getFullYear() == booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-limit="booking.startTime"
-                                                 ng-end="true" ng-model="booking.endTime" required></time-picker-rbs>
+                                                 ng-end="true" ng-model="booking.endTime" required input-guard></time-picker-rbs>
                             </div>
                             <div ng-if="booking.startDate.getDate() != booking.endDate.getDate() || booking.startDate.getMonth() != booking.endDate.getMonth()
       									|| booking.startDate.getFullYear() != booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-end="true"
-                                                 ng-model="booking.endTime" required></time-picker-rbs>
+                                                 ng-model="booking.endTime" required input-guard></time-picker-rbs>
                             </div>
 
                         </div>
@@ -245,14 +246,14 @@
                         <div class="row six"
                              ng-if="editedBooking.id === undefined && editedBooking.resource.periodic_booking">
                             <input type="checkbox" ng-model="editedBooking.is_periodic"
-                                   ng-change="togglePeriodic();checkDateFunction()" class="one cell"/>&nbsp;<i18n>
+                                   ng-change="togglePeriodic();checkDateFunction()" class="one cell" input-guard/>&nbsp;<i18n>
                             rbs.booking.edit.periodic_booking.label
                         </i18n>
                         </div>
 
                         <!-- Periodicity toggle (fixed) - editing booking -->
                         <div class="row six" ng-if="editedBooking.id !== undefined">
-                            <input type="checkbox" disabled ng-checked="editedBooking.is_periodic" class="one cell"/>&nbsp;<i18n>
+                            <input type="checkbox" disabled ng-checked="editedBooking.is_periodic" class="one cell" input-guard/>&nbsp;<i18n>
                             rbs.booking.edit.periodic_booking.label
                         </i18n>
                         </div>
@@ -260,7 +261,7 @@
                         <!-- Booking reason -->
                         <div class="row">
                             <textarea ng-model="editedBooking.booking_reason"
-                                      i18n-placeholder="rbs.booking.edit.reason.label"></textarea>
+                                      i18n-placeholder="rbs.booking.edit.reason.label" input-guard></textarea>
                         </div>
 
                         <!-- Errors -->
@@ -290,7 +291,7 @@
                             </label>
                             <select class="one cell" ng-model="editedBooking.periodicity"
                                     ng-options="periodicity for periodicity in periods.periodicities"
-                                    ng-change="updatePeriodicSummary()" required>
+                                    ng-change="updatePeriodicSummary()" required input-guard>
                             </select>
                             <label class="two cell horizontal-spacing-twice">
                                 <i18n>rbs.booking.edit.period.unit</i18n>
@@ -300,7 +301,7 @@
                             <label class="cell horizontal-spacing-twice"
                                    ng-repeat="periodDay in editedBooking.periodDays">
                                 <input type="checkbox" ng-model="periodDay.value" name="day_[[periodDay.number]]"
-                                       value="false" ng-change="updatePeriodicSummary()"/>
+                                       value="false" ng-change="updatePeriodicSummary()" input-guard/>
                                 <span>
 									<i18n ng-if="periodDay.number == 1">rbs.booking.edit.period.days.1</i18n>
 									<i18n ng-if="periodDay.number == 2">rbs.booking.edit.period.days.2</i18n>
@@ -330,7 +331,7 @@
                             </label>
                             <select class="two cell" ng-model="editedBooking.occurrences"
                                     ng-options="occurrence for occurrence in periods.occurrences|orderBy"
-                                    ng-change="updatePeriodicSummary()">
+                                    ng-change="updatePeriodicSummary()" input-guard>
                             </select>
                             <label class="six cell horizontal-spacing-twice">
                                 <i18n>rbs.booking.edit.period.end.occurrences</i18n>
@@ -347,7 +348,7 @@
                             </label>
                             <date-picker class="six cell" ng-model="booking.periodicEndDate"
                                          ng-change="showDate = true; updatePeriodicSummary();checkDateFunction()"
-                                         past="true"></date-picker>
+                                         past="true" input-guard></date-picker>
                         </div>
 
                         <!-- Periodicity summary -->
@@ -371,25 +372,25 @@
         <div class="row">
             <authorize name="contrib" resource="editedBooking.resource" ng-if="editedBooking.resource !== undefined">
                 <button class="right-magnet"
-                        ng-click="saveBooking()"
+                        reset-guard="saveBooking()"
                         ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING
 									&& editedBooking.type.slotprofile === undefined">
                     <i18n>rbs.save</i18n>
                 </button>
                 <button class="right-magnet"
-                        ng-click="saveBooking()"
+                        reset-guard="saveBooking()"
                         ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC
 							&& editedBooking.type.slotprofile === undefined">
                     <i18n>rbs.save</i18n>
                 </button>
                 <button class="right-magnet"
-                        ng-click="saveBookingSlotProfile()"
+                        reset-guard="saveBookingSlotProfile()"
                         ng-if="display.processing !== true && editedBooking.is_periodic !== true && editedBooking.display.state === editedBooking.display.STATE_BOOKING
 							&& editedBooking.type.slotprofile !== undefined">
                     <i18n>rbs.save</i18n>
                 </button>
                 <button class="right-magnet"
-                        ng-click="saveBookingSlotProfile()"
+                        reset-guard="saveBookingSlotProfile()"
                         ng-if="display.processing !== true && editedBooking.is_periodic && editedBooking.display.state === editedBooking.display.STATE_PERIODIC
 							&& editedBooking.type.slotprofile !== undefined">
                     <i18n>rbs.save</i18n>
@@ -406,7 +407,7 @@
                 </button>
             </authorize>
             <input type="button" class="cancel right-magnet" i18n-value="cancel"
-                   ng-click="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true"/>
+                   navigation-trigger="closeBooking(); display.createItem = undefined" ng-if="display.processing !== true"/>
 
             <button class="right-magnet cancel disabled" disabled ng-if="display.processing === true">
                 <i18n>rbs.processing</i18n>
