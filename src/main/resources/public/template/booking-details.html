@@ -329,8 +329,8 @@
             <button class="right-magnet" ng-click="removeBookingSelection()">
                 <i18n>remove</i18n>
             </button>
-            <button class="right-magnet" nf-if="selectedBooking.resource.is_available === true"
-                    ng-click="editBooking()">
+            <button class="right-magnet" ng-if="selectedBooking.resource.is_available === true"
+                    reset-guard="editBooking()" reset-guard-id="editBookingRoot">
                 <i18n>edit</i18n>
             </button>
         </div>

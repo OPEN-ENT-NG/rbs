@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" guard-root="editResourceTypeRoot">
 	<h2 ng-if="editedResourceType.id === undefined"><i18n>rbs.resourcetype.new</i18n></h2>
 	<h2 ng-if="editedResourceType.id !== undefined"><i18n>rbs.resourcetype.edit</i18n>[[editedResourceType.name]]</h2>
 
@@ -18,22 +18,22 @@
 
 			<div class="row">
 				<label class="three cell"><i18n>rbs.resourcetype.edit.name.label</i18n></label>
-				<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required />
+				<input type="text" i18n-placeholder="rbs.resourcetype.edit.name.placeholder" class="nine cell" ng-model="editedResourceType.name" required  input-guard/>
 			</div>
 			<div class="row">
 				<label class="nine cell right-magnet">
-					<input type="checkbox" ng-model="editedResourceType.validation" />&nbsp;<i18n>type.form.validation.required</i18n>
+					<input type="checkbox" ng-model="editedResourceType.validation"  input-guard/>&nbsp;<i18n>type.form.validation.required</i18n>
 				</label>
 			</div>
 
 			<hr/>
 			<div class="row">
 				<label class="three cell"><i18n>rbs.resourcetype.edit.color.label</i18n></label>
-				<input class="resourceColor cell" type="color" ng-model="editedResourceType.color" />
+				<input class="resourceColor cell" type="color" ng-model="editedResourceType.color"  input-guard/>
 			</div>
 			<div class="row extendColor">
 				<label class="nine cell right-magnet">
-					<input type="checkbox" ng-model="editedResourceType.extendcolor" />&nbsp;<i18n>rbs.resourcetype.edit.color.heritage.label</i18n>
+					<input type="checkbox" ng-model="editedResourceType.extendcolor"  input-guard/>&nbsp;<i18n>rbs.resourcetype.edit.color.heritage.label</i18n>
 				</label>
 			</div>
 			<hr/>
@@ -42,6 +42,7 @@
 				<select class="nine cell"
 					ng-model="editedResourceType.slotprofile"
 					ng-options="slotprofile._id as slotprofile.name for slotprofile in slotprofiles | orderBy:'name'"
+					input-guard
 				>
 					<option value="">(Libre)</option>
 				</select>
@@ -70,8 +71,8 @@
 			</div>
 
 			<div class="row">
-				<button class="right-magnet" ng-click="saveResourceType()" ng-if="display.processing !== true" ng-disabled="resourceTypeForm.$invalid"><i18n>rbs.save</i18n></button>
-				<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResourceType()" ng-if="display.processing !== true"/>
+				<button class="right-magnet" reset-guard="saveResourceType()" ng-if="display.processing !== true" ng-disabled="resourceTypeForm.$invalid"><i18n>rbs.save</i18n></button>
+				<input type="button" class="cancel right-magnet" i18n-value="cancel" navigation-trigger="closeResourceType()" ng-if="display.processing !== true"/>
 
 				<button class="right-magnet cancel disabled" disabled ng-if="display.processing === true"><i18n>rbs.processing</i18n></button>
 			</div>

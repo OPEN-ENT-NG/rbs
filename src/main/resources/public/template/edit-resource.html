@@ -1,8 +1,8 @@
-<div class="row">
+<div class="row"  guard-root>
 	<h2 ng-if="editedResource.id === undefined"><i18n>rbs.resource.new</i18n></h2>
 	<h2 ng-if="editedResource.id !== undefined"><i18n>rbs.resource.edit</i18n>[[editedResource.name]]</h2>
 
-	<form ng-submit="saveResource()">
+	<form reset-guard="saveResource()">
 	<article class="twelve cell">
 		<div class="row">
 			<div class="row">
@@ -13,30 +13,30 @@
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.type.label</i18n></label>
 			<select class="nine cell" ng_init="editedResource.type = currentResourceType" ng-model="editedResource.type" ng-change="resourceTypeModified()"
-				ng-options="resourceType.name for resourceType in resourceTypes.all | filter:keepManageableResourceTypes" required>
+				ng-options="resourceType.name for resourceType in resourceTypes.all | filter:keepManageableResourceTypes" required input-guard>
 			</select>
 		</div>
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.name.label</i18n></label>
-			<input class="nine cell" type="text" i18n-placeholder="rbs.resource.edit.name.placeholder" ng-model="editedResource.name" required />
+			<input class="nine cell" type="text" i18n-placeholder="rbs.resource.edit.name.placeholder" ng-model="editedResource.name" required input-guard/>
 		</div>
 
 		<!-- prevent interacting with checkbox since it is auto set with type of resource -->
 		<div class="row">
 			<label class="nine cell right-magnet">
-				<input type="checkbox" data-ng-model="editedResource.validation" ng-disabled="true"/>
+				<input type="checkbox" data-ng-model="editedResource.validation" ng-disabled="true" input-guard/>
 				<i18n>type.form.validation.required</i18n>
 			</label>
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
-				<input type="checkbox" name="is_available" data-ng-model="editedResource.is_available" />
+				<input type="checkbox" name="is_available" data-ng-model="editedResource.is_available" input-guard/>
 				<i18n>rbs.resource.edit.is_available.label</i18n>
 			</label>
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
-				<input type="checkbox" name="periodic_booking" data-ng-model="editedResource.periodic_booking" />
+				<input type="checkbox" name="periodic_booking" data-ng-model="editedResource.periodic_booking" input-guard/>
 				<i18n>rbs.resource.edit.periodic_booking.label</i18n>
 			</label>
 		</div>
@@ -44,14 +44,14 @@
 		<div>
 			<div class="row">
 				<label class="nine cell right-magnet">
-					<input type="checkbox" ng-model="editedResource.hasMinDelay" />
+					<input type="checkbox" ng-model="editedResource.hasMinDelay" input-guard/>
 					<i18n>rbs.resource.edit.add.min_delay</i18n>
 				</label>
 			</div>
 			<div ng-if="editedResource.hasMinDelay === true" class="row">
 				<span class="nine cell right-magnet">
 					<i18n>rbs.resource.must.be.booked.at.least</i18n>&nbsp;
-					<select ng-model="editedResource.min_delay" ng-options="daysToSeconds(day) as day for day in delayDays">
+					<select ng-model="editedResource.min_delay" ng-options="daysToSeconds(day) as day for day in delayDays" input-guard>
 					</select>
 					&nbsp;<i18n>rbs.resource.days.in.advance</i18n>.
 				</span>
@@ -60,14 +60,14 @@
 		<div>
 			<div class="row">
 				<label class="nine cell right-magnet">
-					<input type="checkbox" ng-model="editedResource.hasMaxDelay" />
+					<input type="checkbox" ng-model="editedResource.hasMaxDelay" input-guard/>
 					<i18n>rbs.resource.edit.add.max_delay</i18n>
 				</label>
 			</div>
 			<div ng-if="editedResource.hasMaxDelay === true" class="row">
 				<span class="nine cell right-magnet">
 					<i18n>rbs.resource.can.be.booked.at.most</i18n>&nbsp;
-					<select ng-model="editedResource.max_delay" ng-options="daysToSeconds(day) as day for day in delayDays">
+					<select ng-model="editedResource.max_delay" ng-options="daysToSeconds(day) as day for day in delayDays" input-guard>
 					</select>
 					&nbsp;<i18n>rbs.resource.days.in.advance</i18n>.
 				</span>
@@ -77,13 +77,13 @@
 		<hr/>
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n></label>
-			<input class="resourceColor" type="color" ng-model="editedResource.color" />
+			<input class="resourceColor" type="color" ng-model="editedResource.color" input-guard/>
 		</div>
 		<hr class="row" />
 		
 		<div class="row">
 			<label class="twelve cell"><i18n>rbs.resource.edit.description.label</i18n></label>
-			<editor ng-model="editedResource.description"></editor>
+			<editor ng-model="editedResource.description" input-guard></editor>
 		</div>
 
 		<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
@@ -91,7 +91,7 @@
 
 		<div class="row">
 			<button class="right-magnet" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
-			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" navigation-trigger="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
 		</div>
