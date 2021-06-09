@@ -1079,7 +1079,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.editBooking = function () {
-            return new Promise<void> (function(resolve, reject) {
                 $scope.display.processing = undefined;
                 $scope.selectedSlotStart = undefined;
                 $scope.selectedSlotEnd = undefined;
@@ -1152,16 +1151,13 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                 }
                             } else {
                                 $scope.editedBooking.type.slotprofile = undefined;
-                                reject();
                             }
                         }
                     );
                 }
-                resolve();
                 template.open('lightbox', 'edit-booking');
                 $scope.display.showPanel = true;
                 $scope.updatePeriodicSummary();
-            })
         };
 
         $scope.initEditBookingDisplay = function () {
@@ -1606,8 +1602,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             );
         };
 
-        $scope.saveBooking = function (): Promise<void> {
-            return new Promise<void>(function(resolve, reject) {
+        $scope.saveBooking = function (){
                 // Check
                 $scope.currentErrors = [];
 
@@ -1624,10 +1619,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 }
 
                 try {
-                    if ($scope.checkSaveBooking()) {
-                        $scope.$apply();
-                        reject();
-                    }
                     // Save
                     $scope.display.processing = true;
 
@@ -1671,15 +1662,11 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     $scope.editedBooking.slots = [new Slot($scope.editedBooking).toJson()];
                     $scope.editedBooking.save(
                         function () {
-                            resolve();
-                            $scope.$apply();
                             $scope.display.processing = undefined;
                             $scope.closeBooking();
                             model.refreshBookings($scope.display.list);
                         },
                         function (e) {
-                            reject();
-                            $scope.$apply();
                             handleErrorType(e);
                             notify.error(e.error);
                             $scope.display.processing = undefined;
@@ -1690,11 +1677,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 } catch (e) {
                     $scope.display.processing = undefined;
                     $scope.currentErrors.push({error: 'rbs.error.technical'});
-                    reject();
-                    $scope.$apply();
                     throw e;
                 }
-            });
         };
 
         /**
@@ -1760,7 +1744,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.saveBookingSlotProfile = function () {
-            return new Promise <void>(function(resolve, reject) {
                 $scope.currentErrors = [];
                 $scope.editedBooking.slots = [];
                 var debut = $scope.editedBooking.slotsLit.slots.indexOf($scope.selectedSlotStart);
@@ -1898,10 +1881,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                             $scope.$apply();
                                         }
                                     );
-                                    resolve();
                                 } else {
                                     $scope.editedBooking.slots.push(new Slot($scope.editedBooking).toJson());
-                                    resolve();
                                 }
                             } else {
                                 // non periodic
@@ -1918,7 +1899,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                         return;
                                     }
                                     $scope.editedBooking.slots.push(new Slot($scope.editedBooking).toJson());
-                                    resolve();
                                 } else {
                                     for (var i = 0; i <= diffDays; i++) {
                                         var start = moment([
@@ -1959,7 +1939,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                             $scope.editedBooking.slots.push(SlotJson(start.add(i, 'd'), end.subtract(diffDays - i, 'd')));
                                         }
                                     }
-                                    resolve();
                                 }
                             }
                         }
@@ -1970,25 +1949,20 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                                 $scope.display.processing = undefined;
                                 $scope.closeBooking();
                                 model.refreshBookings($scope.display.list);
-                                resolve();
                             },
                             function (e) {
                                 notify.error(e.error);
                                 $scope.display.processing = undefined;
                                 $scope.currentErrors.push(e);
                                 $scope.$apply();
-                                reject();
                             }
                         );
                     }
                 } catch (e) {
                     console.error(e);
-                    reject();
                     $scope.display.processing = undefined;
                     $scope.currentErrors.push({error: 'rbs.error.technical'});
                 }
-            })
-
         };
 
         $scope.resolveSlotsSelected = function (debut, fin) {

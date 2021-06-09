@@ -325,7 +325,7 @@
                         <div class="row six">
                             <input class="one cell" type="radio" name="periodic_after"
                                    data-ng-model="editedBooking.byOccurrences" ng-value="true"
-                                   ng-change="updatePeriodicSummary()" checked/>
+                                   ng-change="updatePeriodicSummary()" checked input-guard/>
                             <label class="two cell">
                                 <i18n>rbs.booking.edit.period.end.after</i18n>
                             </label>
@@ -342,7 +342,7 @@
                         <div class="row six">
                             <input class="one cell" type="radio" name="periodic_after"
                                    data-ng-model="editedBooking.byOccurrences" ng-value="false"
-                                   ng-change="updatePeriodicSummary()"/>
+                                   ng-change="updatePeriodicSummary()" input-guard/>
                             <label class="two cell">
                                 <i18n>rbs.booking.edit.period.end.on</i18n>
                             </label>
