@@ -40,7 +40,8 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(RbsRepositoryEvents.class);
 
 	@Override
-	public void exportResources(JsonArray resourcesIds, String exportId, String userId, JsonArray groups, String exportPath, String locale, String host, final Handler<Boolean> handler) {
+	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
+								JsonArray groups, String exportPath, String locale, String host, final Handler<Boolean> handler) {
 		// TODO Implement export
 		log.error("Event [exportResources] is not implemented");
 	}
@@ -53,7 +54,9 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 		for(int i = groups.size(); i-- > 0;)
 		{
 			if(groups.hasNull(i))
-			groups.remove(i);
+				groups.remove(i);
+			else if (groups.getJsonObject(i) != null && groups.getJsonObject(i).getString("group") == null)
+				groups.remove(i);
 		}
 
 		if (groups.size() > 0){
@@ -95,6 +98,8 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 		for(int i = users.size(); i-- > 0;)
 		{
 			if(users.hasNull(i))
+				users.remove(i);
+			else if (users.getJsonObject(i) != null && users.getJsonObject(i).getString("id") == null)
 				users.remove(i);
 		}
 
