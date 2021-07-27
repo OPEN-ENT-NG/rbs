@@ -2598,9 +2598,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             var next = undefined;
             switch (calendarMode) {
                 case 'month':
-                    next = moment(model.calendar.firstDay).add(1, 'month');
-                    model.bookings.startPagingDate = moment(model.bookings.startPagingDate).add(1, 'month');
-                    model.bookings.endPagingDate = moment(model.bookings.endPagingDate).add(1, 'month');
+                    next = moment(model.calendar.firstDay);
+                    model.bookings.startPagingDate = moment(model.calendar.firstDay).clone().startOf('month');
+                    model.bookings.endPagingDate = moment(model.calendar.firstDay).clone().endOf('month');
                     break;
                 case 'week':
                     next = moment(model.calendar.firstDay).add(7, 'day');
@@ -2623,9 +2623,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             var prev = undefined;
             switch (calendarMode) {
                 case 'month':
-                    prev = moment(model.calendar.firstDay).subtract(1, 'month');
-                    model.bookings.startPagingDate = moment(model.bookings.startPagingDate).subtract(1, 'month');
-                    model.bookings.endPagingDate = moment(model.bookings.endPagingDate).subtract(1, 'month');
+                    prev = moment(model.calendar.firstDay);
+                    model.bookings.startPagingDate = moment(model.calendar.firstDay).clone().startOf('month');
+                    model.bookings.endPagingDate = moment(model.calendar.firstDay).clone().endOf('month');
                     break;
                 case 'week':
                     prev = moment(model.calendar.firstDay).subtract(7, 'day');
