@@ -33,7 +33,7 @@ Behaviours.register('rbs', {
         if (resource instanceof Resource && resource.type) {
             rightsContainer = resource.type;
         }
-        if (resource instanceof Booking && resource.resource && resource.resource.type) {
+        if ((resource && (resource instanceof Booking || resource.isBookingInstance)) && resource.resource && resource.resource.type) {
             rightsContainer = resource.resource.type;
         }
 

@@ -1,6 +1,7 @@
-import {_, angular, idiom as lang, ng, notify, routes, template} from 'entcore';
+import {_, angular, Behaviours, idiom as lang, ng, notify, routes, template} from 'entcore';
 import moment from './moment';
 import {isBookingSlot, RBS} from './models';
+import {BookingUtil} from "./utilities/booking";
 
 
 const {Booking, ExportBooking, Notification, Resource, ResourceType, Slot, SlotJson, SlotProfile} = RBS;
@@ -792,6 +793,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.switchSelectAllSlots = function (booking) {
+            BookingUtil.setRightsResourceBooking(booking);
             if (booking.is_periodic === true && booking.selected === true) {
                 _.each(booking._slots, function (slot) {
                     slot.selected = true;

@@ -1,5 +1,6 @@
 import {_, angular, Behaviours, http, Model, notify} from 'entcore';
 import moment from './moment';
+import {BookingUtil} from "./utilities/booking";
 
 declare let window: any;
 declare let model: any;
@@ -967,6 +968,7 @@ model.build = function () {
             if (startDate) {
                 http().get('/rbs/bookings/all/' + startDate.format('YYYY-MM-DD') +
                     '/' + endDate.format('YYYY-MM-DD')).done(function (bookings) {
+                    BookingUtil.setTagBookingInstance(bookings);
                     this.load(bookings);
                     mapObject(this);
                     if (typeof callback === 'function') {
@@ -978,6 +980,7 @@ model.build = function () {
             } else {
                 http().get('/rbs/bookings/all/' + model.bookings.startPagingDate.format('YYYY-MM-DD') +
                     '/' + model.bookings.endPagingDate.format('YYYY-MM-DD')).done(function (bookings) {
+                    BookingUtil.setTagBookingInstance(bookings);
                     this.load(bookings);
                     mapObject(this);
                     if (typeof callback === 'function') {
@@ -991,6 +994,7 @@ model.build = function () {
         syncForShowList: function (callback) {
             const collection = this;
             http().get('/rbs/bookings/all').done(function (bookings) {
+                BookingUtil.setTagBookingInstance(bookings);
                 this.load(bookings);
                 mapObject(this);
                 if (typeof callback === 'function') {
