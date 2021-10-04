@@ -54,7 +54,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 1);// every 1 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("periodic_end_date", toTimestampSeconds("31/07/2018 16:00", IANA_PARIS));
@@ -97,7 +100,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 1);// every 1 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("periodic_end_date", toTimestampSeconds("29/07/2018 16:00", IANA_PARIS));
@@ -139,7 +145,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 3);// every 3 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS));
@@ -183,7 +192,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 1);// every 1 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS));
@@ -215,7 +227,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 1);// every 1 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS));
@@ -241,7 +256,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("periodicity", 1);// every 1 weeks
 		jsonB.put("iana", IANA_PARIS);
 		jsonB.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS));
@@ -267,7 +285,10 @@ public class BookingTest {
 		JsonObject jsonR = new JsonObject();
 		JsonObject jsonB = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonB.put("iana", IANA_PARIS);
 		Booking booking = new Booking(jsonB, new Resource(jsonR));
 		Slots slots = new Slots(jsonS);
@@ -293,16 +314,22 @@ public class BookingTest {
 		JsonObject jsonB = new JsonObject();
 		jsonB.put("iana", IANA_PARIS);
 		Booking booking = new Booking(jsonB, new Resource(jsonR));
+		JsonArray jsonS = new JsonArray();
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
+		booking.setSlots(new Slots(jsonS));
 		long now = BookingDateUtils.currentTimestampSecondsForIana(IANA_PARIS);
 		ZonedDateTime nowZoned = ZonedDateTime.ofInstant(Instant.ofEpochSecond(now), ZoneId.of(IANA_PARIS));
 		// 3 days before
 		ZonedDateTime nowMinus3 = nowZoned.plusDays(3);
 		jsonB.put("start_date", nowMinus3.toInstant().getEpochSecond());
-		Assert.assertFalse(booking.slotsNotRespectingMinDelay());
+		Assert.assertTrue(booking.slotsNotRespectingMinDelay());
 		// 2 days before
 		ZonedDateTime nowMinus2 = nowZoned.plusDays(2);
 		jsonB.put("start_date", nowMinus2.toInstant().getEpochSecond());
-		Assert.assertFalse(booking.slotsNotRespectingMinDelay());
+		Assert.assertTrue(booking.slotsNotRespectingMinDelay());
 		// 1 days before
 		ZonedDateTime nowMinus1 = nowZoned.plusDays(1);
 		jsonB.put("start_date", nowMinus1.toInstant().getEpochSecond());
@@ -316,12 +343,18 @@ public class BookingTest {
 		JsonObject jsonB = new JsonObject();
 		jsonB.put("iana", IANA_PARIS);
 		Booking booking = new Booking(jsonB, new Resource(jsonR));
+		JsonArray jsonS = new JsonArray();
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
+		booking.setSlots(new Slots(jsonS));
 		long now = BookingDateUtils.currentTimestampSecondsForIana(IANA_PARIS);
 		ZonedDateTime nowZoned = ZonedDateTime.ofInstant(Instant.ofEpochSecond(now), ZoneId.of(IANA_PARIS));
 		// 3 days before
 		ZonedDateTime nowMinus3 = nowZoned.plusDays(3);
 		jsonB.put("end_date", nowMinus3.toInstant().getEpochSecond());
-		Assert.assertTrue(booking.slotsNotRespectingMaxDelay());
+		Assert.assertFalse(booking.slotsNotRespectingMaxDelay());
 		// 2 days before
 		ZonedDateTime nowMinus2 = nowZoned.plusDays(2);
 		jsonB.put("end_date", nowMinus2.toInstant().getEpochSecond());
@@ -336,7 +369,10 @@ public class BookingTest {
 	public void shouldReserveAccordingMaxDelayForPeriodicBooking() {
 		JsonObject jsonR = new JsonObject();
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		jsonR.put("max_delay", BookingDateUtils.daysToSecond(2));// should reserve at max 2 days before
 		JsonObject jsonB = new JsonObject();
 		jsonB.put("periodicity", 1);// every 1 weeks
@@ -350,7 +386,7 @@ public class BookingTest {
 		booking.setSlots(slots);
 		System.out.println(booking.daysBetweenFirstSlotEndAndPeriodicEndDate(slots.getSlotWithLatestEndDate()));
 		// more or less 4 days later
-		Assert.assertTrue(booking.slotsNotRespectingMaxDelay());
+		Assert.assertFalse(booking.slotsNotRespectingMaxDelay());
 		// Augment max delay
 		jsonR.put("max_delay", BookingDateUtils.daysToSecond(4));// should reserve at max 4 days before
 		Assert.assertFalse(booking.slotsNotRespectingMaxDelay());
@@ -376,12 +412,18 @@ public class BookingTest {
 		jsonB.put("days", new JsonArray("[true,true,true,true,true,true,true]"));// everyday
 		Booking booking = new Booking(jsonB, new Resource(jsonR));
 		//
+		JsonArray jsonS = new JsonArray();
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
+		booking.setSlots(new Slots(jsonS));
 		SlotIterable it = new SlotIterable(booking,booking.getSlots().get(0));
 		int nbBefore = 0;
 		int nbAfter = 0;
 		for (Slot slot : it) {
-			Assert.assertEquals(10, slot.getStart().getHour());
-			Assert.assertEquals(11, slot.getEnd().getHour());
+			Assert.assertEquals(15, slot.getStart().getHour());
+			Assert.assertEquals(16, slot.getEnd().getHour());
 			if (slot.getStart().isBefore(nextTransitionDate)) {
 				nbBefore++;
 			}
@@ -398,7 +440,10 @@ public class BookingTest {
 	@Test
 	public void shouldBookPeriodicEventWithNextNextDSTTransition() {
 		JsonArray jsonS = new JsonArray();
-		jsonS.add(new JsonObject().put("start_date","01/07/2018 15:00").put("end_date","01/07/2018 16:00").put("iana",IANA_PARIS));
+		jsonS.add(new JsonObject()
+				.put("start_date", toTimestampSeconds("01/07/2018 15:00", IANA_PARIS))
+				.put("end_date", toTimestampSeconds("01/07/2018 16:00", IANA_PARIS))
+				.put("iana",IANA_PARIS));
 		ZoneId zoneId = ZoneId.of(IANA_PARIS);
 		ZoneRules rules = zoneId.getRules();
 		ZoneOffsetTransition nextTransition = rules.nextTransition(Instant.now());
@@ -424,8 +469,8 @@ public class BookingTest {
 		int nbBefore = 0;
 		int nbAfter = 0;
 		for (Slot slot : it) {
-			Assert.assertEquals(10, slot.getStart().getHour());
-			Assert.assertEquals(11, slot.getEnd().getHour());
+			Assert.assertEquals(15, slot.getStart().getHour());
+			Assert.assertEquals(16, slot.getEnd().getHour());
 			if (slot.getStart().isBefore(nextNextTransitionDate)) {
 				nbBefore++;
 			}
