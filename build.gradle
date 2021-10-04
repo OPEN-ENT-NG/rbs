@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
   id 'java'
   id 'scala'
@@ -56,10 +59,13 @@ dependencies {
   compileOnly "io.vertx:vertx-core:$vertxVersion"
   compile "org.entcore:common:$entCoreVersion"
   compile 'org.mnode.ical4j:ical4j:2.0.2'
+  testCompile "io.vertx:vertx-unit:$vertxVersion"
+  testCompile "junit:junit:$junitVersion"
   testCompile "org.entcore:tests:$entCoreVersion"
+  testCompile "org.mockito:mockito-core:$mockitoVersion"
+  testCompile "org.powermock:powermock-core:$powerMockVersion"
   testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
   testCompile "io.vertx:vertx-core:$vertxVersion"
-  testCompile 'junit:junit:4.12'
 }
 
 jar {
@@ -128,6 +134,39 @@ javadoc {
 }
 
 test {
+  classpath += configurations.compileOnly
+  testLogging {
+    // set options for log level LIFECYCLE
+    events TestLogEvent.FAILED,
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED
+    exceptionFormat TestExceptionFormat.FULL
+    showExceptions true
+    showCauses true
+    showStackTraces true
+
+    // set options for log level DEBUG and INFO
+    debug {
+      events TestLogEvent.STARTED,
+              TestLogEvent.FAILED,
+              TestLogEvent.PASSED,
+              TestLogEvent.SKIPPED,
+              TestLogEvent.STANDARD_ERROR,
+              TestLogEvent.STANDARD_OUT
+      exceptionFormat TestExceptionFormat.FULL
+    }
+    info.events = debug.events
+    info.exceptionFormat = debug.exceptionFormat
+
+    afterSuite { desc, result ->
+      if (!desc.parent) { // will match the outermost suite
+        def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+        def startItem = '|  ', endItem = '  |'
+        def repeatLength = startItem.length() + output.length() + endItem.length()
+        println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+      }
+    }
+  }
 }
 
 task testJar(type: Jar) {
