@@ -99,7 +99,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 reverse: false,
             };
 
-            template.open('itemTooltip', 'tooltip-template');
+            template.open('itemTooltip', 'calendar/tooltip-template');
 
             // Used to display types for moderators (moderators of a type can update a resource, but cannot create one)
             $scope.keepProcessableResourceTypes = function (type) {
