@@ -74,6 +74,43 @@
 			</div>
 		</div>
 
+		<!-- Quantity -->
+		<hr/>
+		<div class="row">
+			<label class="three cell"><i18n>rbs.resource.edit.quantity.label</i18n></label>
+			<input class="input-size" type="number" min="0" ng-model="editedResource.quantity" />
+		</div>
+		<hr class="row" />
+
+		<div class="warning default-fontsize" ng-if="isResourceQuantityTooLow(editedResource.quantity)">
+			<div>
+				<i18n>rbs.resource.edit.quantity.warning</i18n>
+				<input type="checkbox" id="quantity-details" class="transparent" ng-model="quantityChecked" />
+				<label class="right-magnet pointer blue" for="quantity-details"><i18n>rbs.resource.edit.details</i18n></label>
+			</div>
+			<div ng-if="quantityChecked">
+				<table class="resource-table">
+					<thead>
+					<tr>
+						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.owner</i18n></td>
+						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.end</i18n></td>
+						<td style="width: 10%;"><i18n>rbs.resource.edit.tab.quantity</i18n></td>
+					</tr>
+					</thead>
+					<tbody>
+					<tr ng-repeat="booking in listBookingsConflictingQuantity">
+						<td>[[booking.owner_name]]</td>
+						<td>[[formatMoment(booking.startMoment)]]</td>
+						<td>[[formatMoment(booking.endMoment)]]</td>
+						<td>[[booking.quantity]]</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Color -->
 		<hr/>
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.color.label</i18n></label>
@@ -90,11 +127,14 @@
 		</div>
 
 		<div class="row">
-			<button class="right-magnet" ng-if="display.processing !== true"><i18n>rbs.save</i18n></button>
-			<input type="button" class="cancel right-magnet" i18n-value="cancel" navigation-trigger="closeResource()" ng-if="display.processing !== true" />
+			<button class="right-magnet" ng-if="display.processing !== true" ng-disabled="editedResource.quantity<-1"><i18n>rbs.save</i18n></button>
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
 		</div>
 	</article>
 	</form>
 </div>
+
+<!--    Lightboxes -->
+<div ng-include="'/rbs/public/template/confirm-quantity-resource.html'"></div>

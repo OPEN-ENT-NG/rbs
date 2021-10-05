@@ -12,6 +12,7 @@
         <div ng-if="item.isSlot()">
             <p>[[getPeriodicSummary(item)]]</p>
         </div>
+        <p class="quantity">Quantité : [[formatTextTooltipQuantity(item)]]</p>
         <p class="author">Par [[item.owner_name]] </p>
         <div ng-if="item.booking_reason">
             <p>[[item.booking_reason]]</p>

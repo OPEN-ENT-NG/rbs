@@ -117,9 +117,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		query.append("INSERT INTO rbs.booking")
-				.append("(resource_id, owner, booking_reason, status, start_date, end_date)")
-				.append(" SELECT  ?, ?, ?,");
-		values.add(rId).add(user.getUserId()).add(booking.getBookingReason());
+				.append("(resource_id, owner, booking_reason, quantity, status, start_date, end_date)")
+				.append(" SELECT  ?, ?, ?, ?,");
+		values.add(rId).add(user.getUserId()).add(booking.getBookingReason()).add(booking.getBookingQuantity());
 
 		// If validation is activated, the booking is created with status "created".
 		// Otherwise, it is created with status "validated".
@@ -172,12 +172,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
             // 1. WITH clause to insert the "parent" booking (i.e. the periodic booking)
             query.append("WITH parent_booking AS (")
-                    .append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date,")
+                    .append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, quantity, start_date, end_date,")
                     .append(" is_periodic, periodicity, occurrences, days)")
-                    .append(" VALUES (?, ?, ?, ?,");
+                    .append(" VALUES (?, ?, ?, ?, ?,");
             values.add(rId)
                     .add(user.getUserId())
                     .add(booking.getBookingReason())
+					.add(booking.getBookingQuantity())
                     .add(toSQLTimestamp(slot.getStartUTC()));
 
             query.append(" ?,");
@@ -225,9 +226,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 1. INSERT clause for the first child booking
 		query.append(
-				" INSERT INTO rbs.booking (resource_id, owner, booking_reason, start_date, end_date, parent_booking_id, status, refusal_reason)")
-				.append(" VALUES(?, ?, ?, ?, ?,");
-		values.add(resourceId).add(user.getUserId()).add(bookingReason).add(toSQLTimestamp(firstSlotStartDate))
+				" INSERT INTO rbs.booking (resource_id, owner, booking_reason, quantity, start_date, end_date, parent_booking_id, status, refusal_reason)")
+				.append(" VALUES(?, ?, ?, ?, ?, ?,");
+		values.add(resourceId)
+				.add(user.getUserId())
+				.add(bookingReason)
+				.add(booking.getBookingQuantity())
+				.add(toSQLTimestamp(firstSlotStartDate))
 				.add(toSQLTimestamp(firstSlotEndDate));
 
 		if (isUpdate) { // Update of a periodic booking
@@ -274,9 +279,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		}
 			SlotIterable it = new SlotIterable(booking,slot);
 			for (Slot slotIt : it) {
-				query.append(", (?, ?, ?, ?, ?,");
-				values.add(resourceId).add(user.getUserId()).add(bookingReason).add(toSQLTimestamp(slotIt.getStartUTC()))
-						.add(toSQLTimestamp(slotIt.getEndUTC()));
+				query.append(", (?, ?, ?, ?, ?, ?,");
+				values.add(resourceId).add(user.getUserId()).add(bookingReason).add(booking.getBookingQuantity())
+						.add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()));
 
 				if (isUpdate) { // Update of a periodic booking
 					query.append(" ?,");
@@ -356,10 +361,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		StringBuilder query = new StringBuilder();
 		query.append("UPDATE rbs.booking").append(" SET ").append(sb.toString()).append("modified = NOW()")
-				.append(", booking_reason = ?")
+				.append(", quantity = ?")
 				.append(", start_date = ?")
 				.append(", end_date = ?" );
-		values.add(booking.getBookingReason());
+		values.add(booking.getBookingQuantity());
 		values.add(toSQLTimestamp(slot.getStartUTC()));
 		values.add(toSQLTimestamp(slot.getEndUTC()));
 
@@ -651,7 +656,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		if (newStatus != VALIDATED.status()) {
 			processQuery.append(returningClause);
 			statementsBuilder.prepared(processQuery.toString(), processValues);
-		} else {
+		}
+		else {
 			// 3b. Additional clauses when validating a booking
 			StringBuilder validateQuery = new StringBuilder();
 			validateQuery.append("WITH validated_booking AS (").append(" SELECT start_date, end_date")
