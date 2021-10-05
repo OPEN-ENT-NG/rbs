@@ -1,0 +1,41 @@
+<lightbox show="displayLightbox" on-close="displayLightbox = false">
+    <div class="row form-section">
+        <h2>
+            <i18n><span class="no-style">Modification d'une resource</span></i18n>
+        </h2>
+        <section class="twelve cell">
+            <label>
+                <b class="centered-text">Attention</b>
+                <div>Des réservations supérieures à cette quantité ont été prévues.</div>
+                <div>Cela entrainera la suspension des réservations concernées.</div>
+                <div>Les gestionnaires devront définir les réservations à conserver.</div>
+                <p>Quantité : <b>[[editedResource.quantity]]</b></p>
+                <p>Réservations concernées</p>
+            </label>
+
+            <table class="resource-table">
+                <thead>
+                <tr>
+                    <td style="width: 30%;"><i18n>rbs.resource.edit.tab.owner</i18n></td>
+                    <td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+                    <td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.end</i18n></td>
+                    <td style="width: 10%;"><i18n>rbs.resource.edit.tab.quantity</i18n></td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="booking in listBookingsConflictingQuantity">
+                    <td>[[booking.owner_name]]</td>
+                    <td>[[formatMoment(booking.startMoment)]]</td>
+                    <td>[[formatMoment(booking.endMoment)]]</td>
+                    <td>[[booking.quantity]]</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <button class="right-magnet" ng-if="display.processing !== true" ng-click="doSaveResource()"><i18n>rbs.save</i18n></button>
+            <input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="displayLightbox = false" ng-if="display.processing !== true" />
+
+            <button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
+        </section>
+    </div>
+</lightbox>

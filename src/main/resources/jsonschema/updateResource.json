@@ -37,6 +37,9 @@
 		},
 		"validation": {
 			"type": "boolean"
+		},
+		"quantity": {
+			"type": "integer"
 		}
 	},
 	"required": [

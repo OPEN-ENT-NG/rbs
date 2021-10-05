@@ -77,6 +77,10 @@ public class Booking {
 		return json.getString("booking_reason");
 	}
 
+	public Integer getBookingQuantity() {
+		return json.getInteger("quantity");
+	}
+
 	public Optional<JsonArray> getDays() {
 		return Optional.ofNullable(json.getJsonArray("days", null));
 	}

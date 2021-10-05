@@ -119,6 +119,7 @@ function Booking(book?) {
 }
 
 Booking.prototype.save = function (cb, cbe) {
+    console.log(this);
     if (this.id) {
         this.update(cb, cbe);
     } else {
@@ -233,8 +234,17 @@ Booking.prototype.refuse = function (cb, cbe) {
     this.process(data, cb, cbe, 'refuse');
 };
 
+Booking.prototype.suspend = function (cb, cbe) {
+    this.status = model.STATE_SUSPENDED;
+    var data = {
+        status: this.status
+    };
+    this.process(data, cb, cbe, 'suspend');
+};
+
 Booking.prototype.process = function (data, cb, cbe, context) {
     var booking = this;
+    console.log(this);
     http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data)
         .done(function () {
             if (typeof cb === 'function') {
@@ -346,10 +356,10 @@ Booking.prototype.hasAtLeastOneSuspendedSlot = function () {
     });
 };
 
-
 Booking.prototype.toJSON = function () {
     var json: any = {
-        slots: this.slots
+        slots: this.slots,
+        quantity: this.quantity
     };
 
     if (this.is_periodic === true) {
@@ -372,6 +382,7 @@ Booking.prototype.toJSON = function () {
 
     return json;
 };
+
 
 function ExportBooking() {
     this.format = "PDF";
@@ -406,6 +417,7 @@ ExportBooking.prototype.send = function (cb, cbe) {
             }
         });
 };
+
 
 function Resource(data?) {
     var resource = this;
@@ -494,7 +506,6 @@ Resource.prototype.delete = function (cb, cbe) {
         });
 };
 
-
 Resource.prototype.toJSON = function () {
     var json: any = {
         name: this.name,
@@ -504,7 +515,8 @@ Resource.prototype.toJSON = function () {
         min_delay: (this.hasMinDelay) ? this.min_delay : undefined,
         max_delay: (this.hasMaxDelay) ? this.max_delay : undefined,
         color: this.color,
-        validation: this.validation
+        validation: this.validation,
+        quantity: this.quantity
     };
     if (this.was_available !== undefined) {
         json.was_available = this.was_available;
@@ -718,6 +730,7 @@ var returnData = function (hook, params) {
         hook.apply(this, params)
 };
 
+
 function SlotProfile() {
 }
 
@@ -763,6 +776,7 @@ SlotProfile.prototype.getSlots = function (slotProfileId, callback) {
             notify.error(error.error);
         });
 };
+
 
 function Notification() {
 }
@@ -834,7 +848,6 @@ Notification.prototype.removeNotifications = function (id, cb, cbe) {
             }
         });
 };
-
 
 export const RBS = {
     Booking,

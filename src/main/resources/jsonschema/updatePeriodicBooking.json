@@ -6,7 +6,7 @@
     "booking_reason": {
       "type": "string"
     },
-	  "slots": {
+    "slots": {
 		  "type": "array",
 		  "description": "List of slots representing the start/end date of the bookings",
 		  "additionalProperties": false,
@@ -95,7 +95,10 @@
 			"5",
 			"6"
 		  ]
-		}
+		},
+    "quantity": {
+	  "type": "integer"
+    }
   },
   "required": [
 	  "slots",

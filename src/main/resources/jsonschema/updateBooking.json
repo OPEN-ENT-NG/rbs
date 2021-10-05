@@ -33,6 +33,9 @@
         ]
       },
       "maxItems": 1
+    },
+    "quantity": {
+      "type": "integer"
     }
   },
   "required": [

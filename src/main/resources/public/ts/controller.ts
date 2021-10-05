@@ -746,6 +746,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.selectedBooking.displaySection = displaySection;
             $scope.initModerators();
             $scope.display.showPanel = true;
+            console.log($scope.selectedBooking);
             template.open('lightbox', 'booking-details');
             $scope.$apply();
         };
@@ -1023,6 +1024,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.editedBooking.endMoment
             );
 
+            $scope.initQuantities();
+            $scope.bookings.syncForShowList();
+
             template.open('lightbox', 'edit-booking');
             $scope.display.showPanel = true;
         };
@@ -1063,6 +1067,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.editedBooking.startMoment,
                 $scope.editedBooking.endMoment
             );
+
+            $scope.initQuantities();
+            $scope.bookings.syncForShowList();
         };
 
         model.calendar.eventer.on("calendar.create-item", function (timeSlot) {
@@ -1081,11 +1088,12 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.editBooking = function () {
-                $scope.display.processing = undefined;
-                $scope.selectedSlotStart = undefined;
-                $scope.selectedSlotEnd = undefined;
-                $scope.slotNotFound = undefined;
-                $scope.currentErrors = [];
+            $scope.display.processing = undefined;
+            $scope.selectedSlotStart = undefined;
+            $scope.selectedSlotEnd = undefined;
+            $scope.slotNotFound = undefined;
+            $scope.currentErrors = [];
+            $scope.bookings.syncForShowList();
 
                 if ($scope.selectedBooking !== undefined) {
                     $scope.editedBooking = $scope.selectedBooking;
@@ -1160,6 +1168,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 template.open('lightbox', 'edit-booking');
                 $scope.display.showPanel = true;
                 $scope.updatePeriodicSummary();
+        };
+
+        $scope.initQuantities = function() {
+            if ($scope.editedBooking.resource.quantity === undefined) {
+                $scope.editedBooking.resource.quantity = 1;
+            }
+            $scope.editedBooking.quantity = 1;
+            $scope.updateQuantitiesAvailable();
         };
 
         $scope.initEditBookingDisplay = function () {
@@ -2407,14 +2423,21 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResource.validation = $scope.currentResourceType.validation;
             $scope.editedResource.is_available = true;
             $scope.editedResource.periodic_booking = true;
+            $scope.editedResource.quantity = 1;
             template.open('resources', 'edit-resource');
         };
 
         $scope.editSelectedResource = function () {
+            // $scope.bookings.sync();
+            $scope.bookings.syncForShowList();
             $scope.isCreation = false;
             $scope.display.processing = undefined;
             $scope.editedResource = $scope.currentResourceType.resources.selection()[0];
             $scope.currentResourceType.resources.deselectAll();
+            if ($scope.editedResource.quantity === undefined) {
+                $scope.editedResource.quantity = 1;
+            }
+            $scope.displayLightbox = false;
 
             // Field to track Resource availability change
             $scope.editedResource.was_available = $scope.editedResource.is_available;
@@ -2452,6 +2475,21 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.saveResource = function () {
+            if ($scope.listBookingsConflictingQuantity.length > 0) {
+                $scope.displayLightbox = true;
+                var list = document.getElementsByTagName("lightbox");
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].getAttribute("show") === 'display.showPanel') {
+                        list[i].getElementsByTagName("section")[0].setAttribute('style','display:block;');
+                    }
+                }
+            }
+            else {
+                $scope.doSaveResource();
+            }
+        };
+
+        $scope.doSaveResource = function () {
             $scope.display.processing = true;
             $scope.isManage = true;
             if ($scope.editedResource.is_available === 'true') {
@@ -2473,6 +2511,38 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     $scope.$apply();
                 }
             );
+
+            // Suspend conflicting bookings
+            if ($scope.listBookingsConflictingQuantity.length > 0) {
+                $scope.processBookings = $scope.listBookingsConflictingQuantity;
+                $scope.display.processing = true;
+                try {
+                    var actions = $scope.processBookings.length;
+                    _.each($scope.processBookings, function (booking) {
+                        booking.suspend(
+                            function () {
+                                actions--;
+                                if (actions === 0) {
+                                    $scope.display.processing = undefined;
+                                    model.refreshBookings($scope.display.list);
+                                }
+                            },
+                            function (e) {
+                                $scope.currentErrors.push(e);
+                                actions--;
+                                if (actions === 0) {
+                                    $scope.display.processing = undefined;
+                                    $scope.showActionErrors();
+                                    model.refreshBookings($scope.display.list);
+                                }
+                            }
+                        );
+                    });
+                } catch (e) {
+                    $scope.display.processing = undefined;
+                    $scope.currentErrors.push({error: 'rbs.error.technical'});
+                }
+            }
         };
 
         $scope.deleteResourcesSelection = function () {
@@ -3013,6 +3083,254 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     list[i].getElementsByTagName("section")[0].setAttribute('style','display:block;');
                 }
             }
+        };
+
+
+        // Init + Tests
+
+        $scope.index = 0;
+        $scope.tempQuantities = {
+            resourceQuantityAvailable: undefined, // Quantity available to use for bookings on a specific period
+            bookingQuantityAvailable: undefined // Previous - quantities already used by other bookings on this specific period
+        };
+        $scope.listBookingsConflictingQuantity = [];
+        $scope.tempPeriodicBookings = [];
+
+        // Resource
+
+        $scope.isResourceQuantityTooLow = function(quantity:number) : boolean {
+            $scope.listBookingsConflictingQuantity = [];
+            $scope.editedResource.bookings.forEach(function (booking) {
+                if (!booking.is_periodic && isNotPast(booking) && booking.quantity != undefined && booking.quantity > quantity) {
+                    $scope.listBookingsConflictingQuantity.push(booking);
+                }
+            });
+            return $scope.listBookingsConflictingQuantity.length > 0;
+        };
+
+        // Booking / Tooltip
+
+        $scope.updateQuantitiesAvailable = function() : void {
+            let booking = $scope.editedBooking;
+            updateEditedBookingMoments();
+
+            if (booking.startMoment.isSame(booking.endMoment)) {
+                $scope.tempQuantities.resourceQuantityAvailable = 0;
+                $scope.tempQuantities.bookingQuantityAvailable = 0;
+            }
+            else {
+                if (booking.is_periodic) {
+                    calculatePeriodicBookings();
+                }
+                updateResourceQuantityAvailableByPeriod(booking.resource, booking.startMoment, booking.endMoment);
+                updateBookingQuantityAvailableByPeriod($scope.tempQuantities.resourceQuantityAvailable, booking);
+            }
+
+        };
+
+        const updateEditedBookingMoments = function() : void {
+            $scope.currentErrors = [];
+
+            $scope.editedBooking.startDate = $scope.booking.startDate;
+            $scope.editedBooking.endDate = $scope.booking.endDate;
+            $scope.editedBooking.startTime = $scope.booking.startTime;
+            $scope.editedBooking.endTime = $scope.booking.endTime;
+
+            // Formats time if they are strings
+            if (typeof $scope.editedBooking.startTime === 'string') {
+                const time = $scope.editedBooking.startTime.split(':');
+                $scope.editedBooking.startTime = moment().set('hour', time[0]).set('minute', time[1]);
+            }
+            if (typeof $scope.editedBooking.endTime === 'string') {
+                const time = $scope.booking.endTime.split(':');
+                $scope.editedBooking.endTime = moment().set('hour', time[0]).set('minute', time[1]);
+            }
+
+            try {
+                if (checkEditedBookingMoments()) {
+                    return;
+                }
+
+                $scope.editedBooking.startMoment = moment([
+                    $scope.editedBooking.startDate.getFullYear(),
+                    $scope.editedBooking.startDate.getMonth(),
+                    $scope.editedBooking.startDate.getDate(),
+                    $scope.editedBooking.startTime.hour(),
+                    $scope.editedBooking.startTime.minute()
+                ]);
+                $scope.editedBooking.endMoment = moment([
+                    $scope.editedBooking.endDate.getFullYear(),
+                    $scope.editedBooking.endDate.getMonth(),
+                    $scope.editedBooking.endDate.getDate(),
+                    $scope.editedBooking.endTime.hour(),
+                    $scope.editedBooking.endTime.minute()
+                ]);
+            }
+            catch (e) {
+                $scope.currentErrors.push({error: 'rbs.error.technical'});
+                throw e;
+            }
+        };
+
+        const checkEditedBookingMoments = function () : boolean {
+            var hasErrors = false;
+            if (
+                $scope.editedBooking.startDate.getFullYear() < $scope.today.year() ||
+                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
+                    $scope.editedBooking.startDate.getMonth() < $scope.today.month()) ||
+                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
+                    $scope.editedBooking.startDate.getMonth() == $scope.today.month() &&
+                    $scope.editedBooking.startDate.getDate() < $scope.today.date()) ||
+                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
+                    $scope.editedBooking.startDate.getMonth() == $scope.today.month() &&
+                    $scope.editedBooking.startDate.getDate() == $scope.today.date() &&
+                    $scope.editedBooking.startTime.hour() < moment().hour())
+            ) {
+                $scope.currentErrors.push({
+                    error: 'rbs.booking.invalid.datetimes.past',
+                });
+                notify.error('rbs.booking.invalid.datetimes.past');
+                hasErrors = true;
+            }
+            return hasErrors;
+        };
+
+        const calculatePeriodicBookings = function() : void {
+            $scope.tempPeriodicBookings = [];
+            let currentMoment = moment($scope.editedBooking.startMoment);
+            let currentMonday = currentMoment.subtract(currentMoment.weekday(), 'days');
+            let diff = $scope.editedBooking.endMoment.diff($scope.editedBooking.startMoment);
+            let tempBook = new Booking();
+
+            // Get days checked
+            let days = [];
+            for (let i = 0; i < $scope.editedBooking.periodDays.length; i++) {
+                if ($scope.editedBooking.periodDays[i].value) {
+                    days.push(i);
+                }
+            }
+
+            // Get tempPeriodicBookings
+            if ($scope.editedBooking.byOccurrences) {
+                while($scope.tempPeriodicBookings.length < $scope.editedBooking.occurrences) {
+                    days.forEach(function(day) {
+                        if ($scope.tempPeriodicBookings.length < $scope.editedBooking.occurrences) {
+                            tempBook.startMoment = moment(currentMonday);
+                            tempBook.endMoment = moment(currentMonday);
+                            tempBook.startMoment.add(day, 'days');
+                            tempBook.endMoment.add(day, 'days').add(diff);
+                            tempBook.quantity = $scope.editedBooking.quantity;
+                            if (tempBook.startMoment >= $scope.editedBooking.startMoment) {
+                                $scope.tempPeriodicBookings.push(tempBook);
+                            }
+                            tempBook = new Booking();
+                        }
+                    });
+                    currentMonday.add($scope.editedBooking.periodicity, 'weeks');
+                }
+            }
+            else {
+                while(currentMoment < moment($scope.booking.periodicEndDate)) {
+                    days.forEach(function(day) {
+                        if (currentMoment < moment($scope.booking.periodicEndDate)) {
+                            tempBook.startMoment = currentMonday;
+                            tempBook.endMoment = currentMonday;
+                            tempBook.startMoment.add(day, 'days');
+                            tempBook.endMoment.add(day, 'days');
+                            tempBook.quantity = $scope.editedBooking.quantity;
+                            if (tempBook.startMoment >= $scope.editedBooking.startMoment) {
+                                $scope.tempPeriodicBookings.push(tempBook);
+                            }
+                            currentMoment = tempBook.startMoment;
+                            tempBook = new Booking();
+                        }
+                    });
+                    currentMonday.add($scope.editedBooking.periodicity, 'weeks');
+                }
+            }
+
+            console.log($scope.editedBooking);
+            console.log($scope.tempPeriodicBookings);
+        };
+
+        const updateResourceQuantityAvailableByPeriod = function(resource, startMoment, endMoment) : void {
+            $scope.tempQuantities.resourceQuantityAvailable = $scope.editedBooking.resource.quantity;
+            // $scope.tempQuantities.resourceQuantityAvailable = Math.floor(Math.random()*$scope.editedBooking.resource.quantity);
+            // if (resource.quantity <= 0) {
+            //     $scope.tempQuantities.resourceQuantityAvailable = 0;
+            // }
+            // else {
+            //     $scope.tempQuantities.resourceQuantityAvailable = resource.quantity;
+            //     resource.unavailability.forEach(function (unavailability) {
+            //         if (startMoment < unavailability.endMoment && endMoment > unavailability.startMoment) {
+            //             $scope.tempQuantities.resourceQuantityAvailable -= unavailability.quantity;
+            //         }
+            //     });
+            //     if ($scope.tempQuantities.resourceQuantityAvailable <= 0) {
+            //         $scope.tempQuantities.resourceQuantityAvailable = 0;
+            //     }
+            // }
+        };
+
+        const updateBookingQuantityAvailableByPeriod = function(quantity:number, booking) : void {
+            if (quantity <= 0) {
+                $scope.tempQuantities.bookingQuantityAvailable = 0;
+            }
+            else {
+                $scope.tempQuantities.bookingQuantityAvailable = quantity;
+                if (booking.is_periodic) {
+                    $scope.tempPeriodicBookings.forEach(function(slot) {
+                        let localQuantity = quantity;
+                        booking.resource.bookings.forEach(function (b) {
+                            if (!b.is_periodic && b.id != booking.id && slot.startMoment < b.endMoment && slot.endMoment > b.startMoment) {
+                                localQuantity -= b.quantity;
+                            }
+                        });
+                        if (localQuantity < $scope.tempQuantities.bookingQuantityAvailable) {
+                            $scope.tempQuantities.bookingQuantityAvailable = localQuantity;
+                        }
+                    });
+                }
+                else {
+                    booking.resource.bookings.forEach(function (b) {
+                        if (!b.is_periodic && b.id != booking.id && booking.startMoment < b.endMoment && booking.endMoment > b.startMoment) {
+                            $scope.tempQuantities.bookingQuantityAvailable -= b.quantity;
+                        }
+                    });
+                }
+                if ($scope.tempQuantities.bookingQuantityAvailable <= 0) {
+                    $scope.tempQuantities.bookingQuantityAvailable = 0;
+                }
+            }
+        };
+
+        $scope.formatTextBookingQuantity = function() : string {
+            if ($scope.tempQuantities.bookingQuantityAvailable <= 0) {
+                return lang.translate('rbs.booking.edit.quantity.none');
+            }
+
+            return $scope.tempQuantities.bookingQuantityAvailable + lang.translate('rbs.booking.edit.quantity.on') +
+                $scope.tempQuantities.resourceQuantityAvailable + lang.translate('rbs.booking.edit.quantity.availability');
+        };
+
+        $scope.formatTextTooltipQuantity = function(item:any) : string {
+            let booking = $scope.bookings.find(b => b.id === item.id);
+            // updateResourceQuantityAvailableByPeriod(booking.resource, booking.startMoment, booking.endMoment);
+
+            let resourceQuantity = $scope.tempQuantities.resourceQuantityAvailable;
+            if ($scope.tempQuantities.resourceQuantityAvailable === undefined) {
+                resourceQuantity = booking.resource.quantity;
+            }
+
+            return (booking.quantity===undefined?"?":booking.quantity) + " / " + resourceQuantity;
+        };
+
+        $scope.isBookingQuantityWrong = function(booking) : boolean {
+            return booking.quantity < 1 || booking.quantity === undefined || booking.quantity > $scope.tempQuantities.bookingQuantityAvailable;
+        };
+
+        const isNotPast = (booking) =>{
+            return(moment(booking.startMoment).isAfter(moment()));
         };
     }])
 ;

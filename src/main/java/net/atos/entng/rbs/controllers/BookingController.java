@@ -19,9 +19,7 @@
 
 package net.atos.entng.rbs.controllers;
 
-import static net.atos.entng.rbs.BookingStatus.CREATED;
-import static net.atos.entng.rbs.BookingStatus.REFUSED;
-import static net.atos.entng.rbs.BookingStatus.VALIDATED;
+import static net.atos.entng.rbs.BookingStatus.*;
 import static net.atos.entng.rbs.Rbs.RBS_NAME;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
@@ -671,17 +669,17 @@ public class BookingController extends ControllerHelper {
 				if (user != null) {
 					RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject object) {
+						public void handle(JsonObject json) {
 							String resourceId = request.params().get("id");
 							final String bookingId = request.params().get("bookingId");
 
-							int newStatus = object.getInteger("status");
-							if (newStatus != VALIDATED.status() && newStatus != REFUSED.status()) {
+							int newStatus = json.getInteger("status");
+							if (newStatus != VALIDATED.status() && newStatus != REFUSED.status()  && newStatus != SUSPENDED.status()) {
 								badRequest(request, "Invalid status");
 								return;
 							}
 
-							object.put("moderator_id", user.getUserId());
+							json.put("moderator_id", user.getUserId());
 
 							Handler<Either<String, JsonArray>> handler = new Handler<Either<String, JsonArray>>() {
 								@Override
@@ -741,7 +739,7 @@ public class BookingController extends ControllerHelper {
 								}
 							};
 
-							bookingService.processBooking(resourceId, bookingId, newStatus, object, user, handler);
+							bookingService.processBooking(resourceId, bookingId, newStatus, json, user, handler);
 						}
 					});
 				} else {
