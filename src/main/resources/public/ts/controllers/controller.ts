@@ -1,4 +1,4 @@
-import {_, angular, Behaviours, idiom as lang, ng, notify, routes, template} from 'entcore';
+import {_, angular, idiom as lang, ng, notify, template} from 'entcore';
 import moment from '../moment';
 import {isBookingSlot, RBS} from '../models/models';
 import {BookingUtil} from "../utilities/booking";
@@ -10,16 +10,6 @@ declare let saveAs: any;
 declare let BlobBuilder: any;
 declare let updateCalendarScheduleBooking: any;
 declare let model: any;
-
-routes.define(function ($routeProvider) {
-    $routeProvider
-        .when('/booking/:bookingId', {
-            action: 'viewBooking',
-        })
-        .when('/booking/:bookingId/:start', {
-            action: 'viewBooking',
-        });
-});
 
 export const RbsController: any = ng.controller('RbsController', ['$scope', 'route', '$timeout', function ($scope, route, $timeout) {
         route({
