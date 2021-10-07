@@ -1,0 +1,11 @@
+.resource-table {
+  table-layout: fixed;
+  width: 100%;
+  margin-top: 1rem;
+  tr {
+    td {
+      padding: 0.5rem 0;
+      text-align: center;
+    }
+  }
+}

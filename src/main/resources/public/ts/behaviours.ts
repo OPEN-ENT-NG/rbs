@@ -1,5 +1,5 @@
 import {_, Behaviours, model} from 'entcore';
-import {RBS} from './models';
+import {RBS} from './models/models';
 
 const {Resource, Booking} = RBS;
 

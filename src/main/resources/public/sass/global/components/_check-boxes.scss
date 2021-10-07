@@ -1,0 +1,40 @@
+.check-boxes {
+  padding: 0;
+  margin: 0;
+  clear: both;
+  li {
+    list-style-type: none;
+    list-style-position: outside;
+    float: left;
+    padding: 0;
+  }
+  input[type="checkbox"] {
+    &:not(:checked) {
+      position: absolute;
+      left: -9999%;
+      opacity: 0;
+      height: 0;
+      width: 0;
+    }
+    &:checked {
+      position: absolute;
+      left: -9999%;
+      opacity: 0;
+      height: 0;
+      width: 0;
+      + {
+        label {
+          cursor: pointer;
+          color: $rbs-darkorange;
+          font-weight: bold;
+        }
+      }
+    }
+    + {
+      label {
+        cursor: pointer;
+        color: $rbs-darkgrey;
+      }
+    }
+  }
+}
