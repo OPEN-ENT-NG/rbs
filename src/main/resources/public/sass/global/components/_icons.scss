@@ -1,0 +1,72 @@
+i {
+  &.md-icon {
+    font-size: 20px;
+  }
+
+  &.suppr::before {
+    @include fonticon();
+    content: '\e8cf';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+  &.modif::before {
+    @include fonticon();
+    content: '\e858';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+  &.valid::before {
+    @include fonticon();
+    content: '\e871';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+  &.cancel::before {
+    @include fonticon();
+    content: '\e866';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+  &.date::before {
+    @include fonticon();
+    content: '\e917';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+  &.add::before {
+    @include fonticon();
+    content: '\e85e';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    margin-right: 5px;
+    color: $rbs-dimgrey;
+    vertical-align: middle;
+  }
+
+}

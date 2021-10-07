@@ -1,0 +1,48 @@
+$rbs-white: #FFFFFF;
+$rbs-blue: #0000FF;
+$rbs-darkorange: #FF8C00;
+$rbs-darkgrey: #555555;
+$rbs-dimgrey: #696969;
+
+body.rbs {
+  @import "components/index";
+
+  .input-size {
+    width: 40px;
+  }
+
+  .default-fontsize {
+    font-size: 16px !important;
+  }
+
+  .transparent {
+    opacity: 0;
+    height: 0;
+    width: 0;
+  }
+
+  .pointer {
+    cursor: pointer;
+  }
+
+  .blue {
+    color: $rbs-blue;
+  }
+
+  .classic-button {
+    background: none !important;
+    box-shadow: none;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #addUnavailability td input {
+    margin: 0;
+  }
+
+  .selected {
+    color: $rbs-darkorange;
+    font-weight: bold;
+  }
+
+}

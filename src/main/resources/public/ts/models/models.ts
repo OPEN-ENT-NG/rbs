@@ -1,6 +1,6 @@
 import {_, angular, Behaviours, http, Model, notify} from 'entcore';
-import moment from './moment';
-import {BookingUtil} from "./utilities/booking";
+import moment from '../moment';
+import {BookingUtil} from "../utilities/booking";
 
 declare let window: any;
 declare let model: any;
@@ -244,7 +244,6 @@ Booking.prototype.suspend = function (cb, cbe) {
 
 Booking.prototype.process = function (data, cb, cbe, context) {
     var booking = this;
-    console.log(this);
     http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data)
         .done(function () {
             if (typeof cb === 'function') {

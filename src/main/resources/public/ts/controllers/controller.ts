@@ -1,7 +1,7 @@
 import {_, angular, Behaviours, idiom as lang, ng, notify, routes, template} from 'entcore';
-import moment from './moment';
-import {isBookingSlot, RBS} from './models';
-import {BookingUtil} from "./utilities/booking";
+import moment from '../moment';
+import {isBookingSlot, RBS} from '../models/models';
+import {BookingUtil} from "../utilities/booking";
 
 
 const {Booking, ExportBooking, Notification, Resource, ResourceType, Slot, SlotJson, SlotProfile} = RBS;
@@ -452,7 +452,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         ) {
                             if (!found) {
                                 // error
-                                console.log('Booking not found (id: ' + bookingId + ')');
+                                console.error('Booking not found (id: ' + bookingId + ')');
                                 notify.error('rbs.route.booking.not.found');
                                 $scope.display.routed = undefined;
                                 $scope.initResources();
@@ -746,7 +746,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.selectedBooking.displaySection = displaySection;
             $scope.initModerators();
             $scope.display.showPanel = true;
-            console.log($scope.selectedBooking);
             template.open('lightbox', 'booking-details');
             $scope.$apply();
         };
@@ -3248,9 +3247,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     currentMonday.add($scope.editedBooking.periodicity, 'weeks');
                 }
             }
-
-            console.log($scope.editedBooking);
-            console.log($scope.tempPeriodicBookings);
         };
 
         const updateResourceQuantityAvailableByPeriod = function(resource, startMoment, endMoment) : void {
