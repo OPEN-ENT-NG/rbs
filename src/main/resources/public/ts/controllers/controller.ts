@@ -2,6 +2,7 @@ import {_, angular, idiom as lang, ng, notify, template} from 'entcore';
 import moment from '../moment';
 import {isBookingSlot, RBS} from '../models/models';
 import {BookingUtil} from "../utilities/booking";
+import {DateUtils} from "../utilities/date.util";
 
 
 const {Booking, ExportBooking, Notification, Resource, ResourceType, Slot, SlotJson, SlotProfile} = RBS;
@@ -134,7 +135,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             template.open('main', 'main-view');
             template.open('top-menu', 'top-menu');
-            template.open('editBookingErrors', 'edit-booking-errors');
+            template.open('editBookingErrors', 'booking/edit-booking-errors');
 
             // Will auto-select all resources and "Mine" bookings filter by default
             //model.bookings.filters.mine = true;
@@ -495,7 +496,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
             $scope.initStructuresManage(false);
             template.open('main', 'manage-view');
-            template.open('resources', 'manage-resources');
+            template.open('resources', 'resource/manage-resources');
         };
 
         $scope.initMain = function () {
@@ -736,7 +737,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.selectedBooking.displaySection = displaySection;
             $scope.initModerators();
             $scope.display.showPanel = true;
-            template.open('lightbox', 'booking-details');
+            template.open('lightbox', 'booking/booking-details');
             $scope.$apply();
         };
 
@@ -835,7 +836,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.$apply();
         };
 
-// General
+        // General
         $scope.formatDate = function (date) {
             return $scope.formatMoment(moment(date));
         };
@@ -1005,9 +1006,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             );
             $scope.editedBooking.startMoment.seconds(0);
             $scope.editedBooking.endMoment.seconds(0);
-            // DEBUG
-            var DEBUG_editedBooking = $scope.editedBooking;
-            // /DEBUG
+
             $scope.initBookingDates(
                 $scope.editedBooking.startMoment,
                 $scope.editedBooking.endMoment
@@ -1016,7 +1015,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.initQuantities();
             $scope.bookings.syncForShowList();
 
-            template.open('lightbox', 'edit-booking');
+            template.open('lightbox', 'booking/edit-booking');
             $scope.display.showPanel = true;
         };
 
@@ -1047,24 +1046,13 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                     $scope.editedBooking.startMoment.hour() + 1
                 );
             }
+
             $scope.editedBooking.startMoment.seconds(0);
             $scope.editedBooking.endMoment.seconds(0);
-            // DEBUG
-            var DEBUG_editedBooking = $scope.editedBooking;
-            // /DEBUG
-            $scope.initBookingDates(
-                $scope.editedBooking.startMoment,
-                $scope.editedBooking.endMoment
-            );
 
+            $scope.initBookingDates($scope.editedBooking.startMoment, $scope.editedBooking.endMoment);
             $scope.initQuantities();
-            $scope.bookings.syncForShowList();
         };
-
-        model.calendar.eventer.on("calendar.create-item", function (timeSlot) {
-            $scope.booking = new Booking();
-            $scope.newBookingCalendar(timeSlot);
-        });
 
         $scope.editPeriodicStartDate = function () {
             $scope.showDate = true;
@@ -1154,7 +1142,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         }
                     );
                 }
-                template.open('lightbox', 'edit-booking');
+                template.open('lightbox', 'booking/edit-booking');
                 $scope.display.showPanel = true;
                 $scope.updatePeriodicSummary();
         };
@@ -2126,7 +2114,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if (!$scope.processBookings.length) {
                 $scope.processBookings = $scope.selectBooking($scope.selectedBooking);
             }
-            template.open('lightbox', 'confirm-delete-booking');
+            template.open('lightbox', 'booking/confirm-delete-booking');
             $scope.display.showPanel = true;
             $scope.$apply();
         };
@@ -2136,7 +2124,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if (!$scope.processBookings.length) {
                 $scope.processBookings = $scope.selectBooking($scope.selectedBooking);
             }
-            template.open('lightbox', 'delete-periodic-booking');
+            template.open('lightbox', 'booking/delete-periodic-booking');
             $scope.display.showPanel = true;
             $scope.$apply();
         };
@@ -2256,7 +2244,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.processBookings = $scope.selectBooking($scope.selectedBooking);
             }
             $scope.display.showPanel = true;
-            template.open('lightbox', 'validate-booking');
+            template.open('lightbox', 'booking/validate-booking');
         };
 
         $scope.refuseBookingSelection = function () {
@@ -2277,7 +2265,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
             $scope.display.showPanel = true;
             $scope.bookings.refuseReason = '';
-            template.open('lightbox', 'refuse-booking');
+            template.open('lightbox', 'booking/refuse-booking');
         };
 
         $scope.doValidateBookingSelection = function () {
@@ -2369,7 +2357,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.closeResourceType();
             }
 
-            template.open('resources', 'manage-resources');
+            template.open('resources', 'resource/manage-resources');
         };
 
         $scope.swicthSelectAllRessources = function () {
@@ -2400,7 +2388,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResourceType.structure = $scope.selectedStructure;
             $scope.editedResourceType.slotprofile = null;
             $scope.updateSlotProfileField($scope.selectedStructure);
-            template.open('resources', 'edit-resource-type');
+            template.open('resources', 'resource/edit-resource-type');
         };
 
         $scope.newResource = function () {
@@ -2413,7 +2401,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResource.is_available = true;
             $scope.editedResource.periodic_booking = true;
             $scope.editedResource.quantity = 1;
-            template.open('resources', 'edit-resource');
+            template.open('resources', 'resource/edit-resource');
         };
 
         $scope.editSelectedResource = function () {
@@ -2437,7 +2425,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResource.hasMinDelay =
                 $scope.editedResource.min_delay !== undefined &&
                 $scope.editedResource.min_delay !== null;
-            template.open('resources', 'edit-resource');
+            template.open('resources', 'resource/edit-resource');
         };
 
         $scope.shareCurrentResourceType = function () {
@@ -2537,7 +2525,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.deleteResourcesSelection = function () {
             $scope.currentResourceType.resourcesToDelete = $scope.currentResourceType.resources.selection();
             $scope.currentResourceType.resources.deselectAll();
-            template.open('resources', 'confirm-delete-resource');
+            template.open('resources', 'resource/confirm-delete-resource');
         };
 
         $scope.doDeleteResource = function () {
@@ -2575,7 +2563,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.display.showPanel = false;
                 template.close('lightbox');
             }
-            template.open('resources', 'manage-resources');
+            template.open('resources', 'resource/manage-resources');
         };
 
         $scope.closeResource = function () {
@@ -2585,7 +2573,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.display.showPanel = false;
                 template.close('lightbox');
             }
-            template.open('resources', 'manage-resources');
+            template.open('resources', 'resource/manage-resources');
         };
 
 // Errors
@@ -2633,7 +2621,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             );
         };
 
-// Used when adding delays to resources
+        // Used when adding delays to resources
         $scope.delayDays = _.range(1, 31);
         $scope.daysToSeconds = function (nbDays) {
             return moment.duration(nbDays, 'days').asSeconds();
@@ -2642,7 +2630,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             return moment.duration(nbSeconds, 'seconds').asDays();
         };
 
-// Get Moderators
+        // Get Moderators
         $scope.initModerators = function () {
             if ($scope.resourceTypes.first() === undefined || $scope.resourceTypes.first().moderators === undefined) {
                 $scope.resourceTypes.forEach(function (resourceType) {
@@ -2720,7 +2708,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResourceType = model.resourceTypes.selection()[0];
             template.close('resources');
             $scope.updateSlotProfileField($scope.editedResourceType.structure);
-            template.open('resources', 'edit-resource-type');
+            template.open('resources', 'resource/edit-resource-type');
         };
 
         $scope.updateSlotProfileField = function (struct) {
@@ -2895,7 +2883,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.initExportDisplay();
             $scope.minExportDate = moment().week(moment().week() - 12).day(1).toDate();
             $scope.maxExportDate = moment().week(moment().week() + 12).day(7).toDate();
-            template.open('lightbox', 'export-format');
+            template.open('lightbox', 'export/export-format');
             $scope.display.showPanel = true;
         }
 
@@ -3090,7 +3078,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.isResourceQuantityTooLow = function(quantity:number) : boolean {
             $scope.listBookingsConflictingQuantity = [];
             $scope.editedResource.bookings.forEach(function (booking) {
-                if (!booking.is_periodic && isNotPast(booking) && booking.quantity != undefined && booking.quantity > quantity) {
+                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity != undefined && booking.quantity > quantity) {
                     $scope.listBookingsConflictingQuantity.push(booking);
                 }
             });
@@ -3136,52 +3124,16 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
 
             try {
-                if (checkEditedBookingMoments()) {
+                if (BookingUtil.checkEditedBookingMoments($scope.editedBooking, $scope.today, $scope.currentErrors)) {
                     return;
                 }
-
-                $scope.editedBooking.startMoment = moment([
-                    $scope.editedBooking.startDate.getFullYear(),
-                    $scope.editedBooking.startDate.getMonth(),
-                    $scope.editedBooking.startDate.getDate(),
-                    $scope.editedBooking.startTime.hour(),
-                    $scope.editedBooking.startTime.minute()
-                ]);
-                $scope.editedBooking.endMoment = moment([
-                    $scope.editedBooking.endDate.getFullYear(),
-                    $scope.editedBooking.endDate.getMonth(),
-                    $scope.editedBooking.endDate.getDate(),
-                    $scope.editedBooking.endTime.hour(),
-                    $scope.editedBooking.endTime.minute()
-                ]);
+                $scope.editedBooking.startMoment = DateUtils.formatMoment($scope.editedBooking.startDate, $scope.editedBooking.startTime);
+                $scope.editedBooking.endMoment = DateUtils.formatMoment($scope.editedBooking.endDate, $scope.editedBooking.endTime);
             }
             catch (e) {
                 $scope.currentErrors.push({error: 'rbs.error.technical'});
                 throw e;
             }
-        };
-
-        const checkEditedBookingMoments = function () : boolean {
-            var hasErrors = false;
-            if (
-                $scope.editedBooking.startDate.getFullYear() < $scope.today.year() ||
-                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
-                    $scope.editedBooking.startDate.getMonth() < $scope.today.month()) ||
-                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
-                    $scope.editedBooking.startDate.getMonth() == $scope.today.month() &&
-                    $scope.editedBooking.startDate.getDate() < $scope.today.date()) ||
-                ($scope.editedBooking.startDate.getFullYear() == $scope.today.year() &&
-                    $scope.editedBooking.startDate.getMonth() == $scope.today.month() &&
-                    $scope.editedBooking.startDate.getDate() == $scope.today.date() &&
-                    $scope.editedBooking.startTime.hour() < moment().hour())
-            ) {
-                $scope.currentErrors.push({
-                    error: 'rbs.booking.invalid.datetimes.past',
-                });
-                notify.error('rbs.booking.invalid.datetimes.past');
-                hasErrors = true;
-            }
-            return hasErrors;
         };
 
         const calculatePeriodicBookings = function() : void {
@@ -3241,21 +3193,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         const updateResourceQuantityAvailableByPeriod = function(resource, startMoment, endMoment) : void {
             $scope.tempQuantities.resourceQuantityAvailable = $scope.editedBooking.resource.quantity;
-            // $scope.tempQuantities.resourceQuantityAvailable = Math.floor(Math.random()*$scope.editedBooking.resource.quantity);
-            // if (resource.quantity <= 0) {
-            //     $scope.tempQuantities.resourceQuantityAvailable = 0;
-            // }
-            // else {
-            //     $scope.tempQuantities.resourceQuantityAvailable = resource.quantity;
-            //     resource.unavailability.forEach(function (unavailability) {
-            //         if (startMoment < unavailability.endMoment && endMoment > unavailability.startMoment) {
-            //             $scope.tempQuantities.resourceQuantityAvailable -= unavailability.quantity;
-            //         }
-            //     });
-            //     if ($scope.tempQuantities.resourceQuantityAvailable <= 0) {
-            //         $scope.tempQuantities.resourceQuantityAvailable = 0;
-            //     }
-            // }
+
         };
 
         const updateBookingQuantityAvailableByPeriod = function(quantity:number, booking) : void {
@@ -3314,9 +3252,4 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.isBookingQuantityWrong = function(booking) : boolean {
             return booking.quantity < 1 || booking.quantity === undefined || booking.quantity > $scope.tempQuantities.bookingQuantityAvailable;
         };
-
-        const isNotPast = (booking) =>{
-            return(moment(booking.startMoment).isAfter(moment()));
-        };
-    }])
-;
+    }]);
