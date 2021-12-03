@@ -1,0 +1,120 @@
+<div class="rbs-export">
+    <!-- button export -->
+    <button class="cell" ng-click="vm.toggleLightbox(true)"><i18n>rbs.booking.export</i18n></button>
+
+    <!-- lightbox export form -->
+    <lightbox show="vm.displayLightbox" on-close="vm.toggleLightbox(false)">
+        <div class="row form-section">
+            <h2><i18n>rbs.export.title</i18n></h2>
+            <section class="twelve cell">
+                <div class="row accordions">
+                    <article class="accordion" ng-class="{ opened: vm.exportComponent.display.state === vm.exportComponent.display.STATE_FORMAT }">
+                        <h2 ng-click="vm.exportComponent.display.state = vm.exportComponent.display.STATE_FORMAT;">
+                    <span ng-if="vm.exportComponent.display.state === vm.exportComponent.display.STATE_FORMAT">
+                        <i18n>rbs.export.format</i18n>
+                    </span>
+                            <span ng-if="vm.exportComponent.display.state !== vm.exportComponent.display.STATE_FORMAT">
+                        <i18n>rbs.export.format.picked</i18n>
+                        <span class="right-magnet">
+                            [[vm.exportComponent.format]]
+                        </span>
+                    </span>
+                        </h2>
+                        <div class="toggle">
+                            <div class="content">
+                                <div class="row">
+                                    <label style="text-align:center" class="four cell"><i18n>rbs.export.format.pdf</i18n></label>
+                                    <input type="radio" name="format" class="one cell" ng-model="vm.exportComponent.format" value="PDF"/>
+                                    <label style="text-align:center" class="four cell"><i18n>rbs.export.format.ical</i18n></label>
+                                    <input type="radio" name="format" class="one cell" ng-model="vm.exportComponent.format" value="ICal"/>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="accordion" ng-class="{ opened: vm.exportComponent.display.state === vm.exportComponent.display.STATE_RESOURCES }">
+                        <h2 ng-click="vm.exportComponent.display.state = vm.exportComponent.display.STATE_RESOURCES;">
+                    <span ng-if="vm.exportComponent.display.state === vm.exportComponent.display.STATE_RESOURCES">
+                        <i18n>rbs.export.resource</i18n>
+                    </span>
+                            <span ng-if="vm.exportComponent.display.state !== vm.exportComponent.display.STATE_RESOURCES">
+                        <i18n>rbs.export.resource.picked</i18n>
+                        <span class="right-magnet">
+                            [[vm.checkResourcesExport(vm.exportComponent.resourcesToTake)]]
+                        </span>
+                    </span>
+                        </h2>
+                        <div class="toggle">
+                            <div class="content">
+                                <div class="row">
+                                    <label style="text-align:center" class="five cell"><i18n>rbs.export.resource.selected</i18n></label>
+                                    <input type="radio" name="resource" class="one cell" ng-model="vm.exportComponent.resourcesToTake" value="selected"/>
+                                    <label style="text-align:center" class="four cell"><i18n>rbs.export.resource.all</i18n></label>
+                                    <input type="radio" name="resource" class="one cell" ng-model="vm.exportComponent.resourcesToTake" value="all"/>
+                                </div>
+                                <div class="twelve cell warning resource"><i18n>rbs.export.resource.warning</i18n></cell></div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="accordion" ng-class="{ opened: vm.exportComponent.display.state === vm.exportComponent.display.STATE_DATE }">
+                        <h2 ng-click="vm.exportComponent.display.state = vm.exportComponent.display.STATE_DATE;">
+                    <span ng-if="vm.exportComponent.display.state === vm.exportComponent.display.STATE_DATE">
+                        <i18n>rbs.export.date</i18n>
+                    </span>
+                            <span ng-if="vm.exportComponent.display.state !== vm.exportComponent.display.STATE_DATE">
+                        <i18n>rbs.export.date.picked</i18n>
+                        <span class="right-magnet">
+                            <i18n>rbs.export.date.start</i18n>&nbsp;[[vm.formatDate(vm.exportComponent.startDate)]]&nbsp;
+							<i18n>rbs.export.date.end</i18n>&nbsp;[[vm.formatDate(vm.exportComponent.endDate)]]
+                        </span>
+                    </span>
+                        </h2>
+                        <div class="toggle">
+                            <div class="content">
+                                <div class="row">
+                                    <label style="text-align:center" class="three cell"><i18n>rbs.export.date.start</i18n></label>
+                                    <date-picker class="two cell horizontal-spacing" ng-model="vm.exportComponent.startDate" ng-change="vm.checkMinExportDate();vm.showDate = true"></date-picker>
+                                    <label style="text-align:center" class="three cell"><i18n>rbs.export.date.end</i18n></label>
+                                    <date-picker class="two cell horizontal-spacing" ng-model="vm.exportComponent.endDate" ng-change="vm.checkMaxExportDate(); vm.showDate = true" min-date="vm.exportComponent.startDate"></date-picker>
+                                </div>
+                                <div class="twelve cell warning"><i18n>rbs.export.warning.max.date</i18n></cell></div>
+                            </div>
+                        </div>
+                    </article>
+                    <article ng-if="vm.exportComponent.format === 'PDF'" class="accordion" ng-class="{ opened: vm.exportComponent.display.state === vm.exportComponent.display.STATE_VIEW }">
+                        <h2 ng-click="vm.exportComponent.display.state = vm.exportComponent.display.STATE_VIEW;">
+                    <span ng-if="vm.exportComponent.display.state === vm.exportComponent.display.STATE_VIEW">
+                        <i18n>rbs.export.view</i18n>
+                    </span>
+                            <span ng-if="vm.exportComponent.display.state !== vm.exportComponent.display.STATE_VIEW">
+                        <i18n>rbs.export.view.picked</i18n>
+                        <span class="right-magnet">
+                            [[vm.checkViewExport(vm.exportComponent.exportView)]]
+                        </span>
+                    </span>
+                        </h2>
+                        <div class="toggle">
+                            <div class="content">
+                                <div class="row">
+                                    <label style="text-align:center" class="three cell"><i18n>rbs.export.view.week</i18n></label>
+                                    <input type="radio" name="view" class="one cell" ng-model="vm.exportComponent.exportView" value="WEEK"/>
+                                    <label style="text-align:center" class="three cell"><i18n>rbs.export.view.day</i18n></label>
+                                    <input type="radio" name="view" class="one cell" ng-model="vm.exportComponent.exportView" value="DAY"/>
+                                    <label style="text-align:center" class="two cell"><i18n>rbs.export.view.list</i18n></label>
+                                    <input type="radio" name="view" class="one cell" ng-model="vm.exportComponent.exportView" value="LIST"/>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <hr/>
+                <div class="row">
+                    <button class="right-magnet" ng-click="vm.saveExport()">
+                        <i18n>rbs.export</i18n>
+                    </button>
+                    <input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="vm.closeExport();" ng-if="vm.display.processing !== true" />
+                    <button class="right-magnet cancel disabled" disabled ng-if="vm.display.processing === true"><i18n>rbs.processing</i18n></button>
+                </div>
+            </section>
+        </div>
+    </lightbox>
+</div>

@@ -1,0 +1,17 @@
+<section class="toggle-buttons" ng-class="{ hide: vm.bookings.selection().length === 0 }">
+    <div class="toggle">
+        <div class="row">
+            <authorize name="process" resource="vm.bookings.selection()" class="cell">
+                <button ng-if="vm.canEditBookingSelection()" ng-click="vm.editBooking()"><i18n>edit</i18n></button>
+                <button ng-if="!vm.canEditBookingSelection()" disabled class="disabled"><i18n>edit</i18n></button>
+                <button ng-click="vm.removeBookingSelection()"><i18n>remove</i18n></button>
+            </authorize>
+            <authorize name="process" resource="vm.bookings.selectionResources()" class="cell">
+                <button ng-if="vm.canProcessBookingSelection()" ng-click="vm.validateBookingSelection()"><i18n>rbs.booking.validate</i18n></button>
+                <button ng-if="!vm.canProcessBookingSelection()" disabled class="disabled"><i18n>rbs.booking.validate</i18n></button>
+                <button ng-if="vm.canProcessBookingSelection()" ng-click="vm.refuseBookingSelection()"><i18n>rbs.booking.refuse</i18n></button>
+                <button ng-if="!vm.canProcessBookingSelection()" disabled class="disabled"><i18n>rbs.booking.refuse</i18n></button>
+            </authorize>
+        </div>
+    </div>
+</section>

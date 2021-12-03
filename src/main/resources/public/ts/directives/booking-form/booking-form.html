@@ -1,0 +1,444 @@
+<!-- todo add empty state if slot is past -->
+<div class="row form-section" ng-if="vm.editedBooking" guard-root="editBookingRoot">
+    <h2>
+        <i18n>rbs.booking.new</i18n>
+    </h2>
+
+    <section class="twelve cell">
+
+        <div class="row accordions">
+            <!-- Resource description -->
+            <article class="accordion" ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_RESOURCE }">
+                <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_RESOURCE;">
+                            <span ng-if="vm.editedBooking.display.state === vm.editedBooking.display.STATE_RESOURCE">
+                                <i18n>rbs.header.resource.pick</i18n>
+                            </span>
+                    <span ng-if="vm.editedBooking.display.state !== vm.editedBooking.display.STATE_RESOURCE">
+                                <i18n>rbs.header.resource.picked</i18n>
+                                <span class="right-magnet">
+                                    [[vm.composeTitle(vm.editedBooking.resource.type.name, vm.editedBooking.resource.name)]]
+                                </span>
+                            </span>
+                </h2>
+                <div class="toggle">
+                    <div class="content">
+                        <div class="row" ng-if="vm.editedBooking.id === undefined">
+                            <div class="row">
+                                <label class="three cell">
+                                    <i18n>rbs.booking.edit.structure.label</i18n>
+                                </label>
+                                <select class="six cell" ng-model="vm.selectedStructure"
+                                        ng-options="vm.translate(struct.name) for struct in vm.structuresWithTypes.concat(vm.sharedStructure) | orderBy: 'name'"
+                                        ng-change="vm.switchStructure(vm.selectedStructure)"
+                                        ng-if="vm.selectedStructure !== undefined">
+                                </select>
+                                <div class="six cell warning"
+                                     ng-if="vm.structuresWithTypes.length < 1 && vm.sharedStructure.types < 1">
+                                    <i18n>rbs.booking.warning.no.structure</i18n>
+                                </div>
+                            </div>
+                            <div class="row" ng-if="vm.selectedStructure !== undefined">
+                                <div class="row">
+                                    <label class="three cell">
+                                        <i18n>rbs.booking.edit.type.label</i18n>
+                                    </label>
+                                    <select class="six cell" ng-model="vm.editedBooking.type"
+                                            ng-options="resourceType.name for resourceType in vm.selectedStructure.types | orderBy: 'name'"
+                                            ng-change="vm.autoSelectResource(); vm.updateQuantitiesAvailable()" required
+                                            ng-if="vm.selectedStructure.types.length > 0">
+                                    </select>
+                                    <div class="six cell warning" ng-if="vm.editedBooking.type === undefined">
+                                        <i18n>rbs.booking.warning.no.types</i18n>
+                                    </div>
+                                </div>
+                                <div class="row" ng-if="vm.editedBooking.type !== undefined">
+                                    <label class="three cell">
+                                        <i18n>rbs.booking.edit.resource.label</i18n>
+                                    </label>
+                                    <select class="six cell" ng-model="vm.editedBooking.resource"
+                                            ng-options="resource.name for resource in vm.editedBooking.type.resources.filterAvailable(vm.editedBooking.is_periodic)"
+                                            ng-change="vm.updateQuantitiesAvailable()"
+                                            required ng-if="vm.editedBooking.resource !== undefined" input-guard>
+                                    </select>
+                                    <div class="six cell warning" ng-if="vm.editedBooking.resource === undefined">
+                                        <i18n>rbs.booking.warning.no.resources</i18n>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" ng-if="vm.editedBooking.id !== undefined">
+                            <div class="row">
+                                <label class="three cell">
+                                    <i18n>rbs.booking.edit.type.label</i18n>
+                                </label>
+                                <input class="six cell disabled" type="text" disabled
+                                       value="[[vm.editedBooking.resource.type.name]]" input-guard/>
+                            </div>
+                            <div class="row">
+                                <label class="three cell">
+                                    <i18n>rbs.booking.edit.resource.label</i18n>
+                                </label>
+                                <input class="six cell disabled" type="text" disabled
+                                       value="[[vm.editedBooking.resource.name]]" input-guard/>
+                            </div>
+                        </div>
+                        <div ng-include="template.containers.editBookingErrors"></div>
+                        <div ng-if="vm.editedBooking.resource !== undefined && vm.editedBooking.resource.description"
+                             bind-html="vm.editedBooking.resource.description" class="horizontal-spacing-twice"></div>
+                        <div class="row"
+                             ng-if="vm.editedBooking.resource !== undefined && (!vm.editedBooking.resource.description)">
+                            <p>
+                                <i18n>rbs.booking.edit.description.empty</i18n>
+                            </p>
+                        </div>
+                        <div class="row" ng-if="vm.editedBooking.type && vm.editedBooking.type.moderators">
+                            <label class="row">
+                                <i18n>rbs.booking.details.moderators</i18n>
+                            </label>
+                            <p class="row">
+								<span ng-repeat="moderator in vm.editedBooking.type.moderators"
+                                      class="cell four cell-ellipsis horizontal-spacing-twice"
+                                      title="[[moderator.username+' ('+vm.translate(moderator.type)+')']]">
+										[[moderator.username]] <em class="small-text">([[vm.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
+								</span>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </article>
+
+            <!-- Booking base slot dates and hours -->
+            <article class="accordion"
+                     ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING }">
+                <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_BOOKING; vm.updateQuantitiesAvailable()">
+					<span ng-if="vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING">
+						<i18n>rbs.header.booking.pick</i18n>
+					</span>
+                    <span ng-if="vm.editedBooking.display.state !== vm.editedBooking.display.STATE_BOOKING">
+						<i18n>rbs.header.booking.picked</i18n>
+						<span class="right-magnet" ng-if="vm.editedBooking.is_periodic">
+							<i18n>rbs.booking.details.header.from.periodic</i18n>&nbsp;[[vm.formatBooking(vm.booking.startDate, vm.booking.startTime)]]
+						</span>
+						<span class="right-magnet" ng-if="!vm.editedBooking.is_periodic">
+							<i18n>rbs.booking.details.header.from</i18n>&nbsp;[[vm.formatBooking(vm.booking.startDate, vm.booking.startTime)]]&nbsp;
+							<i18n>rbs.booking.details.header.to</i18n>&nbsp;[[vm.formatBooking(vm.booking.endDate, vm.booking.endTime)]]
+						</span>
+					</span>
+                </h2>
+                <div class="toggle">
+                    <div class="content">
+
+                        <!-- Booking start - non periodic -->
+                        <div class="row" ng-if="!vm.editedBooking.is_periodic">
+                            <label class="three cell">
+                                <i18n>rbs.booking.edit.date.label</i18n>
+                            </label>
+                            <!-- TODO Due to a directive datePicker bug on minDate param, it has been removed -->
+                            <date-picker ng-if="vm.editedBooking.id === undefined" class="two cell horizontal-spacing"
+                                         ng-model="vm.booking.startDate"
+                                         ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateQuantitiesAvailable()"
+                                         past="true" exp="true" exp-object="booking.endDate"
+                                         required></date-picker>
+                            <date-picker
+                                    ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined"
+                                    class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
+                                    ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateQuantitiesAvailable()"
+                                    past="true" exp="true" exp-object="vm.booking.endDate"
+                                    required></date-picker>
+                            <date-picker
+                                    ng-if="vm.editedBooking.id !== undefined && vm.editedBooking.type.slotprofile !== undefined"
+                                    class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
+                                    ng-change="vm.booking.endDate = vm.booking.startDate; vm.startDateModif();showDate = true;vm.updateQuantitiesAvailable()"
+                                    past="true" exp="true" exp-object="vm.booking.endDate"
+                                    required input-guard></date-picker>
+                        </div>
+
+                        <!-- Booking start - periodic -->
+                        <div class="row" ng-if="vm.editedBooking.is_periodic">
+                            <label class="three cell">
+                                <i18n>rbs.booking.edit.date.label</i18n>
+                            </label>
+                            <date-picker class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
+                                         ng-change="vm.editPeriodicStartDate();vm.checkDateFunction();vm.updatePeriodicSummary();vm.updateQuantitiesAvailable()"
+                                         past="true" exp="true" required></date-picker>
+                        </div>
+
+                        <!-- Booking end - without Slots  -->
+                        <div class="row" ng-if="vm.editedBooking.type.slotprofile === undefined">
+                            <label class="three cell">
+                                <i18n>rbs.booking.edit.time.label</i18n>
+                            </label>
+                            <label class="one cell centered-text ">
+                                <i18n>from</i18n>
+                            </label>
+                            <div ng-if="vm.booking.startDate.getDate() == vm.booking.endDate.getDate() && vm.booking.startDate.getMonth() == vm.booking.endDate.getMonth()
+      									&& vm.booking.startDate.getFullYear() == vm.booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-limit="vm.booking.endTime"
+                                                 ng-begin="true" ng-model="vm.booking.startTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 required></time-picker-rbs>
+                            </div>
+                            <div ng-if="vm.booking.startDate.getDate() != vm.booking.endDate.getDate() || vm.booking.startDate.getMonth() != vm.booking.endDate.getMonth()
+      									|| vm.booking.startDate.getFullYear() != vm.booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-begin="true"
+                                                 ng-model="vm.booking.startTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 required></time-picker-rbs>
+                            </div>
+                            <label class="one cell centered-text">
+                                <i18n>to</i18n>
+                            </label>
+                            <div ng-if="vm.booking.startDate.getDate() == vm.booking.endDate.getDate() && vm.booking.startDate.getMonth() == vm.booking.endDate.getMonth()
+      									&& vm.booking.startDate.getFullYear() == vm.booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-limit="vm.booking.startTime"
+                                                 ng-end="true" ng-model="vm.booking.endTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 required></time-picker-rbs>
+                            </div>
+                            <div ng-if="vm.booking.startDate.getDate() != vm.booking.endDate.getDate() ||
+                                    vm.booking.startDate.getMonth() != vm.booking.endDate.getMonth()
+      									|| vm.booking.startDate.getFullYear() != vm.booking.endDate.getFullYear()">
+                                <time-picker-rbs class="two cell horizontal-spacing" ng-end="true"
+                                                 ng-model="vm.booking.endTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 required></time-picker-rbs>
+                            </div>
+
+                        </div>
+
+                        <!-- Booking quantity -->
+                        <div class="warning default-fontsize">[[vm.formatTextBookingQuantity()]]</div>
+                        <div class="row">
+                            <label class="three cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
+                            <input class="input-size" type="number" min="1" max="[[vm.tempQuantities.bookingQuantityAvailable]]"
+                                   ng-model="vm.editedBooking.quantity" />
+                        </div>
+
+
+
+                        <!-- Date/time error -->
+                        <div class="row" ng-if="vm.booking.invalidDateTimes === true" translate
+                             content="vm.booking.invalidDateTimesMessage">
+                        </div>
+                        <!-- Booking end - with Slots  -->
+                        <div ng-if="vm.editedBooking.type.slotprofile !== undefined">
+                            <label class="three cell">
+                                <i18n>rbs.booking.edit.slot.label</i18n>
+                            </label>
+                            <hr/>
+                            <div class="twelve cell" ng-if="vm.editedBooking.id === undefined">
+                                <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
+                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-change="vm.switchSlotStart(vm.selectedSlotStart)">
+                                </select>
+                                <div class="one cell centered-text">
+                                    <i18n>rbs.booking.details.header.at</i18n>
+                                </div>
+                                <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotEnd"
+                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-change="vm.switchSlotEnd(vm.selectedSlotEnd)">
+                                </select>
+                            </div>
+                            <div class="twelve cell" ng-if="vm.editedBooking.id !== undefined">
+                                <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
+                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-change="vm.switchSlotStart(vm.selectedSlotStart); vm.switchSlotEnd(vm.selectedSlotStart)">
+                                </select>
+                                <div class="one cell centered-text">
+                                    <i18n>rbs.booking.details.header.at</i18n>
+                                </div>
+                                <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
+                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-change="vm.switchSlotStart(vm.selectedSlotStart); vm.switchSlotEnd(vm.selectedSlotStart)">
+                                </select>
+                            </div>
+                            <div class="cell warning" ng-if="vm.slotNotFound">
+                                <i18n>rbs.booking.warning.slot.not.found</i18n>
+                            </div>
+                            <hr/>
+                        </div>
+
+                        <hr/>
+                        <!-- Periodicity toggle - new booking -->
+                        <div class="row six"
+                             ng-if="vm.editedBooking.id === undefined && vm.editedBooking.resource.periodic_booking">
+                            <input type="checkbox" ng-model="vm.editedBooking.is_periodic"
+                                   ng-change="vm.togglePeriodic();vm.checkDateFunction()" class="one cell" input-guard/>&nbsp;<i18n>
+                            rbs.booking.edit.periodic_booking.label
+                        </i18n>
+                        </div>
+
+                        <!-- Periodicity toggle (fixed) - editing booking -->
+                        <div class="row six" ng-if="vm.editedBooking.id !== undefined">
+                            <input type="checkbox" disabled ng-checked="vm.editedBooking.is_periodic" class="one cell" input-guard/>&nbsp;<i18n>
+                            rbs.booking.edit.periodic_booking.label
+                        </i18n>
+                        </div>
+
+                        <!-- Booking reason -->
+                        <div class="row">
+                            <textarea ng-model="vm.editedBooking.booking_reason"
+                                      i18n-placeholder="rbs.booking.edit.reason.label" input-guard></textarea>
+                        </div>
+
+                        <!-- Errors -->
+                        <div ng-include="template.containers.editBookingErrors"></div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Periodicity configuration -->
+            <article class="accordion" ng-if="vm.editedBooking.is_periodic"
+                     ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_PERIODIC }">
+                <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_PERIODIC;">
+					<span ng-if="vm.editedBooking.display.state === vm.editedBooking.display.STATE_PERIODIC">
+						<i18n>rbs.header.periodic.pick</i18n>
+					</span>
+                    <span ng-if="vm.editedBooking.display.state !== vm.editedBooking.display.STATE_PERIODIC">
+						<i18n>rbs.header.periodic.picked</i18n>
+						<span class="right-magnet">[[vm.editedBooking.periodicShortSummary]]</span>
+					</span>
+                </h2>
+                <div class="toggle">
+                    <div class="content">
+                        <!-- Periodicity repeat options -->
+                        <div class="row">
+                            <label class="two cell">
+                                <i18n>rbs.booking.edit.period.label</i18n>
+                            </label>
+                            <select class="one cell" ng-model="vm.editedBooking.periodicity"
+                                    ng-options="periodicity for periodicity in vm.periods.periodicities"
+                                    ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()" required>
+                            </select>
+                            <label class="two cell horizontal-spacing-twice">
+                                <i18n>rbs.booking.edit.period.unit</i18n>
+                            </label>
+                        </div>
+                        <div ng-if="vm.showDaySelection" class="row vertical-spacing-twice">
+                            <label class="cell horizontal-spacing-twice"
+                                   ng-repeat="periodDay in vm.editedBooking.periodDays">
+                                <input type="checkbox" ng-model="vm.periodDay.value" name="day_[[periodDay.number]]"
+                                       value="false" ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()"/>
+                                <span>
+									<i18n ng-if="periodDay.number == 1">rbs.booking.edit.period.days.1</i18n>
+									<i18n ng-if="periodDay.number == 2">rbs.booking.edit.period.days.2</i18n>
+									<i18n ng-if="periodDay.number == 3">rbs.booking.edit.period.days.3</i18n>
+									<i18n ng-if="periodDay.number == 4">rbs.booking.edit.period.days.4</i18n>
+									<i18n ng-if="periodDay.number == 5">rbs.booking.edit.period.days.5</i18n>
+									<i18n ng-if="periodDay.number == 6">rbs.booking.edit.period.days.6</i18n>
+									<i18n ng-if="periodDay.number == 0">rbs.booking.edit.period.days.0</i18n>
+								</span>
+                            </label>
+                        </div>
+
+                        <!-- Periodicity end -->
+                        <div class="row">
+                            <label class="twelve cell">
+                                <i18n>rbs.booking.edit.period.end.label</i18n>
+                            </label>
+                        </div>
+
+                        <!-- Periodicity end by occurences -->
+                        <div class="row six">
+                            <input class="one cell" type="radio" name="periodic_after"
+                                   data-ng-model="vm.editedBooking.byOccurrences" ng-value="true"
+                                   ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()" checked/>
+                            <label class="two cell">
+                                <i18n>rbs.booking.edit.period.end.after</i18n>
+                            </label>
+                            <select class="two cell" ng-model="vm.editedBooking.occurrences"
+                                    ng-options="occurrence for occurrence in vm.periods.occurrences|orderBy"
+                                    ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()">
+                            </select>
+                            <label class="six cell horizontal-spacing-twice">
+                                <i18n>rbs.booking.edit.period.end.occurrences</i18n>
+                            </label>
+                        </div>
+
+                        <!-- Periodicity end by date -->
+                        <div class="row six">
+                            <input class="one cell" type="radio" name="periodic_after"
+                                   data-ng-model="vm.editedBooking.byOccurrences" ng-value="false"
+                                   ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()"/>
+                            <label class="two cell">
+                                <i18n>rbs.booking.edit.period.end.on</i18n>
+                            </label>
+                            <date-picker class="six cell" ng-model="vm.booking.periodicEndDate"
+                                         ng-change="vm.showDate = true; vm.updatePeriodicSummary();vm.checkDateFunction();vm.updateQuantitiesAvailable()"
+                                         past="true"></date-picker>
+                        </div>
+
+                        <!-- Periodicity summary -->
+                        <hr/>
+                        <div class="row">
+                            <label class="cell">
+                                <i18n>rbs.booking.edit.period.summary</i18n>
+                            </label>
+                            <p class="row warning" ng-if="vm.editedBooking.periodicError">
+                                [[vm.editedBooking.periodicError]]</p>
+                            <p class="row">[[vm.editedBooking.periodicSummary]]</p>
+                        </div>
+
+
+                        <!-- Quantity warning -->
+                        <div class="warning default-fontsize" ng-if="vm.isBookingQuantityWrong(vm.editedBooking)">
+                            <i18n>rbs.booking.edit.period.warning.quantity</i18n>
+                        </div>
+
+                        <!-- Errors -->
+                        <div ng-include="template.containers.editBookingErrors"></div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="row">
+            <authorize name="contrib" resource="vm.editedBooking.resource" ng-if="vm.editedBooking.resource !== undefined">
+                <button class="right-magnet"
+                        reset-guard="vm.saveBooking()"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.is_periodic !== true && vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING
+									&& vm.editedBooking.type.slotprofile === undefined"
+                        ng-disabled="vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <i18n>rbs.save</i18n>
+                </button>
+                <button class="right-magnet"
+                        reset-guard="vm.saveBooking()"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.is_periodic && vm.editedBooking.display.state === vm.editedBooking.display.STATE_PERIODIC
+							&& vm.editedBooking.type.slotprofile === undefined"
+                        ng-disabled="vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <i18n>rbs.save</i18n>
+                </button>
+                <button class="right-magnet"
+                        reset-guard="vm.saveBookingSlotProfile()"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.is_periodic !== true && vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING
+							&& vm.editedBooking.type.slotprofile !== undefined"
+                        ng-disabled="vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <i18n>rbs.save</i18n>
+                </button>
+                <button class="right-magnet"
+                        reset-guard="vm.saveBookingSlotProfile()"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.is_periodic && vm.editedBooking.display.state === vm.editedBooking.display.STATE_PERIODIC
+							&& vm.editedBooking.type.slotprofile !== undefined"
+                        ng-disabled="vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <i18n>rbs.save</i18n>
+                </button>
+                <button class="right-magnet"
+                        ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_BOOKING"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.display.state === vm.editedBooking.display.STATE_RESOURCE">
+                    <i18n>rbs.next</i18n>
+                </button>
+                <button class="right-magnet"
+                        ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_PERIODIC"
+                        ng-if="vm.display.processing !== true && vm.editedBooking.is_periodic && vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING">
+                    <i18n>rbs.next</i18n>
+                </button>
+            </authorize>
+            <input type="button" class="cancel right-magnet" i18n-value="cancel"
+                   navigation-trigger="vm.closeBooking(); vm.display.createItem = undefined" ng-if="vm.display.processing !== true"/>
+
+            <button class="right-magnet cancel disabled" disabled ng-if="vm.display.processing === true">
+                <i18n>rbs.processing</i18n>
+            </button>
+            <div class="cell warning" ng-if="vm.editedBooking.id !== undefined && vm.editedBooking.is_periodic">
+                <i18n>rbs.booking.warning.periodic</i18n>
+            </div>
+        </div>
+    </section>
+</div>

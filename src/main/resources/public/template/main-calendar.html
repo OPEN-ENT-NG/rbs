@@ -23,23 +23,18 @@
             display-template="calendar/display-calendar-item"
             display-month-template="calendar/display-calendar-month-item"
             more-items-template="calendar/display-calendar-more-items"
-            create-template="edit-booking"
             item-tooltip-template="calendar/tooltip-template"
-            on-create-open="newBookingCalendar(newItem)"
-            on-create-close="closeBooking()"
             items="bookings.filtered">
     </calendar>
 </div>
 
-<div class="row" ng-if="! display.create">
+<div class="row" ng-if="!display.create">
     <calendar
             enable-display-modes="true"
             display-template="calendar/display-calendar-item"
             display-month-template="calendar/display-calendar-month-item"
             more-items-template="calendar/display-calendar-more-items"
             item-tooltip-template="calendar/tooltip-template"
-            on-create-open="newBookingCalendar(newItem)"
-            on-create-close="closeBooking()"
             items="bookings.filtered">
     </calendar>
 </div>

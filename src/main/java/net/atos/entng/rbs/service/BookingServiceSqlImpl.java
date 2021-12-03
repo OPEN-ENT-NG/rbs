@@ -98,7 +98,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				// Looping our statementsResult as each JsonObject is inside a JsonArray then we clear data by creating
 				// new JsonArray
 				for (int i = 0; i < statementsResults.size(); i++) {
-					bookings.add(statementsResults.getJsonArray(i).getJsonObject(0));
+					if (Boolean.FALSE.equals(statementsResults.getJsonArray(i).isEmpty())) {
+						bookings.add(statementsResults.getJsonArray(i).getJsonObject(0));
+					}
 				}
 				handler.handle(new Either.Right<>(bookings));
 			}

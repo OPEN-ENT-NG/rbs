@@ -1,9 +1,18 @@
 import {ng, routes} from 'entcore';
 import {RbsController} from './controllers/controller';
-import {timePicker} from './directives/additional';
+import * as directives from './directives';
+import * as services from './services';
+
+for (let directive in directives) {
+    ng.directives.push(directives[directive]);
+}
+
+for (let service in services) {
+    ng.services.push(services[service]);
+}
 
 ng.controllers.push(RbsController);
-ng.directives.push(timePicker);
+
 
 routes.define(function ($routeProvider) {
     $routeProvider

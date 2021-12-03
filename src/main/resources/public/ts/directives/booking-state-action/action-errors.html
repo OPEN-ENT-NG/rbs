@@ -1,0 +1,41 @@
+<div class="row">
+	<article class="twelve cell">
+		<h2 ng-if="vm.currentErrors.length === 1"><i18n>rbs.errors.title.one</i18n></h2>
+		<h2 ng-if="vm.currentErrors.length > 1"><i18n>rbs.errors.title.many</i18n></h2>
+
+		<div class="row">
+			<table class="list-view colored">
+				<thead>
+					<tr>
+						<th><i18n>rbs.errors.headers.action</i18n></th>
+						<th colspan="3"><i18n>rbs.errors.headers.object</i18n></th>
+						<th><i18n>rbs.errors.headers.error</i18n></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="actionError in vm.currentErrors" class="warning">
+						<td translate content="rbs.errors.actions.[[actionError.context]]">
+						</td>
+						<td>
+							<i18n ng-if="vm.isErrorObjectResourceType(actionError.object)">rbs.errors.objects.resourceType</i18n>
+							<i18n ng-if="vm.isErrorObjectResource(actionError.object)">rbs.errors.objects.resource</i18n>
+							<i18n ng-if="vm.isErrorObjectBooking(actionError.object)">rbs.errors.objects.booking</i18n>
+						</td>
+
+						<td ng-if="vm.isErrorObjectResourceType(actionError.object)" colspan="2">[[actionError.object.name]]</td>
+						<td ng-if="vm.isErrorObjectResource(actionError.object)" colspan="2">[[actionError.object.name]]</td>
+						<td ng-if="vm.isErrorObjectBooking(actionError.object)">[[actionError.object.owner_name]]</td>
+						<td ng-if="vm.isErrorObjectBooking(actionError.object)">[[actionError.object.resource.name]]</td>
+
+						<td translate content="[[actionError.error]]">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="row">
+			<input type="button" class="cancel right-magnet" i18n-value="rbs.close" ng-click="vm.toggleLightbox(false)" />
+		</div>
+	</article>
+</div>
