@@ -57,7 +57,7 @@
                         </label>
                         <p class="twelve cell"
                            ng-if="vm.selectedBooking.booking_reason && vm.selectedBooking.booking_reason !== ''">
-                            [[selectedBooking.booking_reason]]</p>
+                            [[vm.selectedBooking.booking_reason]]</p>
                         <p class="twelve cell placeholder"
                            ng-if="!(vm.selectedBooking.booking_reason && vm.selectedBooking.booking_reason !== '')">
                             <i18n>rbs.booking.details.reason.empty</i18n>
