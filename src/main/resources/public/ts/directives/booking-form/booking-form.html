@@ -259,10 +259,9 @@
                         <!-- Periodicity toggle - new booking -->
                         <div class="row six"
                              ng-if="vm.editedBooking.id === undefined && vm.editedBooking.resource.periodic_booking">
-                            <input type="checkbox" ng-model="vm.editedBooking.is_periodic"
-                                   ng-change="vm.togglePeriodic();vm.checkDateFunction()" class="one cell" input-guard/>&nbsp;<i18n>
-                            rbs.booking.edit.periodic_booking.label
-                        </i18n>
+                            <input type="checkbox" id="isPeriodicCheckBox" class="one cell" ng-model="vm.editedBooking.is_periodic"
+                                   ng-change="vm.togglePeriodic();vm.checkDateFunction()" input-guard/>
+                            <label for="isPeriodicCheckBox">&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
                         </div>
 
                         <!-- Periodicity toggle (fixed) - editing booking -->
@@ -314,7 +313,7 @@
                         <div ng-if="vm.showDaySelection" class="row vertical-spacing-twice">
                             <label class="cell horizontal-spacing-twice"
                                    ng-repeat="periodDay in vm.editedBooking.periodDays">
-                                <input type="checkbox" ng-model="vm.periodDay.value" name="day_[[periodDay.number]]"
+                                <input type="checkbox" ng-model="periodDay.value" name="day_[[periodDay.number]]"
                                        value="false" ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()"/>
                                 <span>
 									<i18n ng-if="periodDay.number == 1">rbs.booking.edit.period.days.1</i18n>

@@ -321,45 +321,45 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
 
                 // Get tempPeriodicBookings
-
-                // todo this code triggers an infinite loop
-                // if (vm.editedBooking.byOccurrences) {
-                //     while(vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
-                //         days.forEach(function(day) {
-                //             if (vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
-                //                 tempBook.startMoment = moment(currentMonday);
-                //                 tempBook.endMoment = moment(currentMonday);
-                //                 tempBook.startMoment.add(day, 'days');
-                //                 tempBook.endMoment.add(day, 'days').add(diff);
-                //                 tempBook.quantity = vm.editedBooking.quantity;
-                //                 if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                //                     vm.tempPeriodicBookings.push(tempBook);
-                //                 }
-                //                 tempBook = new Booking();
-                //             }
-                //         });
-                //         currentMonday.add(vm.editedBooking.periodicity, 'weeks');
-                //     }
-                // }
-                // else {
-                //     while(currentMoment < moment(vm.booking.periodicEndDate)) {
-                //         days.forEach(function(day) {
-                //             if (currentMoment < moment(vm.booking.periodicEndDate)) {
-                //                 tempBook.startMoment = currentMonday;
-                //                 tempBook.endMoment = currentMonday;
-                //                 tempBook.startMoment.add(day, 'days');
-                //                 tempBook.endMoment.add(day, 'days');
-                //                 tempBook.quantity = vm.editedBooking.quantity;
-                //                 if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                //                     vm.tempPeriodicBookings.push(tempBook);
-                //                 }
-                //                 currentMoment = tempBook.startMoment;
-                //                 tempBook = new Booking();
-                //             }
-                //         });
-                //         currentMonday.add(vm.editedBooking.periodicity, 'weeks');
-                //     }
-                // }
+                if (days.length > 0) {
+                    if (vm.editedBooking.byOccurrences) {
+                        while(vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
+                            days.forEach(function(day) {
+                                if (vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
+                                    tempBook.startMoment = moment(currentMonday);
+                                    tempBook.endMoment = moment(currentMonday);
+                                    tempBook.startMoment.add(day, 'days');
+                                    tempBook.endMoment.add(day, 'days').add(diff);
+                                    tempBook.quantity = vm.editedBooking.quantity;
+                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
+                                        vm.tempPeriodicBookings.push(tempBook);
+                                    }
+                                    tempBook = new Booking();
+                                }
+                            });
+                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
+                        }
+                    }
+                    else {
+                        while(currentMoment < moment(vm.booking.periodicEndDate)) {
+                            days.forEach(function(day) {
+                                if (currentMoment < moment(vm.booking.periodicEndDate)) {
+                                    tempBook.startMoment = currentMonday;
+                                    tempBook.endMoment = currentMonday;
+                                    tempBook.startMoment.add(day, 'days');
+                                    tempBook.endMoment.add(day, 'days');
+                                    tempBook.quantity = vm.editedBooking.quantity;
+                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
+                                        vm.tempPeriodicBookings.push(tempBook);
+                                    }
+                                    currentMoment = tempBook.startMoment;
+                                    tempBook = new Booking();
+                                }
+                            });
+                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
+                        }
+                    }
+                }
             };
 
             vm.initEditBookingDisplay = (): void => {
