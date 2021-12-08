@@ -125,7 +125,7 @@ export const exportBooking = ng.directive('exportBooking', function () {
                     vm.exportComponent.send().then(data => {
                         let blob;
                         if (navigator.userAgent.indexOf('MSIE 10') === -1) { // chrome or firefox
-                            blob = new Blob([data], {type: 'application/pdf;charset=utf-8'});
+                            blob = new Blob([data.data], {type: 'application/pdf;charset=utf-8'});
                         } else { // ie
                             let bb = new BlobBuilder();
                             bb.append(data);
