@@ -137,17 +137,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		values.add(toSQLTimestamp(slot.getStartUTC()))
 				.add(toSQLTimestamp(slot.getEndUTC()));
 
-		// Check that there does not exist a validated booking that overlaps the new
-		// booking.
-		query.append(" WHERE NOT EXISTS (").append("SELECT 1 FROM rbs.booking").append(" WHERE resource_id = ?")
-				.append(" AND status = ?").append(" AND (start_date, end_date) OVERLAPS (?, ?)")
-				.append(") RETURNING id, status,").append(" to_char(start_date, '").append(DATE_FORMAT)
-				.append("') AS start_date,").append(" to_char(end_date, '").append(DATE_FORMAT)
-				.append("') AS end_date");
+		// Returning result
+		query.append(" RETURNING id, quantity, status, to_char(start_date, '").append(DATE_FORMAT)
+				.append("') AS start_date, to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
-		values.add(rId).add(VALIDATED.status()).add(toSQLTimestamp(slot.getStartUTC()))
-				.add(toSQLTimestamp(slot.getEndUTC()));
-		return new JsonObject().put("query", query).put("values", values );
+		return new JsonObject().put("query", query).put("values", values);
 	}
 
 	/**
