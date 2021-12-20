@@ -27,7 +27,7 @@ export class CalendarUtil {
         });
     }
 
-    static fixViewFromNotification(): void {
+    static fixViewNotDisplayed(): void {
         let list = document.getElementsByTagName("lightbox");
         for (var i = 0; i < list.length; i++) {
             if (list[i].getAttribute("show") === 'display.showPanel') {

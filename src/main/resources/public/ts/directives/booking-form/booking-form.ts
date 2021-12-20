@@ -170,8 +170,8 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
 
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
 
-                // vm.initQuantities();
                 // vm.bookings.syncForShowList();
+                // vm.initQuantities();
 
                 // vm.display.showPanel = true;
             };
@@ -207,6 +207,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.startMoment.seconds(0);
                 vm.editedBooking.endMoment.seconds(0);
 
+                $scope.bookings.syncForShowList();
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
                 vm.initQuantities();
                 vm.displayLightbox = true;
@@ -221,8 +222,10 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             };
 
             vm.updateQuantitiesAvailable = (): void => {
+                if (vm.editedBooking != null) {
+                    updateEditedBookingMoments();
+                }
                 let booking = vm.editedBooking;
-                updateEditedBookingMoments();
 
                 if (booking.startMoment.isSame(booking.endMoment)) {
                     vm.tempQuantities.resourceQuantityAvailable = 0;

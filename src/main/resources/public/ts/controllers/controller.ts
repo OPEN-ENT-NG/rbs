@@ -89,6 +89,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.display = {
                 list: false, // calendar by default
                 create: false,
+                showPanel: false,
             };
 
             $scope.sort = {
@@ -1265,7 +1266,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if ($scope.editedResource.quantity === undefined) {
                 $scope.editedResource.quantity = 1;
             }
-            $scope.displayLightbox = false;
+            $scope.displayLightbox.saveQuantityResource = false;
 
             // Field to track Resource availability change
             $scope.editedResource.was_available = $scope.editedResource.is_available;
@@ -1304,13 +1305,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         $scope.saveResource = function () {
             if ($scope.listBookingsConflictingQuantity.length > 0) {
-                $scope.displayLightbox = true;
-                var list = document.getElementsByTagName("lightbox");
-                for (var i = 0; i < list.length; i++) {
-                    if (list[i].getAttribute("show") === 'display.showPanel') {
-                        list[i].getElementsByTagName("section")[0].setAttribute('style','display:block;');
-                    }
-                }
+                $scope.displayLightbox.saveQuantityResource = true;
+                // CalendarUtil.fixViewFromNotification();
+                $scope.safeApply();
             }
             else {
                 $scope.doSaveResource();
@@ -1342,34 +1339,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             // Suspend conflicting bookings
             if ($scope.listBookingsConflictingQuantity.length > 0) {
-                $scope.processBookings = $scope.listBookingsConflictingQuantity;
-                $scope.display.processing = true;
-                try {
-                    var actions = $scope.processBookings.length;
-                    _.each($scope.processBookings, function (booking) {
-                        booking.suspend(
-                            function () {
-                                actions--;
-                                if (actions === 0) {
-                                    $scope.display.processing = undefined;
-                                    model.refreshBookings($scope.display.list);
-                                }
-                            },
-                            function (e) {
-                                $scope.currentErrors.push(e);
-                                actions--;
-                                if (actions === 0) {
-                                    $scope.display.processing = undefined;
-                                    $scope.showActionErrors();
-                                    model.refreshBookings($scope.display.list);
-                                }
-                            }
-                        );
-                    });
-                } catch (e) {
-                    $scope.display.processing = undefined;
-                    $scope.currentErrors.push({error: 'rbs.error.technical'});
-                }
+                suspendBookings($scope.listBookingsConflictingQuantity);
             }
         };
 
@@ -1420,10 +1390,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.closeResource = function () {
             $scope.editedResource = undefined;
             $scope.currentErrors = [];
-            if ($scope.display.showPanel === true) {
-                $scope.display.showPanel = false;
-                template.close('lightbox');
-            }
+            $scope.display.showPanel = false;
+            template.close('lightbox');
             template.open('resources', 'resource/manage-resources');
         };
 
@@ -1621,7 +1589,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             model.calendar.firstDay.month(newDate.month());
             model.calendar.firstDay.year(newDate.year());
             $scope.bookings.sync();
-            CalendarUtil.fixViewFromNotification();
+            CalendarUtil.fixViewNotDisplayed();
             ($('.hiddendatepickerform') as any).datepicker('setValue', newDate.format("DD/MM/YYYY")).datepicker('update');
             ($('.hiddendatepickerform') as any).trigger({type: 'changeDate', date: newDate});
         };
@@ -1757,6 +1725,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         // Init + Tests
 
         $scope.index = 0;
+        $scope.displayLightbox = {
+            saveQuantityResource: false
+        };
         $scope.tempQuantities = {
             resourceQuantityAvailable: undefined, // Quantity available to use for bookings on a specific period
             bookingQuantityAvailable: undefined // Previous - quantities already used by other bookings on this specific period
@@ -1780,10 +1751,41 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             let booking = $scope.bookings.find(b => b.id === item.id);
 
             let resourceQuantity = $scope.tempQuantities.resourceQuantityAvailable;
-            if ($scope.tempQuantities.resourceQuantityAvailable === undefined) {
+            if (resourceQuantity === undefined) {
                 resourceQuantity = booking.resource.quantity;
             }
 
             return (booking.quantity===undefined?"?":booking.quantity) + " / " + resourceQuantity;
+        };
+
+        const suspendBookings = function (bookings) {
+            $scope.processBookings = bookings;
+            $scope.display.processing = true;
+            try {
+                var actions = $scope.processBookings.length;
+                _.each($scope.processBookings, function (booking) {
+                    booking.suspend(
+                        function () {
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                model.refreshBookings($scope.display.list);
+                            }
+                        },
+                        function (e) {
+                            $scope.currentErrors.push(e);
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                $scope.showActionErrors();
+                                model.refreshBookings($scope.display.list);
+                            }
+                        }
+                    );
+                });
+            } catch (e) {
+                $scope.display.processing = undefined;
+                $scope.currentErrors.push({error: 'rbs.error.technical'});
+            }
         };
     }]);
