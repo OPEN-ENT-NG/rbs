@@ -146,12 +146,12 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				query.append(" AND r.is_available = ?");
 				values.add(true);
 			}
-			else if(isProcessBooking(binding)) {
-				// A booking can be validated or refused, only if its status is not "suspended" and the resource is available
-				query.append(" AND b.status != ?")
-					.append(" AND r.is_available = true");
-				values.add(SUSPENDED.status());
-			}
+//			else if(isProcessBooking(binding)) {
+//				// A booking can be validated or refused, only if its status is not "suspended" and the resource is available
+//				query.append(" AND b.status != ?")
+//					.append(" AND r.is_available = true");
+//				values.add(SUSPENDED.status());
+//			}
 
 			// Execute
 			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {

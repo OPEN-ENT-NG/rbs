@@ -1341,6 +1341,26 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if ($scope.listBookingsConflictingQuantity.length > 0) {
                 suspendBookings($scope.listBookingsConflictingQuantity);
             }
+
+            // Validate all bookings not conflicting if it's an auto-validated resource
+            $scope.processBookings = [];
+            if (!$scope.editedResource.validation) {
+                $scope.editedResource.bookings.forEach(function (booking) {
+                    if (!$scope.listBookingsConflictingQuantity.find(b => b.id === booking.id)) {
+                        $scope.processBookings.push(booking);
+                    }
+                });
+                $scope.doValidateBookingSelection();
+            }
+            else {
+                let bookingsForStatusCreated = [];
+                $scope.editedResource.bookings.forEach(function (booking) {
+                    if (!$scope.listBookingsConflictingQuantity.find(b => b.id === booking.id)) {
+                        bookingsForStatusCreated.push(booking);
+                    }
+                });
+                submitBookings(bookingsForStatusCreated);
+            }
         };
 
         $scope.deleteResourcesSelection = function () {
@@ -1758,6 +1778,39 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             return (booking.quantity===undefined?"?":booking.quantity) + " / " + resourceQuantity;
         };
 
+        $scope.doValidateBookingSelection = function () {
+            $scope.display.processing = true;
+            $scope.currentErrors = [];
+            try {
+                var actions = $scope.processBookings.length;
+                _.each($scope.processBookings, function (booking) {
+                    booking.validate(
+                        function () {
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                $scope.bookings.deselectAll();
+                                $scope.closeBooking();
+                                model.refreshBookings($scope.display.list);
+                            }
+                        },
+                        function (e) {
+                            $scope.currentErrors.push(e);
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                $scope.showActionErrors();
+                                model.refreshBookings($scope.display.list);
+                            }
+                        }
+                    );
+                });
+            } catch (e) {
+                $scope.display.processing = undefined;
+                $scope.currentErrors.push({error: 'rbs.error.technical'});
+            }
+        };
+
         const suspendBookings = function (bookings) {
             $scope.processBookings = bookings;
             $scope.display.processing = true;
@@ -1765,6 +1818,37 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 var actions = $scope.processBookings.length;
                 _.each($scope.processBookings, function (booking) {
                     booking.suspend(
+                        function () {
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                model.refreshBookings($scope.display.list);
+                            }
+                        },
+                        function (e) {
+                            $scope.currentErrors.push(e);
+                            actions--;
+                            if (actions === 0) {
+                                $scope.display.processing = undefined;
+                                $scope.showActionErrors();
+                                model.refreshBookings($scope.display.list);
+                            }
+                        }
+                    );
+                });
+            } catch (e) {
+                $scope.display.processing = undefined;
+                $scope.currentErrors.push({error: 'rbs.error.technical'});
+            }
+        };
+
+        const submitBookings = function (bookings) {
+            $scope.processBookings = bookings;
+            $scope.display.processing = true;
+            try {
+                var actions = $scope.processBookings.length;
+                _.each($scope.processBookings, function (booking) {
+                    booking.submit(
                         function () {
                             actions--;
                             if (actions === 0) {

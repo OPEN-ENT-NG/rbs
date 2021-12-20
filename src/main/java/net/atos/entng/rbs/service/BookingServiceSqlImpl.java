@@ -238,34 +238,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			query.append("(select id from parent_booking),");
 		}
 
-		/*
-		 * Subquery to insert proper status : refused if there exist a concurrent
-		 * validated booking. Created if validation is activated. Validated otherwise
-		 */
-		query.append(" (SELECT CASE").append(" WHEN (").append(" EXISTS(SELECT 1 FROM rbs.booking")
-				.append(" WHERE status = ?").append(" AND (start_date, end_date) OVERLAPS (?, ?)")
-				.append(" AND resource_id = ?").append(" )) THEN ?");
-		values.add(VALIDATED.status()).add(toSQLTimestamp(firstSlotStartDate)).add(toSQLTimestamp(firstSlotEndDate))
-				.add(resourceId).add(REFUSED.status());
-		query.append(" WHEN (t.validation IS true) THEN ?").append(" ELSE ? END").append(" FROM rbs.resource_type AS t")
-				.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id").append(" WHERE r.id = ?").append("),");
-		values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId);
+		// Subquery to insert proper status : created if validation is activated. Validated otherwise
 
-		// refused because of concurrent in case of periodic reservation
-		query.append(" (SELECT CASE").append(" WHEN (").append(" EXISTS(SELECT 1 FROM rbs.booking")
-				.append(" WHERE status = ?").append(" AND (start_date, end_date) OVERLAPS (?, ?) AND resource_id = ?")//
-				.append(" )) THEN ?");
-		values.add(VALIDATED.status()).add(toSQLTimestamp(firstSlotStartDate)).add(toSQLTimestamp(firstSlotEndDate))
-				.add(resourceId).add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
-
-		// finding the conflicted booking id
-		query.append(" || ( SELECT id FROM rbs.booking").append(" WHERE status = ?")
-				.append(" AND (start_date, end_date) OVERLAPS (?, ?) AND resource_id = ? LIMIT 1 )");
-		values.add(VALIDATED.status()).add(toSQLTimestamp(firstSlotStartDate)).add(toSQLTimestamp(firstSlotEndDate))
-				.add(resourceId);
-
-		query.append(" ELSE ? END)) ");
-		values.addNull();
+		query.append(" (SELECT CASE WHEN (t.validation IS true) THEN ? ELSE ? END")
+				.append(" FROM rbs.resource_type AS t")
+				.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+				.append(" WHERE r.id = ?), ?)");
+		values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
 
 		// 2. Additional VALUES to insert the other child bookings
 		int nbOccurences = booking.getOccurrences(-1);
@@ -286,31 +265,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					query.append("(select id from parent_booking),");
 				}
 
-				query.append(" (SELECT CASE").append(" WHEN (").append(" EXISTS(SELECT 1 FROM rbs.booking")
-						.append(" WHERE status = ?");
-				query.append(" AND (start_date, end_date) OVERLAPS (?, ?) AND resource_id = ?").append(" )) THEN ?");
-				values.add(VALIDATED.status()).add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()))
-						.add(resourceId).add(REFUSED.status());
-				query.append(" WHEN (t.validation IS true) THEN ?").append(" ELSE ? END")
-						.append(" FROM rbs.resource_type AS t").append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
-						.append(" WHERE r.id = ?").append("), ");
-				values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId);
-
-				// refused because of concurrent in case of periodic reservation
-				query.append(" (SELECT CASE").append(" WHEN (").append(" EXISTS(SELECT 1 FROM rbs.booking")
-						.append(" WHERE status = ?")
-						.append(" AND (start_date, end_date) OVERLAPS (? ,?) AND resource_id = ?").append(" )) THEN ?");
-				values.add(VALIDATED.status()).add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()))
-						.add(resourceId).add("<i18n>rbs.booking.automatically.refused.reason</i18n>");
-
-				// finding the conflicted booking id
-				query.append(" || (SELECT id FROM rbs.booking").append(" WHERE status = ?")
-						.append(" AND (start_date, end_date) OVERLAPS (? , ?) AND resource_id = ? LIMIT 1 )");
-				values.add(VALIDATED.status()).add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()))
-						.add(resourceId);
-
-				query.append(" ELSE ? END)) ");
-				values.addNull();
+				query.append(" (SELECT CASE WHEN (t.validation IS true) THEN ? ELSE ? END")
+						.append(" FROM rbs.resource_type AS t")
+						.append(" INNER JOIN rbs.resource AS r ON r.type_id = t.id")
+						.append(" WHERE r.id = ?), ?)");
+				values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
 				//
 				lastSlotEndDateUTC = lastSlotEndDateUTC < slotIt.getEndUTC() ? slotIt.getEndUTC() : lastSlotEndDateUTC;
 			}
@@ -357,9 +316,11 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		StringBuilder query = new StringBuilder();
 		query.append("UPDATE rbs.booking").append(" SET ").append(sb.toString()).append("modified = NOW()")
+				.append(", booking_reason = ?")
 				.append(", quantity = ?")
 				.append(", start_date = ?")
 				.append(", end_date = ?" );
+		values.add(booking.getBookingReason());
 		values.add(booking.getBookingQuantity());
 		values.add(toSQLTimestamp(slot.getStartUTC()));
 		values.add(toSQLTimestamp(slot.getEndUTC()));
@@ -419,10 +380,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// 2. Update parent booking
 		StringBuilder parentQuery = new StringBuilder();
 		JsonArray parentValues = new fr.wseduc.webutils.collections.JsonArray();
-		parentQuery.append("UPDATE rbs.booking").append(" SET booking_reason = ?, start_date = ?, end_date = ?,");
-		parentValues.add(booking.getBookingReason()).add(toSQLTimestamp(slot.getStartUTC()))
-				.add(endDate > 0L ? toSQLTimestamp(endDate) : null); // the null value will be replaced by the last
-																		// slot's end date
+		parentQuery.append("UPDATE rbs.booking").append(" SET booking_reason = ?, quantity = ?, start_date = ?, end_date = ?,");
+		parentValues.add(booking.getBookingReason()).add(booking.getBookingQuantity()).add(toSQLTimestamp(slot.getStartUTC()))
+				.add(endDate > 0L ? toSQLTimestamp(endDate) : null); // the null value will be replaced by the last slot's end date
 		final int endDateIndex = parentValues.size() - 1;
 
 		parentQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");

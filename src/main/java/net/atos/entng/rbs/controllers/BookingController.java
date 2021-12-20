@@ -674,7 +674,8 @@ public class BookingController extends ControllerHelper {
 							final String bookingId = request.params().get("bookingId");
 
 							int newStatus = json.getInteger("status");
-							if (newStatus != VALIDATED.status() && newStatus != REFUSED.status()  && newStatus != SUSPENDED.status()) {
+
+							if (newStatus != VALIDATED.status() && newStatus != REFUSED.status() && newStatus != SUSPENDED.status() && newStatus != CREATED.status()) {
 								badRequest(request, "Invalid status");
 								return;
 							}

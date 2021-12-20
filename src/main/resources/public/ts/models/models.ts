@@ -242,6 +242,14 @@ Booking.prototype.suspend = function (cb, cbe) {
     this.process(data, cb, cbe, 'suspend');
 };
 
+Booking.prototype.submit = function (cb, cbe) {
+    this.status = model.STATE_CREATED;
+    var data = {
+        status: this.status
+    };
+    this.process(data, cb, cbe, 'create');
+};
+
 Booking.prototype.process = function (data, cb, cbe, context) {
     var booking = this;
     http().putJson('/rbs/resource/' + this.resource.id + '/booking/' + this.id + '/process', data)
