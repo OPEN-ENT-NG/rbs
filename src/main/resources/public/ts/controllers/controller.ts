@@ -1304,9 +1304,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.saveResource = function () {
-            if ($scope.listBookingsConflictingQuantity.length > 0) {
+            let newConflicts = [];
+            $scope.listBookingsConflictingQuantity.forEach(function(booking) {
+                if (booking.status === 1 || booking.status === 2) {
+                    newConflicts.push(booking);
+                }
+            });
+            if (newConflicts.length > 0) {
                 $scope.displayLightbox.saveQuantityResource = true;
-                // CalendarUtil.fixViewFromNotification();
                 $scope.safeApply();
             }
             else {

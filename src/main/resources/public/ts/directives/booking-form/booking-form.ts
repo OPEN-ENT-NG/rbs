@@ -838,6 +838,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             vm.initPeriodic = () => {
                 vm.editedBooking.is_periodic = true;
                 vm.editedBooking.periodDays = model.bitMaskToDays(); // no days selected
+                vm.editedBooking.periodDays[vm.editedBooking.startMoment.day() - 1].value = true; // auto-checked selected day
                 vm.editedBooking.byOccurrences = true;
                 vm.editedBooking.periodicity = 1;
                 vm.editedBooking.occurrences = 1;
