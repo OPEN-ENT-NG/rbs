@@ -250,11 +250,11 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 // Formats time if they are strings
                 if (typeof vm.editedBooking.startTime === 'string') {
                     const time = vm.editedBooking.startTime.split(':');
-                    vm.editedBooking.startTime = moment().set('hour', time[0]).set('minute', time[1]);
+                    vm.editedBooking.startTime = moment(vm.booking.startDate).set('hour', time[0]).set('minute', time[1]);
                 }
                 if (typeof vm.editedBooking.endTime === 'string') {
                     const time = vm.booking.endTime.split(':');
-                    vm.editedBooking.endTime = moment().set('hour', time[0]).set('minute', time[1]);
+                    vm.editedBooking.endTime = moment(vm.booking.endDate).set('hour', time[0]).set('minute', time[1]);
                 }
 
                 try {
@@ -362,6 +362,9 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                         }
                     }
                 }
+                else {
+                    $scope.currentErrors.push({error: 'rbs.period.error.nodays'});
+                }
             };
 
             vm.initEditBookingDisplay = (): void => {
@@ -436,9 +439,21 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.resource = undefined;
                 vm.selectedSlotStart = undefined;
                 vm.selectedSlotEnd = undefined;
+                var selectedType = undefined;
                 if (vm.selectedStructure.types.length > 0) {
-                    vm.editedBooking.type = vm.selectedStructure.types[0];
-                    vm.autoSelectResource();
+                    vm.selectedStructure.types.forEach(function (type) {
+                        if (selectedType == undefined && !type.resources.isEmpty()) {
+                            selectedType = type;
+                        }
+                    });
+                    if (selectedType == undefined) {
+                        notify.error(lang.translate('rbs.booking.warning.no.resources'));
+                    } else {
+                        vm.editedBooking.type = selectedType;
+                        vm.autoSelectResource();
+                    }
+                } else {
+                    notify.error(lang.translate('rbs.booking.warning.no.types'));
                 }
             };
 
@@ -514,6 +529,10 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
 
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
+                // if (vm.editedBooking.is_periodic) {
+                //     vm.booking.periodicEndDate = vm.editedBooking._slots[vm.editedBooking._slots.length-1].endMoment.toDate();
+                // }
+
                 // change periodicEndDate (will affect ocurence/recurence end_date)
                 vm.booking.periodicEndDate = new Date(vm.editedBooking.end_date);
 

@@ -31,9 +31,8 @@ export class BookingUtil {
      * @return boolean  (true if has error (supposedly is past), false if booking can be opened/edited
      */
     static checkEditedBookingMoments(booking: any, today: Moment, currentErrors?: Array<any>) : boolean {
-        let hasErrors = false;
-        if (
-            booking.startDate.getFullYear() < today.year() ||
+        var hasErrors = false;
+        if ((booking.startDate.getFullYear() < today.year() ||
             (booking.startDate.getFullYear() == today.year() &&
                 booking.startDate.getMonth() < today.month()) ||
             (booking.startDate.getFullYear() == today.year() &&
@@ -42,14 +41,31 @@ export class BookingUtil {
             (booking.startDate.getFullYear() == today.year() &&
                 booking.startDate.getMonth() == today.month() &&
                 booking.startDate.getDate() == today.date() &&
-                booking.startTime.hour() < moment().hour())
-        ) {
-            if (currentErrors) {
-                currentErrors.push({error: 'rbs.booking.invalid.datetimes.past'});
-            }
-            notify.error('rbs.booking.invalid.datetimes.past');
+                booking.startTime.hour() < moment().hour())) &&
+            (!currentErrors || !currentErrors.find(err => err.error === 'rbs.booking.invalid.datetimes.past')))
+        {
+            currentErrors.push({error: 'rbs.booking.invalid.datetimes.past'});
             hasErrors = true;
         }
+
+        if (booking.startDate.getFullYear() == booking.endDate.getFullYear() &&
+            booking.startDate.getMonth() == booking.endDate.getMonth() &&
+            booking.startDate.getDate() == booking.endDate.getDate() &&
+            booking.endTime.hour() == booking.startTime.hour() &&
+            booking.endTime.minute() == booking.startTime.minute() &&
+            (!currentErrors || !currentErrors.find(err => err.error === 'rbs.booking.invalid.datetimes.equals')))
+        {
+            currentErrors.push({error: 'rbs.booking.invalid.datetimes.equals'});
+            hasErrors = true;
+        }
+
+        if (booking.startDate.getTime() > booking.endDate.getTime() &&
+            (!currentErrors || !currentErrors.find(err => err.error === 'rbs.booking.invalid.datetimes.switched')))
+        {
+            currentErrors.push({error: 'rbs.booking.invalid.datetimes.switched'});
+            hasErrors = true;
+        }
+
         return hasErrors;
     };
 }

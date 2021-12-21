@@ -12,11 +12,7 @@ export class CalendarUtil {
     static placingButton($timeout, $scope, exit): void {
         var done = false;
         let $calendarOptionButtonGroup: JQuery = $('.calendarOptionButtonGroup');
-        /* trigger tooltip to show up */
-        let $scheduleItems: JQuery = $('.schedule-items');
-        $scheduleItems.mousemove(() => {
-            $timeout(() => $scope.$apply(), 500)
-        });
+        this.showTooltip($timeout, $scope);
         $timeout(function () {
             if ($calendarOptionButtonGroup.length > 0 && $('.filters-icons > ul').length > 0) {
                 $calendarOptionButtonGroup.children().appendTo('.filters-icons > ul');
@@ -24,6 +20,12 @@ export class CalendarUtil {
             }
         }, 50).then(function () {
             if (!done && exit < 50) CalendarUtil.placingButton($timeout, $scope, ++exit)
+        });
+    }
+
+    static showTooltip($timeout, $scope): void {
+        $(".schedule-item").mouseover(() => {
+            $timeout(() => { $scope.$apply(); }, 500);
         });
     }
 

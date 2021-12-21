@@ -187,6 +187,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             });
 
             $scope.bookings.on('sync', () => {
+                CalendarUtil.showTooltip($timeout, $scope);
                 $scope.safeApply();
             });
 
@@ -1343,8 +1344,15 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             );
 
             // Suspend conflicting bookings
+            let bookingsToSuspend = [];
             if ($scope.listBookingsConflictingQuantity.length > 0) {
-                suspendBookings($scope.listBookingsConflictingQuantity);
+                $scope.listBookingsConflictingQuantity.forEach(function(booking) {
+                    if(booking.status != model.STATE_REFUSED) {
+                        bookingsToSuspend.push(booking);
+                    }
+
+                });
+                suspendBookings(bookingsToSuspend);
             }
 
             // Validate all bookings not conflicting if it's an auto-validated resource
