@@ -78,11 +78,11 @@
 		<hr/>
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.quantity.label</i18n></label>
-			<input class="input-size" type="number" min="0" ng-model="editedResource.quantity" />
+			<input class="input-size" type="number" min="0" ng-model="editedResource.quantity"
+				   ng-change="syncConflictingBookings()"/>
 		</div>
-		<hr class="row" />
 
-		<div class="warning default-fontsize" ng-if="isResourceQuantityTooLow(editedResource.quantity)">
+		<div class="warning default-fontsize top-spacing-three" ng-if="conflictingBookings.length > 0">
 			<div>
 				<i18n>rbs.resource.edit.quantity.warning</i18n>
 				<input type="checkbox" id="quantity-details" class="transparent" ng-model="quantityChecked" />
@@ -99,7 +99,7 @@
 					</tr>
 					</thead>
 					<tbody>
-					<tr ng-repeat="booking in listBookingsConflictingQuantity">
+					<tr ng-repeat="booking in conflictingBookings">
 						<td>[[booking.owner_name]]</td>
 						<td>[[formatMoment(booking.startMoment)]]</td>
 						<td>[[formatMoment(booking.endMoment)]]</td>

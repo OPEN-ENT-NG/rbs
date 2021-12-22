@@ -44,7 +44,7 @@
                                     </label>
                                     <select class="six cell" ng-model="vm.editedBooking.type"
                                             ng-options="resourceType.name for resourceType in vm.selectedStructure.types | orderBy: 'name'"
-                                            ng-change="vm.autoSelectResource(); vm.updateQuantitiesAvailable()" required
+                                            ng-change="vm.autoSelectResource();" required
                                             ng-if="vm.selectedStructure.types.length > 0">
                                     </select>
                                     <div class="six cell warning" ng-if="vm.editedBooking.type === undefined">
@@ -57,7 +57,6 @@
                                     </label>
                                     <select class="six cell" ng-model="vm.editedBooking.resource"
                                             ng-options="resource.name for resource in vm.editedBooking.type.resources.filterAvailable(vm.editedBooking.is_periodic)"
-                                            ng-change="vm.updateQuantitiesAvailable()"
                                             required ng-if="vm.editedBooking.resource !== undefined" input-guard>
                                     </select>
                                     <div class="six cell warning" ng-if="vm.editedBooking.resource === undefined">
@@ -111,7 +110,7 @@
             <!-- Booking base slot dates and hours -->
             <article class="accordion"
                      ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING }">
-                <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_BOOKING; vm.updateQuantitiesAvailable()">
+                <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_BOOKING;">
 					<span ng-if="vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING">
 						<i18n>rbs.header.booking.pick</i18n>
 					</span>
@@ -137,19 +136,19 @@
                             <!-- TODO Due to a directive datePicker bug on minDate param, it has been removed -->
                             <date-picker ng-if="vm.editedBooking.id === undefined" class="two cell horizontal-spacing"
                                          ng-model="vm.booking.startDate"
-                                         ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateQuantitiesAvailable()"
+                                         ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateEditedBookingMoments()"
                                          past="true" exp="true" exp-object="booking.endDate"
                                          required></date-picker>
                             <date-picker
                                     ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined"
                                     class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
-                                    ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateQuantitiesAvailable()"
+                                    ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateEditedBookingMoments()"
                                     past="true" exp="true" exp-object="vm.booking.endDate"
                                     required></date-picker>
                             <date-picker
                                     ng-if="vm.editedBooking.id !== undefined && vm.editedBooking.type.slotprofile !== undefined"
                                     class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
-                                    ng-change="vm.booking.endDate = vm.booking.startDate; vm.startDateModif();showDate = true;vm.updateQuantitiesAvailable()"
+                                    ng-change="vm.booking.endDate = vm.booking.startDate; vm.startDateModif();showDate = true;vm.updateEditedBookingMoments()"
                                     past="true" exp="true" exp-object="vm.booking.endDate"
                                     required input-guard></date-picker>
                         </div>
@@ -160,7 +159,7 @@
                                 <i18n>rbs.booking.edit.date.label</i18n>
                             </label>
                             <date-picker class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
-                                         ng-change="vm.editPeriodicStartDate();vm.checkDateFunction();vm.updatePeriodicSummary();vm.updateQuantitiesAvailable()"
+                                         ng-change="vm.editPeriodicStartDate();vm.checkDateFunction();vm.updatePeriodicSummary();vm.updateEditedBookingMomentsAndSlots()"
                                          past="true" exp="true" required></date-picker>
                         </div>
 
@@ -175,13 +174,13 @@
                             <div ng-if="vm.booking.startDate.getDate() == vm.booking.endDate.getDate() && vm.booking.startDate.getMonth() == vm.booking.endDate.getMonth()
       									&& vm.booking.startDate.getFullYear() == vm.booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-limit="vm.booking.endTime"
-                                                 ng-begin="true" ng-model="vm.booking.startTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 ng-begin="true" ng-model="vm.booking.startTime" ng-change="vm.updateEditedBookingMomentsAndSlots()"
                                                  required></time-picker-rbs>
                             </div>
                             <div ng-if="vm.booking.startDate.getDate() != vm.booking.endDate.getDate() || vm.booking.startDate.getMonth() != vm.booking.endDate.getMonth()
       									|| vm.booking.startDate.getFullYear() != vm.booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-begin="true"
-                                                 ng-model="vm.booking.startTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 ng-model="vm.booking.startTime" ng-change="vm.updateEditedBookingMomentsAndSlots()"
                                                  required></time-picker-rbs>
                             </div>
                             <label class="one cell centered-text">
@@ -190,28 +189,26 @@
                             <div ng-if="vm.booking.startDate.getDate() == vm.booking.endDate.getDate() && vm.booking.startDate.getMonth() == vm.booking.endDate.getMonth()
       									&& vm.booking.startDate.getFullYear() == vm.booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-limit="vm.booking.startTime"
-                                                 ng-end="true" ng-model="vm.booking.endTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 ng-end="true" ng-model="vm.booking.endTime" ng-change="vm.updateEditedBookingMomentsAndSlots()"
                                                  required></time-picker-rbs>
                             </div>
                             <div ng-if="vm.booking.startDate.getDate() != vm.booking.endDate.getDate() ||
                                     vm.booking.startDate.getMonth() != vm.booking.endDate.getMonth()
       									|| vm.booking.startDate.getFullYear() != vm.booking.endDate.getFullYear()">
                                 <time-picker-rbs class="two cell horizontal-spacing" ng-end="true"
-                                                 ng-model="vm.booking.endTime" ng-change="vm.updateQuantitiesAvailable()"
+                                                 ng-model="vm.booking.endTime" ng-change="vm.updateEditedBookingMomentsAndSlots()"
                                                  required></time-picker-rbs>
                             </div>
 
                         </div>
 
                         <!-- Booking quantity -->
-                        <div class="warning default-fontsize">[[vm.formatTextBookingQuantity()]]</div>
+                        <div class="warning default-fontsize">[[vm.formatTextBookingQuantity(vm.editedBooking)]]</div>
                         <div class="row">
                             <label class="three cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
-                            <input class="input-size" type="number" min="1" max="[[vm.tempQuantities.bookingQuantityAvailable]]"
-                                   ng-model="vm.editedBooking.quantity" />
+                            <input class="input-size" type="number" ng-model="vm.editedBooking.quantity"
+                                   min="1" max="[[vm.getQuantityDispo(vm.editedBooking)]]"/>
                         </div>
-
-
 
                         <!-- Date/time error -->
                         <div class="row" ng-if="vm.booking.invalidDateTimes === true" translate
@@ -254,21 +251,22 @@
                             </div>
                             <hr/>
                         </div>
-
                         <hr/>
+
+
                         <!-- Periodicity toggle - new booking -->
                         <div class="row six"
                              ng-if="vm.editedBooking.id === undefined && vm.editedBooking.resource.periodic_booking">
                             <input type="checkbox" id="isPeriodicCheckBox" class="one cell" ng-model="vm.editedBooking.is_periodic"
-                                   ng-change="vm.togglePeriodic();vm.checkDateFunction()" input-guard/>
+                                   ng-change="vm.togglePeriodic();vm.checkDateFunction();vm.updateEditedBookingMomentsAndSlots()" input-guard/>
                             <label for="isPeriodicCheckBox">&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
                         </div>
 
                         <!-- Periodicity toggle (fixed) - editing booking -->
                         <div class="row six" ng-if="vm.editedBooking.id !== undefined">
-                            <input type="checkbox" disabled ng-checked="vm.editedBooking.is_periodic" class="one cell" input-guard/>&nbsp;<i18n>
-                            rbs.booking.edit.periodic_booking.label
-                        </i18n>
+                            <input type="checkbox" id="isPeriodicCheckBoxEdit" class="one cell"
+                                   ng-checked="vm.editedBooking.is_periodic" disabled/>
+                            <label for="isPeriodicCheckBoxEdit">&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
                         </div>
 
                         <!-- Booking reason -->
@@ -304,7 +302,7 @@
                             </label>
                             <select class="one cell" ng-model="vm.editedBooking.periodicity"
                                     ng-options="periodicity for periodicity in vm.periods.periodicities"
-                                    ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()" required>
+                                    ng-change="vm.updatePeriodicSummary(); vm.updateEditedBookingSlots()" required>
                             </select>
                             <label class="two cell horizontal-spacing-twice">
                                 <i18n>rbs.booking.edit.period.unit</i18n>
@@ -314,7 +312,7 @@
                             <label class="cell horizontal-spacing-twice"
                                    ng-repeat="periodDay in vm.editedBooking.periodDays">
                                 <input type="checkbox" ng-model="periodDay.value" name="day_[[periodDay.number]]"
-                                       value="false" ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()"/>
+                                       value="false" ng-change="vm.updatePeriodicSummary(); vm.updateEditedBookingSlots()"/>
                                 <span>
 									<i18n ng-if="periodDay.number == 1">rbs.booking.edit.period.days.1</i18n>
 									<i18n ng-if="periodDay.number == 2">rbs.booking.edit.period.days.2</i18n>
@@ -338,13 +336,13 @@
                         <div class="row six">
                             <input class="one cell" type="radio" name="periodic_after"
                                    data-ng-model="vm.editedBooking.byOccurrences" ng-value="true"
-                                   ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()" checked/>
+                                   ng-change="vm.updatePeriodicSummary(); vm.updateEditedBookingSlots()" checked/>
                             <label class="two cell">
                                 <i18n>rbs.booking.edit.period.end.after</i18n>
                             </label>
                             <select class="two cell" ng-model="vm.editedBooking.occurrences"
                                     ng-options="occurrence for occurrence in vm.periods.occurrences|orderBy"
-                                    ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()">
+                                    ng-change="vm.updatePeriodicSummary(); vm.updateEditedBookingSlots()">
                             </select>
                             <label class="six cell horizontal-spacing-twice">
                                 <i18n>rbs.booking.edit.period.end.occurrences</i18n>
@@ -355,12 +353,12 @@
                         <div class="row six">
                             <input class="one cell" type="radio" name="periodic_after"
                                    data-ng-model="vm.editedBooking.byOccurrences" ng-value="false"
-                                   ng-change="vm.updatePeriodicSummary(); vm.updateQuantitiesAvailable()"/>
+                                   ng-change="vm.updatePeriodicSummary(); vm.updateEditedBookingSlots()"/>
                             <label class="two cell">
                                 <i18n>rbs.booking.edit.period.end.on</i18n>
                             </label>
                             <date-picker class="six cell" ng-model="vm.booking.periodicEndDate"
-                                         ng-change="vm.showDate = true; vm.updatePeriodicSummary();vm.checkDateFunction();vm.updateQuantitiesAvailable()"
+                                         ng-change="vm.showDate = true; vm.updatePeriodicSummary();vm.checkDateFunction();vm.updateEditedBookingSlots()"
                                          past="true"></date-picker>
                         </div>
 

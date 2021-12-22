@@ -23,7 +23,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="booking in listBookingsConflictingQuantity">
+                <tr ng-repeat="booking in conflictingBookings">
                     <td>[[booking.owner_name]]</td>
                     <td>[[formatMoment(booking.startMoment)]]</td>
                     <td>[[formatMoment(booking.endMoment)]]</td>

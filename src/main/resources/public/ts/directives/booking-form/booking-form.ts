@@ -7,6 +7,7 @@ import {BookingUtil} from "../../utilities/booking";
 import {HandleUtil} from "../../utilities/handle.util";
 import {BOOKING_EVENTER} from "../../core/enum/booking-eventer.enum";
 import {BookingEventService} from "../../services";
+import {I18nUtils} from "../../utilities/i18n.util";
 
 const {Booking, Slot, SlotJson} = RBS;
 
@@ -14,63 +15,6 @@ declare let model: any;
 declare let window: any;
 
 interface IViewModel {
-    $onInit(): any;
-    $onDestroy(): any;
-
-    toggleLightbox(state: boolean): void;
-    composeTitle(typeTitle: any, resourceTitle: any): string;
-
-    initEditBookingDisplay(): void;
-    initModerators(): void;
-    initPeriodic(): void;
-
-    newBooking(): void;
-
-    autoSelectTypeAndResource(): void;
-    autoSelectResource(): void;
-
-    getMomentFromDate(): void;
-
-    initBookingDates(startMoment: any, endMoment: any): void;
-    
-    switchStructure(struct: any): void;
-    switchSlotStart(slot: any): void;
-    switchSlotEnd(slot: any): void;
-
-    updatePeriodicSummary(): void;
-    summaryBuildDays(days: any): any;
-    summaryWriteRange(summary: any, first: any, last: any): string;
-    
-    // quantity/availability methods
-    updateQuantitiesAvailable(): void;
-
-    // utils
-    formatTextBookingQuantity(): string;
-    formatBooking(date: any, time: any): string;
-    startDateModif(): any;
-    editPeriodicStartDate(): void;
-    checkDateFunction(): void;
-
-    togglePeriodic(): void;
-
-    formatMomentDayLong(date: any): string;
-
-    isBookingQuantityWrong(booking: any): boolean;
-    saveBookingSlotProfile(): void;
-
-    resolveSlotsSelected(start: any, end: any): boolean;
-    checkSaveBooking(): boolean;
-    saveBooking(): void;
-    resolvePeriodicMoments(): void;
-    closeBooking(): void;
-
-    editBooking(): void;
-    newBookingCalendar(): void;
-    initQuantities(): void;
-    translate(text: string): string;
-
-
-    tempQuantities: any;
     editedBooking: any;
     displayLightbox: boolean;
     selectedStructure: any;
@@ -78,20 +22,17 @@ interface IViewModel {
     slotProfilesComponent: any;
     selectedSlotStart: any;
     selectedSlotEnd: any;
+    slotNotFound: boolean;
 
     saveTime: any;
 
-    // quantity/availability variables
-    tempPeriodicBookings: Array<any>;
-    slotNotFound: boolean;
-
-    /* props */
+    // Props
     today: any;
     structuresWithTypes: Array<any>;
     sharedStructure: any;
     periods: any;
     slots: any;
-    
+
     resourceTypes: any;
     display: any;
     booking: any;
@@ -100,6 +41,52 @@ interface IViewModel {
     selectedBooking: any;
     bookings: any;
     processBookings: any;
+
+    $onInit(): any;
+    // New booking
+    newBooking(): void;
+    newBookingCalendar(): void;
+    // Init new booking
+    initEditBookingDisplay(): void;
+    initModerators(): void;
+    autoSelectTypeAndResource(): void;
+    autoSelectResource(): void;
+    initBookingDates(startMoment: any, endMoment: any): void;
+    // Edit booking
+    editBooking(): void;
+    updatePeriodicSummary(): void;
+    formatMomentDayLong(date: any): string;
+
+    // Utils
+    translate(text: string): string;
+    toggleLightbox(state: boolean): void;
+    composeTitle(typeTitle: any, resourceTitle: any): string;
+    switchStructure(struct: any): void;
+    switchSlotStart(slot: any): void;
+    switchSlotEnd(slot: any): void;
+    summaryBuildDays(days: any): any;
+    summaryWriteRange(summary: any, first: any, last: any): string;
+    startDateModif(): any;
+    formatBooking(date: any, time: any): string;
+    editPeriodicStartDate(): void;
+    checkDateFunction(): void;
+    togglePeriodic(): void;
+    initPeriodic(): void;
+    saveBookingSlotProfile(): void;
+    resolveSlotsSelected(start: any, end: any): boolean;
+    checkSaveBooking(): boolean;
+    saveBooking(): void;
+    resolvePeriodicMoments(): void;
+    closeBooking(): void;
+    // Quantity functions
+    updateEditedBookingMoments(): void;
+    updateEditedBookingSlots(): void;
+    updateEditedBookingMomentsAndSlots(): void;
+    getQuantityDispo(booking: any): number;
+    isBookingQuantityWrong(booking: any): boolean;
+    formatTextBookingQuantity(booking: any): string;
+
+    $onDestroy(): any;
 }
 
 export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '$timeout',
@@ -129,11 +116,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             const vm: IViewModel = <IViewModel>this;
 
             vm.$onInit = async () => {
-                vm.tempQuantities = {
-                    resourceQuantityAvailable: undefined, // Quantity available to use for bookings on a specific period
-                    bookingQuantityAvailable: undefined // Previous - quantities already used by other bookings on this specific period
-                };
-
                 switch (window.bookingState) {
                     case BOOKING_EVENTER.CREATE:
                         vm.newBooking();
@@ -147,9 +129,12 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
+            // New booking
+
             vm.newBooking = (): void => {
                 vm.display.processing = undefined; // add as props from controller
                 vm.editedBooking = new Booking();
+                vm.editedBooking.quantity = 1;
                 vm.saveTime = undefined;
                 vm.initEditBookingDisplay();
                 vm.initModerators();
@@ -167,10 +152,8 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.startMoment.seconds(0);
                 vm.editedBooking.endMoment.seconds(0);
 
-
                 vm.bookings.syncForShowList();
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
-                vm.initQuantities();
 
                 // vm.display.showPanel = true;
             };
@@ -178,6 +161,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             vm.newBookingCalendar = (): void => {
                 vm.display.processing = undefined;
                 vm.editedBooking = new Booking();
+                vm.editedBooking.quantity = 1;
                 vm.initEditBookingDisplay();
 
                 vm.initModerators();
@@ -208,164 +192,10 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
 
                 vm.bookings.syncForShowList();
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
-                vm.initQuantities();
                 vm.displayLightbox = true;
             };
 
-            vm.initQuantities = (): void => {
-                if (vm.editedBooking.resource.quantity === undefined) {
-                    vm.editedBooking.resource.quantity = 1;
-                }
-                vm.editedBooking.quantity = 1;
-                vm.updateQuantitiesAvailable();
-            };
-
-            vm.updateQuantitiesAvailable = (): void => {
-                if (vm.editedBooking != null) {
-                    updateEditedBookingMoments();
-                }
-                let booking = vm.editedBooking;
-
-                if (booking.startMoment.isSame(booking.endMoment)) {
-                    vm.tempQuantities.resourceQuantityAvailable = 0;
-                    vm.tempQuantities.bookingQuantityAvailable = 0;
-                }
-                else {
-                    if (booking.is_periodic) {
-                        calculatePeriodicBookings();
-                    }
-                    updateResourceQuantityAvailableByPeriod(booking.resource, booking.startMoment, booking.endMoment);
-                    updateBookingQuantityAvailableByPeriod(vm.tempQuantities.resourceQuantityAvailable, booking);
-                }
-            };
-
-            const updateEditedBookingMoments = function() : void {
-                vm.currentErrors = [];
-
-                vm.editedBooking.startDate = vm.booking.startDate;
-                vm.editedBooking.endDate = vm.booking.endDate;
-                vm.editedBooking.startTime = vm.booking.startTime;
-                vm.editedBooking.endTime = vm.booking.endTime;
-
-                // Formats time if they are strings
-                if (typeof vm.editedBooking.startTime === 'string') {
-                    const time = vm.editedBooking.startTime.split(':');
-                    vm.editedBooking.startTime = moment(vm.booking.startDate).set('hour', time[0]).set('minute', time[1]);
-                }
-                if (typeof vm.editedBooking.endTime === 'string') {
-                    const time = vm.booking.endTime.split(':');
-                    vm.editedBooking.endTime = moment(vm.booking.endDate).set('hour', time[0]).set('minute', time[1]);
-                }
-
-                try {
-                    if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
-                        return;
-                    }
-                    vm.editedBooking.startMoment = DateUtils.formatMoment(vm.editedBooking.startDate, vm.editedBooking.startTime);
-                    vm.editedBooking.endMoment = DateUtils.formatMoment(vm.editedBooking.endDate, vm.editedBooking.endTime);
-                }
-                catch (e) {
-                    vm.currentErrors.push({error: 'rbs.error.technical'});
-                    throw e;
-                }
-            };
-
-            const updateResourceQuantityAvailableByPeriod = (resource, startMoment, endMoment) : void => {
-                vm.tempQuantities.resourceQuantityAvailable = vm.editedBooking.resource.quantity;
-
-            };
-
-            const updateBookingQuantityAvailableByPeriod = (quantity:number, booking) : void => {
-                if (quantity <= 0) {
-                    vm.tempQuantities.bookingQuantityAvailable = 0;
-                }
-                else {
-                    vm.tempQuantities.bookingQuantityAvailable = quantity;
-                    if (booking.is_periodic) {
-                        vm.tempPeriodicBookings.forEach(function(slot) {
-                            let localQuantity = quantity;
-                            booking.resource.bookings.forEach(function (b) {
-                                if (!b.is_periodic && b.id != booking.id && slot.startMoment < b.endMoment && slot.endMoment > b.startMoment) {
-                                    localQuantity -= b.quantity;
-                                }
-                            });
-                            if (localQuantity < vm.tempQuantities.bookingQuantityAvailable) {
-                                vm.tempQuantities.bookingQuantityAvailable = localQuantity;
-                            }
-                        });
-                    }
-                    else {
-                        booking.resource.bookings.forEach(function (b) {
-                            if (!b.is_periodic && b.id != booking.id && booking.startMoment < b.endMoment && booking.endMoment > b.startMoment) {
-                                vm.tempQuantities.bookingQuantityAvailable -= b.quantity;
-                            }
-                        });
-                    }
-                    if (vm.tempQuantities.bookingQuantityAvailable <= 0) {
-                        vm.tempQuantities.bookingQuantityAvailable = 0;
-                    }
-                }
-            };
-
-            const calculatePeriodicBookings = function() : void {
-                vm.tempPeriodicBookings = [];
-                let currentMoment = moment(vm.editedBooking.startMoment);
-                let currentMonday = currentMoment.subtract(currentMoment.weekday(), 'days');
-                let diff = vm.editedBooking.endMoment.diff(vm.editedBooking.startMoment);
-                let tempBook = new Booking();
-
-                // Get days checked
-                let days = [];
-                for (let i = 0; i < vm.editedBooking.periodDays.length; i++) {
-                    if (vm.editedBooking.periodDays[i].value) {
-                        days.push(i);
-                    }
-                }
-
-                // Get tempPeriodicBookings
-                if (days.length > 0) {
-                    if (vm.editedBooking.byOccurrences) {
-                        while(vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
-                            days.forEach(function(day) {
-                                if (vm.tempPeriodicBookings.length < vm.editedBooking.occurrences) {
-                                    tempBook.startMoment = moment(currentMonday);
-                                    tempBook.endMoment = moment(currentMonday);
-                                    tempBook.startMoment.add(day, 'days');
-                                    tempBook.endMoment.add(day, 'days').add(diff);
-                                    tempBook.quantity = vm.editedBooking.quantity;
-                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                                        vm.tempPeriodicBookings.push(tempBook);
-                                    }
-                                    tempBook = new Booking();
-                                }
-                            });
-                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
-                        }
-                    }
-                    else {
-                        while(currentMoment < moment(vm.booking.periodicEndDate)) {
-                            days.forEach(function(day) {
-                                if (currentMoment < moment(vm.booking.periodicEndDate)) {
-                                    tempBook.startMoment = currentMonday;
-                                    tempBook.endMoment = currentMonday;
-                                    tempBook.startMoment.add(day, 'days');
-                                    tempBook.endMoment.add(day, 'days');
-                                    tempBook.quantity = vm.editedBooking.quantity;
-                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                                        vm.tempPeriodicBookings.push(tempBook);
-                                    }
-                                    currentMoment = tempBook.startMoment;
-                                    tempBook = new Booking();
-                                }
-                            });
-                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
-                        }
-                    }
-                }
-                else {
-                    $scope.currentErrors.push({error: 'rbs.period.error.nodays'});
-                }
-            };
+            // Init a new booking
 
             vm.initEditBookingDisplay = (): void => {
                 vm.editedBooking.display = {
@@ -386,69 +216,18 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
-            vm.initBookingDates = (startMoment, endMoment): void => {
-                // hours minutes management
-                var minTime = moment(startMoment);
-                minTime.set('hour', model.timeConfig.start_hour);
-                var maxTime = moment(endMoment);
-                maxTime.set('hour', model.timeConfig.end_hour);
-                if (startMoment.isAfter(minTime) && startMoment.isBefore(maxTime)) {
-                    vm.booking.startTime = startMoment;
-                    if (vm.selectedSlotStart) {
-                        vm.booking.startTime.set('hour', vm.selectedSlotStart.startHour.split(':')[0]);
-                        vm.booking.startTime.set('minute', vm.selectedSlotStart.startHour.split(':')[1]);
-                    }
-                } else {
-                    vm.booking.startTime = minTime;
-                    if (startMoment.isAfter(maxTime)) {
-                        startMoment.add('day', 1);
-                        endMoment.add('day', 1);
-                        maxTime.add('day', 1);
-                    }
-                }
-                if (endMoment.isBefore(maxTime)) {
-                    vm.booking.endTime = endMoment;
-                    if (vm.selectedSlotStart) {
-                        vm.booking.endTime.set('hour', vm.selectedSlotStart.endHour.split(':')[0]);
-                        vm.booking.endTime.set('minute', vm.selectedSlotStart.endHour.split(':')[1]);
-                    }
-                } else {
-                    vm.booking.endTime = maxTime;
-                }
-
-                // dates management
-
-                // setter startDate booking
-                vm.booking.startDate = startMoment.toDate();
-                vm.booking.startDate.setFullYear(startMoment.years());
-                vm.booking.startDate.setMonth(startMoment.months());
-                vm.booking.startDate.setDate(startMoment.date());
-
-                // setter endDate booking
-                vm.booking.endDate = endMoment.toDate();
-                vm.booking.endDate.setFullYear(endMoment.years());
-                vm.booking.endDate.setMonth(endMoment.months());
-                vm.booking.endDate.setDate(endMoment.date());
-
-                // setter periodicEndDate
-                vm.booking.periodicEndDate = endMoment.toDate();
-            };
-
             vm.autoSelectTypeAndResource = (): void => {
                 vm.editedBooking.type = undefined;
                 vm.editedBooking.resource = undefined;
                 vm.selectedSlotStart = undefined;
                 vm.selectedSlotEnd = undefined;
-                var selectedType = undefined;
+                let selectedType = undefined;
                 if (vm.selectedStructure.types.length > 0) {
-                    vm.selectedStructure.types.forEach(function (type) {
-                        if (selectedType == undefined && !type.resources.isEmpty()) {
-                            selectedType = type;
-                        }
-                    });
-                    if (selectedType == undefined) {
+                    selectedType = vm.selectedStructure.types.find(t => !t.resources.isEmpty());
+                    if (!selectedType) {
                         notify.error(lang.translate('rbs.booking.warning.no.resources'));
-                    } else {
+                    }
+                    else {
                         vm.editedBooking.type = selectedType;
                         vm.autoSelectResource();
                     }
@@ -495,6 +274,56 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
+            vm.initBookingDates = (startMoment, endMoment): void => {
+                // hours minutes management
+                var minTime = moment(startMoment);
+                minTime.set('hour', model.timeConfig.start_hour);
+                var maxTime = moment(endMoment);
+                maxTime.set('hour', model.timeConfig.end_hour);
+                if (startMoment.isAfter(minTime) && startMoment.isBefore(maxTime)) {
+                    vm.booking.startTime = startMoment;
+                    if (vm.selectedSlotStart) {
+                        vm.booking.startTime.set('hour', vm.selectedSlotStart.startHour.split(':')[0]);
+                        vm.booking.startTime.set('minute', vm.selectedSlotStart.startHour.split(':')[1]);
+                    }
+                } else {
+                    vm.booking.startTime = minTime;
+                    if (startMoment.isAfter(maxTime)) {
+                        startMoment.add('day', 1);
+                        endMoment.add('day', 1);
+                        maxTime.add('day', 1);
+                    }
+                }
+                if (endMoment.isBefore(maxTime)) {
+                    vm.booking.endTime = endMoment;
+                    if (vm.selectedSlotStart) {
+                        vm.booking.endTime.set('hour', vm.selectedSlotStart.endHour.split(':')[0]);
+                        vm.booking.endTime.set('minute', vm.selectedSlotStart.endHour.split(':')[1]);
+                    }
+                } else {
+                    vm.booking.endTime = maxTime;
+                }
+
+                // dates management
+
+                // setter startDate booking
+                vm.booking.startDate = startMoment.toDate();
+                vm.booking.startDate.setFullYear(startMoment.year());
+                vm.booking.startDate.setMonth(startMoment.month());
+                vm.booking.startDate.setDate(startMoment.date());
+
+                // setter endDate booking
+                vm.booking.endDate = endMoment.toDate();
+                vm.booking.endDate.setFullYear(endMoment.year());
+                vm.booking.endDate.setMonth(endMoment.month());
+                vm.booking.endDate.setDate(endMoment.date());
+
+                // setter periodicEndDate
+                vm.booking.periodicEndDate = endMoment.toDate();
+            };
+
+            // Edit booking
+
             vm.editBooking = (): void => {
                 vm.display.processing = undefined;
                 vm.selectedSlotStart = undefined;
@@ -503,29 +332,20 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.currentErrors = [];
                 vm.bookings.syncForShowList();
 
-                if (vm.selectedBooking !== undefined) {
-                    vm.editedBooking = vm.selectedBooking;
-                } else {
-                    vm.editedBooking = vm.bookings.selection()[0];
-                    if (!vm.editedBooking.isBooking()) {
-                        vm.editedBooking = vm.editedBooking.booking;
-                    }
-                }
+                vm.editedBooking = vm.selectedBooking ? vm.selectedBooking : vm.bookings.selection()[0];
+                if (!vm.editedBooking.isBooking()) { vm.editedBooking = vm.editedBooking.booking; }
                 vm.initEditBookingDisplay();
 
                 // periodic booking
-                if (vm.editedBooking.is_periodic === true) {
-                    if (vm.editedBooking.occurrences !== undefined && vm.editedBooking.occurrences > 0) {
-                        vm.editedBooking.byOccurrences = true;
-                    } else {
-                        vm.editedBooking.byOccurrences = false;
-                    }
+                if (vm.editedBooking.is_periodic) {
+                    vm.editedBooking.byOccurrences = vm.editedBooking.occurrences && vm.editedBooking.occurrences > 0;
                     vm.editedBooking._slots = _.sortBy(vm.editedBooking._slots, 'id');
                     vm.editedBooking.startMoment = vm.editedBooking._slots[0].startMoment;
                     vm.editedBooking.startMoment.date(vm.editedBooking.beginning.date());
                     vm.editedBooking.startMoment.month(vm.editedBooking.beginning.month());
                     vm.editedBooking.startMoment.year(vm.editedBooking.beginning.year());
                     vm.editedBooking.endMoment = vm.editedBooking._slots[0].endMoment;
+                    vm.editedBooking.tempSlots = vm.editedBooking._slots;
                 }
 
                 vm.initBookingDates(vm.editedBooking.startMoment, vm.editedBooking.endMoment);
@@ -537,42 +357,31 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.booking.periodicEndDate = new Date(vm.editedBooking.end_date);
 
                 vm.editedBooking.type = vm.editedBooking.resource.type;
-                if (
-                    vm.editedBooking.type !== undefined &&
-                    vm.editedBooking.type.slotprofile !== undefined
-                ) {
-                    vm.slotProfilesComponent.getSlots(
-                        vm.editedBooking.type.slotprofile,
-                        function (data) {
-                            if (data.slots.length > 0) {
-                                vm.slots = data;
-                                vm.editedBooking.slotsLit = data;
-                                vm.slots.slots.sort(
-                                    ArrayUtil.sort_by('startHour', false, function (a) {
-                                        return a;
-                                    })
-                                );
-                                vm.selectedSlotStart = vm.slots.slots
-                                    .filter(function (slot) {
-                                        return (
-                                            slot.startHour.split(':')[0] ==
-                                            vm.editedBooking.startMoment.hour() &&
-                                            slot.startHour.split(':')[1] ==
-                                            vm.editedBooking.startMoment.minute()
-                                        );
-                                    })
-                                    .pop();
+                if (vm.editedBooking.type && vm.editedBooking.type.slotprofile) {
+                    vm.slotProfilesComponent.getSlots(vm.editedBooking.type.slotprofile, function (data) {
+                        if (data.slots.length > 0) {
+                            vm.slots = data;
+                            vm.editedBooking.slotsLit = data;
+                            vm.slots.slots.sort(ArrayUtil.sort_by('startHour', false, (a) => a));
+                            vm.selectedSlotStart = vm.slots.slots
+                                .filter(function (slot) {
+                                    return (
+                                        slot.startHour.split(':')[0] == vm.editedBooking.startMoment.hour() &&
+                                        slot.startHour.split(':')[1] == vm.editedBooking.startMoment.minute()
+                                    );
+                                })
+                                .pop();
+                            vm.selectedSlotEnd = vm.selectedSlotStart;
+                            if (!vm.selectedSlotStart) {
+                                vm.selectedSlotStart = vm.slots.slots[0];
                                 vm.selectedSlotEnd = vm.selectedSlotStart;
-                                if (vm.selectedSlotStart === undefined) {
-                                    vm.selectedSlotStart = vm.slots.slots[0];
-                                    vm.selectedSlotEnd = vm.selectedSlotStart;
-                                    vm.slotNotFound = true;
-                                }
-                            } else {
-                                vm.editedBooking.type.slotprofile = undefined;
+                                vm.slotNotFound = true;
                             }
                         }
-                    );
+                        else {
+                            vm.editedBooking.type.slotprofile = undefined;
+                        }
+                    });
                 }
                 vm.updatePeriodicSummary();
             };
@@ -683,15 +492,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.selectedSlotEnd = slot;
                 vm.booking.endTime.set('hour', vm.selectedSlotEnd.endHour.split(':')[0]);
                 vm.booking.endTime.set('minute', vm.selectedSlotEnd.endHour.split(':')[1]);
-            };
-
-            vm.formatTextBookingQuantity = () : string => {
-                if (vm.tempQuantities.bookingQuantityAvailable <= 0) {
-                    return lang.translate('rbs.booking.edit.quantity.none');
-                }
-
-                return vm.tempQuantities.bookingQuantityAvailable + lang.translate('rbs.booking.edit.quantity.on') +
-                    vm.tempQuantities.resourceQuantityAvailable + lang.translate('rbs.booking.edit.quantity.availability');
             };
 
             vm.summaryBuildDays = (days): any => {
@@ -862,10 +662,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.periodicity = 1;
                 vm.editedBooking.occurrences = 1;
                 vm.updatePeriodicSummary();
-            };
-
-            vm.isBookingQuantityWrong = (booking: any): boolean => {
-                return booking.quantity < 1 || booking.quantity === undefined || booking.quantity > vm.tempQuantities.bookingQuantityAvailable;
             };
 
             vm.saveBookingSlotProfile = (): void => {
@@ -1261,6 +1057,148 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                             return;
                         }
                     }
+                }
+            };
+
+            // Quantity functions
+
+            vm.updateEditedBookingMoments = function() : void {
+                vm.currentErrors = [];
+
+                vm.editedBooking.startDate = vm.booking.startDate;
+                vm.editedBooking.endDate = vm.booking.endDate;
+                vm.editedBooking.startTime = vm.booking.startTime;
+                vm.editedBooking.endTime = vm.booking.endTime;
+
+                // Formats time if they are strings
+                if (typeof vm.editedBooking.startTime === 'string') {
+                    const time = vm.editedBooking.startTime.split(':');
+                    vm.editedBooking.startTime = moment(vm.booking.startDate).set('hour', time[0]).set('minute', time[1]);
+                }
+                if (typeof vm.editedBooking.endTime === 'string') {
+                    const time = vm.booking.endTime.split(':');
+                    vm.editedBooking.endTime = moment(vm.booking.endDate).set('hour', time[0]).set('minute', time[1]);
+                }
+
+                try {
+                    if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
+                        return;
+                    }
+                    vm.editedBooking.startMoment = DateUtils.formatMoment(vm.editedBooking.startDate, vm.editedBooking.startTime);
+                    vm.editedBooking.endMoment = DateUtils.formatMoment(vm.editedBooking.endDate, vm.editedBooking.endTime);
+                }
+                catch (e) {
+                    vm.currentErrors.push({error: 'rbs.error.technical'});
+                    throw e;
+                }
+            };
+
+            vm.updateEditedBookingSlots = function() : void {
+                vm.editedBooking.tempSlots = [];
+                let currentMoment = moment(vm.editedBooking.startMoment);
+                let currentMonday = currentMoment.subtract(currentMoment.weekday(), 'days');
+                let diff = vm.editedBooking.endMoment.diff(vm.editedBooking.startMoment);
+                let tempBook = new Booking();
+
+                // Get days checked
+                let days = [];
+                for (let i = 0; i < vm.editedBooking.periodDays.length; i++) {
+                    if (vm.editedBooking.periodDays[i].value) {
+                        days.push(i);
+                    }
+                }
+
+                // Get tempPeriodicBookings
+                if (days.length > 0) {
+                    if (vm.editedBooking.byOccurrences) {
+                        while(vm.editedBooking.tempSlots.length < vm.editedBooking.occurrences) {
+                            for (let day of days) {
+                                if (vm.editedBooking.tempSlots.length < vm.editedBooking.occurrences) {
+                                    tempBook.startMoment = moment(currentMonday);
+                                    tempBook.endMoment = moment(currentMonday);
+                                    tempBook.startMoment.add(day, 'days');
+                                    tempBook.endMoment.add(day, 'days').add(diff);
+                                    tempBook.quantity = vm.editedBooking.quantity ? vm.editedBooking.quantity : 1;
+                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
+                                        tempBook.resource = vm.editedBooking.resource;
+                                        vm.editedBooking.tempSlots.push(tempBook);
+                                    }
+                                    tempBook = new Booking();
+                                }
+                            }
+                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
+                        }
+                    }
+                    else {
+                        while(currentMoment < moment(vm.booking.periodicEndDate)) {
+                            for (let day of days) {
+                                if (currentMoment < moment(vm.booking.periodicEndDate)) {
+                                    tempBook.startMoment = currentMonday;
+                                    tempBook.endMoment = currentMonday;
+                                    tempBook.startMoment.add(day, 'days');
+                                    tempBook.endMoment.add(day, 'days');
+                                    tempBook.quantity = vm.editedBooking.quantity ? vm.editedBooking.quantity : 1;
+                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
+                                        tempBook.resource = vm.editedBooking.resource;
+                                        vm.editedBooking.tempSlots.push(tempBook);
+                                    }
+                                    currentMoment = tempBook.startMoment;
+                                    tempBook = new Booking();
+                                }
+                            }
+                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
+                        }
+                    }
+                }
+                else {
+                    $scope.currentErrors.push({error: 'rbs.period.error.nodays'});
+                }
+            };
+
+            vm.updateEditedBookingMomentsAndSlots = function() : void {
+                if (vm.editedBooking) {
+                    vm.updateEditedBookingMoments();
+                    if (vm.editedBooking.is_periodic) {
+                        vm.updateEditedBookingSlots();
+                    }
+                }
+            };
+
+            vm.getQuantityDispo = (booking) : number => {
+                if (!booking.resource.quantity || booking.resource.quantity <= 0 || booking.startMoment.isSame(booking.endMoment)) {
+                    return 0;
+                }
+                else {
+                    let quantityDispo = booking.resource.quantity;
+                    if (!booking.is_periodic) {
+                        for (let b of booking.resource.bookings.all) {
+                            if (!b.is_periodic && b.id != booking.id && BookingUtil.isBookingsOverlapping(booking, b)) {
+                                quantityDispo -= b.quantity;
+                            }
+                        }
+                    }
+                    else {
+                        for (let slot of booking.tempSlots) {
+                            let localQuantity = vm.getQuantityDispo(slot); // Get the quantity dispo for each slot
+                            if (localQuantity < quantityDispo) { quantityDispo = localQuantity; } // Keep the minimal quantity available
+                        }
+                    }
+                    return quantityDispo > 0 ? quantityDispo : 0;
+                }
+            };
+
+            vm.isBookingQuantityWrong = (booking: any): boolean => {
+                return !booking.quantity || booking.quantity > vm.getQuantityDispo(booking);
+            };
+
+            vm.formatTextBookingQuantity = (booking) : string => {
+                let resourceQuantityDispo = vm.getQuantityDispo(booking);
+                if (resourceQuantityDispo <= 0) {
+                    return lang.translate('rbs.booking.edit.quantity.none');
+                }
+                else {
+                    let params = [resourceQuantityDispo, booking.resource.quantity];
+                    return I18nUtils.getWithParams('rbs.booking.edit.quantity.availability', params);
                 }
             };
 

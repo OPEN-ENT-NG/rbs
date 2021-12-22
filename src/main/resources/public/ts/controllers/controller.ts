@@ -932,14 +932,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if (startMoment.isAfter(minTime) && startMoment.isBefore(maxTime)) {
                 $scope.booking.startTime = startMoment;
                 if ($scope.selectedSlotStart) {
-                    $scope.booking.startTime.set(
-                        'hour',
-                        $scope.selectedSlotStart.startHour.split(':')[0]
-                    );
-                    $scope.booking.startTime.set(
-                        'minute',
-                        $scope.selectedSlotStart.startHour.split(':')[1]
-                    );
+                    $scope.booking.startTime.set('hour', $scope.selectedSlotStart.startHour.split(':')[0]);
+                    $scope.booking.startTime.set('minute',$scope.selectedSlotStart.startHour.split(':')[1]);
                 }
             } else {
                 $scope.booking.startTime = minTime;
@@ -952,14 +946,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if (endMoment.isBefore(maxTime)) {
                 $scope.booking.endTime = endMoment;
                 if ($scope.selectedSlotStart) {
-                    $scope.booking.endTime.set(
-                        'hour',
-                        $scope.selectedSlotStart.endHour.split(':')[0]
-                    );
-                    $scope.booking.endTime.set(
-                        'minute',
-                        $scope.selectedSlotStart.endHour.split(':')[1]
-                    );
+                    $scope.booking.endTime.set('hour', $scope.selectedSlotStart.endHour.split(':')[0]);
+                    $scope.booking.endTime.set('minute', $scope.selectedSlotStart.endHour.split(':')[1]);
                 }
             } else {
                 $scope.booking.endTime = maxTime;
@@ -969,14 +957,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             // setter startDate booking
             $scope.booking.startDate = startMoment.toDate();
-            $scope.booking.startDate.setFullYear(startMoment.years());
-            $scope.booking.startDate.setMonth(startMoment.months());
+            $scope.booking.startDate.setFullYear(startMoment.year());
+            $scope.booking.startDate.setMonth(startMoment.month());
             $scope.booking.startDate.setDate(startMoment.date());
 
             // setter endDate booking
             $scope.booking.endDate = endMoment.toDate();
-            $scope.booking.endDate.setFullYear(endMoment.years());
-            $scope.booking.endDate.setMonth(endMoment.months());
+            $scope.booking.endDate.setFullYear(endMoment.year());
+            $scope.booking.endDate.setMonth(endMoment.month());
             $scope.booking.endDate.setDate(endMoment.date());
 
             // setter periodicEndDate
@@ -1306,11 +1294,11 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         $scope.saveResource = function () {
             let newConflicts = [];
-            $scope.listBookingsConflictingQuantity.forEach(function(booking) {
+            for (let booking of $scope.conflictingBookings) {
                 if (booking.status === 1 || booking.status === 2) {
                     newConflicts.push(booking);
                 }
-            });
+            }
             if (newConflicts.length > 0) {
                 $scope.displayLightbox.saveQuantityResource = true;
                 $scope.safeApply();
@@ -1325,7 +1313,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.isManage = true;
             if ($scope.editedResource.is_available === 'true') {
                 $scope.editedResource.is_available = true;
-            } else if ($scope.editedResource.is_available === 'false') {
+            }
+            else if ($scope.editedResource.is_available === 'false') {
                 $scope.editedResource.is_available = false;
             }
 
@@ -1345,33 +1334,33 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             // Suspend conflicting bookings
             let bookingsToSuspend = [];
-            if ($scope.listBookingsConflictingQuantity.length > 0) {
-                $scope.listBookingsConflictingQuantity.forEach(function(booking) {
-                    if(booking.status != model.STATE_REFUSED) {
+            if ($scope.conflictingBookings.length > 0) {
+                for (let booking of $scope.conflictingBookings) {
+                    if (booking.status != model.STATE_REFUSED) {
                         bookingsToSuspend.push(booking);
                     }
-
-                });
+                }
                 suspendBookings(bookingsToSuspend);
             }
 
             // Validate all bookings not conflicting if it's an auto-validated resource
             $scope.processBookings = [];
             if (!$scope.editedResource.validation) {
-                $scope.editedResource.bookings.forEach(function (booking) {
-                    if (!$scope.listBookingsConflictingQuantity.find(b => b.id === booking.id)) {
-                        $scope.processBookings.push(booking);
+                let bookingsForStatusValidated = [];
+                for (let booking of $scope.editedResource.bookings.all) {
+                    if (!$scope.conflictingBookings.find(b => b.id === booking.id)) {
+                        bookingsForStatusValidated.push(booking);
                     }
-                });
-                $scope.doValidateBookingSelection();
+                }
+                doValidateBookingSelection(bookingsForStatusValidated);
             }
             else {
                 let bookingsForStatusCreated = [];
-                $scope.editedResource.bookings.forEach(function (booking) {
-                    if (!$scope.listBookingsConflictingQuantity.find(b => b.id === booking.id)) {
+                for (let booking of $scope.editedResource.bookings.all) {
+                    if (!$scope.conflictingBookings.find(b => b.id === booking.id)) {
                         bookingsForStatusCreated.push(booking);
                     }
-                });
+                }
                 submitBookings(bookingsForStatusCreated);
             }
         };
@@ -1761,37 +1750,26 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.displayLightbox = {
             saveQuantityResource: false
         };
-        $scope.tempQuantities = {
-            resourceQuantityAvailable: undefined, // Quantity available to use for bookings on a specific period
-            bookingQuantityAvailable: undefined // Previous - quantities already used by other bookings on this specific period
-        };
-        $scope.listBookingsConflictingQuantity = [];
-        $scope.tempPeriodicBookings = [];
+        $scope.conflictingBookings = [];
 
         // Resource
 
-        $scope.isResourceQuantityTooLow = function(quantity:number) : boolean {
-            $scope.listBookingsConflictingQuantity = [];
+        $scope.syncConflictingBookings = () : void => {
+            $scope.conflictingBookings = [];
             $scope.editedResource.bookings.forEach(function (booking) {
-                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity != undefined && booking.quantity > quantity) {
-                    $scope.listBookingsConflictingQuantity.push(booking);
+                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity != undefined && booking.quantity > $scope.editedResource.quantity) {
+                    $scope.conflictingBookings.push(booking);
                 }
             });
-            return $scope.listBookingsConflictingQuantity.length > 0;
         };
 
-        $scope.formatTextTooltipQuantity = function(item:any) : string {
+        $scope.formatTextTooltipQuantity = (item:any) : string => {
             let booking = $scope.bookings.find(b => b.id === item.id);
-
-            let resourceQuantity = $scope.tempQuantities.resourceQuantityAvailable;
-            if (resourceQuantity === undefined) {
-                resourceQuantity = booking.resource.quantity;
-            }
-
-            return (booking.quantity===undefined?"?":booking.quantity) + " / " + resourceQuantity;
+            return (booking.quantity ? booking.quantity : "?") + " / " + booking.resource.quantity;
         };
 
-        $scope.doValidateBookingSelection = function () {
+        const doValidateBookingSelection = (bookings) : void => {
+            $scope.processBookings = bookings;
             $scope.display.processing = true;
             $scope.currentErrors = [];
             try {
@@ -1824,7 +1802,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        const suspendBookings = function (bookings) {
+        const suspendBookings = (bookings) : void => {
             $scope.processBookings = bookings;
             $scope.display.processing = true;
             try {
@@ -1855,7 +1833,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        const submitBookings = function (bookings) {
+        const submitBookings = (bookings) : void => {
             $scope.processBookings = bookings;
             $scope.display.processing = true;
             try {

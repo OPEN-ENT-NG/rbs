@@ -68,4 +68,15 @@ export class BookingUtil {
 
         return hasErrors;
     };
+
+    /**
+     * Check if two bookings overlaps
+     *
+     * @param date1    moment value to check if it overlaps date2
+     * @param date2    moment value to check if it overlaps date1
+     * @return boolean
+     */
+    static isBookingsOverlapping(date1: any, date2: any): boolean {
+        return moment(date1.startMoment) < moment(date2.endMoment) && moment(date1.endMoment) > moment(date2.startMoment);
+    };
 }
