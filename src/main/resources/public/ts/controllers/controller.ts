@@ -1,13 +1,16 @@
 import {_, idiom as lang, ng, notify, template} from 'entcore';
 import moment from '../moment';
 import {isBookingSlot, RBS} from '../models/models';
-import {BookingUtil} from "../utilities/booking";
+import {BookingUtil} from "../utilities/booking.util";
 import {DateUtils} from "../utilities/date.util";
 import {CalendarUtil} from "../utilities/calendar.util";
 import {ArrayUtil} from "../utilities/array.util";
 import {BookingEventService} from "../services";
 import {BOOKING_EVENTER} from "../core/enum/booking-eventer.enum";
 import {safeApply} from "../utilities/safe-apply";
+import {AvailabilityUtil} from "../utilities/availability.util";
+import {availabilityService} from "../services/AvailabilityService";
+import {Availabilities, Availability} from "../models/Availability";
 
 
 const {Booking, Notification, Resource, ResourceType, SlotProfile} = RBS;
@@ -129,6 +132,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
             $scope.slotProfilesComponent = new SlotProfile();
             $scope.notificationsComponent = new Notification();
+            $scope.editedAvailability = new Availability();
 
             $scope.structuresWithTypes = [];
 
@@ -822,7 +826,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         // General
-        $scope.formatDate = function (date) {
+        $scope.formatTypeDate = function (date) {
             return $scope.formatMoment(moment(date));
         };
 
@@ -844,10 +848,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         $scope.formatMomentDayMedium = function (date) {
             return date.locale(window.navigator.language).format('dddd DD MMM YYYY');
-        };
-
-        $scope.formatHour = function (date) {
-            return date.format('HH[h]mm');
         };
 
         $scope.dateToSeconds = function (date) {
@@ -911,7 +911,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        $scope.newBooking = (periodic): void => {
+        $scope.newBooking = (): void => {
             window.bookingState = BOOKING_EVENTER.CREATE;
             template.open('lightbox', 'booking/edit-booking');
             $scope.display.showPanel = true;
@@ -1242,20 +1242,28 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResource.is_available = true;
             $scope.editedResource.periodic_booking = true;
             $scope.editedResource.quantity = 1;
+            $scope.editedResource.availabilities = new Availabilities();
+            $scope.editedResource.unavailabilities = new Availabilities();
             template.open('resources', 'resource/edit-resource');
         };
 
-        $scope.editSelectedResource = function () {
+        $scope.editSelectedResource = async () : Promise<void> => {
             // $scope.bookings.sync();
+            $scope.currentErrors = [];
             $scope.bookings.syncForShowList();
             $scope.isCreation = false;
             $scope.display.processing = undefined;
-            $scope.editedResource = $scope.currentResourceType.resources.selection()[0];
+            $scope.editedResource = $scope.currentResourceType.resources.all.filter(r => r.selected)[0];
             $scope.currentResourceType.resources.deselectAll();
             if ($scope.editedResource.quantity === undefined) {
                 $scope.editedResource.quantity = 1;
             }
-            $scope.displayLightbox.saveQuantityResource = false;
+            await syncResourceAvailabilities($scope.editedResource);
+            $scope.syncBookingsUsingResource($scope.editedResource);
+            $scope.displayLightbox.saveQuantity = false;
+            $scope.displayLightbox.saveAvailabilityResource = false;
+            $scope.openAvailabilitiesTable = $scope.editedResource.availabilities.all.length > 0 || $scope.editedResource.unavailabilities.all.length > 0;
+            if ($scope.openAvailabilitiesTable) $scope.initEditedAvailability();
 
             // Field to track Resource availability change
             $scope.editedResource.was_available = $scope.editedResource.is_available;
@@ -1293,14 +1301,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.saveResource = function () {
-            let newConflicts = [];
-            for (let booking of $scope.conflictingBookings) {
-                if (booking.status === 1 || booking.status === 2) {
-                    newConflicts.push(booking);
-                }
-            }
-            if (newConflicts.length > 0) {
-                $scope.displayLightbox.saveQuantityResource = true;
+            if ($scope.bookingsConflictingResource.length > 0) {
+                $scope.displayLightbox.saveQuantity = true;
                 $scope.safeApply();
             }
             else {
@@ -1308,7 +1310,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        $scope.doSaveResource = function () {
+        $scope.doSaveResource = async function () {
             $scope.display.processing = true;
             $scope.isManage = true;
             if ($scope.editedResource.is_available === 'true') {
@@ -1332,37 +1334,23 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 }
             );
 
-            // Suspend conflicting bookings
-            let bookingsToSuspend = [];
-            if ($scope.conflictingBookings.length > 0) {
-                for (let booking of $scope.conflictingBookings) {
-                    if (booking.status != model.STATE_REFUSED) {
-                        bookingsToSuspend.push(booking);
-                    }
-                }
-                suspendBookings(bookingsToSuspend);
-            }
-
-            // Validate all bookings not conflicting if it's an auto-validated resource
-            $scope.processBookings = [];
-            if (!$scope.editedResource.validation) {
-                let bookingsForStatusValidated = [];
-                for (let booking of $scope.editedResource.bookings.all) {
-                    if (!$scope.conflictingBookings.find(b => b.id === booking.id)) {
-                        bookingsForStatusValidated.push(booking);
-                    }
-                }
-                doValidateBookingSelection(bookingsForStatusValidated);
+            if ($scope.editedResource.was_available != $scope.editedResource.is_available) {
+                await availabilityService.deleteAll($scope.editedResource.id);
             }
             else {
-                let bookingsForStatusCreated = [];
-                for (let booking of $scope.editedResource.bookings.all) {
-                    if (!$scope.conflictingBookings.find(b => b.id === booking.id)) {
-                        bookingsForStatusCreated.push(booking);
+                let listToUpdate = $scope.editedResource.is_available ?
+                    $scope.editedResource.unavailabilities.all : $scope.editedResource.availabilities.all;
+
+                for (let availability of listToUpdate) {
+                    if (availability.quantity > $scope.editedResource.quantity) {
+                        availability.quantity = $scope.editedResource.quantity;
+                        await availabilityService.update(availability);
                     }
                 }
-                submitBookings(bookingsForStatusCreated);
             }
+
+            treatBookings($scope.editedResource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
+            $scope.$apply();
         };
 
         $scope.deleteResourcesSelection = function () {
@@ -1744,31 +1732,133 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        // Init + Tests
+        // Quantity / Availability
 
         $scope.index = 0;
         $scope.displayLightbox = {
-            saveQuantityResource: false
+            saveQuantity: false,
+            saveAvailability: false,
+            deleteAvailability: false
         };
-        $scope.conflictingBookings = [];
+        $scope.bookingsConflictingOneAvailability = [];
+        $scope.bookingsOkOneAvailability = [];
+        $scope.bookingsConflictingResource = [];
+        $scope.bookingsOkResource = [];
 
-        // Resource
+        const syncResourceAvailabilities = async (resource: any) : Promise<void> => {
+            // TODO in the future it would be better to have resourceService.syncAvailabilities()
 
-        $scope.syncConflictingBookings = () : void => {
-            $scope.conflictingBookings = [];
-            $scope.editedResource.bookings.forEach(function (booking) {
-                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity != undefined && booking.quantity > $scope.editedResource.quantity) {
-                    $scope.conflictingBookings.push(booking);
+            resource.availabilities = new Availabilities();
+            resource.unavailabilities = new Availabilities();
+
+            await resource.availabilities.sync(resource.id, false);
+            await resource.unavailabilities.sync(resource.id, true);
+        };
+
+        $scope.syncBookingsUsingResource = (resource) : void => {
+            $scope.bookingsConflictingResource = [];
+            $scope.bookingsOkResource = [];
+            for (let booking of resource.bookings.all) {
+                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity) {
+                    let timeslotQuantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, resource);
+                    let isConflicting = timeslotQuantityDispo < 0;
+
+                    if (isConflicting && (booking.status === model.STATE_CREATED || booking.status === model.STATE_VALIDATED)) {
+                        $scope.bookingsConflictingResource.push(booking);
+                    }
+                    else if (!isConflicting && booking.status === model.STATE_SUSPENDED) {
+                        $scope.bookingsOkResource.push(booking);
+                    }
                 }
-            });
+            }
+        };
+
+        const syncBookingsUsingAvailability = (availability, resource) : void => {
+            // Checks if some bookings use this (un)availability
+            $scope.bookingsConflictingOneAvailability = [];
+            $scope.bookingsOkOneAvailability = [];
+            for (let booking of resource.bookings.all) {
+                if (AvailabilityUtil.isBookingOverlappingAvailability(booking, availability)) {
+                    let timeslotQuantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, resource, availability);
+                    let isConflicting = false;
+                    if (availability.is_unavailability) {
+                        isConflicting = timeslotQuantityDispo - availability.quantity < 0;
+                    }
+                    else {
+                        isConflicting = timeslotQuantityDispo + availability.quantity < 0;
+                    }
+
+                    if (isConflicting && (booking.status === model.STATE_CREATED || booking.status === model.STATE_VALIDATED)) {
+                        $scope.bookingsConflictingOneAvailability.push(booking);
+                    }
+                    else if (!isConflicting && booking.status === model.STATE_SUSPENDED) {
+                        $scope.bookingsOkOneAvailability.push(booking);
+                    }
+                }
+            }
+        };
+
+        const treatBookings = (resource, bookingsConflicting, bookingsOk) : void => {
+            // Suspend conflicting bookings
+            if (bookingsConflicting.length > 0) {
+                let siblingsBookings = getSiblingsPeriodicBookings(bookingsConflicting);
+                bookingsConflicting = bookingsConflicting.concat(siblingsBookings);
+                suspendBookings(bookingsConflicting);
+            }
+
+            // Validate or submit all suspended bookings not conflicting anymore
+            if (bookingsOk.length > 0) {
+                let finalBookingsOk = bookingsOk.slice();
+                let allSiblingsBookings = getSiblingsPeriodicBookings(bookingsOk);
+
+                for (let booking of bookingsOk) {
+                    let siblingsBookings = allSiblingsBookings.filter(b => b.parent_booking_id === booking.parent_booking_id);
+                    let allSiblingsOk = true;
+                    let i = 0;
+
+                    while (i < siblingsBookings.length && allSiblingsOk) {
+                        let isSiblingOk = AvailabilityUtil.getTimeslotQuantityAvailable(siblingsBookings[i], resource) >= 0;
+                        allSiblingsOk = allSiblingsOk && isSiblingOk;
+                        i++;
+                    }
+
+                    if (allSiblingsOk) {
+                        finalBookingsOk = finalBookingsOk.concat(siblingsBookings);
+                    }
+                    else {
+                        let index = finalBookingsOk.map(b => b.id).indexOf(booking.id);
+                        finalBookingsOk.splice(index, 1);
+                    }
+                }
+                resource.validation ? submitBookings(finalBookingsOk) : validateBookings(finalBookingsOk);
+            }
+        };
+
+        const getSiblingsPeriodicBookings = (listBookingsToCheck) : any[] => {
+            let parentIds: any = [];
+            for (let booking of listBookingsToCheck) {
+                if (booking.parent_booking_id && !parentIds.includes(booking.parent_booking_id)) {
+                    parentIds.push(booking.parent_booking_id);
+                }
+            }
+
+            let siblingsBookings = [];
+            for (let booking of $scope.bookings.all) {
+                if (booking.parent_booking_id && parentIds.includes(booking.parent_booking_id) && !listBookingsToCheck.map(b => b.id).includes(booking.id)) {
+                    siblingsBookings.push(booking);
+                }
+            }
+
+            return siblingsBookings;
         };
 
         $scope.formatTextTooltipQuantity = (item:any) : string => {
             let booking = $scope.bookings.find(b => b.id === item.id);
+            // TODO booking.resource.quantity devient getQuantityByPeriod(resource, start, end)
             return (booking.quantity ? booking.quantity : "?") + " / " + booking.resource.quantity;
         };
 
-        const doValidateBookingSelection = (bookings) : void => {
+        const validateBookings = (bookings) : void => {
             $scope.processBookings = bookings;
             $scope.display.processing = true;
             $scope.currentErrors = [];
@@ -1862,5 +1952,94 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 $scope.display.processing = undefined;
                 $scope.currentErrors.push({error: 'rbs.error.technical'});
             }
+        };
+
+        $scope.initEditedAvailability = () : void => {
+            $scope.editedAvailability = new Availability($scope.editedResource);
+        };
+
+        $scope.saveAvailability = (availability) : void => {
+            $scope.currentErrors = [];
+
+            // Formats dates if they are Date format
+            availability.start_date = DateUtils.formatMomentIfDate(availability.start_date);
+            availability.end_date = DateUtils.formatMomentIfDate(availability.end_date);
+
+            // Formats times if they are strings
+            availability.start_time = DateUtils.formatTimeIfString(availability.start_time);
+            availability.end_time = DateUtils.formatTimeIfString(availability.end_time);
+
+            let hasErrors = AvailabilityUtil.isAvailabilityInvalid(availability, $scope.today, $scope.currentErrors);
+
+            if (hasErrors) {
+                $scope.safeApply();
+                return;
+            }
+
+            syncBookingsUsingAvailability(availability, $scope.editedResource);
+
+            if ($scope.bookingsConflictingOneAvailability.length > 0) {
+                $scope.displayLightbox.saveAvailability = true;
+            }
+            else {
+                $scope.doSaveAvailability();
+            }
+
+            $scope.safeApply();
+        };
+
+        $scope.doSaveAvailability = async () : Promise<void> => {
+            await availabilityService.save($scope.editedAvailability);
+            await syncResourceAvailabilities($scope.editedResource);
+            $scope.initEditedAvailability();
+            $scope.display.processing = undefined;
+            $scope.displayLightbox.saveAvailability = false;
+            treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
+            $scope.safeApply();
+        };
+
+        $scope.deleteAvailability = (availability) : void => {
+            $scope.editedAvailability = availability;
+            $scope.displayLightbox.deleteAvailability = true;
+        };
+
+        $scope.confirmDeleteAvailability = (availability) : void => {
+            syncBookingsUsingAvailability(availability, $scope.editedResource);
+
+            if ($scope.bookingsConflictingOneAvailability.length > 0) {
+                $scope.displayLightbox.saveAvailability = true;
+            }
+            else {
+                $scope.doDeleteAvailability();
+            }
+        };
+
+        $scope.doDeleteAvailability = async () : Promise<void> => {
+            await availabilityService.delete($scope.editedAvailability);
+            await syncResourceAvailabilities($scope.editedResource);
+            $scope.initEditedAvailability();
+            $scope.display.processing = undefined;
+            $scope.displayLightbox.saveAvailability = false;
+            $scope.displayLightbox.deleteAvailability = false;
+            treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
+            $scope.safeApply();
+        };
+
+        $scope.editAvailability = (availability) : void => {
+            $scope.editedAvailability = availability;
+        };
+
+        // Utils
+
+        $scope.displayTime = (date) => {
+            return DateUtils.format(date,'HH[h]mm');
+        };
+
+        $scope.displayDate = (date) => {
+            return DateUtils.format(date,'DD/MM/YYYY');
+        };
+
+        $scope.getRightList = (resource) : Availability[] => {
+            return resource && resource.is_available ? resource.unavailabilities.all : resource.availabilities.all;
         };
     }]);

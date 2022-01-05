@@ -31,7 +31,7 @@ export class BookingUtil {
      * @return boolean  (true if has error (supposedly is past), false if booking can be opened/edited
      */
     static checkEditedBookingMoments(booking: any, today: Moment, currentErrors?: Array<any>) : boolean {
-        var hasErrors = false;
+        let hasErrors = false;
         if ((booking.startDate.getFullYear() < today.year() ||
             (booking.startDate.getFullYear() == today.year() &&
                 booking.startDate.getMonth() < today.month()) ||
@@ -70,7 +70,7 @@ export class BookingUtil {
     };
 
     /**
-     * Check if two bookings overlaps
+     * Check if two intervals overlap
      *
      * @param date1    moment value to check if it overlaps date2
      * @param date2    moment value to check if it overlaps date1
@@ -78,5 +78,10 @@ export class BookingUtil {
      */
     static isBookingsOverlapping(date1: any, date2: any): boolean {
         return moment(date1.startMoment) < moment(date2.endMoment) && moment(date1.endMoment) > moment(date2.startMoment);
+    };
+
+
+    static isNotPast = function(booking) : boolean {
+        return(moment(booking.startMoment).isAfter(moment()));
     };
 }

@@ -1,0 +1,50 @@
+<lightbox show="displayLightbox.saveAvailability" on-close="displayLightbox.saveAvailability = false;">
+    <h2 ng-if="!displayLightbox.deleteAvailability">
+        <i18n ng-if="!editedResource.is_available">rbs.availability.save.title</i18n>
+        <i18n ng-if="editedResource.is_available">rbs.unavailability.save.title</i18n>
+    </h2>
+    <h2 ng-if="displayLightbox.deleteAvailability">
+        <i18n ng-if="!editedResource.is_available">rbs.availability.delete.title</i18n>
+        <i18n ng-if="editedResource.is_available">rbs.unavailability.delete.title</i18n>
+    </h2>
+
+    <section class="twelve cell">
+        <div class="bottom-spacing-three">
+            <b class="row"><i18n>rbs.availability.save.warning</i18n></b>
+            <i18n ng-if="!editedResource.is_available">rbs.availability.save.description</i18n>
+            <i18n ng-if="editedResource.is_available">rbs.unavailability.save.description</i18n>
+        </div>
+
+        <i18n>rbs.availability.save.conflicting.bookings</i18n>
+        <table class="resource-table">
+            <thead>
+            <tr>
+                <td style="width: 30%;"><i18n>rbs.resource.edit.tab.owner</i18n></td>
+                <td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+                <td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.end</i18n></td>
+                <td style="width: 10%;"><i18n>rbs.resource.edit.tab.quantity</i18n></td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="booking in bookingsConflictingOneAvailability">
+                <td>[[booking.owner_name]]</td>
+                <td>[[formatMoment(booking.startMoment)]]</td>
+                <td>[[formatMoment(booking.endMoment)]]</td>
+                <td>[[booking.quantity]]</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="row">
+            <button class="right-magnet" ng-if="!displayLightbox.deleteAvailability" ng-click="doSaveAvailability()">
+                <i18n>rbs.save</i18n>
+            </button>
+            <button class="right-magnet" ng-if="displayLightbox.deleteAvailability" ng-click="doDeleteAvailability()">
+                <i18n>rbs.save</i18n>
+            </button>
+            <button class="right-magnet cancel" ng-click="displayLightbox.saveAvailability = false">
+                <i18n>rbs.cancel</i18n>
+            </button>
+        </div>
+    </section>
+</lightbox>

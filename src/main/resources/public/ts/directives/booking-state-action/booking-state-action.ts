@@ -21,7 +21,7 @@ interface IViewModel {
 
     selectBooking(currentBooking): any;
 
-    doValidateBookingSelection(): void;
+    validateBookings(): void;
     showActionErrors(): void;
     doRemoveBookingSelection(): void;
     doRemoveCurrentAndFuturBookingSelection(): void;
@@ -110,7 +110,7 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                 }
             };
 
-            vm.doValidateBookingSelection = function () {
+            vm.validateBookings = function () {
                 vm.display.processing = true;
                 vm.currentErrors = [];
                 try {

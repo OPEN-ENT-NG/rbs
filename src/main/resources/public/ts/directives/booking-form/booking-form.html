@@ -47,7 +47,7 @@
                                             ng-change="vm.autoSelectResource();" required
                                             ng-if="vm.selectedStructure.types.length > 0">
                                     </select>
-                                    <div class="six cell warning" ng-if="vm.editedBooking.type === undefined">
+                                    <div class="six cell warning" ng-if="!vm.editedBooking.type">
                                         <i18n>rbs.booking.warning.no.types</i18n>
                                     </div>
                                 </div>
@@ -59,13 +59,13 @@
                                             ng-options="resource.name for resource in vm.editedBooking.type.resources.filterAvailable(vm.editedBooking.is_periodic)"
                                             required ng-if="vm.editedBooking.resource !== undefined" input-guard>
                                     </select>
-                                    <div class="six cell warning" ng-if="vm.editedBooking.resource === undefined">
+                                    <div class="six cell warning" ng-if="!vm.editedBooking.resource && !vm.display.processing">
                                         <i18n>rbs.booking.warning.no.resources</i18n>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row" ng-if="vm.editedBooking.id !== undefined">
+                        <div class="row" ng-if="vm.editedBooking.id">
                             <div class="row">
                                 <label class="three cell">
                                     <i18n>rbs.booking.edit.type.label</i18n>

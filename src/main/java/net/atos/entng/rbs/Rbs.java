@@ -20,10 +20,7 @@
 package net.atos.entng.rbs;
 
 import io.vertx.core.DeploymentOptions;
-import net.atos.entng.rbs.controllers.BookingController;
-import net.atos.entng.rbs.controllers.DisplayController;
-import net.atos.entng.rbs.controllers.ResourceController;
-import net.atos.entng.rbs.controllers.ResourceTypeController;
+import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
@@ -40,11 +37,23 @@ import io.vertx.core.json.JsonArray;
 public class Rbs extends BaseServer {
 
 	public final static String RBS_NAME = "RBS";
-	public final static String BOOKING_TABLE = "booking";
-	public final static String RESOURCE_TABLE = "resource";
-	public final static String RESOURCE_SHARE_TABLE = "resource_shares";
-	public final static String RESOURCE_TYPE_TABLE = "resource_type";
-	public final static String RESOURCE_TYPE_SHARE_TABLE = "resource_type_shares";
+	public final static String BOOKING_TABLE_NAME = "booking";
+	public final static String RESOURCE_TABLE_NAME = "resource";
+	public final static String RESOURCE_SHARE_TABLE_NAME = "resource_shares";
+	public final static String RESOURCE_TYPE_TABLE_NAME = "resource_type";
+	public final static String RESOURCE_TYPE_SHARE_TABLE_NAME = "resource_type_shares";
+
+	public static String DB_SCHEMA;
+	public static String AVAILABILITY_TABLE;
+	public static String BOOKING_TABLE;
+	public static String GROUPS_TABLE;
+	public static String MEMBERS_TABLE;
+	public static String NOTIFICATIONS_TABLE;
+	public static String RESOURCE_TABLE;
+	public static String RESOURCE_SHARES_TABLE;
+	public static String RESOURCE_TYPE_TABLE;
+	public static String RESOURCE_TYPE_SHARES_TABLE;
+	public static String USERS_TABLE;
 
 	@Override
 	public void start() throws Exception {
@@ -56,30 +65,45 @@ public class Rbs extends BaseServer {
 		if (config.getBoolean("searching-event", true)) {
 			setSearchingEvents(new RbsSearchingEvents());
 		}
+
+		// Store tables' SQL name in constants
+		DB_SCHEMA = "rbs";
+		AVAILABILITY_TABLE = DB_SCHEMA + ".availability";
+		BOOKING_TABLE = DB_SCHEMA + ".booking";
+		GROUPS_TABLE = DB_SCHEMA + ".groups";
+		MEMBERS_TABLE = DB_SCHEMA + ".members";
+		NOTIFICATIONS_TABLE = DB_SCHEMA + ".notifications";
+		RESOURCE_TABLE = DB_SCHEMA + ".resource";
+		RESOURCE_SHARES_TABLE = DB_SCHEMA + ".resource_shares";
+		RESOURCE_TYPE_TABLE = DB_SCHEMA + ".resource_type";
+		RESOURCE_TYPE_SHARES_TABLE = DB_SCHEMA + ".resource_type_shares";
+		USERS_TABLE = DB_SCHEMA + ".users";
+
+
 		// Controllers
 		addController(new DisplayController());
 
 		SqlConf confType = SqlConfs.createConf(ResourceTypeController.class.getName());
-		confType.setTable(RESOURCE_TYPE_TABLE);
-		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE);
+		confType.setTable(RESOURCE_TYPE_TABLE_NAME);
+		confType.setShareTable(RESOURCE_TYPE_SHARE_TABLE_NAME);
 		confType.setSchema(getSchema());
 		ResourceTypeController typeController = new ResourceTypeController(eb);
-		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE, RESOURCE_TYPE_SHARE_TABLE,
+		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE_NAME, RESOURCE_TYPE_SHARE_TABLE_NAME,
 				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
 		typeController.setCrudService(typeSqlCrudService);
-		typeController.setShareService(new SqlShareService(getSchema(), RESOURCE_TYPE_SHARE_TABLE,
+		typeController.setShareService(new SqlShareService(getSchema(), RESOURCE_TYPE_SHARE_TABLE_NAME,
 				eb, securedActions, null));
 		addController(typeController);
 
 		SqlConf confResource = SqlConfs.createConf(ResourceController.class.getName());
-		confResource.setTable(RESOURCE_TABLE);
-		confResource.setShareTable(RESOURCE_SHARE_TABLE);
+		confResource.setTable(RESOURCE_TABLE_NAME);
+		confResource.setShareTable(RESOURCE_SHARE_TABLE_NAME);
 		confResource.setSchema(getSchema());
 		ResourceController resourceController = new ResourceController();
-		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE, RESOURCE_SHARE_TABLE,
+		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE_NAME, RESOURCE_SHARE_TABLE_NAME,
 				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
 		resourceController.setCrudService(resourceSqlCrudService);
-		resourceController.setShareService(new SqlShareService(getSchema(), RESOURCE_SHARE_TABLE,
+		resourceController.setShareService(new SqlShareService(getSchema(), RESOURCE_SHARE_TABLE_NAME,
 				eb, securedActions, null));
 		addController(resourceController);
 
@@ -88,8 +112,8 @@ public class Rbs extends BaseServer {
 		vertx.deployVerticle(new PdfExportService(), options);
 		vertx.deployVerticle(new IcalExportService(), options);
 
-		BookingController bookingController = new BookingController(eb);
-		addController(bookingController);
+		addController(new BookingController(eb));
+		addController(new AvailabilityController());
 
 		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());
 	}

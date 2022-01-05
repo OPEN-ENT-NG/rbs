@@ -1,0 +1,231 @@
+<table class="resource-table">
+    <thead>
+    <tr>
+        <td style="width: 25%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+        <td style="width: 25%;"><i18n>rbs.resource.edit.tab.timeslot</i18n></td>
+        <td style="width: 20%;"><i18n>rbs.resource.edit.tab.days</i18n></td>
+        <td style="width: 20%;" ng-if="!editedResource.is_available"><i18n>rbs.resource.edit.tab.quantity.availability</i18n></td>
+        <td style="width: 20%;" ng-if="editedResource.is_available"><i18n>rbs.resource.edit.tab.quantity.unavailability</i18n></td>
+        <td style="width: 10%;"></td>
+    </tr>
+    </thead>
+    <tbody>
+
+    <!-- Display / Edit mode -->
+    <tr ng-repeat="a in getRightList(editedResource) track by $index">
+        <!-- Display an (un)availability -->
+        <td ng-if-start="editedAvailability.id != a.id || displayLightbox.deleteAvailability">
+            <div class="flex-responsive around">
+                <div>
+                    <i18n>rbs.resource.edit.available.date.from</i18n>[[displayDate(a.start_date)]]
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.date.to</i18n>[[displayDate(a.end_date)]]
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="flex-responsive around">
+                <div>
+                    <i18n>rbs.resource.edit.available.time.from</i18n>[[displayTime(a.start_time)]]
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.time.at</i18n>[[displayTime(a.end_time)]]
+                </div>
+            </div>
+        </td>
+        <td>
+            <ul class="check-boxes">
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[1]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.monday</i18n>
+                </li>
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[2]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.tuesday</i18n>
+                </li>
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[3]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.wednesday</i18n>
+                </li>
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[4]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.thursday</i18n>
+                </li>
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[5]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.friday</i18n>
+                </li>
+                <li class="two">
+                    <i18n ng-class="[{selected: a.days[6]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.saturday</i18n>
+                </li>
+            </ul>
+        </td>
+        <td>[[a.quantity]] / [[editedResource.quantity]]</td>
+        <td ng-if-end>
+            <button type="button" class="classic-button six" ng-click="deleteAvailability(a)">
+                <i class="suppr md-icon"></i>
+            </button>
+            <button type="button" class="classic-button six" ng-click="editAvailability(a)">
+                <i class="modif md-icon"></i>
+            </button>
+        </td>
+
+        <!-- Edit an (un)availability -->
+        <td class="editAvailability" ng-if-start="editedAvailability.id === a.id  && !displayLightbox.deleteAvailability">
+            <div class="flex-responsive">
+                <div>
+                    <i18n>rbs.resource.edit.available.date.from</i18n>
+                    <date-picker class="seven" ng-model="editedAvailability.start_date"></date-picker>
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.date.to</i18n>
+                    <date-picker class="seven" ng-model="editedAvailability.end_date"></date-picker>
+                </div>
+            </div>
+        </td>
+        <td class="editAvailability">
+            <div class="flex-responsive">
+                <div>
+                    <i18n>rbs.resource.edit.available.time.from</i18n>
+                    <time-picker-rbs class="four" ng-model="editedAvailability.start_time"></time-picker-rbs>
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.time.at</i18n>
+                    <time-picker-rbs class="four" ng-model="editedAvailability.end_time"></time-picker-rbs>
+                </div>
+            </div>
+        </td>
+        <td>
+            <ul class="check-boxes">
+                <li class="two">
+                    <input type="checkbox" id="edit-monday" ng-model="editedAvailability.days[1]">
+                    <label for="edit-monday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.monday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-tuesday" ng-model="editedAvailability.days[2]">
+                    <label for="edit-tuesday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.tuesday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-wednesday" ng-model="editedAvailability.days[3]">
+                    <label for="edit-wednesday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.wednesday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-thursday" ng-model="editedAvailability.days[4]">
+                    <label for="edit-thursday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.thursday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-friday" ng-model="editedAvailability.days[5]">
+                    <label for="edit-friday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.friday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-saturday" ng-model="editedAvailability.days[6]">
+                    <label for="edit-saturday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.saturday</i18n>
+                    </label>
+                </li>
+            </ul>
+        </td>
+        <td>
+            <input class="input-size" type="number" min="1" max="[[editedResource.quantity]]"
+                   ng-model="editedAvailability.quantity" /> / [[editedResource.quantity]]
+        </td>
+        <td ng-if-end>
+            <button type="button" class="classic-button six" ng-click="saveAvailability(a)">
+                <i class="valid md-icon"></i>
+            </button>
+            <button type="button" class="classic-button six" ng-click="initEditedAvailability()">
+                <i class="cancel md-icon"></i>
+            </button>
+        </td>
+    </tr>
+
+    <!-- Creation mode (disappear on edit mode) -->
+    <tr ng-if="!editedAvailability.id">
+        <td>
+            <div class="flex-responsive">
+                <div>
+                    <i18n>rbs.resource.edit.available.date.from</i18n>
+                    <date-picker class="seven" ng-model="editedAvailability.start_date"></date-picker>
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.date.to</i18n>
+                    <date-picker class="seven" ng-model="editedAvailability.end_date"></date-picker>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="flex-responsive">
+                <div>
+                    <i18n>rbs.resource.edit.available.time.from</i18n>
+                    <time-picker-rbs class="four" ng-model="editedAvailability.start_time"></time-picker-rbs>
+                </div>
+                <div>
+                    <i18n>rbs.resource.edit.available.time.at</i18n>
+                    <time-picker-rbs class="four" ng-model="editedAvailability.end_time"></time-picker-rbs>
+                </div>
+            </div>
+        </td>
+        <td>
+            <ul class="check-boxes">
+                <li class="two">
+                    <input type="checkbox" id="create-monday" ng-model="editedAvailability.days[1]">
+                    <label for="create-monday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.monday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-tuesday" ng-model="editedAvailability.days[2]">
+                    <label for="create-tuesday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.tuesday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-wednesday" ng-model="editedAvailability.days[3]">
+                    <label for="create-wednesday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.wednesday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-thursday" ng-model="editedAvailability.days[4]">
+                    <label for="create-thursday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.thursday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-friday" ng-model="editedAvailability.days[5]">
+                    <label for="create-friday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.friday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-saturday" ng-model="editedAvailability.days[6]">
+                    <label for="create-saturday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.saturday</i18n>
+                    </label>
+                </li>
+            </ul>
+        </td>
+        <td>
+            <input class="input-size" type="number" min="1" max="[[editedResource.quantity]]"
+                   ng-model="editedAvailability.quantity" /> / [[editedResource.quantity]]
+        </td>
+        <td>
+            <button type="button" class="classic-button twelve" ng-click="saveAvailability(editedAvailability)">
+                <i class="add md-icon"></i>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

@@ -1,0 +1,84 @@
+<lightbox show="displayLightbox.deleteAvailability" on-close="displayLightbox.deleteAvailability = false; initEditedAvailability()">
+	<h2>
+		<i18n ng-if="!editedResource.is_available">rbs.availability.delete.title</i18n>
+		<i18n ng-if="editedResource.is_available">rbs.unavailability.delete.title</i18n>
+	</h2>
+
+	<section class="twelve cell">
+		<i18n ng-if="!editedResource.is_available">rbs.availability.delete.confirmation</i18n>
+		<i18n ng-if="editedResource.is_available">rbs.availability.delete.confirmation</i18n>
+
+		<table class="resource-table">
+			<thead>
+			<tr>
+				<td style="width: 25%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+				<td style="width: 25%;"><i18n>rbs.resource.edit.tab.timeslot</i18n></td>
+				<td style="width: 20%;"><i18n>rbs.resource.edit.tab.days</i18n></td>
+				<td style="width: 20%;" ng-if="!editedResource.is_available"><i18n>rbs.resource.edit.tab.quantity.availability</i18n></td>
+				<td style="width: 20%;" ng-if="editedResource.is_available"><i18n>rbs.resource.edit.tab.quantity.unavailability</i18n></td>
+			</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td>
+					<div class="flex-responsive around">
+						<div>
+							<i18n>rbs.resource.edit.available.date.from</i18n>[[displayDate(editedAvailability.start_date)]]
+						</div>
+						<div>
+							<i18n>rbs.resource.edit.available.date.to</i18n>[[displayDate(editedAvailability.end_date)]]
+						</div>
+					</div>
+				</td>
+				<td>
+					<div class="flex-responsive around">
+						<div>
+							<i18n>rbs.resource.edit.available.time.from</i18n>[[displayTime(editedAvailability.start_time)]]
+						</div>
+						<div>
+							<i18n>rbs.resource.edit.available.time.at</i18n>[[displayTime(editedAvailability.end_time)]]
+						</div>
+					</div>
+				</td>
+				<td>
+					<ul class="check-boxes">
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[1]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.monday</i18n>
+						</li>
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[2]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.tuesday</i18n>
+						</li>
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[3]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.wednesday</i18n>
+						</li>
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[4]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.thursday</i18n>
+						</li>
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[5]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.friday</i18n>
+						</li>
+						<li class="two">
+							<i18n ng-class="[{selected: editedAvailability.days[6]}, !editedResource.is_available?'green-color':'red-color']">
+								rbs.resource.edit.available.days.saturday</i18n>
+						</li>
+					</ul>
+				</td>
+				<td>[[editedAvailability.quantity]] / [[editedResource.quantity]]</td>
+			</tbody>
+		</table>
+
+		<div class="row">
+			<button class="right-magnet" ng-click="confirmDeleteAvailability(editedAvailability)">
+				<i18n>rbs.save</i18n>
+			</button>
+			<button class="right-magnet cancel" ng-click="displayLightbox.saveAvailability = false; initEditedAvailability()">
+				<i18n>rbs.cancel</i18n>
+			</button>
+		</div>
+	</section>
+</lightbox>

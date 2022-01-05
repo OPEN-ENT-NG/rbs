@@ -3,6 +3,8 @@ $rbs-blue: #0000FF;
 $rbs-darkorange: #FF8C00;
 $rbs-darkgrey: #555555;
 $rbs-dimgrey: #696969;
+$rbs-green: #09ac00;
+$rbs-red: #dd0000;
 
 body.rbs {
   @import "components/index";
@@ -36,13 +38,22 @@ body.rbs {
     margin: 0 !important;
   }
 
-  #addUnavailability td input {
-    margin: 0;
-  }
-
   .selected {
-    color: $rbs-darkorange;
     font-weight: bold;
+
+    &.green-color {
+      color: $rbs-green;
+    }
+
+    &.red-color {
+      color: $rbs-red;
+    }
   }
 
+  .be-careful {
+    text-align: center;
+    border: 1px solid black;
+    padding: 2%;
+    margin-bottom: 2%;
+  }
 }

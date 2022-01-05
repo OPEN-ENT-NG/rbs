@@ -94,7 +94,6 @@ public class BookingController extends ControllerHelper {
 	private static final String PERIODIC_BOOKING_CREATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_CREATED";
 	private static final String PERIODIC_BOOKING_UPDATED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_UPDATED";
 	private static final String PERIODIC_BOOKING_DELETED_EVENT_TYPE = RBS_NAME + "_PERIODIC_BOOKING_DELETED";
-	private final static String DATE_FORMAT = BookingServiceSqlImpl.DATE_FORMAT;
 
 	private static final I18n i18n = I18n.getInstance();
 
@@ -125,17 +124,12 @@ public class BookingController extends ControllerHelper {
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void createBooking(final HttpServerRequest request) {
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					RequestUtils.bodyToJson(request, pathPrefix + "createBooking",
-							getBookingHandler(user, request, true));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				RequestUtils.bodyToJson(request, pathPrefix + "createBooking", getBookingHandler(user, request, true));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -265,30 +259,24 @@ public class BookingController extends ControllerHelper {
 		// Do NOT send a notification if the booking has been automatically validated
 		if (CREATED.status() == status) {
 
-			bookingService.getResourceName(bookingId, new Handler<Either<String, JsonObject>>() {
-				@Override
-				public void handle(Either<String, JsonObject> event) {
-					if (event.isRight() && event.right().getValue() != null && event.right().getValue().size() > 0) {
+			bookingService.getResourceName(bookingId, getResourceEvent -> {
+				if (getResourceEvent.isRight() && getResourceEvent.right().getValue() != null && getResourceEvent.right().getValue().size() > 0) {
 
-						final String resourceName = event.right().getValue().getString("resource_name");
+					final String resourceName = getResourceEvent.right().getValue().getString("resource_name");
 
-						bookingService.getModeratorsIds(bookingId, user, new Handler<Either<String, JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if (event.isRight() && event.right() != null) {
-									notifyModerators(request, user, event.right().getValue(), bookingId, startDate,
-											endDate, resourceName, eventType, notificationName);
-								} else {
-									log.error("Error when calling service getModeratorsIds. Unable to send timeline "
-											+ eventType + " notification.");
-								}
-							}
-						});
+					bookingService.getModeratorsIds(bookingId, user, getModeratorsEvent -> {
+						if (getModeratorsEvent.isRight() && getModeratorsEvent.right() != null) {
+							notifyModerators(request, user, getModeratorsEvent.right().getValue(), bookingId, startDate,
+									endDate, resourceName, eventType, notificationName);
+						} else {
+							log.error("Error when calling service getModeratorsIds. Unable to send timeline "
+									+ eventType + " notification.");
+						}
+					});
 
-					} else {
-						log.error("Error when calling service getResourceName. Unable to send timeline " + eventType
-								+ " notification.");
-					}
+				} else {
+					log.error("Error when calling service getResourceName. Unable to send timeline " + eventType
+							+ " notification.");
 				}
 			});
 		}
@@ -361,95 +349,84 @@ public class BookingController extends ControllerHelper {
 				return;
 			}
 
-			resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId),
-					new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> event) {
-							if (event.isRight() && event.right().getValue() != null) {
+			resourceService.getDelaysAndTypeProperties(Long.parseLong(resourceId), event -> {
+				if (event.isRight() && event.right().getValue() != null) {
 
-								JsonObject json = event.right().getValue();
-								Resource resource = new Resource(json);
-								booking.setResource(resource);
+					JsonObject json1 = event.right().getValue();
+					Resource resource = new Resource(json1);
+					booking.setResource(resource);
 
-								if (resource.hasNotOwnerOrSchoolId()) {
-									log.warn("Could not get owner or school_id for type of resource " + resourceId);
+					if (resource.hasNotOwnerOrSchoolId()) {
+						log.warn("Could not get owner or school_id for type of resource " + resourceId);
+					}
+
+					if (!resource.canBypassDelaysConstraints(user)) {
+						// Check that booking dates respect min and max delays
+						if (booking.hasMinDelay() && booking.slotsNotRespectingMinDelay()) {
+							long nbDays = booking.minDelayAsDay();
+							String errorMessage = i18n.translate(
+									"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
+									Renders.getHost(request), I18n.acceptLanguage(request),
+									Long.toString(nbDays));
+
+							badRequest(request, errorMessage);
+							return;
+						} else if (booking.hasMaxDelay()) {
+							try {
+								if (booking.slotsNotRespectingMaxDelay()) {
+									long nbDays = booking.maxDelayAsDay();
+									String errorMessage = i18n.translate(
+											"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
+											Renders.getHost(request), I18n.acceptLanguage(request),
+											Long.toString(nbDays));
+
+									badRequest(request, errorMessage);
+									return;
 								}
-
-								if (!resource.canBypassDelaysConstraints(user)) {
-									// Check that booking dates respect min and max delays
-									if (booking.hasMinDelay() && booking.slotsNotRespectingMinDelay()) {
-										long nbDays = booking.minDelayAsDay();
-										String errorMessage = i18n.translate(
-												"rbs.booking.bad.request.minDelay.not.respected.by.firstSlot",
-												Renders.getHost(request), I18n.acceptLanguage(request),
-												Long.toString(nbDays));
-
-										badRequest(request, errorMessage);
-										return;
-									} else if (booking.hasMaxDelay()) {
-										try {
-											if (booking.slotsNotRespectingMaxDelay()) {
-												long nbDays = booking.maxDelayAsDay();
-												String errorMessage = i18n.translate(
-														"rbs.booking.bad.request.maxDelay.not.respected.by.lastSlot",
-														Renders.getHost(request), I18n.acceptLanguage(request),
-														Long.toString(nbDays));
-
-												badRequest(request, errorMessage);
-												return;
-											}
-										} catch (Exception e) {
-											log.error(
-													"Error when checking that the day of the end date is selected",
-													e);
-											renderError(request);
-											return;
-										}
-
-									}
-								}
-
-								// Create or update booking
-								if (isCreation) {
-									try {
-										bookingService.createPeriodicBooking(resourceId, booking, user,
-												getHandlerForPeriodicNotification(user, request, isCreation));
-									} catch (Exception e) {
-										log.error("Error during service createPeriodicBooking", e);
-										renderError(request);
-									}
-								} else {
-									try {
-										bookingService.updatePeriodicBooking(resourceId, booking, user,
-												getHandlerForPeriodicNotification(user, request, isCreation));
-									} catch (Exception e) {
-										log.error("Error during service updatePeriodicBooking", e);
-										renderError(request);
-									}
-								}
-
-							} else {
-								badRequest(request, event.left().getValue());
+							} catch (Exception e) {
+								log.error("Error when checking that the day of the end date is selected", e);
+								renderError(request);
+								return;
 							}
+
 						}
+					}
 
-					});
+					// Create or update booking
+					if (isCreation) {
+						try {
+							bookingService.createPeriodicBooking(resourceId, booking, user,
+									getHandlerForPeriodicNotification(user, request, isCreation));
+						} catch (Exception e) {
+							log.error("Error during service createPeriodicBooking", e);
+							renderError(request);
+						}
+					} else {
+						try {
+							bookingService.updatePeriodicBooking(resourceId, booking, user,
+									getHandlerForPeriodicNotification(user, request, isCreation));
+						} catch (Exception e) {
+							log.error("Error during service updatePeriodicBooking", e);
+							renderError(request);
+						}
+					}
 
+				} else {
+					badRequest(request, event.left().getValue());
+				}
+			});
 		};
 	}
 
 	private Handler<Either<String, JsonArray>> getHandlerForPeriodicNotification(final UserInfos user,
 			final HttpServerRequest request, final boolean isCreation) {
-		return new Handler<Either<String, JsonArray>>() {
-			@Override
-			public void handle(Either<String, JsonArray> event) {
-				if (event.isRight()) {
-					notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
-					Renders.renderJson(request, event.right().getValue());
-					eventHelper.onCreateResource(request, RESOURCE_NAME);
-				} else {
-					badRequest(request, event.left().getValue());
-				}
+		return event -> {
+			if (event.isRight()) {
+				notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
+				Renders.renderJson(request, event.right().getValue());
+				eventHelper.onCreateResource(request, RESOURCE_NAME);
+			} else {
+				badRequest(request, event.left().getValue());
 			}
 		};
 	}
@@ -494,44 +471,35 @@ public class BookingController extends ControllerHelper {
 			}
 			final String bookingId = Long.toString(id);
 
-			bookingService.getParentBooking(bookingId, new Handler<Either<String, JsonObject>>() {
-				@Override
-				public void handle(Either<String, JsonObject> event) {
-					if (event.isRight() && event.right().getValue() != null && event.right().getValue().size() > 0) {
+			bookingService.getParentBooking(bookingId, getParentEvent -> {
+				if (getParentEvent.isRight() && getParentEvent.right().getValue() != null && getParentEvent.right().getValue().size() > 0) {
 
-						JsonObject parentBooking = event.right().getValue();
-						final long pId = parentBooking.getLong("id", 0L);
-						final String startDate = parentBooking.getString("start_date", null);
-						final String endDate = parentBooking.getString("end_date", null);
-						final String resourceName = parentBooking.getString("resource_name", null);
+					JsonObject parentBooking = getParentEvent.right().getValue();
+					final long pId = parentBooking.getLong("id", 0L);
+					final String startDate = parentBooking.getString("start_date", null);
+					final String endDate = parentBooking.getString("end_date", null);
+					final String resourceName = parentBooking.getString("resource_name", null);
 
-						if (pId == 0L || startDate == null || endDate == null || resourceName == null) {
-							log.error(
-									"Could not get bookingId, start_date, end_date or resource_name from response. Unable to send timeline "
-											+ PERIODIC_BOOKING_CREATED_EVENT_TYPE + " or "
-											+ PERIODIC_BOOKING_UPDATED_EVENT_TYPE + " notification.");
-							return;
-						}
-						final String periodicBookingId = Long.toString(pId);
-
-						bookingService.getModeratorsIds(periodicBookingId, user,
-								new Handler<Either<String, JsonArray>>() {
-									@Override
-									public void handle(Either<String, JsonArray> event) {
-										if (event.isRight() && event.right() != null) {
-											notifyModerators(request, user, event.right().getValue(), bookingId,
-													startDate, endDate, resourceName, eventType, notificationName);
-										} else {
-											log.error(
-													"Error when calling service getModeratorsIds. Unable to send timeline "
-															+ eventType + " notification.");
-										}
-									}
-								});
-					} else {
-						log.error("Error when calling service getParentBooking. Unable to send timeline " + eventType
-								+ " notification.");
+					if (pId == 0L || startDate == null || endDate == null || resourceName == null) {
+						log.error(
+								"Could not get bookingId, start_date, end_date or resource_name from response. Unable to send timeline "
+										+ PERIODIC_BOOKING_CREATED_EVENT_TYPE + " or "
+										+ PERIODIC_BOOKING_UPDATED_EVENT_TYPE + " notification.");
+						return;
 					}
+					final String periodicBookingId = Long.toString(pId);
+
+					bookingService.getModeratorsIds(periodicBookingId, user, getModeratorsEvent -> {
+						if (getModeratorsEvent.isRight() && getModeratorsEvent.right() != null) {
+							notifyModerators(request, user, getModeratorsEvent.right().getValue(), bookingId,
+									startDate, endDate, resourceName, eventType, notificationName);
+						} else {
+							log.error("Error when calling service getModeratorsIds. Unable to send timeline " + eventType + " notification.");
+						}
+					});
+				} else {
+					log.error("Error when calling service getParentBooking. Unable to send timeline " + eventType
+							+ " notification.");
 				}
 			});
 		}
@@ -588,27 +556,24 @@ public class BookingController extends ControllerHelper {
 
 		List<String> recipients = new ArrayList<>(recipientSet);
 
-        request.bodyHandler(new Handler<Buffer>() {
-            public void handle(Buffer event) {
+        request.bodyHandler(event -> {
+			String iana = event.toJsonObject().getString("iana");
+			if(null == iana){
+				iana = event.toJsonObject().getJsonArray("slots").getJsonObject(0).getString("iana");
+			}
+			String startDateTZ = ZonedDateTime.of(LocalDateTime.parse(startDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
+			String endDateTZ = ZonedDateTime.of(LocalDateTime.parse(endDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
 
-                String iana = event.toJsonObject().getString("iana");
-                if(null == iana){
-                    iana = event.toJsonObject().getJsonArray("slots").getJsonObject(0).getString("iana");
-                }
-                String startDateTZ = ZonedDateTime.of(LocalDateTime.parse(startDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
-                String endDateTZ = ZonedDateTime.of(LocalDateTime.parse(endDate,DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")), ZoneOffset.UTC).withZoneSameInstant(ZoneId.of(iana)).format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm"));
+			JsonObject params = new JsonObject();
+			params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+			params.put("bookingUri", "/rbs#/booking/" + bookingId + "/" + formatStringForRoute(startDate))
+					.put("username", user.getUsername()).put("startdate", startDateTZ).put("enddate", endDateTZ)
+					.put("resourcename", resourceName);
+			params.put("resourceUri", params.getString("bookingUri"));
+			params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDateTZ, endDateTZ));
 
-                JsonObject params = new JsonObject();
-                params.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
-                params.put("bookingUri", "/rbs#/booking/" + bookingId + "/" + formatStringForRoute(startDate))
-                        .put("username", user.getUsername()).put("startdate", startDateTZ).put("enddate", endDateTZ)
-                        .put("resourcename", resourceName);
-                params.put("resourceUri", params.getString("bookingUri"));
-                params.put("pushNotif", getPushNotification(request, notificationName, user, resourceName, startDateTZ, endDateTZ));
-
-                notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, resourceName, bookingId, params, true);
-            }
-        });
+			notification.notifyTimeline(request, "rbs." + notificationName, user, recipients, resourceName, bookingId, params, true);
+		});
 	}
 
 	private JsonObject getPushNotification(HttpServerRequest request, String notificationName, UserInfos user,
@@ -625,16 +590,13 @@ public class BookingController extends ControllerHelper {
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void updateBooking(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					RequestUtils.bodyToJson(request, pathPrefix + "updateBooking",
-							getBookingHandler(user, request, false));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				RequestUtils.bodyToJson(request, pathPrefix + "updateBooking",
+						getBookingHandler(user, request, false));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -644,16 +606,13 @@ public class BookingController extends ControllerHelper {
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void updatePeriodicBooking(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					RequestUtils.bodyToJson(request, pathPrefix + "updatePeriodicBooking",
-							getPeriodicBookingHandler(user, request, false));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				RequestUtils.bodyToJson(request, pathPrefix + "updatePeriodicBooking",
+						getPeriodicBookingHandler(user, request, false));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -663,90 +622,72 @@ public class BookingController extends ControllerHelper {
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void processBooking(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					RequestUtils.bodyToJson(request, pathPrefix + "processBooking", new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject json) {
-							String resourceId = request.params().get("id");
-							final String bookingId = request.params().get("bookingId");
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				RequestUtils.bodyToJson(request, pathPrefix + "processBooking", json -> {
+					String resourceId = request.params().get("id");
+					final String bookingId = request.params().get("bookingId");
 
-							int newStatus = json.getInteger("status");
+					int newStatus = json.getInteger("status");
 
-							if (newStatus != VALIDATED.status() && newStatus != REFUSED.status() && newStatus != SUSPENDED.status() && newStatus != CREATED.status()) {
-								badRequest(request, "Invalid status");
-								return;
-							}
+					if (newStatus != VALIDATED.status() && newStatus != REFUSED.status() && newStatus != SUSPENDED.status() && newStatus != CREATED.status()) {
+						badRequest(request, "Invalid status");
+						return;
+					}
 
-							json.put("moderator_id", user.getUserId());
+					json.put("moderator_id", user.getUserId());
 
-							Handler<Either<String, JsonArray>> handler = new Handler<Either<String, JsonArray>>() {
-								@Override
-								public void handle(Either<String, JsonArray> event) {
-									if (event.isRight()) {
-										if (event.right().getValue() != null && event.right().getValue().size() >= 3) {
-											final JsonArray results = event.right().getValue();
+					Handler<Either<String, JsonArray>> handler = processEvent -> {
+						if (processEvent.isRight()) {
+							if (processEvent.right().getValue() != null && processEvent.right().getValue().size() >= 3) {
+								final JsonArray results = processEvent.right().getValue();
 
-											try {
-												final JsonObject processedBooking = results.getJsonArray(2)
-														.getJsonObject(0);
+								try {
+									final JsonObject processedBooking = results.getJsonArray(2).getJsonObject(0);
 
-												Handler<Either<String, JsonObject>> notifHandler = new Handler<Either<String, JsonObject>>() {
-													@Override
-													public void handle(Either<String, JsonObject> event) {
-														if (event.isRight() && event.right().getValue() != null
-																&& event.right().getValue().size() > 0) {
+									Handler<Either<String, JsonObject>> notifHandler = notifyEvent -> {
+										if (notifyEvent.isRight() && notifyEvent.right().getValue() != null
+												&& notifyEvent.right().getValue().size() > 0) {
 
-															final String resourceName = event.right().getValue()
-																	.getString("resource_name");
+											final String resourceName = notifyEvent.right().getValue().getString("resource_name");
 
-															notifyBookingProcessed(request, user, processedBooking,
-																	resourceName);
+											notifyBookingProcessed(request, user, processedBooking, resourceName);
 
-															if (results.size() >= 4) {
-																JsonArray concurrentBookings = results.getJsonArray(3);
-																for (Object o : concurrentBookings) {
-																	JsonObject booking = (JsonObject) o;
-																	notifyBookingProcessed(request, user, booking,
-																			resourceName);
-																}
-															}
-
-														} else {
-															log.error(
-																	"Error when calling service getResourceName. Unable to send timeline notification.");
-														}
-													}
-												};
-
-												bookingService.getResourceName(bookingId, notifHandler);
-												renderJson(request, processedBooking);
-											} catch (Exception e) {
-												log.error(
-														"Unable to send timeline notification. Error when processing response from worker mod-mysql-postgresql :");
-												log.error(e.getMessage(), e);
-												renderJson(request, event.right().getValue());
+											if (results.size() >= 4) {
+												JsonArray concurrentBookings = results.getJsonArray(3);
+												for (Object o : concurrentBookings) {
+													JsonObject booking = (JsonObject) o;
+													notifyBookingProcessed(request, user, booking, resourceName);
+												}
 											}
-										} else {
-											log.error(
-													"Unable to send timeline notification. Response from worker mod-mysql-postgresql is null or has a size < 3");
-											renderJson(request, new JsonObject());
-										}
-									} else {
-										badRequest(request, event.left().getValue());
-									}
-								}
-							};
 
-							bookingService.processBooking(resourceId, bookingId, newStatus, json, user, handler);
+										} else {
+											log.error("Error when calling service getResourceName. Unable to send timeline notification.");
+										}
+									};
+
+									bookingService.getResourceName(bookingId, notifHandler);
+									renderJson(request, processedBooking);
+								} catch (Exception e) {
+									log.error("Unable to send timeline notification. Error when processing response from worker mod-mysql-postgresql :");
+									log.error(e.getMessage(), e);
+									renderJson(request, processEvent.right().getValue());
+								}
+							} else {
+								log.error(
+										"Unable to send timeline notification. Response from worker mod-mysql-postgresql is null or has a size < 3");
+								renderJson(request, new JsonObject());
+							}
+						} else {
+							badRequest(request, processEvent.left().getValue());
 						}
-					});
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+					};
+
+					bookingService.processBooking(resourceId, bookingId, newStatus, json, user, handler);
+				});
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -762,11 +703,9 @@ public class BookingController extends ControllerHelper {
 
 		final String notificationName;
 
-		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0 || startDate == null
-				|| endDate == null) {
-			log.error(
-					"Could not get bookingId, status, owner, start_date or end_date from response. Unable to send timeline "
-							+ BOOKING_VALIDATED_EVENT_TYPE + " or " + BOOKING_REFUSED_EVENT_TYPE + " notification.");
+		if (id == 0L || status == 0 || owner == null || owner.trim().length() == 0 || startDate == null || endDate == null) {
+			log.error("Could not get bookingId, status, owner, start_date or end_date from response. Unable to send timeline "
+					+ BOOKING_VALIDATED_EVENT_TYPE + " or " + BOOKING_REFUSED_EVENT_TYPE + " notification.");
 			return;
 		}
 		final String bookingId = Long.toString(id);
@@ -830,18 +769,14 @@ public class BookingController extends ControllerHelper {
 										}
 										final Date startDate = parseDateFromDB(booking.getString("start_date"));
 										try {
-											bookingService.deleteFuturePeriodicBooking(String.valueOf(pId), startDate,
-													new Handler<Either<String, JsonArray>>() {
-														@Override
-														public void handle(Either<String, JsonArray> event1) {
-															if (event1.isRight()) {
-																bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(resourceService, request, user, event1.right().getValue(), false, Long.parseLong(resourceId));
-																Renders.renderJson(request, event1.right().getValue());
-															} else {
-																badRequest(request, event1.left().getValue());
-															}
-															}
-														});
+											bookingService.deleteFuturePeriodicBooking(String.valueOf(pId), startDate, deleteEvent -> {
+												if (deleteEvent.isRight()) {
+													bookingNotificationService.notifyPeriodicBookingCreatedOrUpdated(resourceService, request, user, deleteEvent.right().getValue(), false, Long.parseLong(resourceId));
+													Renders.renderJson(request, deleteEvent.right().getValue());
+												} else {
+													badRequest(request, deleteEvent.left().getValue());
+												}
+											});
 											} catch (Exception e) {
 												log.error("Error during service deleteFuturePeriodicBooking", e);
 												renderError(request);
@@ -967,24 +902,18 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("find start date of one booking")
 	@SecuredAction(value = "rbs.booking.one.id", type = ActionType.AUTHENTICATED)
 	public void getBooking(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					bookingService.getBooking(request.params().get("id"), new Handler<Either<String, JsonObject>>() {
-						@Override
-						public void handle(Either<String, JsonObject> event) {
-							if (event.isRight()) {
-								Renders.renderJson(request, event.right().getValue());
-							} else {
-								Renders.renderError(request, new JsonObject().put("error", event.left().getValue()));
-							}
-						}
-					});
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				bookingService.getBooking(request.params().get("id"), getEvent -> {
+					if (getEvent.isRight()) {
+						Renders.renderJson(request, getEvent.right().getValue());
+					} else {
+						Renders.renderError(request, new JsonObject().put("error", getEvent.left().getValue()));
+					}
+				});
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -993,40 +922,33 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("List all bookings by dates")
 	@SecuredAction("rbs.booking.list.all.dates")
 	public void listAllBookingsByDate(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					final String startDate = request.params().get("startdate");
-					final String endDate = request.params().get("enddate");
-					if (startDate != null && endDate != null && startDate.matches("\\d{4}-\\d{2}-\\d{2}")
-							&& endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-						final List<String> groupsAndUserIds = new ArrayList<>();
-						groupsAndUserIds.add(user.getUserId());
-						if (user.getGroupsIds() != null) {
-							groupsAndUserIds.addAll(user.getGroupsIds());
-						}
-
-						bookingService.listAllBookingsByDates(user, groupsAndUserIds, startDate, endDate,
-								new Handler<Either<String, JsonArray>>() {
-									@Override
-									public void handle(Either<String, JsonArray> event) {
-										if (event.isRight()) {
-											Renders.renderJson(request, event.right().getValue());
-										} else {
-											JsonObject error = new JsonObject().put("error", event.left().getValue());
-											Renders.renderJson(request, error, 400);
-										}
-									}
-								});
-					} else {
-						Renders.badRequest(request,
-								"params start and end date must be defined with YYYY-MM-DD format !");
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final String startDate = request.params().get("startdate");
+				final String endDate = request.params().get("enddate");
+				if (startDate != null && endDate != null && startDate.matches("\\d{4}-\\d{2}-\\d{2}")
+						&& endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getGroupsIds());
 					}
+
+					bookingService.listAllBookingsByDates(user, groupsAndUserIds, startDate, endDate, listEvent -> {
+						if (listEvent.isRight()) {
+							Renders.renderJson(request, listEvent.right().getValue());
+						} else {
+							JsonObject error = new JsonObject().put("error", listEvent.left().getValue());
+							Renders.renderJson(request, error, 400);
+						}
+					});
 				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
+					Renders.badRequest(request,
+							"params start and end date must be defined with YYYY-MM-DD format !");
 				}
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -1035,31 +957,25 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("List all booking slots of a periodic booking")
 	@SecuredAction(value = "rbs.booking.list.slots")
 	public void listFullSlotsBooking(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					final String bookingId = request.params().get("bookingId");
-					if (bookingId != null) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final String bookingId = request.params().get("bookingId");
+				if (bookingId != null) {
 
-						bookingService.listFullSlotsBooking(bookingId, new Handler<Either<String, JsonArray>>() {
-							@Override
-							public void handle(Either<String, JsonArray> event) {
-								if (event.isRight()) {
-									Renders.renderJson(request, event.right().getValue());
-								} else {
-									JsonObject error = new JsonObject().put("error", event.left().getValue());
-									Renders.renderJson(request, error, 400);
-								}
-							}
-						});
-					} else {
-						Renders.badRequest(request, "param booking id must be defined !");
-					}
+					bookingService.listFullSlotsBooking(bookingId, listEvent -> {
+						if (listEvent.isRight()) {
+							Renders.renderJson(request, listEvent.right().getValue());
+						} else {
+							JsonObject error = new JsonObject().put("error", listEvent.left().getValue());
+							Renders.renderJson(request, error, 400);
+						}
+					});
 				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
+					Renders.badRequest(request, "param booking id must be defined !");
 				}
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -1068,15 +984,12 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("List all bookings created by current user")
 	@SecuredAction("rbs.booking.list")
 	public void listUserBookings(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					bookingService.listUserBookings(user, arrayResponseHandler(request));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				bookingService.listUserBookings(user, arrayResponseHandler(request));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -1086,16 +999,13 @@ public class BookingController extends ControllerHelper {
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void listBookingsByResource(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					String resourceId = request.params().get("id");
-					bookingService.listBookingsByResource(resourceId, arrayResponseHandler(request));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
-				}
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				String resourceId = request.params().get("id");
+				bookingService.listBookingsByResource(resourceId, arrayResponseHandler(request));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 	}
@@ -1104,22 +1014,18 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("List all bookings waiting to be processed by current user")
 	@SecuredAction("rbs.booking.list.unprocessed")
 	public void listUnprocessedBookings(final HttpServerRequest request) {
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					final List<String> groupsAndUserIds = new ArrayList<>();
-					groupsAndUserIds.add(user.getUserId());
-					if (user.getGroupsIds() != null) {
-						groupsAndUserIds.addAll(user.getGroupsIds());
-					}
-
-					bookingService.listUnprocessedBookings(groupsAndUserIds, user, arrayResponseHandler(request));
-				} else {
-					log.debug("User not found in session.");
-					unauthorized(request);
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				final List<String> groupsAndUserIds = new ArrayList<>();
+				groupsAndUserIds.add(user.getUserId());
+				if (user.getGroupsIds() != null) {
+					groupsAndUserIds.addAll(user.getGroupsIds());
 				}
+
+				bookingService.listUnprocessedBookings(groupsAndUserIds, user, arrayResponseHandler(request));
+			} else {
+				log.debug("User not found in session.");
+				unauthorized(request);
 			}
 		});
 
@@ -1132,16 +1038,9 @@ public class BookingController extends ControllerHelper {
 	 * @return formatted string to java date
 	 */
 	private String formatStringForRoute(String strDate) {
-		String format = DATE_FORMAT;
-		// the format is adapted to SQL. So we have to parse and replace some fields.
-		format = format.replace("MI", "mm");
-		format = format.replace("HH24", "HH");
-		format = format.replace("DD", "dd");
-		format = format.replace("YY", "yy");
-		SimpleDateFormat formatter = new SimpleDateFormat(format);
 		Date target = null;
 		try {
-			target = formatter.parse(strDate);
+			target = BookingUtils.parseDateFromDB(strDate);
 		} catch (ParseException e) {
 			log.error("Cannot parse startDate", e);
 			return null;
@@ -1152,53 +1051,39 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Export bookings in requested format")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void exportICal(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, pathPrefix + "exportBookings", new Handler<JsonObject>() {
-			@Override
-			public void handle(final JsonObject userExportRequest) {
-
-				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-					@Override
-					public void handle(final UserInfos user) {
-						if (user != null) {
-							ExportRequest exportRequest;
-							try {
-								exportRequest = new ExportRequest(userExportRequest, user);
-							} catch (IllegalArgumentException e) {
-								Renders.badRequest(request, e.getMessage());
+		RequestUtils.bodyToJson(request, pathPrefix + "exportBookings", json -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if (user != null) {
+					ExportRequest exportRequest;
+					try {
+						exportRequest = new ExportRequest(json, user);
+					} catch (IllegalArgumentException e) {
+						Renders.badRequest(request, e.getMessage());
+						return;
+					}
+					final ExportResponse exportResponse = new ExportResponse(exportRequest);
+					bookingService.getBookingsForExport(exportRequest, getEvent -> {
+						if (getEvent.isRight()) {
+							final List<ExportBooking> exportBookings = getEvent.right().getValue();
+							if (exportBookings.isEmpty()) {
+								JsonObject error = new JsonObject()
+										.put("error", "No booking in search period");
+								Renders.renderJson(request, error, 204);
 								return;
 							}
-							final ExportResponse exportResponse = new ExportResponse(exportRequest);
-							bookingService.getBookingsForExport(exportRequest, new Handler<Either<String, List<ExportBooking>>>() {
+							exportResponse.setBookings(exportBookings);
+
+							schoolService.getSchoolNames(new Handler<Either<String, Map<String, String>>>() {
 								@Override
-								public void handle(final Either<String, List<ExportBooking>> event) {
+								public void handle(Either<String, Map<String, String>> event) {
 									if (event.isRight()) {
-										final List<ExportBooking> exportBookings = event.right().getValue();
-										if (exportBookings.isEmpty()) {
-											JsonObject error = new JsonObject()
-													.put("error", "No booking in search period");
-											Renders.renderJson(request, error, 204);
-											return;
+										exportResponse.setSchoolNames(event.right().getValue());
+
+										if (exportResponse.getRequest().getFormat().equals(ExportRequest.Format.PDF)) {
+											generatePDF(request, exportResponse);
+										} else {
+											generateICal(request, exportResponse);
 										}
-										exportResponse.setBookings(exportBookings);
-
-										schoolService.getSchoolNames(new Handler<Either<String, Map<String, String>>>() {
-											@Override
-											public void handle(Either<String, Map<String, String>> event) {
-												if (event.isRight()) {
-													exportResponse.setSchoolNames(event.right().getValue());
-
-													if (exportResponse.getRequest().getFormat().equals(ExportRequest.Format.PDF)) {
-														generatePDF(request, exportResponse);
-													} else {
-														generateICal(request, exportResponse);
-													}
-												} else {
-													JsonObject error = new JsonObject()
-															.put("error", event.left().getValue());
-													Renders.renderJson(request, error, 400);
-												}
-											}
-										});
 									} else {
 										JsonObject error = new JsonObject()
 												.put("error", event.left().getValue());
@@ -1206,14 +1091,18 @@ public class BookingController extends ControllerHelper {
 									}
 								}
 							});
-
 						} else {
-							log.debug("User not found in session.");
-							unauthorized(request);
+							JsonObject error = new JsonObject()
+									.put("error", getEvent.left().getValue());
+							Renders.renderJson(request, error, 400);
 						}
-					}
-				});
-			}
+					});
+
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			});
 		});
 	}
 
@@ -1253,7 +1142,7 @@ public class BookingController extends ControllerHelper {
 		conversionRequest.put("acceptLanguage", I18n.acceptLanguage(request));
 		conversionRequest.put("userTimeZone", exportResponse.getRequest().getUserTz() );
 
-		eb.send(PdfExportService.PDF_HANDLER_ADDRESS, conversionRequest, (Handler<AsyncResult<Message<JsonObject>>>) event -> {
+		eb.request(PdfExportService.PDF_HANDLER_ADDRESS, conversionRequest, (Handler<AsyncResult<Message<JsonObject>>>) event -> {
 			JsonObject body = event.result().body();
 			Integer status = body.getInteger("status");
 			if (status == 200) {
@@ -1271,7 +1160,6 @@ public class BookingController extends ControllerHelper {
 				Renders.renderError(request, error);
 			}
         });
-
 	}
 
 

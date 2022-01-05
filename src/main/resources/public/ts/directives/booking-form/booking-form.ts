@@ -3,11 +3,12 @@ import {ROOTS} from "../../core/const/roots.const";
 import {RBS} from "../../models/models";
 import {DateUtils} from "../../utilities/date.util";
 import {ArrayUtil} from "../../utilities/array.util";
-import {BookingUtil} from "../../utilities/booking";
+import {BookingUtil} from "../../utilities/booking.util";
 import {HandleUtil} from "../../utilities/handle.util";
 import {BOOKING_EVENTER} from "../../core/enum/booking-eventer.enum";
 import {BookingEventService} from "../../services";
 import {I18nUtils} from "../../utilities/i18n.util";
+import {AvailabilityUtil} from "../../utilities/availability.util";
 
 const {Booking, Slot, SlotJson} = RBS;
 
@@ -44,13 +45,13 @@ interface IViewModel {
 
     $onInit(): any;
     // New booking
-    newBooking(): void;
-    newBookingCalendar(): void;
+    newBooking(): Promise<void>;
+    newBookingCalendar(): Promise<void>;
     // Init new booking
     initEditBookingDisplay(): void;
     initModerators(): void;
-    autoSelectTypeAndResource(): void;
-    autoSelectResource(): void;
+    autoSelectTypeAndResource(): Promise<void>;
+    autoSelectResource(): Promise<void>;
     initBookingDates(startMoment: any, endMoment: any): void;
     // Edit booking
     editBooking(): void;
@@ -61,7 +62,7 @@ interface IViewModel {
     translate(text: string): string;
     toggleLightbox(state: boolean): void;
     composeTitle(typeTitle: any, resourceTitle: any): string;
-    switchStructure(struct: any): void;
+    switchStructure(struct: any): Promise<void>;
     switchSlotStart(slot: any): void;
     switchSlotEnd(slot: any): void;
     summaryBuildDays(days: any): any;
@@ -70,7 +71,7 @@ interface IViewModel {
     formatBooking(date: any, time: any): string;
     editPeriodicStartDate(): void;
     checkDateFunction(): void;
-    togglePeriodic(): void;
+    togglePeriodic(): Promise<void>;
     initPeriodic(): void;
     saveBookingSlotProfile(): void;
     resolveSlotsSelected(start: any, end: any): boolean;
@@ -118,20 +119,20 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             vm.$onInit = async () => {
                 switch (window.bookingState) {
                     case BOOKING_EVENTER.CREATE:
-                        vm.newBooking();
+                        await vm.newBooking();
                         break;
                     case BOOKING_EVENTER.CREATE_CALENDAR:
-                        vm.newBookingCalendar();
+                        await vm.newBookingCalendar();
                         break;
                     case BOOKING_EVENTER.EDIT:
-                        vm.editBooking();
+                        await vm.editBooking();
                         break;
                 }
             };
 
             // New booking
 
-            vm.newBooking = (): void => {
+            vm.newBooking = async (): Promise<void> => {
                 vm.display.processing = undefined; // add as props from controller
                 vm.editedBooking = new Booking();
                 vm.editedBooking.quantity = 1;
@@ -143,7 +144,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.is_periodic = false; // false by default
 
                 vm.selectedStructure = vm.structuresWithTypes[0]; // add as props from controller
-                vm.autoSelectTypeAndResource();
+                await vm.autoSelectTypeAndResource();
 
                 // dates
                 vm.editedBooking.startMoment = moment();
@@ -158,7 +159,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 // vm.display.showPanel = true;
             };
 
-            vm.newBookingCalendar = (): void => {
+            vm.newBookingCalendar = async (): Promise<void> => {
                 vm.display.processing = undefined;
                 vm.editedBooking = new Booking();
                 vm.editedBooking.quantity = 1;
@@ -167,7 +168,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.initModerators();
 
                 vm.selectedStructure = vm.structuresWithTypes[0];
-                vm.autoSelectTypeAndResource();
+                await vm.autoSelectTypeAndResource();
 
                 // dates
                 if (model.calendar.newItem !== undefined) {
@@ -216,7 +217,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
-            vm.autoSelectTypeAndResource = (): void => {
+            vm.autoSelectTypeAndResource = async (): Promise<void> => {
                 vm.editedBooking.type = undefined;
                 vm.editedBooking.resource = undefined;
                 vm.selectedSlotStart = undefined;
@@ -229,19 +230,25 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     }
                     else {
                         vm.editedBooking.type = selectedType;
-                        vm.autoSelectResource();
+                        await vm.autoSelectResource();
                     }
-                } else {
+                }
+                else {
                     notify.error(lang.translate('rbs.booking.warning.no.types'));
                 }
+                $scope.$apply();
             };
 
-            vm.autoSelectResource = (): void => {
-                vm.editedBooking.resource =
-                    vm.editedBooking.type === undefined ? undefined :
-                        _.first(vm.editedBooking.type.resources.filterAvailable(vm.editedBooking.is_periodic));
+            vm.autoSelectResource = async (): Promise<void> => {
+                vm.display.processing = true;
+                for (let resource of vm.editedBooking.type.resources.all) {
+                    await resource.syncResourceAvailabilities();
+                }
 
-                if (vm.editedBooking.type !== undefined && vm.editedBooking.type.slotprofile !== undefined) {
+                let validResources = vm.editedBooking.type.resources.filterAvailable(vm.editedBooking.is_periodic);
+                vm.editedBooking.resource = validResources.length > 0 ? validResources[0] : undefined;
+
+                if (vm.editedBooking.type.slotprofile) {
                     vm.slotProfilesComponent.getSlots(vm.editedBooking.type.slotprofile, function (data) {
                         if (data.slots.length > 0) {
                             vm.editedBooking.slotsLit = data;
@@ -256,22 +263,24 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                             vm.booking.startTime.set('minute', vm.selectedSlotStart.startHour.split(':')[1]);
                             vm.booking.endTime.set('hour', vm.selectedSlotEnd.endHour.split(':')[0]);
                             vm.booking.endTime.set('minute', vm.selectedSlotEnd.endHour.split(':')[1]);
-                        } else {
+                        }
+                        else {
                             vm.editedBooking.type.slotprofile = undefined;
                         }
                         $scope.$apply();
                     });
-                } else if (vm.editedBooking.type !== undefined && vm.saveTime) {
+                }
+                else if (vm.saveTime) {
                     vm.booking.startTime.set('hour', vm.saveTime.startHour -
                         parseInt(DateUtils.formatMoment(vm.booking.startDate, vm.booking.startTime).format('Z').split(':')[0]));
-
                     vm.booking.startTime.set('minute', 0);
 
                     vm.booking.endTime.set('hour', vm.saveTime.endHour -
                         parseInt(DateUtils.formatMoment(vm.booking.startDate, vm.booking.startTime).format('Z').split(':')[0]));
-
                     vm.booking.endTime.set('minute', 0);
                 }
+                vm.display.processing = false;
+                $scope.$apply();
             };
 
             vm.initBookingDates = (startMoment, endMoment): void => {
@@ -477,9 +486,9 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 return _.isString(title) ? title.trim().length > 50 ? title.substring(0, 47) + '...' : title.trim() : '';
             };
 
-            vm.switchStructure = (struct): void => {
+            vm.switchStructure = async (struct): Promise<void> => {
                 vm.selectedStructure = struct;
-                vm.autoSelectTypeAndResource();
+                await vm.autoSelectTypeAndResource();
             };
 
             vm.switchSlotStart = (slot: any): void => {
@@ -642,14 +651,14 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
-            vm.togglePeriodic = (): void => {
+            vm.togglePeriodic = async (): Promise<void> => {
                 if (vm.editedBooking.is_periodic === true) {
                     vm.initPeriodic();
                 }
                 if (vm.editedBooking.type === undefined || vm.editedBooking.resource === undefined ||
                     !vm.editedBooking.resource.isBookable(true)) {
                     vm.selectedStructure = vm.structuresWithTypes[0];
-                    vm.autoSelectTypeAndResource();
+                    await vm.autoSelectTypeAndResource();
                     // Warn user ?
                 }
             };
@@ -1071,14 +1080,8 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.endTime = vm.booking.endTime;
 
                 // Formats time if they are strings
-                if (typeof vm.editedBooking.startTime === 'string') {
-                    const time = vm.editedBooking.startTime.split(':');
-                    vm.editedBooking.startTime = moment(vm.booking.startDate).set('hour', time[0]).set('minute', time[1]);
-                }
-                if (typeof vm.editedBooking.endTime === 'string') {
-                    const time = vm.booking.endTime.split(':');
-                    vm.editedBooking.endTime = moment(vm.booking.endDate).set('hour', time[0]).set('minute', time[1]);
-                }
+                vm.editedBooking.startTime = DateUtils.formatTimeIfString(vm.editedBooking.startTime);
+                vm.editedBooking.endTime = DateUtils.formatTimeIfString(vm.editedBooking.endTime);
 
                 try {
                     if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
@@ -1165,17 +1168,13 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             };
 
             vm.getQuantityDispo = (booking) : number => {
-                if (!booking.resource.quantity || booking.resource.quantity <= 0 || booking.startMoment.isSame(booking.endMoment)) {
+                if (!booking.resource || !booking.resource.quantity || booking.resource.quantity <= 0 || booking.startMoment.isSame(booking.endMoment)) {
                     return 0;
                 }
                 else {
                     let quantityDispo = booking.resource.quantity;
                     if (!booking.is_periodic) {
-                        for (let b of booking.resource.bookings.all) {
-                            if (!b.is_periodic && b.id != booking.id && BookingUtil.isBookingsOverlapping(booking, b)) {
-                                quantityDispo -= b.quantity;
-                            }
-                        }
+                        quantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, booking.resource);
                     }
                     else {
                         for (let slot of booking.tempSlots) {
@@ -1189,9 +1188,14 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
 
             vm.isBookingQuantityWrong = (booking: any): boolean => {
                 return !booking.quantity || booking.quantity > vm.getQuantityDispo(booking);
+                // TODO check aussi validité des heures / dates
             };
 
             vm.formatTextBookingQuantity = (booking) : string => {
+                if (vm.currentErrors.length > 0) {
+                    return lang.translate(vm.currentErrors[0].error);
+                }
+
                 let resourceQuantityDispo = vm.getQuantityDispo(booking);
                 if (resourceQuantityDispo <= 0) {
                     return lang.translate('rbs.booking.edit.quantity.none');

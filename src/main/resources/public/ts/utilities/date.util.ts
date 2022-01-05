@@ -42,4 +42,19 @@ export class DateUtils {
         return(moment(date).isAfter(moment()));
     };
 
+
+    static formatTimeIfString(date: any): any {
+        if (typeof date === 'string') {
+            const time = date.split(':');
+            return moment().set('hour', time[0]).set('minute', time[1]);
+        }
+        return(date);
+    };
+
+    static formatMomentIfDate(date: any): any {
+        if (date instanceof Date) {
+            return DateUtils.formatMoment(date);
+        }
+        return(date);
+    };
 }

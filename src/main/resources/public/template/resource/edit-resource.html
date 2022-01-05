@@ -79,10 +79,10 @@
 		<div class="row">
 			<label class="three cell"><i18n>rbs.resource.edit.quantity.label</i18n></label>
 			<input class="input-size" type="number" min="0" ng-model="editedResource.quantity"
-				   ng-change="syncConflictingBookings()"/>
+				   ng-change="syncBookingsUsingResource(editedResource)"/>
 		</div>
 
-		<div class="warning default-fontsize top-spacing-three" ng-if="conflictingBookings.length > 0">
+		<div class="warning default-fontsize top-spacing-three" ng-if="bookingsConflictingResource.length > 0">
 			<div>
 				<i18n>rbs.resource.edit.quantity.warning</i18n>
 				<input type="checkbox" id="quantity-details" class="transparent" ng-model="quantityChecked" />
@@ -99,7 +99,7 @@
 					</tr>
 					</thead>
 					<tbody>
-					<tr ng-repeat="booking in conflictingBookings">
+					<tr ng-repeat="booking in bookingsConflictingResource">
 						<td>[[booking.owner_name]]</td>
 						<td>[[formatMoment(booking.startMoment)]]</td>
 						<td>[[formatMoment(booking.endMoment)]]</td>
@@ -109,6 +109,46 @@
 				</table>
 			</div>
 		</div>
+
+		<!-- Available periods -->
+		<div class="row top-spacing-three">
+			<label class="cell" for="availability">
+				<input type="checkbox" id="availability" ng-model="openAvailabilitiesTable" ng-change="initEditedAvailability()"/>
+				<i18n ng-if="!editedResource.is_available">rbs.resource.edit.available.label</i18n>
+				<i18n ng-if="editedResource.is_available">rbs.resource.edit.unavailable.label</i18n>
+			</label>
+			<div class="row cell" ng-if="openAvailabilitiesTable"
+				 ng-include="'/rbs/public/template/resource/availability/availability-table.html'"></div>
+		</div>
+		<hr/>
+
+<!--		<div class="warning default-fontsize"  ng-if="isResourceAvailabilityUsed()">-->
+<!--			<div>-->
+<!--				<i18n>rbs.resource.edit.available.warning</i18n>-->
+<!--				<input type="checkbox" id="availability-details" class="transparent" ng-model="availabilityChecked" />-->
+<!--				<label class="right-magnet pointer blue" for="availability-details"><i18n>rbs.resource.edit.details</i18n></label>-->
+<!--			</div>-->
+<!--			<div ng-if="availabilityChecked">-->
+<!--				<table class="resource-table">-->
+<!--					<thead>-->
+<!--					<tr>-->
+<!--						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.owner</i18n></td>-->
+<!--						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>-->
+<!--						<td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.end</i18n></td>-->
+<!--						<td style="width: 10%;"><i18n>rbs.resource.edit.tab.quantity</i18n></td>-->
+<!--					</tr>-->
+<!--					</thead>-->
+<!--					<tbody>-->
+<!--					<tr ng-repeat="booking in listBookingsConflictingAvailability">-->
+<!--						<td>[[booking.owner_name]]</td>-->
+<!--						<td>[[formatMoment(booking.startMoment)]]</td>-->
+<!--						<td>[[formatMoment(booking.endMoment)]]</td>-->
+<!--						<td>[[booking.quantity]]</td>-->
+<!--					</tr>-->
+<!--					</tbody>-->
+<!--				</table>-->
+<!--			</div>-->
+<!--		</div>-->
 
 		<!-- Color -->
 		<hr/>
@@ -127,7 +167,7 @@
 		</div>
 
 		<div class="row">
-			<button class="right-magnet" ng-if="display.processing !== true" ng-disabled="editedResource.quantity<-1"><i18n>rbs.save</i18n></button>
+			<button class="right-magnet" ng-if="display.processing !== true" ng-disabled="editedResource.quantity < -1"><i18n>rbs.save</i18n></button>
 			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="closeResource()" ng-if="display.processing !== true" />
 
 			<button class="right-magnet cancel disabled" disabled ng-if="display.processing"><i18n>rbs.processing</i18n></button>
@@ -136,5 +176,7 @@
 	</form>
 </div>
 
-<!--    Lightboxes -->
+<!-- Lightboxes -->
 <div ng-include="'/rbs/public/template/resource/confirm-quantity-resource.html'"></div>
+<div ng-include="'/rbs/public/template/resource/availability/confirm-save-availability.html'"></div>
+<div ng-include="'/rbs/public/template/resource/availability/confirm-delete-availability.html'"></div>

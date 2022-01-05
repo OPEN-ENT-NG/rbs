@@ -1,6 +1,7 @@
 import {_, angular, Behaviours, http, Model, notify} from 'entcore';
 import moment from '../moment';
-import {BookingUtil} from "../utilities/booking";
+import {BookingUtil} from "../utilities/booking.util";
+import {Availabilities} from "./Availability";
 
 declare let window: any;
 declare let model: any;
@@ -85,6 +86,7 @@ export function semanticObject(obj, className) {
     }
 }
 
+
 function Booking(book?) {
     if (book) {
         this.updateData(book);
@@ -119,7 +121,6 @@ function Booking(book?) {
 }
 
 Booking.prototype.save = function (cb, cbe) {
-    console.log(this);
     if (this.id) {
         this.update(cb, cbe);
     } else {
@@ -215,7 +216,7 @@ Booking.prototype.updateData = function (data) {
     for (let key in data) {
         this[key] = data[key];
     }
-}
+};
 
 Booking.prototype.validate = function (cb, cbe) {
     this.status = model.STATE_VALIDATED;
@@ -350,7 +351,6 @@ Booking.prototype.isSuspended = function () {
     return this.status === model.STATE_SUSPENDED;
 };
 
-
 Booking.prototype.hasAtLeastOnePendingSlot = function () {
     return this._slots.some(function (slot) {
         return slot.isPending();
@@ -389,6 +389,7 @@ Booking.prototype.toJSON = function () {
 
     return json;
 };
+
 
 function Resource(data?) {
     var resource = this;
@@ -477,6 +478,43 @@ Resource.prototype.delete = function (cb, cbe) {
         });
 };
 
+// Resource.prototype.listAvailability = function (cb, cbe) {
+//     let resource = this;
+//
+//     http().get(`/rbs/resource/${this.id}/availability`)
+//         .done(function (listAvailability) {
+//             this.availability = [];
+//             for (let a of listAvailability) {
+//                 let jsonU = {
+//                     id: a.id,
+//                     resource_id: this.id,
+//                     start_date: moment.tz(moment.utc(a.start_date), moment.tz.guess()),
+//                     end_date: moment.tz(moment.utc(a.end_date), moment.tz.guess()),
+//                     start_time: moment.tz(moment.utc(a.start_time), moment.tz.guess()),
+//                     end_time: moment.tz(moment.utc(a.end_time), moment.tz.guess()),
+//                     quantity: a.quantity,
+//                     is_unavailability: a.is_unavailability,
+//                     days: []
+//                 };
+//
+//                 for (let i = 0; i < a.days.length; i++) {
+//                     jsonU.days.push(a.days[i] === '1');
+//                 }
+//                 let formattedU = new Availability(jsonU);
+//                 formattedU.is_unavailability ? this.unavailability.push(formattedU) : this.availability.push(formattedU);
+//             }
+//
+//             if (typeof cb === 'function') {
+//                 cb();
+//             }
+//         })
+//         .error(function (e) {
+//             if (typeof cbe === 'function') {
+//                 cbe(model.parseError(e, resource, 'delete'));
+//             }
+//         });
+// };
+
 Resource.prototype.toJSON = function () {
     var json: any = {
         name: this.name,
@@ -500,10 +538,16 @@ Resource.prototype.toJSON = function () {
 };
 
 Resource.prototype.isBookable = function (periodic) {
-    return this.is_available === true
-        && this.myRights !== undefined
-        && this.myRights.contrib !== undefined
-        && (!periodic || this.periodic_booking);
+    return (this.is_available || (this.availabilities && this.availabilities.all.length > 0))
+        && this.myRights && this.myRights.contrib && (!periodic || this.periodic_booking);
+};
+
+Resource.prototype.syncResourceAvailabilities = async function () {
+    this.availabilities = new Availabilities();
+    this.unavailabilities = new Availabilities();
+
+    await this.availabilities.sync(this.id, false);
+    await this.unavailabilities.sync(this.id, true);
 };
 
 
@@ -819,6 +863,125 @@ Notification.prototype.removeNotifications = function (id, cb, cbe) {
             }
         });
 };
+
+
+// function Availability(data?) {
+//     if (data) {
+//         this.updateData(data);
+//         // this.startMoment = moment.utc(data.startMoment).tz(moment.tz.guess());
+//         // this.endMoment = moment.utc(data.endMoment).tz(moment.tz.guess());
+//     }
+//     else {
+//         this.start_date = this.startMoment ? moment.utc(this.startMoment).tz(moment.tz.guess()) : moment();
+//         this.end_date = this.endMoment ? moment.utc(this.endMoment).tz(moment.tz.guess()) : moment();
+//     }
+//
+//     this.iana = moment.tz.guess();
+// }
+//
+// Resource.prototype.list = function (cb, cbe) {
+//     http().get(`/rbs/availability`)
+//         .done(function (listAvailability) {
+//             this.availability = [];
+//             for (let a of listAvailability) {
+//                 let jsonU = {
+//                     id: a.id,
+//                     resourceId: a.resource_id,
+//                     startDate: moment.tz(moment.utc(a.start_date), moment.tz.guess()),
+//                     endDate: moment.tz(moment.utc(a.end_date), moment.tz.guess()),
+//                     startTime: moment.tz(moment.utc(a.start_time), moment.tz.guess()),
+//                     endTime: moment.tz(moment.utc(a.end_time), moment.tz.guess()),
+//                     quantity: a.quantity,
+//                     isUnavailability: a.is_unavailability,
+//                     days: []
+//                 };
+//
+//                 for (let i = 0; i < a.days.length; i++) {
+//                     jsonU.days.push(a.days[i] === '1');
+//                 }
+//                 let formattedU = new Availability(jsonU);
+//                 this.availability.push(formattedU);
+//             }
+//
+//             if (typeof cb === 'function') {
+//                 cb();
+//             }
+//         })
+//         .error(function (e) {
+//             if (typeof cbe === 'function') {
+//                 cbe(model.parseError(e, this, 'delete'));
+//             }
+//         });
+// };
+//
+// Availability.prototype.save = function (cb, cbe) {
+//     if (this.id) {
+//         this.update(cb, cbe);
+//     } else {
+//         this.create(cb, cbe);
+//     }
+// };
+//
+// Availability.prototype.update = function (cb, cbe) {
+//     let availability = this;
+//
+//     http().postJson(`/rbs/resource/${this.resource.id}/availability/${this.id}`, this)
+//         .done(function (a) {
+//             if (typeof cb === 'function') {
+//                 cb();
+//             }
+//         })
+//         .error(function (e) {
+//             if (typeof cbe === 'function') {
+//                 cbe(model.parseError(e, availability, 'update'));
+//             }
+//         });
+// };
+//
+// Availability.prototype.create = function (cb, cbe) {
+//     let availability = this;
+//     // this.start_date = (moment.utc(this.startMoment._i).add('hours', -moment(this.startMoment._i).format('Z').split(':')[0])).unix();
+//     // this.end_date = (moment.utc(this.endMoment._i).add('hours', -moment(this.startMoment._i).format('Z').split(':')[0])).unix();
+//
+//     http().postJson(`/rbs/resource/${this.resource.id}/availability`, this)
+//         .done(function (a) {
+//             console.log(availability);
+//             console.log(a);
+//             availability.updateData(a);
+//             console.log(availability);
+//             if (typeof cb === 'function') {
+//                 cb();
+//             }
+//         })
+//         .error(function (e) {
+//             if (typeof cbe === 'function') {
+//                 cbe(model.parseError(e, availability, 'create'));
+//             }
+//         });
+// };
+//
+// Availability.prototype.delete = function (cb, cbe) {
+//     let availability = this;
+//
+//     http().delete(`/rbs/resource/${this.resource_id}/availability/${this.id}`)
+//         .done(function () {
+//             if (typeof cb === 'function') {
+//                 cb();
+//             }
+//         })
+//         .error(function (e) {
+//             if (typeof cbe === 'function') {
+//                 cbe(model.parseError(e, availability, 'delete'));
+//             }
+//         });
+// };
+//
+// Availability.prototype.updateData = function (data) {
+//     for (let key in data) {
+//         this[key] = data[key];
+//     }
+// };
+
 
 export const RBS = {
     Booking,
@@ -1215,7 +1378,6 @@ model.refreshRessourceType = function () {
     model.recordedSelections.record();
     model.resourceTypes.sync();
 };
-
 
 model.refresh = function (isDisplayList) {
     // Record selections

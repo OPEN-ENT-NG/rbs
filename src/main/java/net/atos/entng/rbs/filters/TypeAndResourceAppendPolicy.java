@@ -121,11 +121,9 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 				query.append(" OR b.owner = ?"); // Owner can delete his booking
 				values.add(user.getUserId());
 			} else if(isUpdateBooking(binding) || isUpdatePeriodicBooking(binding)) {
-				// Check that the user is the booking's owner and that the resource is available
+				// Check that the user is the booking's owner
 				query.append(" OR b.owner = ?"); // Owner can delete his booking
 				values.add(user.getUserId());
-				query.append(" AND r.is_available = ?");
-				values.add(true);
 			}
 
 			query.append(") AND r.id = ?");
@@ -136,31 +134,21 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 			}
 
 			if (isCreatePeriodicBooking(binding)) {
-				// Check that the resource allows periodic_booking and that it is available
-				query.append(" AND r.periodic_booking = ?")
-					.append(" AND r.is_available = ?");
-				values.add(true).add(true);
-			}
-			else if(isCreateBooking(binding)) {
-				// Check that the resource is available
-				query.append(" AND r.is_available = ?");
+				// Check that the resource allows periodic_booking
+				query.append(" AND r.periodic_booking = ?");
 				values.add(true);
 			}
 //			else if(isProcessBooking(binding)) {
-//				// A booking can be validated or refused, only if its status is not "suspended" and the resource is available
-//				query.append(" AND b.status != ?")
-//					.append(" AND r.is_available = true");
+//				// A booking can be validated or refused, only if its status is not "suspended"
+//				query.append(" AND b.status != ?");
 //				values.add(SUSPENDED.status());
 //			}
 
 			// Execute
-			Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					request.resume();
-					Long count = SqlResult.countResult(message);
-					handler.handle(count != null && count > 0);
-				}
+			Sql.getInstance().prepared(query.toString(), values, message -> {
+				request.resume();
+				Long count = SqlResult.countResult(message);
+				handler.handle(count != null && count > 0);
 			});
 		} else {
 			handler.handle(false);
