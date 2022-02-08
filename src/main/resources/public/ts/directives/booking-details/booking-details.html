@@ -148,11 +148,10 @@
                 <div class="content">
                     <div class="warning row details"
                          ng-if="vm.selectedBooking.resource.is_available !== true || vm.selectedBooking.hasAtLeastOneSuspendedSlot()">
-                        <i18n ng-if="!vm.selectedBooking.hasAtLeastOneSuspendedSlot()">
-                            rbs.booking.details.resource.unavailable
-                        </i18n>
-                        <i18n ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots
-                        </i18n>
+                        <i18n ng-if="!vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.resource.unavailable</i18n>
+                        <i18n ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.timeslot</i18n>
+                        <br><br>
+                        <i18n ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots</i18n>
                     </div>
 
                     <table class="list-view twelve">
@@ -177,8 +176,8 @@
                         </thead>
                         <tbody ng-repeat="slot in vm.selectedBooking._slots | orderBy: 'startMoment'">
                         <tr>
-                            <td ng-if="slot == vm.currentBookingSelected">[[$index + 1]] <em style="color:red">*</em></td>
-                            <td ng-if="slot != vm.currentBookingSelected">[[$index + 1]]</td>
+                            <td ng-if="slot.id == vm.currentBookingSelected.id">[[$index + 1]] <em style="color:red">*</em></td>
+                            <td ng-if="slot.id != vm.currentBookingSelected.id">[[$index + 1]]</td>
                             <td ng-if="slot.isRefused()"><a ng-click="vm.switchExpandSlot(slot)">[[vm.formatMoment(slot.startMoment)]]</a>
                             </td>
                             <td ng-if="!slot.isRefused()">[[vm.formatMoment(slot.startMoment)]]</td>
@@ -205,7 +204,7 @@
                                 <i18n>rbs.booking.status.refused</i18n>
                             </a></td>
                         </tr>
-                        <tr ng-if="slot.expanded === true" class="minor">
+                        <tr ng-if="slot.expanded" class="minor">
                             <td></td>
                             <td colspan="4">
                                 <div class="row form-element">
