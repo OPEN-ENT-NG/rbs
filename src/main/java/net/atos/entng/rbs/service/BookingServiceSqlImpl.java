@@ -585,21 +585,21 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		Object bId = parseId(bookingId);
 
 		// 1. Upsert current user
-		statementsBuilder.prepared(UPSERT_USER_QUERY,
-				new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUsername()));
+		statementsBuilder.prepared(UPSERT_USER_QUERY, new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 		// 2. Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
 		// 3. Query to validate or refuse booking
 		StringBuilder sb = new StringBuilder();
-		JsonArray processValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray processValues = new JsonArray();
 		for (String attr : data.fieldNames()) {
 			sb.append(attr).append(" = ?, ");
 			processValues.add(data.getValue(attr));
 		}
+
 		StringBuilder processQuery = new StringBuilder();
-		processQuery.append("UPDATE rbs.booking").append(" SET ").append(sb.toString()).append("modified = NOW() ")
+		processQuery.append("UPDATE rbs.booking").append(" SET ").append(sb).append("modified = NOW() ")
 				.append("WHERE id = ?").append(" AND resource_id = ? ");
 		processValues.add(bId).add(rId);
 
@@ -607,66 +607,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
 				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
 
-		if (newStatus != VALIDATED.status()) {
-			processQuery.append(returningClause);
-			statementsBuilder.prepared(processQuery.toString(), processValues);
-		}
-		else {
-			// 3b. Additional clauses when validating a booking
-			StringBuilder validateQuery = new StringBuilder();
-			validateQuery.append("WITH validated_booking AS (").append(" SELECT start_date, end_date")
-					.append(" FROM rbs.booking").append(" WHERE id = ?) ");
-			JsonArray validateValues = new fr.wseduc.webutils.collections.JsonArray();
-			validateValues.add(bId);
-
-			validateQuery.append(processQuery.toString());
-			for (Object pValue : processValues) {
-				validateValues.add(pValue);
-			}
-
-			// Validate if and only if there does NOT exist a concurrent validated booking
-			validateQuery.append(" AND NOT EXISTS (").append("SELECT 1 FROM rbs.booking")
-					.append(" WHERE resource_id = ?").append(" AND status = ?")
-					.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
-					.append(")");
-			;
-			validateValues.add(rId).add(VALIDATED.status());
-
-			validateQuery.append(returningClause);
-
-			statementsBuilder.prepared(validateQuery.toString(), validateValues);
-
-			// 4. Query to refuse potential concurrent bookings of the validated booking
-			StringBuilder rbQuery = new StringBuilder();
-			JsonArray rbValues = new fr.wseduc.webutils.collections.JsonArray();
-
-			// Store start and end dates of validated booking in a temporary table
-			rbQuery.append("WITH validated_booking AS (").append(" SELECT start_date, end_date")
-					.append(" FROM rbs.booking").append(" WHERE id = ?)");
-			rbValues.add(bId);
-
-			rbQuery.append(" UPDATE rbs.booking")
-					.append(" SET status = ?, moderator_id = ?, refusal_reason = ?, modified = NOW() ");
-			rbValues.add(REFUSED.status()).add(user.getUserId())
-					.add("<i18n>rbs.booking.automatically.refused.reason</i18n>" + bId);
-
-			// Refuse concurrent bookings if and only if the previous query has validated
-			// the booking
-			rbQuery.append(" WHERE EXISTS (").append(" SELECT 1 FROM rbs.booking").append(" WHERE id = ?")
-					.append(" AND status = ?)");
-			rbValues.add(bId).add(VALIDATED.status());
-
-			// Get concurrent bookings' ids that must be refused
-			rbQuery.append(" AND id in (").append(" SELECT id FROM rbs.booking").append(" WHERE resource_id = ?")
-					.append(" AND status = ?")
-					.append(" AND (start_date, end_date) OVERLAPS ((SELECT start_date from validated_booking), (SELECT end_date from validated_booking))")
-					.append(")");
-			rbValues.add(rId).add(CREATED.status());
-
-			rbQuery.append(returningClause);
-
-			statementsBuilder.prepared(rbQuery.toString(), rbValues);
-		}
+		processQuery.append(returningClause);
+		statementsBuilder.prepared(processQuery.toString(), processValues);
 
 		// Send queries to event bus
 		Sql.getInstance().transaction(statementsBuilder.build(), validResultsHandler(handler));
@@ -680,8 +622,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id").append(" WHERE b.owner = ?")
 				.append(" ORDER BY b.start_date, b.end_date");
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-		values.add(user.getUserId());
+		JsonArray values = new JsonArray().add(user.getUserId());
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
