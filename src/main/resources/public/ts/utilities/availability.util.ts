@@ -2,7 +2,6 @@ import {notify} from "entcore";
 import moment from "../moment";
 import {Moment} from "moment";
 import {BookingUtil} from "./booking.util";
-import {min} from "rxjs/operator/min";
 
 export class AvailabilityUtil {
     /**
@@ -89,11 +88,12 @@ export class AvailabilityUtil {
      * @param booking                   booking giving timeslot to check
      * @param resource                  resource of the booking
      * @param availabilityException     (un)availability not to count for calculus
+     * @param bookingException          booking not to count for calculus
      * @return number                   quantity still available for this timeslot
      */
-    static getTimeslotQuantityAvailable = (booking: any, resource: any, availabilityException?: any) : number => {
+    static getTimeslotQuantityAvailable = (booking: any, resource: any, availabilityException?: any, bookingException?: any) : number => {
         let resourceQuantityDispo = AvailabilityUtil.getResourceQuantityByTimeslot(booking, resource, availabilityException);
-        let bookingsQuantityUsed = AvailabilityUtil.getBookingsQuantityUsedOnTimeslot(booking, resource);
+        let bookingsQuantityUsed = AvailabilityUtil.getBookingsQuantityUsedOnTimeslot(booking, resource, bookingException);
         return resourceQuantityDispo - bookingsQuantityUsed;
     };
 
@@ -132,14 +132,16 @@ export class AvailabilityUtil {
      *
      * @param booking       booking giving timeslot to check
      * @param resource      resource of the booking
+     * @param exception     booking not to count for calculus
      * @return number       quantity used by the bookings using this timeslot
      */
-    static getBookingsQuantityUsedOnTimeslot = (booking: any, resource: any) : number => {
+    static getBookingsQuantityUsedOnTimeslot = (booking: any, resource: any, exception?: any) : number => {
         let bookings = resource.bookings.all;
         let bookingsQuantityUsed = 0;
+        let exceptionId = (exception && exception.id) ? exception.id : -1;
 
         for (let b of bookings) {
-            if (b.status != 3 && !b.is_periodic && BookingUtil.isBookingsOverlapping(booking, b)) {
+            if (b.id != exceptionId && b.status != 3 && !b.is_periodic && BookingUtil.isBookingsOverlapping(booking, b)) {
                 bookingsQuantityUsed += b.quantity;
             }
         }

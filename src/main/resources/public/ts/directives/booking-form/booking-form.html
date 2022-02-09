@@ -207,7 +207,7 @@
                         <div class="row">
                             <label class="three cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
                             <input class="input-size" type="number" ng-model="vm.editedBooking.quantity"
-                                   min="1" max="[[vm.getQuantityDispo(vm.editedBooking)]]"/>
+                                   min="1" max="[[vm.getQuantityDispo(vm.editedBooking, vm.editedBooking)]]"/>
                         </div>
 
                         <!-- Date/time error -->

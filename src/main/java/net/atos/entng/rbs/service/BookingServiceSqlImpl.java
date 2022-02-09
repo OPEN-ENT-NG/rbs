@@ -251,27 +251,29 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		if (nbOccurences == -1) {
 			nbOccurences = booking.countOccurrences(slot);
 		}
-			SlotIterable it = new SlotIterable(booking,slot);
-			for (Slot slotIt : it) {
-				query.append(", (?, ?, ?, ?, ?, ?,");
-				values.add(resourceId).add(user.getUserId()).add(bookingReason).add(booking.getBookingQuantity())
-						.add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()));
 
-				if (isUpdate) { // Update of a periodic booking
-					query.append(" ?,");
-					values.add(bookingId);
-				} else { // Creation of a periodic booking
-					query.append("(select id from parent_booking),");
-				}
+		SlotIterable it = new SlotIterable(booking,slot);
+		for (Slot slotIt : it) {
+			query.append(", (?, ?, ?, ?, ?, ?,");
+			values.add(resourceId).add(user.getUserId()).add(bookingReason).add(booking.getBookingQuantity())
+					.add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()));
 
-				query.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
-						.append(" FROM rbs.resource AS r")
-						.append(" WHERE r.id = ?), ?)");
-				values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
-				//
-				lastSlotEndDateUTC = lastSlotEndDateUTC < slotIt.getEndUTC() ? slotIt.getEndUTC() : lastSlotEndDateUTC;
+			if (isUpdate) { // Update of a periodic booking
+				query.append(" ?,");
+				values.add(bookingId);
+			} else { // Creation of a periodic booking
+				query.append("(select id from parent_booking),");
 			}
-			query.append(" RETURNING id, status");
+
+			query.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
+					.append(" FROM rbs.resource AS r")
+					.append(" WHERE r.id = ?), ?)");
+			values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
+			//
+			lastSlotEndDateUTC = lastSlotEndDateUTC < slotIt.getEndUTC() ? slotIt.getEndUTC() : lastSlotEndDateUTC;
+		}
+		query.append(" RETURNING id, status");
+
 		return lastSlotEndDateUTC;
 	}
 
@@ -313,7 +315,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 
 		StringBuilder query = new StringBuilder();
-		query.append("UPDATE rbs.booking").append(" SET ").append(sb.toString()).append("modified = NOW()")
+		query.append("UPDATE rbs.booking").append(" SET ").append(sb).append("modified = NOW()")
 				.append(", booking_reason = ?")
 				.append(", quantity = ?")
 				.append(", start_date = ?")
@@ -332,33 +334,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" INNER JOIN rbs.booking AS b on b.resource_id = r.id").append(" WHERE b.id = ?)");
 		values.add(CREATED.status()).add(VALIDATED.status()).add(bId);
 
-		query.append(" WHERE id = ?").append(" AND resource_id = ?");
+		query.append(" WHERE id = ?").append(" AND resource_id = ? RETURNING *");
 		values.add(bId).add(rId);
-
-		// Check that there does not exist a validated booking that overlaps the updated
-		// booking.
-		query.append(" AND NOT EXISTS (").append("SELECT 1 FROM rbs.booking").append(" WHERE resource_id = ?")
-				.append(" AND id != ?").append(" AND status = ?").append(" AND (start_date, end_date) OVERLAPS (?, ?)")
-				.append(") RETURNING id, status,").append(" to_char(start_date, '").append(DATE_FORMAT)
-				.append("') AS start_date,").append(" to_char(end_date, '").append(DATE_FORMAT)
-				.append("') AS end_date");
-
-		values.add(rId).add(bId).add(VALIDATED.status()).add(toSQLTimestamp(slot.getStartUTC()))
-				.add(toSQLTimestamp(slot.getEndUTC()));
 
 		statementsBuilder.prepared(query.toString(), values);
 
 		// Send queries to eventbus
 		Sql.getInstance().transaction(statementsBuilder.build(), validUniqueResultHandler(1, handler));
-	}
-
-	private void addFieldToUpdate(StringBuilder sb, String fieldname, JsonObject object, JsonArray values) {
-		if ("start_date".equals(fieldname) || "end_date".equals(fieldname) || "iana".equals(fieldname)) {
-			//IGNORE
-		} else {
-			sb.append(fieldname).append("= ?, ");
-			values.add(object.getValue(fieldname));
-		}
 	}
 
 	@Override

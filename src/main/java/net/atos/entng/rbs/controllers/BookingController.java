@@ -197,7 +197,8 @@ public class BookingController extends ControllerHelper {
 					renderJson(request, event.right().getValue().getJsonObject(0), 200);
 					eventHelper.onCreateResource(request, RESOURCE_NAME);
 				} else {
-					getBookingErrorHandler(request, isCreation);
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
+					renderJson(request, error, 409);
 				}
 			} else {
 				badRequest(request, event.left().getValue());
@@ -213,20 +214,14 @@ public class BookingController extends ControllerHelper {
 					renderJson(request, event.right().getValue(), 200);
 					eventHelper.onCreateResource(request, RESOURCE_NAME);
 				} else {
-					getBookingErrorHandler(request, isCreation);
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
+					renderJson(request, error, 409);
 				}
 			} else {
 				badRequest(request, event.left().getValue());
 			}
 		};
 	}
-
-	private void getBookingErrorHandler(HttpServerRequest request, boolean isCreation) {
-		String errorMessage = isCreation ? "rbs.booking.create.conflict" : "rbs.booking.update.conflict";
-		JsonObject error = new JsonObject().put("error", errorMessage);
-		renderJson(request, error, 409);
-	}
-
 
 	/**
 	 * Notify moderators that a booking has been created or updated
