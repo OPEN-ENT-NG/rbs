@@ -46,6 +46,10 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         this.$onInit = () => {
             model.calendar.eventer.on("calendar.create-item", function (timeSlot) {
+                if (model.calendar.newItem && model.calendar.newItem.beginning.isBefore(moment().add(1, 'hours'))) {
+                    notify.error('rbs.booking.invalid.datetimes.past');
+                    return;
+                }
                 window.bookingState = BOOKING_EVENTER.CREATE_CALENDAR;
                 template.open('lightbox', 'booking/edit-booking');
                 $scope.display.showPanel = true;
