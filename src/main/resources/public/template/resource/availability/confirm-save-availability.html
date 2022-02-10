@@ -36,10 +36,10 @@
         </table>
 
         <div class="row">
-            <button class="right-magnet" ng-if="!displayLightbox.deleteAvailability" ng-click="doSaveAvailability()">
+            <button class="right-magnet" ng-if="!displayLightbox.wasDeleteLightbox" ng-click="doSaveAvailability()">
                 <i18n>rbs.save</i18n>
             </button>
-            <button class="right-magnet" ng-if="displayLightbox.deleteAvailability" ng-click="doDeleteAvailability()">
+            <button class="right-magnet" ng-if="displayLightbox.wasDeleteLightbox" ng-click="doDeleteAvailability()">
                 <i18n>rbs.save</i18n>
             </button>
             <button class="right-magnet cancel" ng-click="displayLightbox.saveAvailability = false">

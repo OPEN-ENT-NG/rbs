@@ -1777,7 +1777,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        const syncBookingsUsingAvailability = (availability, resource) : void => {
+        const syncBookingsUsingAvailability = (availability, resource, isForDelete = false) : void => {
             // Checks if some bookings use this (un)availability
             $scope.bookingsConflictingOneAvailability = [];
             $scope.bookingsOkOneAvailability = [];
@@ -1785,6 +1785,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 if (AvailabilityUtil.isBookingOverlappingAvailability(booking, availability)) {
                     let timeslotQuantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, resource, availability);
                     let isConflicting = false;
+                    availability.quantity = isForDelete ? 0 : availability.quantity;
+
                     if (availability.is_unavailability) {
                         isConflicting = timeslotQuantityDispo - availability.quantity < 0;
                     }
@@ -2008,10 +2010,12 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         };
 
         $scope.confirmDeleteAvailability = (availability) : void => {
-            syncBookingsUsingAvailability(availability, $scope.editedResource);
+            syncBookingsUsingAvailability(availability, $scope.editedResource, true);
 
             if ($scope.bookingsConflictingOneAvailability.length > 0) {
+                $scope.displayLightbox.deleteAvailability = false;
                 $scope.displayLightbox.saveAvailability = true;
+                $scope.displayLightbox.wasDeleteLightbox = true;
             }
             else {
                 $scope.doDeleteAvailability();
@@ -2023,8 +2027,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             await syncResourceAvailabilities($scope.editedResource);
             $scope.initEditedAvailability();
             $scope.display.processing = undefined;
-            $scope.displayLightbox.saveAvailability = false;
             $scope.displayLightbox.deleteAvailability = false;
+            $scope.displayLightbox.saveAvailability = false;
+            $scope.displayLightbox.wasDeleteLightbox = false;
             treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
             $scope.safeApply();
         };
