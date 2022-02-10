@@ -118,7 +118,7 @@ export class AvailabilityUtil {
         }
         else {
             for (let availability of resource.availabilities.all) {
-                if (availability.id != exceptionId && AvailabilityUtil.isBookingOverlappingAvailability(booking, availability)) {
+                if (availability.id != exceptionId && AvailabilityUtil.isBookingCoveredByAvailability(booking, availability)) {
                     resourceQuantityDispo += Math.min(resource.quantity, availability.quantity);
                 }
             }
@@ -161,9 +161,26 @@ export class AvailabilityUtil {
             BookingUtil.isNotPast(booking) &&
             AvailabilityUtil.isCheckedDay(booking, availability) &&
             moment(booking.startMoment).format("YYYY/MM/DD") <= moment(availability.end_date).format("YYYY/MM/DD") &&
-            moment(booking.endMoment).format("YYYY/MM/DD") >= moment(availability.start_date).format("YYYY/MM/DD") &&
             moment(booking.startMoment).format("HH:mm") < moment(availability.end_time).format("HH:mm") &&
+            moment(booking.endMoment).format("YYYY/MM/DD") >= moment(availability.start_date).format("YYYY/MM/DD") &&
             moment(booking.endMoment).format("HH:mm") > moment(availability.start_time).format("HH:mm")
+    };
+
+    /**
+     * Check if a booking is totally covered by an (un)availability
+     *
+     * @param booking
+     * @param availability
+     * @return boolean
+     */
+    static isBookingCoveredByAvailability = (booking: any, availability: any) : boolean => {
+        return !booking.is_periodic &&
+            BookingUtil.isNotPast(booking) &&
+            AvailabilityUtil.isCheckedDay(booking, availability) &&
+            moment(booking.startMoment).format("YYYY/MM/DD") >= moment(availability.start_date).format("YYYY/MM/DD") &&
+            moment(booking.startMoment).format("HH:mm") >= moment(availability.start_time).format("HH:mm") &&
+            moment(booking.endMoment).format("YYYY/MM/DD") <= moment(availability.end_date).format("YYYY/MM/DD") &&
+            moment(booking.endMoment).format("HH:mm") <= moment(availability.end_time).format("HH:mm")
     };
 
     /**
