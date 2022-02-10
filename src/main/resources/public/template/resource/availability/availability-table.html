@@ -36,29 +36,33 @@
         </td>
         <td>
             <ul class="check-boxes">
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[1]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.monday</i18n>
                 </li>
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[2]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.tuesday</i18n>
                 </li>
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[3]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.wednesday</i18n>
                 </li>
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[4]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.thursday</i18n>
                 </li>
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[5]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.friday</i18n>
                 </li>
-                <li class="two">
+                <li>
                     <i18n ng-class="[{selected: a.days[6]}, !editedResource.is_available?'green-color':'red-color']">
                         rbs.resource.edit.available.days.saturday</i18n>
+                </li>
+                <li>
+                    <i18n ng-class="[{selected: a.days[0]}, !editedResource.is_available?'green-color':'red-color']">
+                        rbs.resource.edit.available.days.sunday</i18n>
                 </li>
             </ul>
         </td>
@@ -133,6 +137,12 @@
                     <input type="checkbox" id="edit-saturday" ng-model="editedAvailability.days[6]">
                     <label for="edit-saturday" ng-class="!editedResource.is_available?'green-color':'red-color'">
                         <i18n>rbs.resource.edit.available.days.saturday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="edit-sunday" ng-model="editedAvailability.days[0]">
+                    <label for="edit-sunday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.sunday</i18n>
                     </label>
                 </li>
             </ul>
@@ -213,6 +223,12 @@
                     <input type="checkbox" id="create-saturday" ng-model="editedAvailability.days[6]">
                     <label for="create-saturday" ng-class="!editedResource.is_available?'green-color':'red-color'">
                         <i18n>rbs.resource.edit.available.days.saturday</i18n>
+                    </label>
+                </li>
+                <li class="two">
+                    <input type="checkbox" id="create-sunday" ng-model="editedAvailability.days[0]">
+                    <label for="create-sunday" ng-class="!editedResource.is_available?'green-color':'red-color'">
+                        <i18n>rbs.resource.edit.available.days.sunday</i18n>
                     </label>
                 </li>
             </ul>

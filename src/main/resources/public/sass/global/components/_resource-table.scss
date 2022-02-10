@@ -31,6 +31,10 @@
           color: $rbs-red;
         }
       }
+
+      li {
+        width: calc(100% / 7);
+      }
     }
   }
 }
