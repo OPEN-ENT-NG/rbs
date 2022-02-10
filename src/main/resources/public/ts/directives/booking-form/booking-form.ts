@@ -1185,8 +1185,9 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             };
 
             vm.getQuantityDispo = (booking, bookingException?) : number => {
-                if (!booking.resource || !booking.resource.quantity || booking.resource.quantity <= 0 || booking.startMoment.isSame(booking.endMoment)) {
-                    return 0;
+                if (!booking.resource || !booking.resource.quantity || booking.resource.quantity <= 0 ||
+                    !BookingUtil.isNotPast(booking) || booking.startMoment.isSame(booking.endMoment)) {
+                        return 0;
                 }
                 else {
                     let quantityDispo = booking.resource.quantity;
