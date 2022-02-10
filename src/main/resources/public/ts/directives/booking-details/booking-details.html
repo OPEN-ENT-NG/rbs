@@ -78,10 +78,6 @@
 
             <div class="toggle">
                 <div class="content">
-                    <div class="warning row details" ng-if="vm.selectedBooking.resource.is_available !== true">
-                        <i18n>rbs.booking.details.resource.unavailable</i18n>
-                    </div>
-
                     <div class="row details">
                         <div class="four cell">
                             <label class="row">
@@ -146,12 +142,9 @@
 
             <div class="toggle">
                 <div class="content">
-                    <div class="warning row details"
-                         ng-if="vm.selectedBooking.resource.is_available !== true || vm.selectedBooking.hasAtLeastOneSuspendedSlot()">
-                        <i18n ng-if="!vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.resource.unavailable</i18n>
-                        <i18n ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.timeslot</i18n>
-                        <br><br>
-                        <i18n ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">rbs.booking.details.suspended.slots</i18n>
+                    <div class="warning row details" ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">
+                        <i18n>rbs.booking.details.suspended.timeslot</i18n><br><br>
+                        <i18n>rbs.booking.details.suspended.slots</i18n>
                     </div>
 
                     <table class="list-view twelve">
@@ -254,10 +247,8 @@
 
             <div class="toggle">
                 <div class="content">
-                    <div class="warning row details"
-                         ng-if="vm.selectedBooking.resource.is_available !== true || vm.selectedBooking.isSuspended()">
-                        <i18n ng-if="!vm.selectedBooking.isSuspended()">rbs.booking.details.resource.unavailable</i18n>
-                        <i18n ng-if="vm.selectedBooking.isSuspended()">rbs.booking.details.suspended.booking</i18n>
+                    <div class="warning row details" ng-if="vm.selectedBooking.isSuspended()">
+                        <i18n>rbs.booking.details.suspended.booking</i18n>
                     </div>
 
                     <div class="row details" ng-if="vm.selectedBooking.isPending()">
@@ -334,8 +325,7 @@
             <button class="right-magnet" ng-click="vm.removeBookingSelection()">
                 <i18n>remove</i18n>
             </button>
-            <button class="right-magnet" ng-if="vm.selectedBooking.resource.is_available === true"
-                    reset-guard="vm.editBooking()" reset-guard-id="editBookingRoot">
+            <button class="right-magnet" reset-guard="vm.editBooking()" reset-guard-id="editBookingRoot">
                 <i18n>edit</i18n>
             </button>
         </div>
