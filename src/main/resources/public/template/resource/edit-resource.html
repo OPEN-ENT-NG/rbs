@@ -24,20 +24,22 @@
 		<!-- prevent interacting with checkbox since it is auto set with type of resource -->
 		<div class="row">
 			<label class="nine cell right-magnet">
-				<input type="checkbox" data-ng-model="editedResource.validation" ng-disabled="true" input-guard/>
-				<i18n>type.form.validation.required</i18n>
+				<input type="checkbox" data-ng-model="editedResource.validation" ng-disabled="true"/>
+				<span style="cursor: default">
+					<i18n>type.form.validation.required</i18n>
+				</span>
 			</label>
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
 				<input type="checkbox" name="is_available" data-ng-model="editedResource.is_available" input-guard/>
-				<i18n>rbs.resource.edit.is_available.label</i18n>
+				<span><i18n>rbs.resource.edit.is_available.label</i18n></span>
 			</label>
 		</div>
 		<div class="row">
 			<label class="nine cell right-magnet">
 				<input type="checkbox" name="periodic_booking" data-ng-model="editedResource.periodic_booking" input-guard/>
-				<i18n>rbs.resource.edit.periodic_booking.label</i18n>
+				<span><i18n>rbs.resource.edit.periodic_booking.label</i18n></span>
 			</label>
 		</div>
 
@@ -45,7 +47,7 @@
 			<div class="row">
 				<label class="nine cell right-magnet">
 					<input type="checkbox" ng-model="editedResource.hasMinDelay" input-guard/>
-					<i18n>rbs.resource.edit.add.min_delay</i18n>
+					<span><i18n>rbs.resource.edit.add.min_delay</i18n></span>
 				</label>
 			</div>
 			<div ng-if="editedResource.hasMinDelay === true" class="row">
