@@ -158,7 +158,7 @@ export class AvailabilityUtil {
      */
     static isBookingOverlappingAvailability = (booking: any, availability: any) : boolean => {
         return !booking.is_periodic &&
-            BookingUtil.isNotPast(booking) &&
+            !booking.isPast() &&
             AvailabilityUtil.isCheckedDay(booking, availability) &&
             moment(booking.startMoment).format("YYYY/MM/DD") <= moment(availability.end_date).format("YYYY/MM/DD") &&
             moment(booking.startMoment).format("HH:mm") < moment(availability.end_time).format("HH:mm") &&
@@ -175,7 +175,7 @@ export class AvailabilityUtil {
      */
     static isBookingCoveredByAvailability = (booking: any, availability: any) : boolean => {
         return !booking.is_periodic &&
-            BookingUtil.isNotPast(booking) &&
+            !booking.isPast() &&
             AvailabilityUtil.isCheckedDay(booking, availability) &&
             moment(booking.startMoment).format("YYYY/MM/DD") >= moment(availability.start_date).format("YYYY/MM/DD") &&
             moment(booking.startMoment).format("HH:mm") >= moment(availability.start_time).format("HH:mm") &&

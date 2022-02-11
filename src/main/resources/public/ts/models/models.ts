@@ -302,7 +302,9 @@ Booking.prototype.showSlots = function () {
 
 Booking.prototype.selectAllSlots = function () {
     _.each(this._slots, function (slot) {
-        slot.selected = true;
+        if (slot.isPast()) {
+            slot.selected = true;
+        }
     });
 };
 
@@ -361,6 +363,10 @@ Booking.prototype.hasAtLeastOneSuspendedSlot = function () {
     return this._slots.some(function (slot) {
         return slot.isSuspended();
     });
+};
+
+Booking.prototype.isPast = function () {
+    return !BookingUtil.isNotPast(this);
 };
 
 Booking.prototype.toJSON = function () {
@@ -1162,7 +1168,7 @@ model.build = function () {
         },
         selectAllBookings: function () {
             this.forEach(function (booking) {
-                if (booking.isBooking()) {
+                if (booking.isBooking() && !booking.isPast()) {
                     booking.selected = true;
                 }
                 if (booking.expanded === true) {
