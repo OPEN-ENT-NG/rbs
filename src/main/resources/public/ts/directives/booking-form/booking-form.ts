@@ -1119,6 +1119,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 let currentMonday = currentMoment.subtract(currentMoment.weekday(), 'days');
                 let diff = vm.editedBooking.endMoment.diff(vm.editedBooking.startMoment);
                 let tempBook = new Booking();
+                let bookingQuantity = vm.editedBooking.quantity ? vm.editedBooking.quantity : 1;
 
                 // Get days checked
                 let days = [];
@@ -1130,44 +1131,47 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
 
                 // Get tempPeriodicBookings
                 if (days.length > 0) {
-                    if (vm.editedBooking.byOccurrences) {
-                        while(vm.editedBooking.tempSlots.length < vm.editedBooking.occurrences) {
-                            for (let day of days) {
-                                if (vm.editedBooking.tempSlots.length < vm.editedBooking.occurrences) {
-                                    tempBook.startMoment = moment(currentMonday);
-                                    tempBook.endMoment = moment(currentMonday);
-                                    tempBook.startMoment.add(day, 'days');
-                                    tempBook.endMoment.add(day, 'days').add(diff);
-                                    tempBook.quantity = vm.editedBooking.quantity ? vm.editedBooking.quantity : 1;
-                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                                        tempBook.resource = vm.editedBooking.resource;
-                                        vm.editedBooking.tempSlots.push(tempBook);
-                                    }
-                                    tempBook = new Booking();
-                                }
-                            }
-                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
+                    let nbOccurrenceTot = 1;
+                    if (!vm.editedBooking.byOccurrences) {
+                        let startDate = vm.editedBooking.startMoment;
+                        let endDate = moment(vm.booking.periodicEndDate);
+
+                        let nbCheckedDays = vm.editedBooking.periodDays.filter(d => d).length;
+
+                        let nbOccurrencePlainWeeks = endDate.diff(startDate, 'weeks') * nbCheckedDays;
+
+                        let nbOccurrenceFinal = 0;
+                        if (startDate.day() > endDate.day()) {
+                            nbOccurrenceFinal += vm.editedBooking.periodDays.slice(startDate.day(), 7).filter(d => d).length;
+                            nbOccurrenceFinal += vm.editedBooking.periodDays.slice(0, endDate.day()+1).filter(d => d).length;
                         }
+                        else {
+                            nbOccurrenceFinal += vm.editedBooking.periodDays.slice(startDate.day(), endDate.day()+1).filter(d => d).length;
+                        }
+
+                        nbOccurrenceTot = nbOccurrencePlainWeeks + nbOccurrenceFinal;
                     }
                     else {
-                        while(currentMoment < moment(vm.booking.periodicEndDate)) {
-                            for (let day of days) {
-                                if (currentMoment < moment(vm.booking.periodicEndDate)) {
-                                    tempBook.startMoment = currentMonday;
-                                    tempBook.endMoment = currentMonday;
-                                    tempBook.startMoment.add(day, 'days');
-                                    tempBook.endMoment.add(day, 'days');
-                                    tempBook.quantity = vm.editedBooking.quantity ? vm.editedBooking.quantity : 1;
-                                    if (tempBook.startMoment >= vm.editedBooking.startMoment) {
-                                        tempBook.resource = vm.editedBooking.resource;
-                                        vm.editedBooking.tempSlots.push(tempBook);
-                                    }
-                                    currentMoment = tempBook.startMoment;
-                                    tempBook = new Booking();
+                        nbOccurrenceTot = vm.editedBooking.occurrences;
+                    }
+
+                    // Create temporary slots thanks to nbOccurrenceTot
+                    while(vm.editedBooking.tempSlots.length < nbOccurrenceTot) {
+                        for (let day of days) {
+                            if (vm.editedBooking.tempSlots.length < nbOccurrenceTot) {
+                                tempBook.startMoment = moment(currentMonday);
+                                tempBook.endMoment = moment(currentMonday);
+                                tempBook.startMoment.add(day, 'days');
+                                tempBook.endMoment.add(day, 'days').add(diff);
+                                tempBook.quantity = bookingQuantity;
+                                if (tempBook.startMoment >= vm.editedBooking.startMoment) {
+                                    tempBook.resource = vm.editedBooking.resource;
+                                    vm.editedBooking.tempSlots.push(tempBook);
                                 }
+                                tempBook = new Booking();
                             }
-                            currentMonday.add(vm.editedBooking.periodicity, 'weeks');
                         }
+                        currentMonday.add(vm.editedBooking.periodicity, 'weeks');
                     }
                 }
                 else {
