@@ -24,6 +24,7 @@ interface IViewModel {
     validateBookings(): void;
     showActionErrors(): void;
     doRemoveBookingSelection(): void;
+    doRemoveCurrentPeriodicBookingSelection(): void;
     doRemoveCurrentAndFuturBookingSelection(): void;
     doRefuseBookingSelection(): void;
 
@@ -175,6 +176,30 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                             }
                         );
                     });
+                } catch (e) {
+                    vm.display.processing = undefined;
+                    vm.currentErrors.push({error: 'rbs.error.technical'});
+                }
+            };
+
+            vm.doRemoveCurrentPeriodicBookingSelection = () => {
+                vm.display.processing = true;
+                vm.currentErrors = [];
+                try {
+                    vm.currentBookingSelected.delete(
+                        function () {
+                            vm.display.processing = undefined;
+                            vm.bookings.deselectAll();
+                            vm.toggleLightbox(false);
+                            model.refreshBookings(vm.display.list);
+                        },
+                        function (e) {
+                            vm.currentErrors.push(e);
+                            vm.display.processing = undefined;
+                            vm.showActionErrors();
+                            model.refreshBookings(vm.display.list);
+                        }
+                    );
                 } catch (e) {
                     vm.display.processing = undefined;
                     vm.currentErrors.push({error: 'rbs.error.technical'});
