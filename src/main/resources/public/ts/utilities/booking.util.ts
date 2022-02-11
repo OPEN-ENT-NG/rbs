@@ -1,4 +1,4 @@
-import {_, Behaviours, notify} from "entcore";
+import {_, Behaviours} from "entcore";
 import moment from "../moment";
 import {Moment} from "moment";
 
@@ -77,7 +77,9 @@ export class BookingUtil {
      * @return boolean
      */
     static isBookingsOverlapping(date1: any, date2: any): boolean {
-        return moment(date1.startMoment) < moment(date2.endMoment) && moment(date1.endMoment) > moment(date2.startMoment);
+        let test1 = moment(date1.startMoment).format("YYYY/MM/DD HH:mm:ss") < moment(date2.endMoment).format("YYYY/MM/DD HH:mm:ss");
+        let test2 = moment(date1.endMoment).format("YYYY/MM/DD HH:mm:ss") > moment(date2.startMoment).format("YYYY/MM/DD HH:mm:ss");
+        return test1 && test2;
     };
 
 
