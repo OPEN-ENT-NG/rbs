@@ -1339,7 +1339,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             );
 
             if ($scope.editedResource.was_available != $scope.editedResource.is_available) {
-                await availabilityService.deleteAll($scope.editedResource.id);
+                await availabilityService.deleteAll($scope.editedResource.id, !$scope.editedResource.is_available);
             }
             else {
                 let listToUpdate = $scope.editedResource.is_available ?

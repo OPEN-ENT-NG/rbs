@@ -100,9 +100,16 @@ public class AvailabilityServiceSqlImpl extends SqlCrudService implements Availa
 	}
 
 	@Override
-	public void deleteAllAvailability(Integer resourceId, Handler<Either<String, JsonArray>> handler) {
-		String query = "DELETE FROM " + Rbs.AVAILABILITY_TABLE + " WHERE resource_id = ? RETURNING id;";
+	public void deleteAllAvailability(Integer resourceId, String deleteUnavailability, Handler<Either<String, JsonArray>> handler) {
+		String query = "DELETE FROM " + Rbs.AVAILABILITY_TABLE + " WHERE resource_id = ? ";
 		JsonArray params = new JsonArray().add(resourceId);
+
+		if (deleteUnavailability.equals("true") || deleteUnavailability.equals("false")) {
+			query += "AND is_unavailability = ?";
+			params.add(Boolean.parseBoolean(deleteUnavailability));
+		}
+
+		query += "RETURNING id;";
 		Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
 	}
 }

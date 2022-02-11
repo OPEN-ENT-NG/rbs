@@ -9,7 +9,7 @@ export interface AvailabilityService {
     create(availability: any) : Promise<AxiosResponse>;
     update(availability: any) : Promise<AxiosResponse>;
     delete(availability: any) : Promise<AxiosResponse>;
-    deleteAll(resourceId: number) : Promise<AxiosResponse>;
+    deleteAll(resourceId: number, deleteUnavailability: boolean) : Promise<AxiosResponse>;
 }
 
 export const availabilityService: AvailabilityService = {
@@ -64,9 +64,9 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async deleteAll(resourceId) : Promise<AxiosResponse> {
+    async deleteAll(resourceId, deleteUnavailability) : Promise<AxiosResponse> {
         try {
-            return http.delete(`/rbs/resource/${resourceId}/availability/all`);
+            return http.delete(`/rbs/resource/${resourceId}/availability/all/${deleteUnavailability}`);
         } catch (e) {
             notify.error(idiom.translate('rbs.availability.service.delete.error'));
             throw e;

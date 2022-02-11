@@ -29,7 +29,7 @@ import io.vertx.core.json.JsonObject;
 
 public interface AvailabilityService extends CrudService {
 	/**
-	 * List all the availabilities of a user
+	 * List all the (un)availabilities of a user
 	 *
 	 * @param resourceIds : resources' id
 	 * @param user     : information of current user logged
@@ -38,28 +38,28 @@ public interface AvailabilityService extends CrudService {
 	void listAvailabilities(JsonArray resourceIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
 	/**
-	 * List all the availabilities of a resource
+	 * List all the (un)availabilities of a resource
 	 *
 	 * @param resourceId : resource id
-	 * @param is_unavailability : type of availability to list
+	 * @param is_unavailability : type of (un)availability to list
 	 * @param user     : information of current user logged
 	 * @param handler  : handler which contains the response
 	 */
 	void listResourceAvailability(Integer resourceId, boolean is_unavailability, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
 	/**
-	 * Create an availability
+	 * Create an (un)availability
 	 *
-	 * @param availability : current availability
+	 * @param availability : current (un)availability
 	 * @param user     : information of current user logged
 	 * @param handler  : handler which contains the response
 	 */
 	void createAvailability(Availability availability, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
 	/**
-	 * Update an availability
+	 * Update an (un)availability
 	 *
-	 * @param availability : current availability
+	 * @param availability : current (un)availability
 	 * @param user     : information of current user logged
 	 * @param handler  : handler which contains the response
 	 */
@@ -67,19 +67,20 @@ public interface AvailabilityService extends CrudService {
 
 
 	/**
-	 * Delete an availability
+	 * Delete an (un)availability
 	 *
-	 * @param availabilityId : availability id
+	 * @param availabilityId : (un)availability id
 	 * @param handler  : handler which contains the response
 	 */
 	void deleteAvailability(Integer availabilityId, Handler<Either<String, JsonObject>> handler);
 
 
 	/**
-	 * Delete all availabilities of a resource
+	 * Delete all (un)availabilities of a resource
 	 *
 	 * @param resourceId : resource id
+	 * @param deleteUnavailability : should we delete availabilities, unavailabilities or both
 	 * @param handler  : handler which contains the response
 	 */
-	void deleteAllAvailability(Integer resourceId, Handler<Either<String, JsonArray>> handler);
+	void deleteAllAvailability(Integer resourceId, String deleteUnavailability, Handler<Either<String, JsonArray>> handler);
 }

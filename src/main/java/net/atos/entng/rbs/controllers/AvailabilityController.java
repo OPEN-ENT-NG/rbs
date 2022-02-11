@@ -154,13 +154,14 @@ public class AvailabilityController extends ControllerHelper {
 		availabilityService.deleteAvailability(availabilityId, defaultResponseHandler(request));
 	}
 
-	@Delete("/resource/:id/availability/all")
-	@ApiDoc("Delete all availabilities of a resource")
+	@Delete("/resource/:id/availability/all/:areUnavailability")
+	@ApiDoc("Delete all (un)availabilities of a resource")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	public void deleteAllAvailability(final HttpServerRequest request) {
 		Integer resourceId = Integer.parseInt(request.params().get("id"));
-		availabilityService.deleteAllAvailability(resourceId, arrayResponseHandler(request));
+		String areUnavailability = request.params().get("areUnavailability");
+		availabilityService.deleteAllAvailability(resourceId, areUnavailability, arrayResponseHandler(request));
 	}
 
 	private Availability treatAvailability(HttpServerRequest request, JsonObject json) {
