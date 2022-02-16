@@ -141,8 +141,9 @@ export class AvailabilityUtil {
         let exceptionId = (exception && exception.id) ? exception.id : -1;
 
         for (let b of bookings) {
-            if (b.id != exceptionId && b.status != 3 && !b.is_periodic && BookingUtil.isBookingsOverlapping(booking, b)) {
-                bookingsQuantityUsed += b.quantity;
+            if (b.id != exceptionId && b.parent_booking_id != exceptionId &&
+                b.status != 3 && !b.is_periodic && BookingUtil.isBookingsOverlapping(booking, b)) {
+                    bookingsQuantityUsed += b.quantity;
             }
         }
 

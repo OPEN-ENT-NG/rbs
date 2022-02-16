@@ -357,9 +357,9 @@
                             <label class="two cell">
                                 <i18n>rbs.booking.edit.period.end.on</i18n>
                             </label>
-                            <date-picker class="six cell" ng-model="vm.booking.periodicEndDate"
-                                         ng-change="vm.showDate = true; vm.updatePeriodicSummary();vm.checkDateFunction();vm.updateEditedBookingSlots()"
-                                         past="true"></date-picker>
+                            <date-picker class="six cell" ng-model="vm.booking.periodicEndDate" past="true"
+                                         ng-change="vm.showDate = true; vm.updatePeriodicSummary();vm.checkDateFunction();vm.updateEditedBookingSlots()">
+                            </date-picker>
                         </div>
 
                         <!-- Periodicity summary -->
@@ -368,8 +368,7 @@
                             <label class="cell">
                                 <i18n>rbs.booking.edit.period.summary</i18n>
                             </label>
-                            <p class="row warning" ng-if="vm.editedBooking.periodicError">
-                                [[vm.editedBooking.periodicError]]</p>
+                            <p class="row warning" ng-if="vm.editedBooking.periodicError">[[vm.editedBooking.periodicError]]</p>
                             <p class="row">[[vm.editedBooking.periodicSummary]]</p>
                         </div>
 

@@ -401,9 +401,9 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                         }
                     });
                 }
-                vm.updatePeriodicSummary();
 
                 await vm.editedBooking.resource.syncResourceAvailabilities();
+                vm.updatePeriodicSummary();
 
                 $scope.$apply();
             };
@@ -413,9 +413,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.periodicShortSummary = '';
                 vm.editedBooking.periodicError = undefined;
 
-                vm.editedBooking.periodicShortSummary = lang.translate(
-                    'rbs.period.days.some'
-                );
+                vm.editedBooking.periodicShortSummary = lang.translate('rbs.period.days.some');
 
                 if (vm.showDaySelection) {
                     // Selected days
@@ -425,16 +423,11 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     });
                     if (selected == 0) {
                         // Error in periodic view
-                        vm.editedBooking.periodicError = lang.translate(
-                            'rbs.period.error.nodays'
-                        );
+                        vm.editedBooking.periodicError = lang.translate('rbs.period.error.nodays');
                         return;
                     } else if (selected == 7) {
-                        vm.editedBooking.periodicSummary = lang.translate(
-                            'rbs.period.days.all'
-                        );
-                        vm.editedBooking.periodicShortSummary =
-                            vm.editedBooking.periodicSummary;
+                        vm.editedBooking.periodicSummary = lang.translate('rbs.period.days.all');
+                        vm.editedBooking.periodicShortSummary = vm.editedBooking.periodicSummary;
                     } else {
                         vm.editedBooking.periodicSummary += vm.summaryBuildDays(vm.editedBooking.periodDays);
                     }
@@ -1202,7 +1195,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     }
                     else {
                         for (let slot of booking.tempSlots) {
-                            let localQuantity = vm.getQuantityDispo(slot); // Get the quantity dispo for each slot
+                            let localQuantity = vm.getQuantityDispo(slot, bookingException); // Get the quantity dispo for each slot
                             if (localQuantity < quantityDispo) { quantityDispo = localQuantity; } // Keep the minimal quantity available
                         }
                     }
