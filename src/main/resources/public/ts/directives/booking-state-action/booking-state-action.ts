@@ -25,7 +25,7 @@ interface IViewModel {
     showActionErrors(): void;
     doRemoveBookingSelection(): void;
     doRemoveCurrentPeriodicBookingSelection(): void;
-    doRemoveCurrentAndFuturBookingSelection(): void;
+    doRemoveCurrentAndFutureBookingSelection(): void;
     doRefuseBookingSelection(): void;
 
     isErrorObjectResourceType(object): boolean;
@@ -33,6 +33,8 @@ interface IViewModel {
     isErrorObjectBooking(obj): boolean;
 
     formatMoment(date: any): string;
+
+    onSyncAndTreatBookingsUsingResource(resource: any): Promise<void>;
 
     // props
     templatePathState: string;
@@ -44,6 +46,8 @@ interface IViewModel {
     currentBookingSelected: any;
     processBookings: any;
     currentErrors: any;
+    bookingsConflictingResource: any;
+    bookingsOkResource: any;
     onShowActionErrors();
 }
 
@@ -60,7 +64,10 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
             isViewBooking: '=',
             currentBookingSelected: '=',
             processBookings: '=',
-            currentErrors: '='
+            currentErrors: '=',
+            onSyncAndTreatBookingsUsingResource: '&',
+            bookingsConflictingResource: '=',
+            bookingsOkResource: '='
         },
         restrict: 'E',
         templateUrl: `${ROOTS.directive}/booking-state-action/booking-state-action.html`,
@@ -156,9 +163,14 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                     _.each(vm.processBookings, function (booking) {
                         // booking = semanticObject(booking, Booking);
                         booking.delete(
-                            function () {
+                            async function () {
                                 actions--;
                                 if (actions === 0) {
+                                    // Deals with bookings validation system
+                                    await vm.selectedBooking.resource.syncResourceAvailabilities();
+                                    await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource);
+                                    $scope.$apply();
+
                                     vm.display.processing = undefined;
                                     vm.bookings.deselectAll();
                                     vm.toggleLightbox(false);
@@ -206,12 +218,17 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                 }
             };
 
-            vm.doRemoveCurrentAndFuturBookingSelection = () => {
+            vm.doRemoveCurrentAndFutureBookingSelection = () => {
                 vm.display.processing = true;
                 vm.currentErrors = [];
                 try {
                     vm.currentBookingSelected.deletePeriodicCurrentToFuture(
-                        function () {
+                        async function () {
+                            // Deals with bookings validation system
+                            await vm.selectedBooking.resource.syncResourceAvailabilities();
+                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource);
+                            $scope.$apply();
+
                             vm.display.processing = undefined;
                             vm.bookings.deselectAll();
                             vm.toggleLightbox(false);

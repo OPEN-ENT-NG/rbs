@@ -1111,7 +1111,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        $scope.doRemoveCurrentAndFuturBookingSelection = (): void => {
+        $scope.doRemoveCurrentAndFutureBookingSelection = (): void => {
             $scope.display.processing = true;
             $scope.currentErrors = [];
             try {
@@ -1262,8 +1262,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if ($scope.editedResource.quantity === undefined) {
                 $scope.editedResource.quantity = 1;
             }
-            await syncResourceAvailabilities($scope.editedResource);
-            $scope.syncBookingsUsingResource($scope.editedResource);
+            await $scope.editedResource.syncResourceAvailabilities();
+            $scope.syncBookingsUsingResource($scope.editedResource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
             $scope.displayLightbox.saveQuantity = false;
             $scope.displayLightbox.saveAvailabilityResource = false;
             $scope.openAvailabilitiesTable = $scope.editedResource.availabilities.all.length > 0 || $scope.editedResource.unavailabilities.all.length > 0;
@@ -1338,6 +1338,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 }
             );
 
+            // Deals with (un)availabilities to keep/delete
             if ($scope.editedResource.was_available != $scope.editedResource.is_available) {
                 await availabilityService.deleteAll($scope.editedResource.id, !$scope.editedResource.is_available);
             }
@@ -1353,7 +1354,8 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                 }
             }
 
-            treatBookings($scope.editedResource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
+            // Deals with bookings validation system
+            $scope.treatBookings($scope.editedResource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
             $scope.$apply();
         };
 
@@ -1749,16 +1751,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.bookingsConflictingResource = [];
         $scope.bookingsOkResource = [];
 
-        const syncResourceAvailabilities = async (resource: any) : Promise<void> => {
-            // TODO in the future it would be better to have resourceService.syncAvailabilities()
-
-            resource.availabilities = new Availabilities();
-            resource.unavailabilities = new Availabilities();
-
-            await resource.availabilities.sync(resource.id, false);
-            await resource.unavailabilities.sync(resource.id, true);
-        };
-
         $scope.syncBookingsUsingResource = (resource) : void => {
             $scope.bookingsConflictingResource = [];
             $scope.bookingsOkResource = [];
@@ -1804,7 +1796,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             }
         };
 
-        const treatBookings = (resource, bookingsConflicting, bookingsOk) : void => {
+        $scope.treatBookings = (resource, bookingsConflicting, bookingsOk) : void => {
             // Suspend conflicting bookings
             if (bookingsConflicting.length > 0) {
                 let siblingsBookings = getSiblingsPeriodicBookings(bookingsConflicting);
@@ -1996,11 +1988,11 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         $scope.doSaveAvailability = async () : Promise<void> => {
             await availabilityService.save($scope.editedAvailability);
-            await syncResourceAvailabilities($scope.editedResource);
+            await $scope.editedResource.syncResourceAvailabilities();
             $scope.initEditedAvailability();
             $scope.display.processing = undefined;
             $scope.displayLightbox.saveAvailability = false;
-            treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
+            $scope.treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
             $scope.safeApply();
         };
 
@@ -2024,18 +2016,24 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
 
         $scope.doDeleteAvailability = async () : Promise<void> => {
             await availabilityService.delete($scope.editedAvailability);
-            await syncResourceAvailabilities($scope.editedResource);
+            await $scope.editedResource.syncResourceAvailabilities();
             $scope.initEditedAvailability();
             $scope.display.processing = undefined;
             $scope.displayLightbox.deleteAvailability = false;
             $scope.displayLightbox.saveAvailability = false;
             $scope.displayLightbox.wasDeleteLightbox = false;
-            treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
+            $scope.treatBookings($scope.editedResource, $scope.bookingsConflictingOneAvailability, $scope.bookingsOkOneAvailability);
             $scope.safeApply();
         };
 
         $scope.editAvailability = (availability) : void => {
             $scope.editedAvailability = availability;
+        };
+
+        $scope.syncAndTreatBookingsUsingResource = async (resource) : Promise<void> => {
+            // Deals with bookings validation system
+            await $scope.syncBookingsUsingResource(resource);
+            await $scope.treatBookings(resource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
         };
 
         // Utils

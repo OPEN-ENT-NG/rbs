@@ -43,6 +43,8 @@ interface IViewModel {
     selectedBooking: any;
     bookings: any;
     processBookings: any;
+    bookingsConflictingResource: any;
+    bookingsOkResource: any;
 
     $onInit(): any;
     // New booking
@@ -87,6 +89,7 @@ interface IViewModel {
     getQuantityDispo(booking: any, bookingException?: any): number;
     isBookingQuantityWrong(booking: any): boolean;
     formatTextBookingQuantity(booking: any): string;
+    onSyncAndTreatBookingsUsingResource(resource: any): Promise<void>;
 
     $onDestroy(): any;
 }
@@ -108,7 +111,10 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
             selectedBooking: "=",
             bookings: "=",
             slotProfilesComponent: "=",
-            processBookings: "="
+            processBookings: "=",
+            onSyncAndTreatBookingsUsingResource: '&',
+            bookingsConflictingResource: '=',
+            bookingsOkResource: '='
         },
         restrict: 'E',
         templateUrl: `${ROOTS.directive}booking-form/booking-form.html`,
@@ -397,7 +403,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
                 vm.updatePeriodicSummary();
 
-                await syncResourceAvailabilities(vm.editedBooking.resource);
+                await vm.editedBooking.resource.syncResourceAvailabilities();
 
                 $scope.$apply();
             };
@@ -469,16 +475,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
 
             vm.formatMomentDayLong = (date: any): string => {
                 return date.locale(window.navigator.language).format('dddd DD MMMM YYYY');
-            };
-
-            const syncResourceAvailabilities = async (resource: any) : Promise<void> => {
-                // TODO in the future it would be better to have resourceService.syncAvailabilities()
-
-                resource.availabilities = new Availabilities();
-                resource.unavailabilities = new Availabilities();
-
-                await resource.availabilities.sync(resource.id, false);
-                await resource.unavailabilities.sync(resource.id, true);
             };
         },
         link: function ($scope) {
@@ -919,7 +915,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                         vm.editedBooking.slotsLit.slots[i].selected = true;
                     }
                 } else {
-                    $scope.currentErrors.push({
+                    vm.currentErrors.push({
                         error: 'rbs.booking.invalid.slots'
                     });
                     notify.error('rbs.booking.invalid.slots');
@@ -955,8 +951,8 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     notify.error('rbs.booking.invalid.datetimes.equals');
                     hasErrors = true;
                 }
-                if (vm.editedBooking.is_periodic === true && 
-                    _.find(vm.editedBooking.periodDays, function (periodDay) {return periodDay.value === true;}) === undefined && 
+                if (vm.editedBooking.is_periodic === true &&
+                    _.find(vm.editedBooking.periodDays, function (periodDay) {return periodDay.value === true;}) === undefined &&
                     vm.showDaySelection) {
                     // Error
                     vm.currentErrors.push({error: 'rbs.booking.missing.days'});
@@ -1024,8 +1020,14 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                         ]);
                     }
                     vm.editedBooking.slots = [new Slot(vm.editedBooking).toJson()];
+
                     vm.editedBooking.save(
-                        function () {
+                        async function () {
+                            // Deals with bookings validation system
+                            await vm.editedBooking.resource.syncResourceAvailabilities();
+                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.editedBooking.resource);
+                            $scope.$apply();
+
                             vm.display.processing = undefined;
                             vm.closeBooking();
                             model.refreshBookings(vm.display.list);
@@ -1175,7 +1177,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     }
                 }
                 else {
-                    $scope.currentErrors.push({error: 'rbs.period.error.nodays'});
+                    vm.currentErrors.push({error: 'rbs.period.error.nodays'});
                 }
             };
 
@@ -1218,12 +1220,14 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     return lang.translate(vm.currentErrors[0].error);
                 }
 
-                let resourceQuantityDispo = vm.getQuantityDispo(booking, booking);
-                if (resourceQuantityDispo <= 0) {
+                let timeslotQuantityDispo = vm.getQuantityDispo(booking, booking);
+                let timeslotResourceQuantity = AvailabilityUtil.getResourceQuantityByTimeslot(booking, booking.resource);
+
+                if (timeslotQuantityDispo <= 0) {
                     return lang.translate('rbs.booking.edit.quantity.none');
                 }
                 else {
-                    let params = [resourceQuantityDispo, booking.resource.quantity];
+                    let params = [timeslotQuantityDispo,  timeslotResourceQuantity];
                     return I18nUtils.getWithParams('rbs.booking.edit.quantity.availability', params);
                 }
             };
