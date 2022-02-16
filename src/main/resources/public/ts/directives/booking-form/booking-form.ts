@@ -781,6 +781,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                                     bookingPeriodicToSave.periodicity = vm.editedBooking.periodicity;
                                     bookingPeriodicToSave.booking_reason = vm.editedBooking.booking_reason;
                                     bookingPeriodicToSave.resource = vm.editedBooking.resource;
+                                    bookingPeriodicToSave.quantity = vm.editedBooking.quantity;
                                     bookingPeriodicToSave.slots = [];
                                     if (vm.editedBooking.slotsLit.slots.indexOf(slot) >= debut) {
                                         if (start.year() > vm.today.year() ||
@@ -818,10 +819,12 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                                             $scope.$apply();
                                         }
                                     );
-                                } else {
+                                }
+                                else {
                                     vm.editedBooking.slots.push(new Slot(vm.editedBooking).toJson());
                                 }
-                            } else {
+                            }
+                            else {
                                 // non periodic
                                 vm.editedBooking.endMoment = moment([
                                     vm.booking.endDate.getFullYear(),
