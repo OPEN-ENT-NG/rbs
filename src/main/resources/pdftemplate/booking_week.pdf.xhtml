@@ -69,6 +69,12 @@
 	        	vertical-align: middle; 
 	        	text-align: center;
 	        }
+
+			.booking-container .booking-quantity {
+				position: absolute;
+				top: 0;
+				right: 3px;
+			}
 	        
 	        {{#weeks}}
 		        {{#resources}}
@@ -105,6 +111,7 @@
 						<div class="booking-container">
 							<div class="nbsp-full-height nbsp-full-height-{{booking_class_id}}">&nbsp;</div>
 							<div class="booking-content">{{owner_name}}</div>
+							<div class="booking-quantity">x{{quantity}}</div>
 						</div>
 					</div>
 				{{/bookings}}

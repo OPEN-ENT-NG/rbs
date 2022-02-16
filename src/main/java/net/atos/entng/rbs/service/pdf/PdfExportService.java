@@ -45,8 +45,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 
 	@Override
 	public void handle(Message<JsonObject> message) {
-		System.out.println("1 INSIDE HANDLE() = "
-				+ message.body());
+		System.out.println("1 INSIDE HANDLE() = " + message.body());
 
 		String action = message.body().getString("action", "");
 		JsonObject exportResponse = message.body().getJsonObject("data", new JsonObject());
@@ -79,66 +78,59 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 
 		String absolutePath = FileResolver.absolutePath(htmlTemplateFile);
 
-		vertx.fileSystem().readFile(absolutePath, new Handler<AsyncResult<Buffer>>() {
-			@Override
-			public void handle(AsyncResult<Buffer> result) {
-				if (!result.succeeded()) {
-					Throwable cause = result.cause();
-					LOG.error("Template " + htmlTemplateFile + "  could not be read", cause);
-					JsonObject results = new JsonObject();
-					results.put("status", 500);
-					results.put("message", cause != null ? cause.getMessage() : "");
-					message.reply(results);
-					return;
-				}
-
-				try {
-					JsonObject preparedData = prepareData(exportResponse, host, locale, userTimeZone);
-
-					String filledTemplate = fillTemplate(result.result().toString("UTF-8"), preparedData);
-					LocalMap<Object, Object> skins = vertx.sharedData().getLocalMap("skins");
-					final String baseUrl = scheme + "://" + host + "/assets/themes/" + skins.get(host) + "/img/";
-					JsonObject actionObject = new JsonObject();
-					actionObject
-							.put("content", filledTemplate.getBytes())
-							.put("baseUrl", baseUrl);
-					String node = (String) vertx.sharedData().getLocalMap("server").get("node");
-					if (node == null) {
-						node = "";
-					}
-					vertx.eventBus().send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-						public void handle(Message<JsonObject> reply) {
-							JsonObject pdfResponse = reply.body();
-							if (!"ok".equals(pdfResponse.getString("status"))) {
-								String pdfResponseString = pdfResponse.getString("message");
-								LOG.error("Conversion error: " + pdfResponseString);
-								JsonObject results = new JsonObject();
-								results.put("status", 500);
-								results.put("message", pdfResponseString);
-								message.reply(results);
-								return;
-							}
-
-							byte[] pdf = pdfResponse.getBinary("content");
-
-							JsonObject results = new JsonObject();
-							results.put("status", 200);
-							results.put("content", pdf);
-							message.reply(results);
-						}
-					}));
-
-				} catch (Exception e) {
-					LOG.error("Conversion Error", e);
-					JsonObject results = new JsonObject();
-					results.put("status", 500);
-					results.put("message", e.getMessage());
-					message.reply(results);
-					return;
-				}
+		vertx.fileSystem().readFile(absolutePath, result -> {
+			if (!result.succeeded()) {
+				Throwable cause = result.cause();
+				LOG.error("Template " + htmlTemplateFile + "  could not be read", cause);
+				JsonObject results = new JsonObject();
+				results.put("status", 500);
+				results.put("message", cause != null ? cause.getMessage() : "");
+				message.reply(results);
+				return;
 			}
 
+			try {
+				JsonObject preparedData = prepareData(exportResponse, host, locale, userTimeZone);
 
+				String filledTemplate = fillTemplate(result.result().toString("UTF-8"), preparedData);
+				LocalMap<Object, Object> skins = vertx.sharedData().getLocalMap("skins");
+				final String baseUrl = scheme + "://" + host + "/assets/themes/" + skins.get(host) + "/img/";
+				JsonObject actionObject = new JsonObject();
+				actionObject
+						.put("content", filledTemplate.getBytes())
+						.put("baseUrl", baseUrl);
+				String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+				if (node == null) {
+					node = "";
+				}
+				vertx.eventBus().send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(reply -> {
+					JsonObject pdfResponse = reply.body();
+					if (!"ok".equals(pdfResponse.getString("status"))) {
+						String pdfResponseString = pdfResponse.getString("message");
+						LOG.error("Conversion error: " + pdfResponseString);
+						JsonObject results = new JsonObject();
+						results.put("status", 500);
+						results.put("message", pdfResponseString);
+						message.reply(results);
+						return;
+					}
+
+					byte[] pdf = pdfResponse.getBinary("content");
+
+					JsonObject results = new JsonObject();
+					results.put("status", 200);
+					results.put("content", pdf);
+					message.reply(results);
+				}));
+
+			} catch (Exception e) {
+				LOG.error("Conversion Error", e);
+				JsonObject results = new JsonObject();
+				results.put("status", 500);
+				results.put("message", e.getMessage());
+				message.reply(results);
+				return;
+			}
 		});
 	}
 

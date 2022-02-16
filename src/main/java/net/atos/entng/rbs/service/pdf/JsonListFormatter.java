@@ -17,11 +17,13 @@ public class JsonListFormatter extends JsonFormatter {
         private String ownerName;
         private DateTime startDate;
         private DateTime endDate;
+        private String quantity;
 
-        private Booking(JsonFormatter thisFormatter, String ownerName, String startDate, String endDate) {
+        private Booking(JsonFormatter thisFormatter, String ownerName, String startDate, String endDate, String quantity) {
             this.ownerName = ownerName;
             this.startDate = thisFormatter.toUserTimeZone(startDate);
             this.endDate= thisFormatter.toUserTimeZone(endDate);
+            this.quantity= quantity;
         }
 
         private String getOwnerName() {
@@ -34,6 +36,10 @@ public class JsonListFormatter extends JsonFormatter {
 
         private DateTime getEndDate() {
             return endDate;
+        }
+
+        private String getQuantity() {
+            return quantity;
         }
     }
 
@@ -87,8 +93,9 @@ public class JsonListFormatter extends JsonFormatter {
                         String ownerName = exportBooking.getString(ExportBooking.BOOKING_OWNER_NAME);
                         String startDate = exportBooking.getString(ExportBooking.BOOKING_START_DATE);
                         String endDate = exportBooking.getString(ExportBooking.BOOKING_END_DATE);
+                        String quantity = exportBooking.getLong(ExportBooking.QUANTITY).toString();
 
-                        bookingList.add(new Booking(this, ownerName, startDate, endDate));
+                        bookingList.add(new Booking(this, ownerName, startDate, endDate, quantity));
                     }
                 }
 
@@ -103,6 +110,7 @@ public class JsonListFormatter extends JsonFormatter {
                     jsonBooking.put(ExportBooking.BOOKING_OWNER_NAME, b.getOwnerName());
                     jsonBooking.put(ExportBooking.BOOKING_START_DATE, b.getStartDate().toString("dd/MM/YYYY à kk:mm").replace("à", i18nTo).replace(':', 'h'));
                     jsonBooking.put(ExportBooking.BOOKING_END_DATE, b.getEndDate().toString("dd/MM/YYYY à kk:mm").replace("à", i18nTo).replace(':', 'h'));
+                    jsonBooking.put(ExportBooking.QUANTITY, b.getQuantity());
 
                     jsonBookingList.add(jsonBooking);
                     cpt++;
@@ -146,6 +154,7 @@ public class JsonListFormatter extends JsonFormatter {
         resource.put(I18N_HEADER_OWNER, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_OWNER), this.host, this.locale));
         resource.put(I18N_HEADER_START, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_START), this.host, this.locale));
         resource.put(I18N_HEADER_END, I18n.getInstance().translate(MAP_I18N.get(I18N_HEADER_END), this.host, this.locale));
+        resource.put(I18N_QUANTITY, I18n.getInstance().translate(MAP_I18N.get(I18N_QUANTITY), this.host, this.locale));
         resource.put(I18N_FOOTER, I18n.getInstance().translate(MAP_I18N.get(I18N_FOOTER), this.host, this.locale));
 
         return resource;

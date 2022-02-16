@@ -1061,29 +1061,25 @@ public class BookingController extends ControllerHelper {
 						if (getEvent.isRight()) {
 							final List<ExportBooking> exportBookings = getEvent.right().getValue();
 							if (exportBookings.isEmpty()) {
-								JsonObject error = new JsonObject()
-										.put("error", "No booking in search period");
+								JsonObject error = new JsonObject().put("error", "No booking in search period");
 								Renders.renderJson(request, error, 204);
 								return;
 							}
 							exportResponse.setBookings(exportBookings);
 
-							schoolService.getSchoolNames(new Handler<Either<String, Map<String, String>>>() {
-								@Override
-								public void handle(Either<String, Map<String, String>> event) {
-									if (event.isRight()) {
-										exportResponse.setSchoolNames(event.right().getValue());
+							schoolService.getSchoolNames(event -> {
+								if (event.isRight()) {
+									exportResponse.setSchoolNames(event.right().getValue());
 
-										if (exportResponse.getRequest().getFormat().equals(ExportRequest.Format.PDF)) {
-											generatePDF(request, exportResponse);
-										} else {
-											generateICal(request, exportResponse);
-										}
+									if (exportResponse.getRequest().getFormat().equals(ExportRequest.Format.PDF)) {
+										generatePDF(request, exportResponse);
 									} else {
-										JsonObject error = new JsonObject()
-												.put("error", event.left().getValue());
-										Renders.renderJson(request, error, 400);
+										generateICal(request, exportResponse);
 									}
+								} else {
+									JsonObject error = new JsonObject()
+											.put("error", event.left().getValue());
+									Renders.renderJson(request, error, 400);
 								}
 							});
 						} else {

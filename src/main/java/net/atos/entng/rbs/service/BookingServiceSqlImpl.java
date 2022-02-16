@@ -454,6 +454,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		query.append(", b.").append(ExportBooking.BOOKING_REASON);
 		query.append(", b.").append(ExportBooking.BOOKING_MODERATOR_ID);
 		query.append(", b.").append(ExportBooking.RESOURCE_ID);
+		query.append(", b.").append(ExportBooking.QUANTITY);
 		query.append(", t.").append(ExportBooking.SCHOOL_ID);
 		query.append(", t.id AS ").append(ExportBooking.RESOURCE_TYPE_ID);
 		query.append(", t.color AS ").append(ExportBooking.RESOURCE_TYPE_COLOR);
@@ -516,36 +517,33 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		query.append(") GROUP BY t.id, b.id, r.id, u.username, m.username ORDER BY b.start_date, b.end_date");
 
-		Sql.getInstance().prepared(query.toString(), values, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final Either<String, JsonArray> ei = validResult(event);
-				if (ei.isRight()) {
-					final List<ExportBooking> exportBookings = new ArrayList<>();
-					final JsonArray jsonBookingResult = ei.right().getValue();
-					for (final Object o : jsonBookingResult) {
-						if (!(o instanceof JsonObject)) {
-							continue;
-						} else {
-							// keep-it without understanding business rule here...
-							final JsonObject jo = (JsonObject) o;
-							Number parentBookingId = jo.getInteger("parent_booking_id");
-							if (parentBookingId != null) {
-								exportBookings.add(new ExportBooking(jo));
-							} else if (jo.getInteger("occurrences") == null) {
-								if (isSearchOverlapBookingDates(jo, startDate, endDate)) {
-									exportBookings.add(new ExportBooking(jo));
-								}
-							} else {
+		Sql.getInstance().prepared(query.toString(), values, event -> {
+			final Either<String, JsonArray> ei = validResult(event);
+			if (ei.isRight()) {
+				final List<ExportBooking> exportBookings = new ArrayList<>();
+				final JsonArray jsonBookingResult = ei.right().getValue();
+				for (final Object o : jsonBookingResult) {
+					if (!(o instanceof JsonObject)) {
+						continue;
+					} else {
+						// keep-it without understanding business rule here...
+						final JsonObject jo = (JsonObject) o;
+						Number parentBookingId = jo.getInteger("parent_booking_id");
+						if (parentBookingId != null) {
+							exportBookings.add(new ExportBooking(jo));
+						} else if (jo.getInteger("occurrences") == null) {
+							if (isSearchOverlapBookingDates(jo, startDate, endDate)) {
 								exportBookings.add(new ExportBooking(jo));
 							}
+						} else {
+							exportBookings.add(new ExportBooking(jo));
 						}
 					}
-					handler.handle(new Either.Right<String, List<ExportBooking>>(exportBookings));
-				} else {
-					String value = ei.left().getValue();
-					handler.handle(new Either.Left<String, List<ExportBooking>>(value));
 				}
+				handler.handle(new Right<>(exportBookings));
+			} else {
+				String value = ei.left().getValue();
+				handler.handle(new Either.Left<>(value));
 			}
 		});
 	}
@@ -765,22 +763,19 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 								new ArrayList<>(setIdsPeriodicBooking));
 
 						Sql.getInstance().prepared(queryPeriodicBooking.toString(), values,
-								new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> event) {
-										final Either<String, JsonArray> ei = validResult(event);
-										if (ei.isRight()) {
-											final JsonArray jsonBookingPeriodicResult = ei.right().getValue();
+								event1 -> {
+									final Either<String, JsonArray> ei1 = validResult(event1);
+									if (ei1.isRight()) {
+										final JsonArray jsonBookingPeriodicResult = ei1.right().getValue();
 
-											if (jsonBookingPeriodicResult.size() != 0) {
-												for (final Object o : jsonBookingPeriodicResult) {
-													jsonAllBookingResult.add(o);
-												}
+										if (jsonBookingPeriodicResult.size() != 0) {
+											for (final Object o : jsonBookingPeriodicResult) {
+												jsonAllBookingResult.add(o);
 											}
-											handler.handle(new Right<String, JsonArray>(jsonAllBookingResult));
-										} else {
-											handler.handle(ei);
 										}
+										handler.handle(new Right<>(jsonAllBookingResult));
+									} else {
+										handler.handle(ei1);
 									}
 								});
 					} else {

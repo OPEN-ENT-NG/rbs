@@ -41,6 +41,7 @@ public class ExportBooking {
 	public static final String RESOURCE_NAME = "resource_name"; // "PC Windaube",
 	public static final String RESOURCE_COLOR = "resource_color"; // "#02ed19",
 	public static final String SCHOOL_NAME = "school_name"; // added by post treatment (stored in MongoDB, not PostgreSQL)
+	public static final String QUANTITY = "quantity"; // 5
 
 	private JsonObject data;
 
@@ -76,6 +77,10 @@ public class ExportBooking {
 		return data.getString(BOOKING_END_DATE);
 	}
 
+	public Number getQuantity() {
+		return data.getInteger(QUANTITY);
+	}
+
 
 	@Override
 	public String toString() {
@@ -84,6 +89,7 @@ public class ExportBooking {
 		sb.append(", owner=").append(getOwner());
 		sb.append(", start=").append(getStart());
 		sb.append(", end=").append(getEnd());
+		sb.append(", quantity=").append(getQuantity());
 		sb.append('}');
 		return sb.toString();
 	}

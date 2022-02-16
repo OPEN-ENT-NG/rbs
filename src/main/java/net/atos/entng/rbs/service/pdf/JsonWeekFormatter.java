@@ -112,6 +112,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 									double bookingHeight = slotHeight * (slotNumber - 1) * bookingDuration / dayDurationInSecond - 2;
 
 									booking.put(ExportBooking.BOOKING_OWNER_NAME, exportBooking.getString(ExportBooking.BOOKING_OWNER_NAME));
+									booking.put(ExportBooking.QUANTITY, exportBooking.getLong(ExportBooking.QUANTITY).toString());
 									booking.put(BOOKING_CLASS_ID_FIELD_NAME, classId);
 									booking.put(BOOKING_TOP_FIELD_NAME, round(topOffset, DECIMAL_PRECISION));
 									booking.put(BOOKING_TOP_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);

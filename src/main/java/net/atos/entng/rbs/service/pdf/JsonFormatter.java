@@ -43,6 +43,7 @@ public abstract class JsonFormatter {
 	protected static final String I18N_HEADER_OWNER = "i18n_owner";
 	protected static final String I18N_HEADER_START = "i18n_start";
 	protected static final String I18N_HEADER_END = "i18n_end";
+	protected static final String I18N_QUANTITY = "i18n_quantity";
 	protected static final String I18N_TO = "i18n_to";
 	protected static final String I18N_FOOTER = "i18n_footer";
 
@@ -54,6 +55,7 @@ public abstract class JsonFormatter {
 		MAP_I18N.put(I18N_HEADER_OWNER, "rbs.booking.headers.owner");
 		MAP_I18N.put(I18N_HEADER_START, "rbs.booking.headers.start_date");
 		MAP_I18N.put(I18N_HEADER_END, "rbs.booking.headers.end_date");
+		MAP_I18N.put(I18N_QUANTITY, "rbs.booking.headers.quantity");
 		MAP_I18N.put(I18N_TO, "rbs.search.date.to");
 		MAP_I18N.put(I18N_FOOTER, "rbs.booking.edit.period.end.on");
 	}

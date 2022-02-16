@@ -126,6 +126,7 @@
   "rbs.booking.headers.resource": "Ressource",
   "rbs.booking.headers.start_date": "Date de début",
   "rbs.booking.headers.status": "État",
+  "rbs.booking.headers.quantity": "Quantité",
   "rbs.booking.invalid.slots": "L'horaire de fin ne peut pas être inférieur à l'horaire de début",
   "rbs.booking.invalid.datetimes.past": "Créneau non valide : Sélectionnez un créneau supérieur à la date et l'heure courante",
   "rbs.booking.invalid.datetimes.equals": "Créneau non valide : Sélectionnez une date de début de réservation différente de la date de fin.",
