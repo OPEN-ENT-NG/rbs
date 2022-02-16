@@ -412,6 +412,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.periodicSummary = '';
                 vm.editedBooking.periodicShortSummary = '';
                 vm.editedBooking.periodicError = undefined;
+                vm.showDaySelection = true;
 
                 vm.editedBooking.periodicShortSummary = lang.translate('rbs.period.days.some');
 
