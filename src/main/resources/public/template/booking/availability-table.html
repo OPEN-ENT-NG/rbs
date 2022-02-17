@@ -1,0 +1,70 @@
+<table class="resource-table">
+    <thead>
+    <tr>
+        <td style="width: 30%;"><i18n>rbs.resource.edit.tab.date.start</i18n></td>
+        <td style="width: 20%;"><i18n>rbs.resource.edit.tab.timeslot</i18n></td>
+        <td style="width: 20%;"><i18n>rbs.resource.edit.tab.days</i18n></td>
+        <td style="width: 20%;" ng-if="!vm.editedBooking.resource.is_available"><i18n>rbs.booking.edit.availabilities.tab.available</i18n></td>
+        <td style="width: 20%;" ng-if="vm.editedBooking.resource.is_available"><i18n>rbs.booking.edit.availabilities.tab.unavailable</i18n></td>
+    </tr>
+    </thead>
+    <tbody>
+        <!-- Display / Edit mode -->
+        <tr ng-repeat="a in vm.getRightList(vm.editedBooking.resource) track by $index">
+            <!-- Display an (un)availability -->
+            <td>
+                <div class="flex-responsive around">
+                    <div>
+                        <i18n>rbs.resource.edit.available.date.from</i18n>[[vm.displayDate(a.start_date)]]
+                    </div>
+                    <div>
+                        <i18n>rbs.resource.edit.available.date.to</i18n>[[vm.displayDate(a.end_date)]]
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="flex-responsive around">
+                    <div>
+                        <i18n>rbs.resource.edit.available.time.from</i18n>[[vm.displayTime(a.start_time)]]
+                    </div>
+                    <div>
+                        <i18n>rbs.resource.edit.available.time.at</i18n>[[vm.displayTime(a.end_time)]]
+                    </div>
+                </div>
+            </td>
+            <td>
+                <ul class="check-boxes">
+                    <li>
+                        <i18n ng-class="[{selected: a.days[1]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.monday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[2]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.tuesday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[3]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.wednesday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[4]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.thursday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[5]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.friday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[6]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.saturday</i18n>
+                    </li>
+                    <li>
+                        <i18n ng-class="[{selected: a.days[0]}, !vm.editedBooking.resource.is_available?'green-color':'red-color']">
+                            rbs.resource.edit.available.days.sunday</i18n>
+                    </li>
+                </ul>
+            </td>
+            <td>[[a.quantity]] / [[vm.editedBooking.resource.quantity]]</td>
+        </tr>
+    </tbody>
+</table>

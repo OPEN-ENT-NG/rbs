@@ -57,4 +57,12 @@ export class DateUtils {
         }
         return(date);
     };
+
+    static displayTime = (date) => {
+        return DateUtils.format(date,'HH[h]mm');
+    };
+
+    static displayDate = (date) => {
+        return DateUtils.format(date,'DD/MM/YYYY');
+    };
 }

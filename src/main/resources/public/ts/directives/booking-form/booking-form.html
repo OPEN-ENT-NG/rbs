@@ -127,6 +127,22 @@
                 </h2>
                 <div class="toggle">
                     <div class="content">
+                        <!-- (Un)Availabilities -->
+                        <div>
+                            <div ng-if="vm.editedBooking.resource.is_available && vm.editedBooking.resource.unavailabilities.all.length > 0">
+                                <i18n>rbs.booking.edit.availabilities.resource.is</i18n>
+                                <b><i18n>rbs.booking.edit.availabilities.unavailable</i18n></b>
+                                <i18n>rbs.booking.edit.availabilities.timeslots</i18n>
+                            </div>
+                            <div ng-if="!vm.editedBooking.resource.is_available && vm.editedBooking.resource.availabilities.all.length > 0">
+                                <i18n>rbs.booking.edit.availabilities.resource.is</i18n>
+                                <b><i18n>rbs.booking.edit.availabilities.available</i18n></b>
+                                <i18n>rbs.booking.edit.availabilities.timeslots</i18n>
+                            </div>
+
+                            <div ng-if="vm.editedBooking.resource.unavailabilities.all.length > 0 || vm.editedBooking.resource.availabilities.all.length > 0"
+                                 ng-include="'/rbs/public/template/booking/availability-table.html'"></div>
+                        </div>
 
                         <!-- Booking start - non periodic -->
                         <div class="row" ng-if="!vm.editedBooking.is_periodic">
@@ -203,9 +219,18 @@
                         </div>
 
                         <!-- Booking quantity -->
-                        <div class="warning default-fontsize">[[vm.formatTextBookingQuantity(vm.editedBooking)]]</div>
-                        <div class="row">
-                            <label class="three cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
+                        <div class="bottom-spacing-three default-fontsize" ng-if="vm.isBookingQuantityWrong(vm.editedBooking)">
+                            <b><i18n>rbs.booking.edit.quantity.none</i18n></b>
+                        </div>
+                        <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isBookingQuantityWrong(vm.editedBooking)">
+                            <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
+                            <b>[[vm.formatTextBookingQuantity(vm.editedBooking)[0] ]]</b>
+                            <i18n>rbs.booking.edit.quantity.availability.on</i18n>
+                            <b>[[vm.formatTextBookingQuantity(vm.editedBooking)[1] ]]</b>
+                            <i18n>rbs.booking.edit.quantity.availability.text</i18n>
+                        </div>
+                        <div class="bottom-spacing-three">
+                            <label class="right-spacing cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
                             <input class="input-size" type="number" ng-model="vm.editedBooking.quantity"
                                    min="1" max="[[vm.getQuantityDispo(vm.editedBooking, vm.editedBooking)]]"/>
                         </div>
@@ -215,11 +240,10 @@
                              content="vm.booking.invalidDateTimesMessage">
                         </div>
                         <!-- Booking end - with Slots  -->
-                        <div ng-if="vm.editedBooking.type.slotprofile !== undefined">
+                        <div class="bottom-spacing-three" ng-if="vm.editedBooking.type.slotprofile !== undefined">
                             <label class="three cell">
                                 <i18n>rbs.booking.edit.slot.label</i18n>
                             </label>
-                            <hr/>
                             <div class="twelve cell" ng-if="vm.editedBooking.id === undefined">
                                 <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
                                         ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
@@ -249,24 +273,24 @@
                             <div class="cell warning" ng-if="vm.slotNotFound">
                                 <i18n>rbs.booking.warning.slot.not.found</i18n>
                             </div>
-                            <hr/>
                         </div>
-                        <hr/>
-
 
                         <!-- Periodicity toggle - new booking -->
-                        <div class="row six"
+                        <div class="row bottom-spacing-three"
                              ng-if="vm.editedBooking.id === undefined && vm.editedBooking.resource.periodic_booking">
-                            <input type="checkbox" id="isPeriodicCheckBox" class="one cell" ng-model="vm.editedBooking.is_periodic"
-                                   ng-change="vm.togglePeriodic();vm.checkDateFunction();vm.updateEditedBookingMomentsAndSlots()" input-guard/>
-                            <label for="isPeriodicCheckBox">&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
+                            <label for="isPeriodicCheckBox">
+                                <input type="checkbox" id="isPeriodicCheckBox" class="one cell" ng-model="vm.editedBooking.is_periodic"
+                                       ng-change="vm.togglePeriodic();vm.checkDateFunction(); vm.updateEditedBookingMomentsAndSlots()" input-guard/>
+                                <span><i18n>rbs.booking.edit.periodic_booking.label</i18n></span>
+                            </label>
                         </div>
 
                         <!-- Periodicity toggle (fixed) - editing booking -->
-                        <div class="row six" ng-if="vm.editedBooking.id !== undefined">
-                            <input type="checkbox" id="isPeriodicCheckBoxEdit" class="one cell"
-                                   ng-checked="vm.editedBooking.is_periodic" disabled/>
-                            <label for="isPeriodicCheckBoxEdit">&nbsp;<i18n>rbs.booking.edit.periodic_booking.label</i18n></label>
+                        <div class="row bottom-spacing-three" ng-if="vm.editedBooking.id !== undefined">
+                            <label for="isPeriodicCheckBoxEdit">
+                                <input type="checkbox" id="isPeriodicCheckBoxEdit" class="one cell" ng-checked="vm.editedBooking.is_periodic" disabled/>
+                                <span><i18n>rbs.booking.edit.periodic_booking.label</i18n></span>
+                            </label>
                         </div>
 
                         <!-- Booking reason -->

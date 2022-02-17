@@ -7,9 +7,8 @@ import {BookingUtil} from "../../utilities/booking.util";
 import {HandleUtil} from "../../utilities/handle.util";
 import {BOOKING_EVENTER} from "../../core/enum/booking-eventer.enum";
 import {BookingEventService} from "../../services";
-import {I18nUtils} from "../../utilities/i18n.util";
 import {AvailabilityUtil} from "../../utilities/availability.util";
-import {Availabilities} from "../../models/Availability";
+import {Availability} from "../../models/Availability";
 
 const {Booking, Slot, SlotJson} = RBS;
 
@@ -88,8 +87,11 @@ interface IViewModel {
     updateEditedBookingMomentsAndSlots(): void;
     getQuantityDispo(booking: any, bookingException?: any): number;
     isBookingQuantityWrong(booking: any): boolean;
-    formatTextBookingQuantity(booking: any): string;
+    formatTextBookingQuantity(booking: any): number[];
     onSyncAndTreatBookingsUsingResource(resource: any): Promise<void>;
+    displayTime(date: any): string;
+    displayDate(date: any): string;
+    getRightList(resource: any): Availability[];
 
     $onDestroy(): any;
 }
@@ -1085,6 +1087,18 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 }
             };
 
+            vm.displayTime = (date) => {
+                return DateUtils.displayTime(date);
+            };
+
+            vm.displayDate = (date) => {
+                return DateUtils.displayDate(date);
+            };
+
+            vm.getRightList = (resource) : Availability[] => {
+                return AvailabilityUtil.getRightList(resource);
+            };
+
             // Quantity functions
 
             vm.updateEditedBookingMoments = function() : void {
@@ -1212,21 +1226,11 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 // TODO check aussi validité des heures / dates
             };
 
-            vm.formatTextBookingQuantity = (booking) : string => {
-                if (vm.currentErrors.length > 0) {
-                    return lang.translate(vm.currentErrors[0].error);
-                }
-
+            vm.formatTextBookingQuantity = (booking) : number[] => {
                 let timeslotQuantityDispo = vm.getQuantityDispo(booking, booking);
                 let timeslotResourceQuantity = AvailabilityUtil.getResourceQuantityByTimeslot(booking, booking.resource);
 
-                if (timeslotQuantityDispo <= 0) {
-                    return lang.translate('rbs.booking.edit.quantity.none');
-                }
-                else {
-                    let params = [timeslotQuantityDispo,  timeslotResourceQuantity];
-                    return I18nUtils.getWithParams('rbs.booking.edit.quantity.availability', params);
-                }
+                return [timeslotQuantityDispo,  timeslotResourceQuantity];
             };
 
             // must change a bit

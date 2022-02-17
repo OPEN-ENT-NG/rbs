@@ -2039,14 +2039,14 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         // Utils
 
         $scope.displayTime = (date) => {
-            return DateUtils.format(date,'HH[h]mm');
+            return DateUtils.displayTime(date);
         };
 
         $scope.displayDate = (date) => {
-            return DateUtils.format(date,'DD/MM/YYYY');
+            return DateUtils.displayDate(date);
         };
 
         $scope.getRightList = (resource) : Availability[] => {
-            return resource && resource.is_available ? resource.unavailabilities.all : resource.availabilities.all;
+            return AvailabilityUtil.getRightList(resource);
         };
     }]);

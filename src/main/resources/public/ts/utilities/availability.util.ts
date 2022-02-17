@@ -2,6 +2,7 @@ import {notify} from "entcore";
 import moment from "../moment";
 import {Moment} from "moment";
 import {BookingUtil} from "./booking.util";
+import {Availability} from "../models/Availability";
 
 export class AvailabilityUtil {
     /**
@@ -201,5 +202,9 @@ export class AvailabilityUtil {
             }
         }
         return false;
+    };
+
+    static getRightList = (resource) : Availability[] => {
+        return resource && resource.is_available ? resource.unavailabilities.all : resource.availabilities.all;
     };
 }
