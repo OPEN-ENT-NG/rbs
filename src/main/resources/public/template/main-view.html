@@ -39,7 +39,7 @@
 									<div class="row this-bell">
 										<a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
 											[[resource.name]]
-											<i ng-if="!resource.is_available" class="suspended-icon"></i>
+											<i ng-if="!resource.is_available && resource.availabilities.all.length <= 0" class="suspended-icon"></i>
 										</a>
 										<i ng-if="resource.notified" tooltip="rbs.unsubscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell"></i>
 										<i ng-if="!resource.notified" tooltip="rbs.subscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell-slash"></i>
@@ -83,7 +83,7 @@
                                     <div class="row this-bell">
                                         <a ng-click="switchSelect(resource)" ng-class="{ selected: resource.selected, notselected: !resource.selected }">
                                             [[resource.name]]
-                                            <i ng-if="!resource.is_available" class="suspended-icon"></i>
+                                            <i ng-if="!resource.is_available && resource.availabilities.all.length <= 0" class="suspended-icon"></i>
                                         </a>
                                         <i ng-if="resource.notified" tooltip="rbs.unsubscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell"></i>
                                         <i ng-if="!resource.notified" tooltip="rbs.subscribe" ng-click="switchNotification(resource, resourceType)" class="notification-icon bell-slash"></i>

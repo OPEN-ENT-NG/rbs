@@ -1066,7 +1066,7 @@ model.build = function () {
                         return;
                     }
 
-                    _.each(resources, function (resource) {
+                    _.each(resources, async function (resource) {
                         // Load the ResourceType's collection with associated Resource
                         var resourceType = resourceTypeIndex[resource.type_id];
                         if (resourceType !== undefined) {
@@ -1075,6 +1075,7 @@ model.build = function () {
                                 resource.color = resourceType.color;
                             }
                             let res = new Resource(resource);
+                            await res.syncResourceAvailabilities();
                             Behaviours.applicationsBehaviours.rbs.resourceRights(res);
                             resourceType.resources.all.push(res);
                         }
