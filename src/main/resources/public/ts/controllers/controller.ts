@@ -1248,6 +1248,7 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedResource.quantity = 1;
             $scope.editedResource.availabilities = new Availabilities();
             $scope.editedResource.unavailabilities = new Availabilities();
+            $scope.openAvailabilitiesTable = false;
             template.open('resources', 'resource/edit-resource');
         };
 
@@ -1751,19 +1752,19 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.bookingsConflictingResource = [];
         $scope.bookingsOkResource = [];
 
-        $scope.syncBookingsUsingResource = (resource) : void => {
+        $scope.syncBookingsUsingResource = (resource, booking?) : void => {
             $scope.bookingsConflictingResource = [];
             $scope.bookingsOkResource = [];
-            for (let booking of resource.bookings.all) {
-                if (!booking.is_periodic && DateUtils.isNotPast(booking.startMoment) && booking.quantity) {
-                    let timeslotQuantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, resource);
+            for (let b of resource.bookings.all) {
+                if (!b.is_periodic && DateUtils.isNotPast(b.startMoment) && b.quantity) {
+                    let timeslotQuantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(b, resource, null, booking);
                     let isConflicting = timeslotQuantityDispo < 0;
 
-                    if (isConflicting && (booking.status === model.STATE_CREATED || booking.status === model.STATE_VALIDATED)) {
-                        $scope.bookingsConflictingResource.push(booking);
+                    if (isConflicting && (b.status === model.STATE_CREATED || b.status === model.STATE_VALIDATED)) {
+                        $scope.bookingsConflictingResource.push(b);
                     }
-                    else if (!isConflicting && booking.status === model.STATE_SUSPENDED) {
-                        $scope.bookingsOkResource.push(booking);
+                    else if (!isConflicting && b.status === model.STATE_SUSPENDED) {
+                        $scope.bookingsOkResource.push(b);
                     }
                 }
             }
@@ -2030,9 +2031,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             $scope.editedAvailability = availability;
         };
 
-        $scope.syncAndTreatBookingsUsingResource = async (resource) : Promise<void> => {
+        $scope.syncAndTreatBookingsUsingResource = async (resource, booking?) : Promise<void> => {
             // Deals with bookings validation system
-            await $scope.syncBookingsUsingResource(resource);
+            await $scope.syncBookingsUsingResource(resource, booking);
             await $scope.treatBookings(resource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
         };
 

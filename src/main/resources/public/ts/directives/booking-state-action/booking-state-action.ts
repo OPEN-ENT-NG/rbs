@@ -34,7 +34,7 @@ interface IViewModel {
 
     formatMoment(date: any): string;
 
-    onSyncAndTreatBookingsUsingResource(resource: any): Promise<void>;
+    onSyncAndTreatBookingsUsingResource(resource: any, booking?: any): Promise<void>;
 
     // props
     templatePathState: string;
@@ -168,7 +168,7 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                                 if (actions === 0) {
                                     // Deals with bookings validation system
                                     await vm.selectedBooking.resource.syncResourceAvailabilities();
-                                    await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource);
+                                    await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource, vm.selectedBooking);
                                     $scope.$apply();
 
                                     vm.display.processing = undefined;
@@ -226,7 +226,7 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                         async function () {
                             // Deals with bookings validation system
                             await vm.selectedBooking.resource.syncResourceAvailabilities();
-                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource);
+                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource, vm.selectedBooking);
                             $scope.$apply();
 
                             vm.display.processing = undefined;

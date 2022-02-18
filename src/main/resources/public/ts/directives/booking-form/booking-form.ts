@@ -88,7 +88,7 @@ interface IViewModel {
     getQuantityDispo(booking: any, bookingException?: any): number;
     isBookingQuantityWrong(booking: any): boolean;
     formatTextBookingQuantity(booking: any): number[];
-    onSyncAndTreatBookingsUsingResource(resource: any): Promise<void>;
+    onSyncAndTreatBookingsUsingResource(resource: any, booking?: any): Promise<void>;
     displayTime(date: any): string;
     displayDate(date: any): string;
     getRightList(resource: any): Availability[];
