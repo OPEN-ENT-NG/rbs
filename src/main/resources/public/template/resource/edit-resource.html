@@ -114,12 +114,18 @@
 
 		<!-- Available periods -->
 		<div class="row top-spacing-three">
-			<label class="cell" for="availability">
-				<input type="checkbox" id="availability" ng-model="openAvailabilitiesTable" ng-change="initEditedAvailability()"/>
-				<i18n ng-if="!editedResource.is_available">rbs.resource.edit.available.label</i18n>
-				<i18n ng-if="editedResource.is_available">rbs.resource.edit.unavailable.label</i18n>
+			<label for="availability">
+				<input type="checkbox" id="availability" ng-model="openAvailabilitiesTable" ng-change="initEditedAvailability()" ng-disabled="!editedResource.id"/>
+				<span ng-style="{'cursor' : !editedResource.id ? 'default' : 'pointer', 'color' : !editedResource.id ? 'rgb(170, 170, 170)' : 'inherit'}">
+					<i18n ng-if="!editedResource.is_available">rbs.resource.edit.available.label</i18n>
+					<i18n ng-if="editedResource.is_available">rbs.resource.edit.unavailable.label</i18n>
+				</span>
 			</label>
-			<div class="row cell" ng-if="openAvailabilitiesTable"
+			<div ng-style="{'color' : !editedResource.id ? 'rgb(170, 170, 170)' : 'inherit'}">
+				<i18n style="font-style: italic; margin-left: 28px" ng-if="!editedResource.id && !editedResource.is_available">rbs.resource.edit.available.label.blocked</i18n>
+				<i18n style="font-style: italic; margin-left: 28px" ng-if="!editedResource.id && editedResource.is_available">rbs.resource.edit.unavailable.label.blocked</i18n>
+			</div>
+			<div class="row cell" ng-if="openAvailabilitiesTable && editedResource.id"
 				 ng-include="'/rbs/public/template/resource/availability/resource-availability-table.html'"></div>
 		</div>
 		<hr/>

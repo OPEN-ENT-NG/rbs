@@ -314,6 +314,8 @@
   "rbs.resource.edit.available.days.sunday": "D",
   "rbs.resource.edit.available.label": "Ajouter une période de disponibilité",
   "rbs.resource.edit.unavailable.label": "Ajouter une période d'indisponibilité",
+  "rbs.resource.edit.available.label.blocked": "Veuillez enregistrer la resource avant de saisir une période de disponibilité",
+  "rbs.resource.edit.unavailable.label.blocked": "Veuillez enregistrer la resource avant de saisir une période d'indisponibilité",
   "rbs.resource.edit.tab.date": "Date",
   "rbs.resource.edit.tab.timeslot": "Créneau",
   "rbs.resource.edit.tab.days": "Jours",
