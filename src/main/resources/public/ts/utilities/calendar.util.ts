@@ -1,6 +1,3 @@
-import {angular, moment} from "entcore";
-import {RBS_CALENDAR_EVENTER} from "../core/enum/rbs-calendar-eventer.enum";
-
 export class CalendarUtil {
     /**
      * Change position of calendar's button filter to the head (see main-calendar.html) directive <filters>
@@ -24,8 +21,10 @@ export class CalendarUtil {
     }
 
     static showTooltip($timeout, $scope): void {
-        $(".schedule-item").mouseover(() => {
-            $timeout(() => { $scope.$apply(); }, 500);
+        /* trigger tooltip to show up */
+        let $scheduleItems: JQuery = $('.schedule-items');
+        $scheduleItems.mousemove(() => {
+            $timeout(() => $scope.$apply(), 500)
         });
     }
 
