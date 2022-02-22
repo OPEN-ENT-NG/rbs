@@ -1114,9 +1114,9 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.endTime = DateUtils.formatTimeIfString(vm.editedBooking.endTime);
 
                 try {
-                    if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
-                        return;
-                    }
+                    // if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
+                    //     return;
+                    // }
                     vm.editedBooking.startMoment = DateUtils.formatMoment(vm.editedBooking.startDate, vm.editedBooking.startTime);
                     vm.editedBooking.endMoment = DateUtils.formatMoment(vm.editedBooking.endDate, vm.editedBooking.endTime);
                 }
