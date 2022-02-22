@@ -167,8 +167,8 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                                 actions--;
                                 if (actions === 0) {
                                     // Deals with bookings validation system
-                                    await vm.selectedBooking.resource.syncResourceAvailabilities();
-                                    await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource, vm.selectedBooking);
+                                    await booking.resource.syncResourceAvailabilities();
+                                    await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(booking.resource, booking);
                                     $scope.$apply();
 
                                     vm.display.processing = undefined;
@@ -225,8 +225,8 @@ export const bookingStateAction = ng.directive('bookingStateAction', ['BookingEv
                     vm.currentBookingSelected.deletePeriodicCurrentToFuture(
                         async function () {
                             // Deals with bookings validation system
-                            await vm.selectedBooking.resource.syncResourceAvailabilities();
-                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.selectedBooking.resource, vm.selectedBooking);
+                            await vm.currentBookingSelected.resource.syncResourceAvailabilities();
+                            await $scope.$eval(vm.onSyncAndTreatBookingsUsingResource)(vm.currentBookingSelected.resource, vm.currentBookingSelected);
                             $scope.$apply();
 
                             vm.display.processing = undefined;
