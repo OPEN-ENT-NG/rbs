@@ -152,10 +152,10 @@
                    ng-model="editedAvailability.quantity" /> / [[editedResource.quantity]]
         </td>
         <td ng-if-end>
-            <button type="button" class="classic-button six" ng-click="saveAvailability(a)">
+            <button type="button" class="classic-button six" ng-click="saveAvailability(editedAvailability)">
                 <i class="valid md-icon"></i>
             </button>
-            <button type="button" class="classic-button six" ng-click="initEditedAvailability()">
+            <button type="button" class="classic-button six" ng-click="closeEditAvailability()">
                 <i class="cancel md-icon"></i>
             </button>
         </td>

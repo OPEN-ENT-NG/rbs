@@ -11,6 +11,7 @@ import {safeApply} from "../utilities/safe-apply";
 import {AvailabilityUtil} from "../utilities/availability.util";
 import {availabilityService} from "../services/AvailabilityService";
 import {Availabilities, Availability} from "../models/Availability";
+import {Mix} from "entcore-toolkit";
 
 
 const {Booking, Notification, Resource, ResourceType, SlotProfile} = RBS;
@@ -2030,6 +2031,12 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
         $scope.editAvailability = (availability) : void => {
             $scope.editedAvailability = availability;
         };
+
+        $scope.closeEditAvailability = async () : Promise<void> => {
+            await $scope.editedResource.syncResourceAvailabilities();
+            $scope.initEditedAvailability();
+            $scope.safeApply();
+        }
 
         $scope.syncAndTreatBookingsUsingResource = async (resource, booking?) : Promise<void> => {
             // Deals with bookings validation system

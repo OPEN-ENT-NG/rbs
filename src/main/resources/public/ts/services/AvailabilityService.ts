@@ -1,14 +1,14 @@
 import {idiom, ng, notify} from 'entcore';
 import http, {AxiosResponse} from 'axios';
-import moment from "../moment";
+import {Availability} from "../models/Availability";
 
 export interface AvailabilityService {
     list() : Promise<AxiosResponse>;
     listByResource(resourceId: number, isUnavailability: boolean) : Promise<AxiosResponse>;
-    save(availability: any) : Promise<AxiosResponse>;
-    create(availability: any) : Promise<AxiosResponse>;
-    update(availability: any) : Promise<AxiosResponse>;
-    delete(availability: any) : Promise<AxiosResponse>;
+    save(availability: Availability) : Promise<AxiosResponse>;
+    create(availability: Availability) : Promise<AxiosResponse>;
+    update(availability: Availability) : Promise<AxiosResponse>;
+    delete(availability: Availability) : Promise<AxiosResponse>;
     deleteAll(resourceId: number, deleteUnavailability: boolean) : Promise<AxiosResponse>;
 }
 

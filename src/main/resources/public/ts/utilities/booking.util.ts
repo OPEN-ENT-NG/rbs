@@ -70,15 +70,15 @@ export class BookingUtil {
     };
 
     /**
-     * Check if two intervals overlap
+     * Check if two bookings overlap
      *
-     * @param date1    moment value to check if it overlaps date2
-     * @param date2    moment value to check if it overlaps date1
+     * @param booking1    booking to check if it overlaps booking2
+     * @param booking2    booking to check if it overlaps booking1
      * @return boolean
      */
-    static isBookingsOverlapping(date1: any, date2: any): boolean {
-        let test1 = moment(date1.startMoment).format("YYYY/MM/DD HH:mm:ss") < moment(date2.endMoment).format("YYYY/MM/DD HH:mm:ss");
-        let test2 = moment(date1.endMoment).format("YYYY/MM/DD HH:mm:ss") > moment(date2.startMoment).format("YYYY/MM/DD HH:mm:ss");
+    static isBookingsOverlapping(booking1: any, booking2: any): boolean {
+        let test1 = moment(booking1.startMoment).format("YYYY/MM/DD HH:mm:ss") < moment(booking2.endMoment).format("YYYY/MM/DD HH:mm:ss");
+        let test2 = moment(booking1.endMoment).format("YYYY/MM/DD HH:mm:ss") > moment(booking2.startMoment).format("YYYY/MM/DD HH:mm:ss");
         return test1 && test2;
     };
 
