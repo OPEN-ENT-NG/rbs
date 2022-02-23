@@ -1,4 +1,4 @@
-import {_, idiom as lang, ng, notify, template} from 'entcore';
+import {_, Behaviours, idiom as lang, ng, notify, template} from 'entcore';
 import moment from '../moment';
 import {isBookingSlot, RBS} from '../models/models';
 import {BookingUtil} from "../utilities/booking.util";
@@ -1803,11 +1803,15 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             if (bookingsConflicting.length > 0) {
                 let siblingsBookings = getSiblingsPeriodicBookings(bookingsConflicting);
                 bookingsConflicting = bookingsConflicting.concat(siblingsBookings);
-                suspendBookings(bookingsConflicting);
+                bookingsConflicting = $scope.filterBookingsToProcess(bookingsConflicting);
+                if (bookingsConflicting.length > 0) {
+                    suspendBookings(bookingsConflicting);
+                }
             }
 
             // Validate or submit all suspended bookings not conflicting anymore
             if (bookingsOk.length > 0) {
+                bookingsOk = $scope.filterBookingsToProcess(bookingsOk);
                 let finalBookingsOk = bookingsOk.slice();
                 let allSiblingsBookings = getSiblingsPeriodicBookings(bookingsOk);
 
@@ -1830,7 +1834,9 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
                         finalBookingsOk.splice(index, 1);
                     }
                 }
-                resource.validation ? submitBookings(finalBookingsOk) : validateBookings(finalBookingsOk);
+                if (finalBookingsOk.length > 0) {
+                    resource.validation ? submitBookings(finalBookingsOk) : validateBookings(finalBookingsOk);
+                }
             }
         };
 
@@ -2042,6 +2048,10 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             // Deals with bookings validation system
             await $scope.syncBookingsUsingResource(resource, booking);
             await $scope.treatBookings(resource, $scope.bookingsConflictingResource, $scope.bookingsOkResource);
+        };
+
+        $scope.filterBookingsToProcess = (bookings) : void => {
+            return bookings.filter(b => b.owner_id  === model.me.userId || b.myRights.proccess || model.me.functions.ADMIN_LOCAL);
         };
 
         // Utils
