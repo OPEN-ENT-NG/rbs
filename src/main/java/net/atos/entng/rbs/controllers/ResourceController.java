@@ -31,6 +31,7 @@ import java.util.Set;
 
 import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.Rbs;
+import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
@@ -99,13 +100,17 @@ public class ResourceController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					final List<String> groupsAndUserIds = new ArrayList<>();
-					groupsAndUserIds.add(user.getUserId());
-					if (user.getGroupsIds() != null) {
-						groupsAndUserIds.addAll(user.getGroupsIds());
+					String typeId = request.params().get(Field.TYPEID);
+
+					final List<String> groupsAndUserIds = (typeId == null) ? new ArrayList<>() : null;
+					if (groupsAndUserIds != null) {
+						groupsAndUserIds.add(user.getUserId());
+						if (user.getGroupsIds() != null) {
+							groupsAndUserIds.addAll(user.getGroupsIds());
+						}
 					}
 
-					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
+					resourceService.listResources(groupsAndUserIds, user, typeId, arrayResponseHandler(request));
 				}
 				else {
 					log.debug("User not found in session.");

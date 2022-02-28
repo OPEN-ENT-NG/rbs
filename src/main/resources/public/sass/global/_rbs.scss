@@ -6,7 +6,8 @@ $rbs-dimgrey: #696969;
 $rbs-green: #09ac00;
 $rbs-red: #dd0000;
 
-body.rbs {
+
+body.rbs, .sniplet.rbs {
   @import "components/index";
 
   .input-size {

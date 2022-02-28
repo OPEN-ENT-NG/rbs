@@ -1057,7 +1057,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     }
                 );
                 //Periodic less than a day
-                //if(vm.showDaySelection) {
                 if (selectedDays[vm.editedBooking.startMoment.day()] === undefined) {
                     // search the next following day (higher number)
                     let i;
@@ -1114,9 +1113,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 vm.editedBooking.endTime = DateUtils.formatTimeIfString(vm.editedBooking.endTime);
 
                 try {
-                    // if (BookingUtil.checkEditedBookingMoments(vm.editedBooking, vm.today, vm.currentErrors)) {
-                    //     return;
-                    // }
                     vm.editedBooking.startMoment = DateUtils.formatMoment(vm.editedBooking.startDate, vm.editedBooking.startTime);
                     vm.editedBooking.endMoment = DateUtils.formatMoment(vm.editedBooking.endDate, vm.editedBooking.endTime);
                 }

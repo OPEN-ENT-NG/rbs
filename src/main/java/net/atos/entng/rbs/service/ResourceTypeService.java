@@ -43,6 +43,19 @@ public interface ResourceTypeService {
 	                 Handler<Either<String, JsonArray>> handler);
 
 	/**
+	 * Get the list of resource type the user has access to for one structure
+	 * ADML gets all resource types from structure directly
+	 * Otherwise the user is either owner of the type or it has been shared with them
+	 *
+	 * @param groupsAndUserIds {@link List<String>} user groups + user id
+	 * @param user {@link UserInfos} user information
+	 * @param structureId {@link String} id of the target structure
+	 * @param handler handler
+	 */
+	void list(final List<String> groupsAndUserIds, final UserInfos user, final String structureId,
+						   final Handler<Either<String, JsonArray>> handler);
+
+	/**
 	 * Get the moderator list of current resource type
 	 *
 	 * @param typeId  : id of current resource type

@@ -31,6 +31,7 @@ import java.util.List;
 
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
+import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.service.ResourceTypeService;
 import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
 import net.atos.entng.rbs.service.UserService;
@@ -82,7 +83,8 @@ public class ResourceTypeController extends ControllerHelper {
 					groupsAndUserIds.addAll(user.getGroupsIds());
 				}
 
-				resourceTypeService.list(groupsAndUserIds, user, arrayResponseHandler(request));
+				String structureId = request.params().get(Field.STRUCTUREID);
+				resourceTypeService.list(groupsAndUserIds, user, structureId, arrayResponseHandler(request));
 			}
 		});
 	}

@@ -1,0 +1,17 @@
+.sniplet.calendarBooking {
+
+  &-bookingFormBody {
+    float: unset !important;
+  }
+
+  &-bookingInfoBox {
+    border: 1px solid;
+    border-color: rgba($darkest-grey, 0.2);
+    border-radius: 2px;
+
+    &-bookingInfo {
+      color: unset;
+    }
+  }
+
+}

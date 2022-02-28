@@ -190,7 +190,7 @@ public class BookingUtils {
 	 */
 	public static List<String> getLocalAdminScope(final UserInfos user) {
 		Map<String, UserInfos.Function> functions = user.getFunctions();
-		if (functions != null && functions.containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+		if (isLocalAdmin(user)) {
 			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
 			if (adminLocal != null) {
 				return adminLocal.getScope();
@@ -198,6 +198,17 @@ public class BookingUtils {
 		}
 
 		return new ArrayList<String>();
+	}
+
+	/**
+	 * Checks if the user is a local administrator
+	 *
+	 * @param user {@link UserInfos} user information
+	 * @return true is the user is a local administrator
+	 */
+	public static boolean isLocalAdmin(final UserInfos user) {
+		Map<String, UserInfos.Function> functions = user.getFunctions();
+		return (functions != null && functions.containsKey(DefaultFunctions.ADMIN_LOCAL));
 	}
 
 	public static List<String> getUserIdAndGroupIds(UserInfos user) {

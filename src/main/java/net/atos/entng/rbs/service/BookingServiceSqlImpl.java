@@ -21,6 +21,10 @@ package net.atos.entng.rbs.service;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import net.atos.entng.rbs.core.constants.Field;
+import net.atos.entng.rbs.helpers.FutureHelper;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.models.Slots;
@@ -42,6 +46,7 @@ import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.time.*;
+
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Slot;
 import net.atos.entng.rbs.models.Slot.SlotIterable;
@@ -65,6 +70,49 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	static String toSQLTimestamp(Long timestamp) {
 		return timestamp == null ? null : sqlFormatter.format(Instant.ofEpochSecond(timestamp));
+	}
+
+	/**
+	 * Iterates through an array of bookings to save them
+	 * The index of the resource ids must be the same as the corresponding booking
+	 * @param resourceIds {@link List<Integer>} the array of resource ids
+	 * @param bookings {@link List<Booking>} the array of bookings
+	 * @param user {@link UserInfos} the user
+	 * @return {@link Future<JsonArray>} an array of saved bookings
+	 */
+	@Override
+	public Future<JsonArray> createBookings(final List<Integer> resourceIds, final List<Booking> bookings, final UserInfos user) {
+		Promise<JsonArray> promise = Promise.promise();
+
+		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
+
+		for (Booking booking : bookings) {
+			JsonArray bookingSlotsArray = booking.getJson().getJsonArray(Field.SLOTS, new JsonArray());
+
+			booking.setSlots(new Slots(bookingSlotsArray));
+			Promise<JsonArray> bookingPromise = Promise.promise();
+			String bookingResourceId = resourceIds.get(bookings.indexOf(booking)).toString();
+			createBooking(bookingResourceId, booking, user, FutureHelper.handlerJsonArray(bookingPromise));
+			bookingsFuture.add(bookingPromise.future());
+		}
+
+		FutureHelper.all(bookingsFuture)
+				.onSuccess((res) -> {
+					JsonArray savedBookings = new JsonArray();
+					bookingsFuture.stream()
+							.map((Future::result))
+							.forEach((savedBooking) -> savedBookings.add(savedBooking.getValue(0)));
+
+					promise.complete(savedBookings);
+				})
+				.onFailure((err) -> {
+					String message = String.format("[Rbs@%s::createBookings]: an error has occurred while saving bookings: %s",
+							this.getClass().getSimpleName(), err.getMessage());
+					log.error(message);
+					promise.fail(err.getMessage());
+				});
+
+		return promise.future();
 	}
 
 	@Override
