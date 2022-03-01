@@ -78,7 +78,7 @@ public class Booking {
 	}
 
 	public Integer getBookingQuantity() {
-		return json.getInteger("quantity");
+		return json.getInteger("quantity", 1);
 	}
 
 	public Optional<JsonArray> getDays() {
