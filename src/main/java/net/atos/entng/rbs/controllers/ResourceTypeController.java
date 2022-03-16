@@ -200,6 +200,30 @@ public class ResourceTypeController extends ControllerHelper {
 		});
 	}
 
+	@Get("/type/structure/:id")
+	@ApiDoc("Get resource types of one structure")
+//	@SecuredAction("rbs.type.list")
+	public void getStructureResourceTypes(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					String structureId = request.params().get("id");
+					final List<String> groupsAndUserIds = new ArrayList<>();
+					groupsAndUserIds.add(user.getUserId());
+					if (user.getGroupsIds() != null) {
+						groupsAndUserIds.addAll(user.getGroupsIds());
+					}
+
+					resourceTypeService.list(groupsAndUserIds, user, structureId, arrayResponseHandler(request));
+				} else {
+					log.debug("User not found in session.");
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	@Get("/type/:id/moderators")
 	@ApiDoc("Return moderators. This webservice is used to display moderators' names")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)

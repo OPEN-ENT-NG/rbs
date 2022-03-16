@@ -5,7 +5,7 @@ import {BookingUtil} from "../utilities/booking.util";
 import {DateUtils} from "../utilities/date.util";
 import {CalendarUtil} from "../utilities/calendar.util";
 import {ArrayUtil} from "../utilities/array.util";
-import {BookingEventService} from "../services";
+import {BookingEventService, IBookingService} from "../services";
 import {BOOKING_EVENTER} from "../core/enum/booking-eventer.enum";
 import {safeApply} from "../utilities/safe-apply";
 import {AvailabilityUtil} from "../utilities/availability.util";
@@ -19,8 +19,8 @@ const {Booking, Notification, Resource, ResourceType, SlotProfile} = RBS;
 declare let model: any;
 declare let window: any;
 
-export const RbsController: any = ng.controller('RbsController', ['$scope', 'route', '$timeout', 'BookingEventService',
-    function ($scope, route, $timeout, bookingEventService: BookingEventService) {
+export const RbsController: any = ng.controller('RbsController', ['$scope', 'BookingService', 'route', '$timeout', 'BookingEventService',
+    function ($scope, bookingService: IBookingService, route, $timeout, bookingEventService: BookingEventService) {
         route({
             viewBooking: function (param) {
                 if (param.start) {
@@ -153,10 +153,6 @@ export const RbsController: any = ng.controller('RbsController', ['$scope', 'rou
             template.open('top-menu', 'top-menu');
             template.open('editBookingErrors', 'booking/edit-booking-errors');
 
-            // Will auto-select all resources and "Mine" bookings filter by default
-            //model.bookings.filters.mine = true;
-            //model.recordedSelections.allResources = true;
-            //model.recordedSelections.mine = true;
 
             // fixme why to do that  Will auto-select first resourceType resources and no filter by default
             //model.recordedSelections.firstResourceType = true;

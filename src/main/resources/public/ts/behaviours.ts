@@ -1,5 +1,7 @@
 import {_, Behaviours, model} from 'entcore';
 import {RBS} from './models/models';
+import {calendarRbsBooking} from "./sniplets/calendar-rbs-booking.sniplet";
+import {bookingService} from "./services";
 
 const {Resource, Booking} = RBS;
 
@@ -28,6 +30,9 @@ var rbsBehaviours = {
 
 Behaviours.register('rbs', {
     behaviours: rbsBehaviours,
+    sniplets: {
+        'calendar-rbs-booking': calendarRbsBooking
+    },
     resourceRights: function (resource) {
         var rightsContainer = resource;
         if (resource instanceof Resource && resource.type) {
