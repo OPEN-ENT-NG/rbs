@@ -3,7 +3,7 @@ import {RbsController} from "../controllers/controller";
 import {model, idiom} from "entcore";
 import {Booking, ResourceType, Structure} from "../models/booking-form.model";
 
-
+console.log("bookingsniplet");
 
 interface IViewModel {
     lang: typeof idiom;
@@ -19,6 +19,8 @@ interface IViewModel {
     areStructuresValid() : boolean;
     onGetStructures(): Array<Structure>;
     onTestInformation(name : any): void;
+    autoSelectResourceType() : Promise<void>;
+    autoSelectResource() :  Promise<void>;
 }
 
 class ViewModel implements IViewModel {
@@ -61,13 +63,19 @@ class ViewModel implements IViewModel {
         if(this.resourceTypes.length){
             this.openedBooking.resourceType = this.resourceTypes[0];
             console.log("resourceTypes", this.resourceTypes);
+
+            this.resources = await this.bookingService.getResources(this.openedBooking.resourceType.id);
+            // this.resources = await this.bookingService.getResources(1);
+            if(this.resources.length){
+                this.openedBooking.resource = this.resources[0];
+                console.log("resources", this.resources);
+            } else {
+                this.loading = false;
+            }
+        } else {
+            this.loading = false;
         }
 
-        this.resources = await this.bookingService.getResources(this.openedBooking.structure.id);
-        if(this.resources.length){
-            this.openedBooking.resource = this.resources[0];
-            console.log("resources", this.resources);
-        }
         this.scope.$apply();
 
         this.loading = false;
@@ -121,6 +129,40 @@ class ViewModel implements IViewModel {
 
         return structuresWithNames;
     }
+
+    async autoSelectResourceType(): Promise<void> {
+        try {
+            this.resourceTypes = await this.bookingService.getResourceTypes(this.openedBooking.structure.id);
+            if (this.resourceTypes.length) {
+                this.openedBooking.resourceType = this.resourceTypes[0];
+
+                this.autoSelectResource();
+            } else {
+                this.openedBooking.resourceType = undefined;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+
+        this.scope.$apply();
+    }
+
+    async autoSelectResource(): Promise<void> {
+        try {
+            this.resources = await this.bookingService.getResources(this.openedBooking.resourceType.id);
+            console.log("resources", this.resources);
+            if (this.resources.length) {
+                this.openedBooking.resource = this.resources[0];
+            } else {
+                this.openedBooking.resource = undefined;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        console.log(this.scope.source);
+
+        this.scope.$apply();
+    }
 }
 
 export const calendarRbsBooking = {
@@ -134,7 +176,12 @@ export const calendarRbsBooking = {
             // this.vm = new ViewModel(this, new BookingService());
             const vm: ViewModel = new ViewModel(this, new BookingService());
             this.vm = vm;
-            await vm.build();
+            try {
+                await vm.build();
+            } catch (e) {
+                console.error(e);
+            }
+
             // this.vm = new ViewModel(this, bookingEventService);
             this.source;
             console.log(this.source);

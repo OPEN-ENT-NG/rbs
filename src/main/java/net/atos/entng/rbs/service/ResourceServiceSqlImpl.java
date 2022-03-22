@@ -50,46 +50,63 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	@Override
 	public void listResources(final List<String> groupsAndUserIds, final UserInfos user,
 			final Handler<Either<String, JsonArray>> handler) {
+		listResources(groupsAndUserIds,user, null, handler);
+	}
+
+//	@Override
+//	public void listResources(final UserInfos user, String resourceTypeId,
+//							  final Handler<Either<String, JsonArray>> handler) {
+//		listResources(null,user, resourceTypeId, handler);
+//	}
+
+	@Override
+	public void listResources(final List<String> groupsAndUserIds, final UserInfos user, String resourceTypeId,
+							  final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		query.append("SELECT r.*,")
-			.append(" json_agg(row_to_json(row(rs.member_id,rs.action)::rbs.share_tuple)) as shared,")
-			.append(" array_to_json(array_agg(m.group_id)) as groups ")
-			.append(" FROM rbs.resource AS r")
-			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
-			.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
-			.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
-			.append(" LEFT JOIN rbs.members AS m ON (rs.member_id = m.id AND m.group_id IS NOT NULL)");
+				.append(" json_agg(row_to_json(row(rs.member_id,rs.action)::rbs.share_tuple)) as shared,")
+				.append(" array_to_json(array_agg(m.group_id)) as groups ")
+				.append(" FROM rbs.resource AS r")
+				.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
+				.append(" LEFT JOIN rbs.resource_shares AS rs ON r.id = rs.resource_id")
+				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
+				.append(" LEFT JOIN rbs.members AS m ON (rs.member_id = m.id AND m.group_id IS NOT NULL)");
 
-		query.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
-		for (String groupOruser : groupsAndUserIds) {
-			values.add(groupOruser);
-		}
+		if(resourceTypeId != null) {
+			query.append(" WHERE r.type_id = ? ");
+			values.add(resourceTypeId);
+		} else if (groupsAndUserIds != null) {
+			query.append(" WHERE rs.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
+			for (String groupOruser : groupsAndUserIds) {
+				values.add(groupOruser);
+			}
 
-		query.append(" OR r.owner = ? ");
-		values.add(user.getUserId());
+			query.append(" OR r.owner = ? ");
+			values.add(user.getUserId());
 
-		query.append(" OR ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
-		for (String groupOruser : groupsAndUserIds) {
-			values.add(groupOruser);
-		}
+			query.append(" OR ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
+			for (String groupOruser : groupsAndUserIds) {
+				values.add(groupOruser);
+			}
 
-		query.append(" OR t.owner = ?");
-		values.add(user.getUserId());
+			query.append(" OR t.owner = ?");
+			values.add(user.getUserId());
 
- 		// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
-		List<String> scope = getLocalAdminScope(user);
-		if (scope!=null && !scope.isEmpty()) {
-			query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
-			for (String schoolId : scope) {
-				values.add(schoolId);
+			// A local administrator of a given school can see all resources of the school's types, even if he is not owner or manager of these types or resources
+			List<String> scope = getLocalAdminScope(user);
+			if (scope!=null && !scope.isEmpty()) {
+				query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
+				for (String schoolId : scope) {
+					values.add(schoolId);
+				}
 			}
 		}
 
 		query.append(" GROUP BY r.id")
-			.append(" ORDER BY r.name");
+				.append(" ORDER BY r.name");
 
 		Sql.getInstance().prepared(query.toString(), values, parseShared(handler));
 	}

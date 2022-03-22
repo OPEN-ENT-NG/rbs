@@ -9,11 +9,10 @@
                     <div class="row">
                         <label class="three cell" ng-click="vm.onTestInformation(scope.structuresWithTypes)">
                             <i18n>rbs.booking.edit.structure.label</i18n>
-                            [[vm.lang.translate('rbs.booking.edit.structure.label')]]
                         </label>
                         <select class="six cell" ng-model="vm.openedBooking.structure"
                                 ng-options="struct.name for struct in vm.userStructures | orderBy: 'name'"
-                                ng-change="vm.switchStructure(vm.selectedStructure)"
+                                ng-change="vm.autoSelectResourceType()"
                                 ng-if="vm.areStructuresValid()">
                         </select>
                         <div class="six cell warning"
@@ -30,62 +29,62 @@
                             <select class="six cell" ng-model="vm.openedBooking.resourceType"
                                     ng-options="resourceType.name for resourceType in vm.resourceTypes | orderBy: 'name'"
                                     ng-change="vm.autoSelectResource();" required
-                                    ng-if="vm.resourceTypes">
+                                    ng-if="vm.resourceTypes && vm.resourceTypes.length">
                             </select>
-                            <div class="six cell warning" ng-if="!vm.resourceTypes">
+                            <div class="six cell warning" ng-if="!(vm.resourceTypes && vm.resourceTypes.length)">
                                 <i18n>rbs.booking.warning.no.types</i18n>
                             </div>
                         </div>
                         <!-- Resources -->
-                        <div class="row" ng-if="vm.resourceTypes">
+                        <div class="row" ng-if="vm.resourceTypes && vm.resourceTypes.length">
                             <label class="three cell">
                                 <i18n>rbs.booking.edit.resource.label</i18n>
                             </label>
                             <select class="six cell" ng-model="vm.openedBooking.resource"
                                     ng-options="resource.name for resource in vm.resources"
-                                    required ng-if="vm.resources" input-guard>
+                                    required ng-if="vm.resources && vm.resources.length" input-guard>
                             </select>
                             <!-- a rajouter apres ng-options vm.resources -->
                             <!-- .filterAvailable(vm.editedBooking.is_periodic) -->
-                            <div class="six cell warning" ng-if="!vm.resources">
+                            <div class="six cell warning" ng-if="!(vm.resources && vm.resources.length)">
                                 <i18n>rbs.booking.warning.no.resources</i18n>
                             </div>
                         </div>
                     </div>
                     <!-- Resume du booking -->
-<!--                <div class="row" ng-if="vm.editedBooking.id">-->
+<!--                <div class="row" ng-if="vm.openedBooking.id">-->
 <!--                        <div class="row">-->
 <!--                            <label class="three cell">-->
 <!--                                <i18n>rbs.booking.edit.type.label</i18n>-->
 <!--                            </label>-->
 <!--                            <input class="six cell disabled" type="text" disabled-->
-<!--                                   value="[[vm.editedBooking.resource.type.name]]" input-guard/>-->
+<!--                                   value="[[vm.openedBooking.resourceType.name]]" input-guard/>-->
 <!--                        </div>-->
 <!--                        <div class="row">-->
 <!--                            <label class="three cell">-->
 <!--                                <i18n>rbs.booking.edit.resource.label</i18n>-->
 <!--                            </label>-->
 <!--                            <input class="six cell disabled" type="text" disabled-->
-<!--                                   value="[[vm.editedBooking.resource.name]]" input-guard/>-->
+<!--                                   value="[[vm.openedBooking.resource.name]]" input-guard/>-->
 <!--                        </div>-->
 <!--                    </div>-->
 
                     <!--                        needed ?-->
                     <div ng-include="template.containers.editBookingErrors"></div>
-                    <div ng-if="vm.editedBooking.resource !== undefined && vm.editedBooking.resource.description"
-                         bind-html="vm.editedBooking.resource.description" class="horizontal-spacing-twice"></div>
+                    <div ng-if="vm.openedBooking.resource !== undefined && vm.openedBooking.resource.description"
+                         bind-html="vm.openedBooking.resource.description" class="horizontal-spacing-twice"></div>
                     <div class="row"
-                         ng-if="vm.editedBooking.resource !== undefined && (!vm.editedBooking.resource.description)">
+                         ng-if="vm.openedBooking.resource !== undefined && (!vm.openedBooking.resource.description)">
                         <p>
                             <i18n>rbs.booking.edit.description.empty</i18n>
                         </p>
                     </div>
-                    <div class="row" ng-if="vm.editedBooking.type && vm.editedBooking.type.moderators">
+                    <div class="row" ng-if="vm.openedBooking.type && vm.openedBooking.type.moderators">
                         <label class="row">
                             <i18n>rbs.booking.details.moderators</i18n>
                         </label>
                         <p class="row">
-								<span ng-repeat="moderator in vm.editedBooking.type.moderators"
+								<span ng-repeat="moderator in vm.openedBooking.type.moderators"
                                       class="cell four cell-ellipsis horizontal-spacing-twice"
                                       title="[[moderator.username+' ('+vm.translate(moderator.type)+')']]">
 										[[moderator.username]] <em class="small-text">([[vm.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
@@ -102,37 +101,37 @@
                 <div class="content">
                     <!-- (Un)Availabilities -->
                     <div>
-                        <div ng-if="vm.editedBooking.resource.is_available && vm.editedBooking.resource.unavailabilities.all.length > 0">
+                        <div ng-if="vm.openedBooking.resource.is_available && vm.openedBooking.resource.unavailabilities.all.length > 0">
                             <i18n>rbs.booking.edit.availabilities.resource.is</i18n>
                             <b><i18n>rbs.booking.edit.availabilities.unavailable</i18n></b>
                             <i18n>rbs.booking.edit.availabilities.timeslots</i18n>
                         </div>
-                        <div ng-if="!vm.editedBooking.resource.is_available && vm.editedBooking.resource.availabilities.all.length > 0">
+                        <div ng-if="!vm.openedBooking.resource.is_available && vm.openedBooking.resource.availabilities.all.length > 0">
                             <i18n>rbs.booking.edit.availabilities.resource.is</i18n>
                             <b><i18n>rbs.booking.edit.availabilities.available</i18n></b>
                             <i18n>rbs.booking.edit.availabilities.timeslots</i18n>
                         </div>
 
-                        <div ng-if="vm.editedBooking.resource.unavailabilities.all.length > 0 || vm.editedBooking.resource.availabilities.all.length > 0"
+                        <div ng-if="vm.openedBooking.resource.unavailabilities.all.length > 0 || vm.openedBooking.resource.availabilities.all.length > 0"
                              ng-include="'/rbs/public/template/booking/availability-table.html'"></div>
                     </div>
 
 
                     <!-- Booking quantity -->
-                    <div class="bottom-spacing-three default-fontsize" ng-if="vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <div class="bottom-spacing-three default-fontsize" ng-if="vm.isBookingQuantityWrong(vm.openedBooking)">
                         <b><i18n>rbs.booking.edit.quantity.none</i18n></b>
                     </div>
-                    <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isBookingQuantityWrong(vm.editedBooking)">
+                    <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isBookingQuantityWrong(vm.openedBooking)">
                         <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
-                        <b>[[vm.formatTextBookingQuantity(vm.editedBooking)[0] ]]</b>
+                        <b>[[vm.formatTextBookingQuantity(vm.openedBooking)[0] ]]</b>
                         <i18n>rbs.booking.edit.quantity.availability.on</i18n>
-                        <b>[[vm.formatTextBookingQuantity(vm.editedBooking)[1] ]]</b>
+                        <b>[[vm.formatTextBookingQuantity(vm.openedBooking)[1] ]]</b>
                         <i18n>rbs.booking.edit.quantity.availability.text</i18n>
                     </div>
                     <div class="bottom-spacing-three">
                         <label class="right-spacing cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
-                        <input class="input-size" type="number" ng-model="vm.editedBooking.quantity"
-                               min="1" max="[[vm.getQuantityDispo(vm.editedBooking, vm.editedBooking)]]"/>
+                        <input class="input-size" type="number" ng-model="vm.openedBooking.quantity"
+                               min="1" max="[[vm.getQuantityDispo(vm.openedBooking, vm.openedBooking)]]"/>
                     </div>
 
                     <!-- Errors -->

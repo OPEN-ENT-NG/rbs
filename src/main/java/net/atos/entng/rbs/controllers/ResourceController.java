@@ -99,13 +99,17 @@ public class ResourceController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					final List<String> groupsAndUserIds = new ArrayList<>();
-					groupsAndUserIds.add(user.getUserId());
-					if (user.getGroupsIds() != null) {
-						groupsAndUserIds.addAll(user.getGroupsIds());
+					String typeid = request.params().get("typeid");
+
+					final List<String> groupsAndUserIds = (typeid == null) ? new ArrayList<>() : null;
+					if(groupsAndUserIds != null) {
+						groupsAndUserIds.add(user.getUserId());
+						if (user.getGroupsIds() != null) {
+							groupsAndUserIds.addAll(user.getGroupsIds());
+						}
 					}
 
-					resourceService.listResources(groupsAndUserIds, user, arrayResponseHandler(request));
+					resourceService.listResources(groupsAndUserIds, user, typeid, arrayResponseHandler(request));
 				}
 				else {
 					log.debug("User not found in session.");
@@ -319,6 +323,26 @@ public class ResourceController extends ControllerHelper {
 			}
 		});
 	}
+
+//	@Get("/type/:id/resources")
+//	@ApiDoc("Get resources from one resource type")
+////	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+////	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+//	public void getResourcesFromType(final HttpServerRequest request) {
+//		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+//			@Override
+//			public void handle(final UserInfos user) {
+//				if (user != null) {
+//					String resourceTypeId = request.params().get("id");
+//
+//					resourceService.listResources(user, resourceTypeId, arrayResponseHandler(request));
+//				} else {
+//					log.debug("User not found in session.");
+//					unauthorized(request);
+//				}
+//			}
+//		});
+//	}
 
 	@Post("/resource/notification/add/:id")
 	@ApiDoc("Add notification")

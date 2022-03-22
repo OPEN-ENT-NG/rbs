@@ -11,11 +11,11 @@ export interface IBookingService {
 export class BookingService implements IBookingService {
 
     async getResourceTypes(structureId : String): Promise<AxiosResponse> {
-        return await http.get(`rbs/type/structure/` + structureId).then((types : AxiosResponse) => (<any>types.data));
+        return await http.get(`rbs/types?structureid=${structureId}`).then((types : AxiosResponse) => (<any>types.data));
     }
 
-    async getResources(structureId : String): Promise<AxiosResponse> {
-        return await http.get(`rbs/type/structure/` + structureId).then((types : AxiosResponse) => (<any>types.data));
+    async getResources(typeId : String): Promise<AxiosResponse> {
+        return await http.get(`rbs/resources?typeid=${typeId}`).then((types : AxiosResponse) => (<any>types.data));
     }
 
     // async delete() {
