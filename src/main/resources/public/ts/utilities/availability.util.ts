@@ -111,6 +111,7 @@ export class AvailabilityUtil {
         let exceptionId = (exception && exception.id) ? exception.id : -1;
 
         if (resource.is_available) {
+            console.log(resource);
             for (let unavailability of resource.unavailabilities.all) {
                 if (unavailability.id != exceptionId && AvailabilityUtil.isBookingOverlappingAvailability(booking, unavailability)) {
                     resourceQuantityDispo -= unavailability.quantity;
