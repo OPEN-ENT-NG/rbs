@@ -71,6 +71,7 @@
 
                     <!--                        needed ?-->
                     <div ng-include="template.containers.editBookingErrors"></div>
+                    <!-- Description -->
                     <div ng-if="vm.openedBooking.resource !== undefined && vm.openedBooking.resource.description"
                          bind-html="vm.openedBooking.resource.description" class="horizontal-spacing-twice"></div>
                     <div class="row"
@@ -79,6 +80,8 @@
                             <i18n>rbs.booking.edit.description.empty</i18n>
                         </p>
                     </div>
+
+                    <!-- Moderators -->
                     <div class="row" ng-if="vm.openedBooking.type && vm.openedBooking.type.moderators">
                         <label class="row">
                             <i18n>rbs.booking.details.moderators</i18n>

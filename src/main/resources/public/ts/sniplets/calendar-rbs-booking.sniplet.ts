@@ -25,7 +25,7 @@ interface IViewModel {
     onGetStructures(): Array<Structure>;
     autoSelectResourceType() : Promise<void>;
     autoSelectResource() :  Promise<void>;
-    createBooking(calendarEvent : any, booking : Booking) : Booking;
+    prepareBookingForAvailabilityCheck(calendarEvent : any, booking : Booking) : Booking;
 }
 
 class ViewModel implements IViewModel {
@@ -119,12 +119,14 @@ class ViewModel implements IViewModel {
     async autoSelectResource(): Promise<void> {
         try {
             this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
-            console.log("resources", this.resources);
             if (this.resources.length) {
                 this.resources.forEach((resource : Resource) => {
                     resource.availabilities = new Availabilities();
+                    resource.availabilities.sync(resource.id, false);
                     resource.unavailabilities = new Availabilities();
+                    resource.availabilities.sync(resource.id, true);
                 });
+                console.log("resources", this.resources);
                 this.openedBooking.resource = this.resources[0];
 
             } else {
@@ -142,7 +144,7 @@ class ViewModel implements IViewModel {
      * @param calendarEvent the event the booking is linked to
      * @param booking the booking
      */
-    createBooking(calendarEvent, booking ? : Booking) : Booking {
+    prepareBookingForAvailabilityCheck(calendarEvent, booking ? : Booking) : Booking {
             // end_date: Date;
             // iana: String;
             // start_date: Date;
@@ -185,8 +187,9 @@ class ViewModel implements IViewModel {
     }
 
     async getAvailability(calendarEvent): Promise<void> {
+        console.log("avaiability resource", this.openedBooking.resource);
         // await this.bookingService.getAvailability(this.openedBooking.resource.id);
-        let bookingToProcess = this.createBooking(calendarEvent);
+        let bookingToProcess = this.prepareBookingForAvailabilityCheck(calendarEvent);
         console.log("booking for availability", bookingToProcess);
         console.log("Availability", AvailabilityUtil.getTimeslotQuantityAvailable(bookingToProcess, this.openedBooking.resource, null, bookingToProcess));
         try {
@@ -215,7 +218,8 @@ export const calendarRbsBooking = {
                 if(this.source){
                     this.source.asObservable().subscribe((calendarEvent) => {
                         let toto = this.vm.getAvailability(calendarEvent);
-                        console.log(calendarEvent);
+                        console.log(this.vm.openedBooking);
+                        console.log("calendarevent", calendarEvent);
                         console.log(toto);
                     })
                 }
