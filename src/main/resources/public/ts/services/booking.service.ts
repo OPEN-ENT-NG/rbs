@@ -26,35 +26,13 @@ export class BookingService implements IBookingService {
         ]);
     }
 
-    async getSlotProfiles(structId : String) : Promise<AxiosResponse> {
-        return await http.get('/rbs/slotprofiles/schools/' + structId).then((profiles : AxiosResponse) => (<any>profiles.data));
-            // .done(function (data) {
-            //     returnData(callback, [data]);
-            // }).error(function (e) {
-            //     console.log('error get \'rbs/slotprofiles/schools\'', e);
-            //     //var error = JSON.parse(e.responseText);
-            //     //notify.error(error.error);
-            // });
-    };
-
-    async getSlots(slotProfileId, callback) {
-        return http.get('/rbs/slotprofiles/' + slotProfileId + '/slots').then((slots : AxiosResponse) => (<any>slots.data));
-            // .done(function (data) {
-            //     returnData(callback, [data]);
-            // }).error(function (e) {
-            //     var error = JSON.parse(e.responseText);
-            //     notify.error(error.error);
-            // });
-    };
-
-
-    // async delete() {
-    //     await http.delete('/calendar/' + this.calendar[0]._id + '/event/' + this._id);
+    // async getSlotProfiles(structId : String) : Promise<AxiosResponse> {
+    //     return await http.get('/rbs/slotprofiles/schools/' + structId).then((profiles : AxiosResponse) => (<any>profiles.data));
     // };
 
-    // getResource(): Promise<AxiosPromise> {
-    //     return http.get(`rbs/`)
-    // }
+    async getSlots(slotProfileId : String) {
+        return http.get('/rbs/slotprofiles/' + slotProfileId + '/slots').then((slots : AxiosResponse) => (<any>slots.data));
+    };
 
     getString(): String {
         return "toto0";
@@ -62,6 +40,5 @@ export class BookingService implements IBookingService {
 
 }
 
-// export const bookingFormService = new BookingService();
 
 export const bookingService = ng.service('BookingService', BookingService);

@@ -1,7 +1,9 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
 import {model, idiom} from "entcore";
-import {Booking, Resource, ResourceType, Structure} from "../models/booking-form.model";
+import {Booking, Slot} from "../models/booking.model";
+import {Resource} from "../models/resource.model";
+import {ResourceType, Structure} from "../models/resourcetype.model";
 import {lang, Moment} from "moment";
 import {IAngularEvent} from "angular";
 import {calendar} from "entcore/types/src/ts/calendar";
@@ -11,15 +13,13 @@ import {Availabilities} from "../models/Availability";
 console.log("bookingsniplet");
 
 interface IViewModel {
-    lang: typeof idiom;
     openedBooking : Booking;
     loading: boolean;
 
     userStructures : Array<Structure>;
     resourceTypes : Array<ResourceType>;
     resources : Array<any>;
-    slotProfiles : any;
-    slots : any;
+    slots : Array<Slot>;
 
     areStructuresValid() : boolean;
     onGetStructures(): Array<Structure>;
@@ -31,63 +31,39 @@ interface IViewModel {
 class ViewModel implements IViewModel {
     private scope: any;
     loading: boolean;
-    lang: typeof  idiom;
     openedBooking: Booking;
 
     userStructures: Array<Structure>;
     resourceTypes : Array<ResourceType>;
-    resources : Array<any>;
-    slotProfiles : any;
-    slots : any;
+    resources : Array<Resource>;
+    slots : Array<Slot>;
 
 
     private bookingService;
 
     constructor(scope, bookingService: IBookingService) {
         this.loading = true;
-        this.lang = idiom;
         this.scope = scope;
         this.bookingService = bookingService;
+
         console.log("scope angular: ", scope);
         this.openedBooking = new Booking();
-
 
         this.userStructures = this.onGetStructures();
         this.openedBooking.structure = this.userStructures[0];
         console.log(this.openedBooking.structure);
 
-        // this.resourceTypes = this.bookingService.getResourceType();
-        // console.log("resourceTypes", this.resourceTypes);
-        // this.getResourceTypesAndResources();
-
     }
-
 
     async build() {
-        this.resourceTypes = await this.bookingService.getResourceTypes(this.openedBooking.structure.id);
-        if(this.resourceTypes.length){
-            this.openedBooking.type = this.resourceTypes[0];
-            console.log("resourceTypes", this.resourceTypes);
-            // this.slotProfiles = await this.bookingService.getSlotProfiles(this.openedBooking.structure.id);
-            // console.log("profiles",this.slotProfiles);
-            // this.slots = await this.bookingService.getSlots();
-
-            this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
-            // this.resources = await this.bookingService.getResources(1);
-            if(this.resources.length){
-                this.openedBooking.resource = this.resources[0];
-                console.log("resources", this.resources);
-            } else {
-                this.loading = false;
-            }
-        } else {
+        try {
+            await this.autoSelectResourceType();
+            this.scope.$apply();
             this.loading = false;
+        } catch (e) {
+            console.error(e);
         }
-
-        this.scope.$apply();
-
-        this.loading = false;
-    }
+    };
 
 
     /**
@@ -116,17 +92,19 @@ class ViewModel implements IViewModel {
         return structuresWithNames;
     }
 
+    /**
+     * Gets all resource types for one structure + selects the first one.
+     * Calls the method that does the same for resources.
+     */
     async autoSelectResourceType(): Promise<void> {
         try {
             this.resourceTypes = await this.bookingService.getResourceTypes(this.openedBooking.structure.id);
-            // this.slotProfiles = await this.bookingService.getSlotProfiles(this.openedBooking.structure.id);
-            // console.log("profiles",this.slotProfiles);
-            // this.slots = await this.bookingService.getSlots();
+            console.log("types", this.resourceTypes);
             if (this.resourceTypes.length) {
                 this.openedBooking.type = this.resourceTypes[0];
-                // this.scope.$apply();
+                await this.autoSelectResource();
 
-                this.autoSelectResource();
+                // this.scope.$apply();
             } else {
                 this.openedBooking.type = undefined;
             }
@@ -135,6 +113,9 @@ class ViewModel implements IViewModel {
         }
     }
 
+    /**
+     * Gets all resources for one resource type + selects the first one.
+     */
     async autoSelectResource(): Promise<void> {
         try {
             this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
@@ -156,6 +137,11 @@ class ViewModel implements IViewModel {
         // this.scope.$apply();
     }
 
+    /**
+     * Prepares the booking to get its availabilities
+     * @param calendarEvent the event the booking is linked to
+     * @param booking the booking
+     */
     createBooking(calendarEvent, booking ? : Booking) : Booking {
             // end_date: Date;
             // iana: String;
@@ -201,9 +187,8 @@ class ViewModel implements IViewModel {
     async getAvailability(calendarEvent): Promise<void> {
         // await this.bookingService.getAvailability(this.openedBooking.resource.id);
         let bookingToProcess = this.createBooking(calendarEvent);
-        console.log("cest parti");
-        console.log(bookingToProcess);
-        console.log("Availability",AvailabilityUtil.getTimeslotQuantityAvailable(bookingToProcess, this.openedBooking.resource, null, bookingToProcess));
+        console.log("booking for availability", bookingToProcess);
+        console.log("Availability", AvailabilityUtil.getTimeslotQuantityAvailable(bookingToProcess, this.openedBooking.resource, null, bookingToProcess));
         try {
             console.log("availabilitysuccess");
             console.log(calendarEvent);
@@ -220,7 +205,6 @@ export const calendarRbsBooking = {
     public: false,
     that: null,
     // controllerAs: vm,
-    // controller: RbsController,
     controller: {
         init: async function (): Promise<void> {
             // this.vm = new ViewModel(this, new BookingService());
@@ -228,6 +212,14 @@ export const calendarRbsBooking = {
             this.vm = vm;
             try {
                 await vm.build();
+                if(this.source){
+                    this.source.asObservable().subscribe((calendarEvent) => {
+                        let toto = this.vm.getAvailability(calendarEvent);
+                        console.log(calendarEvent);
+                        console.log(toto);
+                    })
+                }
+
             } catch (e) {
                 console.error(e);
             }
@@ -239,21 +231,34 @@ export const calendarRbsBooking = {
         },
 
         updateInfos: function (): void {
-            console.log(this.source);
+            // console.log(this.source);
 
-            this.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
-                console.log(calendarEvent);
-                // try {
-                    this.vm.getAvailability(calendarEvent);
-                // } catch (e) {
-                //     console.error(e);
-                // }
-            });
-            // this.vm.$emit("hello i am a snipplet", () => {
-            //     this.booking = "hello i am a booking";
+            // this.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
+            //     console.log(calendarEvent);
+            //     // try {
+            //         this.vm.getAvailability(calendarEvent);
+            //     // } catch (e) {
+            //     //     console.error(e);
+            //     // }
             // });
-        }
+        },
 
+        // destroy: async function (): Promise<void> {
+        //     // this.vm = new ViewModel(this, new BookingService());
+        //     const vm: ViewModel = new ViewModel(this, new BookingService());
+        //     this.vm = vm;
+        //     try {
+        //         await vm.build();
+        //         this.calendarEvent$
+        //     } catch (e) {
+        //         console.error(e);
+        //     }
+        //
+        //     this.updateInfos();
+        //     // this.vm = new ViewModel(this, bookingEventService);
+        //     this.source;
+        //     console.log(this.source);
+        // },
     }
 
 };

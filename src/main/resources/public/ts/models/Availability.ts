@@ -87,6 +87,7 @@ export class Availabilities {
                 tempAvailability.setFromJson(a);
                 this.all.push(tempAvailability);
             }
+            console.log(this.all);
         } catch (e) {
             notify.error(idiom.translate('rbs.error.availability.sync'));
             throw e;

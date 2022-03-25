@@ -26,7 +26,7 @@
                             <label class="three cell">
                                 <i18n>rbs.booking.edit.type.label</i18n>
                             </label>
-                            <select class="six cell" ng-model="vm.openedBooking.resourceType"
+                            <select class="six cell" ng-model="vm.openedBooking.type"
                                     ng-options="resourceType.name for resourceType in vm.resourceTypes | orderBy: 'name'"
                                     ng-change="vm.autoSelectResource();" required
                                     ng-if="vm.resourceTypes && vm.resourceTypes.length">

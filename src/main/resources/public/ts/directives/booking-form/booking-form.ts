@@ -1205,7 +1205,6 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                 else {
                     let quantityDispo = booking.resource.quantity;
                     if (!booking.is_periodic) {
-                        console.log("booking", booking) ;
                         quantityDispo = AvailabilityUtil.getTimeslotQuantityAvailable(booking, booking.resource, null, bookingException);
                     }
                     else {
