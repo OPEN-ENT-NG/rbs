@@ -3,7 +3,7 @@ import {Observable, Subject} from "rxjs";
 import http, {AxiosPromise, AxiosResponse} from "axios";
 import {IResourceTypeResponse, ResourceType} from "../models/resource-type.model";
 import {IResourceResponse, Resource} from "../models/resource.model";
-import {Booking} from "../models/booking.model";
+import {Booking, IBookingResponse} from "../models/booking.model";
 
 export interface IBookingService {
     getResourceTypes(structureId : String) : Promise<Array<ResourceType>>;
@@ -27,7 +27,7 @@ export class BookingService implements IBookingService {
 
     async getBookings(resourceId : String) : Promise<Array<Booking>> {
         return http.get(`rbs/resource/${resourceId}/bookings`)
-            .then((res: AxiosResponse) => console.log(res));
+            .then((res: AxiosResponse) => res.data.map((booking : IBookingResponse) => new Booking().build(booking)));
     }
 
     // async getAvailability(resourceId : String) : Promise<AxiosResponse[]> {

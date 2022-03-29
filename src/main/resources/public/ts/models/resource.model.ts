@@ -28,7 +28,7 @@ export class Resource {
     created: String;
     description: String; //HTML
     icon: any;
-    isAvailable: boolean;
+    is_available: boolean;
     maxDelay: number;
     minDelay: number;
     modified: String;
@@ -56,7 +56,7 @@ export class Resource {
         this.created = data.created;
         this.description = data.description;
         this.icon = data.icon;
-        this.isAvailable = data.is_available;
+        this.is_available = data.is_available;
         this.maxDelay = data.max_delay;
         this.minDelay = data.min_delay;
         this.modified = data.modified;
