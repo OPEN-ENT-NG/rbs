@@ -1,6 +1,6 @@
 import {Moment} from "moment";
 import {Resource} from "./resource.model";
-import {Data, ResourceType, Structure} from "./resourcetype.model";
+import {Data, ResourceType, Structure} from "./resource-type.model";
 
 export class Booking {
     id: string;
@@ -19,34 +19,34 @@ export class Booking {
     structure: Structure;
     slotLit: SlotLit;
 
-    end_date: Date;
-    iana: String;
-    start_date: Date;
-
-    selected: boolean;
-
-    booking: Booking;
-    booking_reason: String;
-    color: String;
-    created: String;
-    data: Data;
-    // days: null
-    isBookingInstance: boolean;
-    is_periodic: boolean;
-    locked: boolean;
-    // moderator_id: null
-    // moderator_name: null
-    modified: String;
-    myRights: any;
-    // occurrences: null
-    owner: String;
-    owner_name: String;
-    parent_booking_id: number;
-    // periodicity: null
-    // refusal_reason: null
-    resource_id: number;
-    status: number;
-    periodicEndDate: Date;
+    // end_date: Date;
+    // iana: String;
+    // start_date: Date;
+    //
+    // selected: boolean;
+    //
+    // booking: Booking;
+    // booking_reason: String;
+    // color: String;
+    // created: String;
+    // data: Data;
+    // // days: null
+    // isBookingInstance: boolean;
+    // is_periodic: boolean;
+    // locked: boolean;
+    // // moderator_id: null
+    // // moderator_name: null
+    // modified: String;
+    // myRights: any;
+    // // occurrences: null
+    // owner: String;
+    // owner_name: String;
+    // parent_booking_id: number;
+    // // periodicity: null
+    // // refusal_reason: null
+    // resource_id: number;
+    // status: number;
+    // periodicEndDate: Date;
 }
 
 class DisplayBooking {

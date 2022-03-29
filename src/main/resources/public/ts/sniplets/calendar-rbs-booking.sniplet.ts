@@ -1,9 +1,9 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
-import {model, idiom} from "entcore";
+import {model, idiom, angular, notify} from "entcore";
 import {Booking, Slot} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
-import {ResourceType, Structure} from "../models/resourcetype.model";
+import {ResourceType, Structure} from "../models/resource-type.model";
 import {lang, Moment} from "moment";
 import {IAngularEvent} from "angular";
 import {calendar} from "entcore/types/src/ts/calendar";
@@ -20,12 +20,14 @@ interface IViewModel {
     resourceTypes : Array<ResourceType>;
     resources : Array<any>;
     slots : Array<Slot>;
+    calendarEvent : any;
 
     areStructuresValid() : boolean;
     onGetStructures(): Array<Structure>;
     autoSelectResourceType() : Promise<void>;
     autoSelectResource() :  Promise<void>;
     prepareBookingForAvailabilityCheck(calendarEvent : any, booking : Booking) : Booking;
+    getAvailability();
 }
 
 class ViewModel implements IViewModel {
@@ -37,6 +39,7 @@ class ViewModel implements IViewModel {
     resourceTypes : Array<ResourceType>;
     resources : Array<Resource>;
     slots : Array<Slot>;
+    calendarEvent : any;
 
 
     private bookingService;
@@ -49,21 +52,28 @@ class ViewModel implements IViewModel {
         console.log("scope angular: ", scope);
         this.openedBooking = new Booking();
 
+        let eventForm : any = angular.element(document.getElementById("event-form")).scope();
+        this.calendarEvent = eventForm.calendarEvent;
+
         this.userStructures = this.onGetStructures();
         this.openedBooking.structure = this.userStructures[0];
         console.log(this.openedBooking.structure);
 
+        this.autoSelectResourceType();
+
+        this.scope.$apply();
+        this.loading = false;
     }
 
-    async build() {
-        try {
-            await this.autoSelectResourceType();
-            this.scope.$apply();
-            this.loading = false;
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    // async build() {
+    //     try {
+    //         await this.autoSelectResourceType();
+    //         this.scope.$apply();
+    //         this.loading = false;
+    //     } catch (e) {
+    //         console.error(e);
+    //     }
+    // };
 
 
     /**
@@ -96,21 +106,23 @@ class ViewModel implements IViewModel {
      * Gets all resource types for one structure + selects the first one.
      * Calls the method that does the same for resources.
      */
-    async autoSelectResourceType(): Promise<void> {
-        try {
-            this.resourceTypes = await this.bookingService.getResourceTypes(this.openedBooking.structure.id);
-            console.log("types", this.resourceTypes);
-            if (this.resourceTypes.length) {
-                this.openedBooking.type = this.resourceTypes[0];
-                await this.autoSelectResource();
+async autoSelectResourceType(): Promise<void> {
+        this.bookingService.getResourceTypes(this.openedBooking.structure.id)
+            .then(async (resourcesTypes: Array<ResourceType>) => {
+                console.log("types", resourcesTypes);
+                this.resourceTypes = resourcesTypes;
+                if (resourcesTypes && resourcesTypes.length > 0) {
+                    this.openedBooking.type = resourcesTypes[0];
 
-                // this.scope.$apply();
-            } else {
-                this.openedBooking.type = undefined;
-            }
-        } catch (e) {
-            console.error(e);
-        }
+                    await this.autoSelectResource();
+                } else {
+                    this.openedBooking.type = undefined;
+                    this.scope.$apply();
+                }
+            })
+            .catch (e => {
+                console.error(e);
+            })
     }
 
     /**
@@ -119,15 +131,25 @@ class ViewModel implements IViewModel {
     async autoSelectResource(): Promise<void> {
         try {
             this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
-            if (this.resources.length) {
+            if (this.resources && this.resources.length > 0) {
                 this.resources.forEach((resource : Resource) => {
+                    //availabilities
                     resource.availabilities = new Availabilities();
                     resource.availabilities.sync(resource.id, false);
                     resource.unavailabilities = new Availabilities();
-                    resource.availabilities.sync(resource.id, true);
+                    resource.unavailabilities.sync(resource.id, true);
+
+                    // resource.bookings;
+                    this.findResourceBookings(resource);
                 });
                 console.log("resources", this.resources);
                 this.openedBooking.resource = this.resources[0];
+
+                await this.getAvailability();
+
+                // if(this.calendarEvent) {
+                //     await this.getAvailability();
+                // }
 
             } else {
                 this.openedBooking.resource = undefined;
@@ -135,8 +157,45 @@ class ViewModel implements IViewModel {
         } catch (e) {
             console.error(e);
         }
-        console.log(this.scope.source);
-        // this.scope.$apply();
+
+        this.scope.$apply();
+    }
+
+    private findResourceBookings(resource: Resource) {
+        resource.bookings.sync(function () {
+            if (routedBooking !== undefined || found) {
+                return;
+            }
+            routedBooking = resource.bookings.find(function (booking) {
+                return booking.id == bookingId;
+            });
+            if (routedBooking !== undefined) {
+                $scope.bookings.pushAll(routedBooking.resource.bookings.all);
+                var struct = $scope.structures.find(s => s.id === routedBooking.resource.type.structure.id);
+                struct.expanded = true;
+                routedBooking.resource.type.expanded = true;
+                routedBooking.resource.selected = true;
+                $scope.viewBooking(routedBooking);
+                $scope.display.routed = undefined;
+                model.recordedSelections.firstResourceType = undefined;
+                updateCalendarSchedule(model.bookings.startPagingDate);
+                found = true;
+            }
+            if (
+                countTotalTypes == 0 &&
+                countTotalResources == 0 &&
+                typeof cb === 'function'
+            ) {
+                if (!found) {
+                    // error
+                    console.error('Booking not found (id: ' + bookingId + ')');
+                    notify.error('rbs.route.booking.not.found');
+                    $scope.display.routed = undefined;
+                    $scope.initResources();
+                }
+                cb();
+            }
+        });
     }
 
     /**
@@ -186,21 +245,25 @@ class ViewModel implements IViewModel {
         return createdBooking;
     }
 
-    async getAvailability(calendarEvent): Promise<void> {
+    getAvailability(): void {
         console.log("avaiability resource", this.openedBooking.resource);
         // await this.bookingService.getAvailability(this.openedBooking.resource.id);
-        let bookingToProcess = this.prepareBookingForAvailabilityCheck(calendarEvent);
+        let bookingToProcess = this.prepareBookingForAvailabilityCheck(this.calendarEvent);
         console.log("booking for availability", bookingToProcess);
         console.log("Availability", AvailabilityUtil.getTimeslotQuantityAvailable(bookingToProcess, this.openedBooking.resource, null, bookingToProcess));
         try {
             console.log("availabilitysuccess");
-            console.log(calendarEvent);
+            console.log(this.calendarEvent);
         } catch (e) {
             console.error(e);
         }
 
         this.scope.$apply();
     }
+
+    // this.$watch('calendarEvent', function(){
+    //     this.getAvailability()
+    // });
 }
 
 export const calendarRbsBooking = {
@@ -211,41 +274,45 @@ export const calendarRbsBooking = {
     controller: {
         init: async function (): Promise<void> {
             // this.vm = new ViewModel(this, new BookingService());
-            const vm: ViewModel = new ViewModel(this, new BookingService());
-            this.vm = vm;
-            try {
-                await vm.build();
-                if(this.source){
-                    this.source.asObservable().subscribe((calendarEvent) => {
-                        let toto = this.vm.getAvailability(calendarEvent);
-                        console.log(this.vm.openedBooking);
-                        console.log("calendarevent", calendarEvent);
-                        console.log(toto);
-                    })
-                }
+            this.vm = new ViewModel(this, new BookingService());
 
-            } catch (e) {
-                console.error(e);
-            }
-
-            this.updateInfos();
-            // this.vm = new ViewModel(this, bookingEventService);
-            this.source;
-            console.log(this.source);
-        },
-
-        updateInfos: function (): void {
+            // try {
+            //     await vm.build();
+            //     if(this.source){
+            //         this.source.asObservable().subscribe((calendarEvent) => {
+            //             this.vm.calendarEvent = calendarEvent;
+            //             this.vm.getAvailability();
+            //
+            //             console.log(this.vm.openedBooking);
+            //             console.log("calendarevent", calendarEvent);
+            //         })
+            //     }
+            //
+            // } catch (e) {
+            //     console.error(e);
+            // }
+            //
+            // this.updateInfos();
+            // // this.vm = new ViewModel(this, bookingEventService);
+            // this.source;
             // console.log(this.source);
-
-            // this.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
-            //     console.log(calendarEvent);
-            //     // try {
-            //         this.vm.getAvailability(calendarEvent);
-            //     // } catch (e) {
-            //     //     console.error(e);
-            //     // }
-            // });
         },
+
+        // updateInfos: function (): void {
+        //     // console.log(this.source);
+        //
+        //     this.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
+        //         console.log("$on calevent", calendarEvent);
+        //         this.vm.calendarEvent = calendarEvent;
+        //         if(this.vm.openedBooking.resource) {
+        //             try {
+        //                 this.vm.getAvailability();
+        //             } catch (e) {
+        //                 console.error(e);
+        //             }
+        //         }
+        //     });
+        // },
 
         // destroy: async function (): Promise<void> {
         //     // this.vm = new ViewModel(this, new BookingService());
