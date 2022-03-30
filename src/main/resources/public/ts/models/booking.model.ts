@@ -128,23 +128,6 @@ class DisplayBooking {
     state: number;
 }
 
-export class SlotLit {
-    slots: Array<Slot>;
-}
-
-export class Slot {
-    beginning : Moment;
-    // startMoment : Moment;
-    end : Moment;
-    // endMoment : Moment;
-    iana : Moment;
-
-    id: String;
-    endHour: String;
-    name: String;
-    startHour: String;
-}
-
 // export class Availabilities {
 //     all : Array<Availability>;
 //     validation: boolean;

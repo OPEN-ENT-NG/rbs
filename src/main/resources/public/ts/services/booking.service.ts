@@ -4,11 +4,13 @@ import http, {AxiosPromise, AxiosResponse} from "axios";
 import {IResourceTypeResponse, ResourceType} from "../models/resource-type.model";
 import {IResourceResponse, Resource} from "../models/resource.model";
 import {Booking, IBookingResponse} from "../models/booking.model";
+import {SlotLit, Slot, ISlotResponse} from "../models/slot.model";
 
 export interface IBookingService {
     getResourceTypes(structureId : String) : Promise<Array<ResourceType>>;
     getResources(structureId : String) : Promise<Array<Resource>>;
     getBookings(structureId : String) : Promise<Array<Booking>>;
+    getSlots(slotProfileId : String) : Promise<SlotLit>;
     // getAvailability(resourceId : String) : Promise<AxiosResponse[]>;
     // getString() : String;
 }
@@ -41,9 +43,10 @@ export class BookingService implements IBookingService {
     //     return await http.get('/rbs/slotprofiles/schools/' + structId).then((profiles : AxiosResponse) => (<any>profiles.data));
     // };
     //
-    // async getSlots(slotProfileId : String) {
-    //     return http.get('/rbs/slotprofiles/' + slotProfileId + '/slots').then((slots : AxiosResponse) => (<any>slots.data));
-    // };
+    async getSlots(slotProfileId : String) : Promise<SlotLit> {
+        return http.get(`/rbs/slotprofiles/${slotProfileId}/slots`)
+            .then((slotList : AxiosResponse) => slotList.data.slots.map((slot : ISlotResponse) => new Slot().build(slot)));
+    };
 
     // getString(): String {
     //     return "toto0";

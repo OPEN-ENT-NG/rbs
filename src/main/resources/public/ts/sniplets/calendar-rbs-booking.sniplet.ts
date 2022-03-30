@@ -1,7 +1,7 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
-import {model, idiom, angular, notify} from "entcore";
-import {Booking, Bookings, Slot} from "../models/booking.model";
+import {model, idiom, angular, notify, moment} from "entcore";
+import {Booking, Bookings} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
 import {ResourceType, Structure} from "../models/resource-type.model";
 import {lang, Moment} from "moment";
@@ -9,6 +9,7 @@ import {IAngularEvent} from "angular";
 import {calendar} from "entcore/types/src/ts/calendar";
 import {AvailabilityUtil} from "../utilities/availability.util";
 import {Availabilities} from "../models/Availability";
+import {Slot} from "../models/slot.model";
 
 console.log("bookingsniplet");
 
@@ -21,12 +22,14 @@ interface IViewModel {
     resources : Array<any>;
     slots : Array<Slot>;
     calendarEvent : any;
+    numberOfAvailableItems : number;
+    numberOfTotalItems : number;
 
     areStructuresValid() : boolean;
     onGetStructures(): Array<Structure>;
     autoSelectResourceType() : Promise<void>;
     autoSelectResource() :  Promise<void>;
-    prepareBookingForAvailabilityCheck() : void;
+    prepareBookingStartAndEnd() : void;
     availableResourceQuantity() : number;
     resourceQuantity() : number;
     isResourceAvailable() : boolean;
@@ -43,7 +46,8 @@ class ViewModel implements IViewModel {
     resources : Array<Resource>;
     slots : Array<Slot>;
     calendarEvent : any;
-
+    numberOfAvailableItems : number;
+    numberOfTotalItems : number;
 
     private bookingService;
 
@@ -57,6 +61,8 @@ class ViewModel implements IViewModel {
 
         let eventForm : any = angular.element(document.getElementById("event-form")).scope();
         this.calendarEvent = eventForm.calendarEvent;
+        console.log(eventForm);
+        console.log(this.calendarEvent);
 
         this.userStructures = this.onGetStructures();
         this.openedBooking.structure = this.userStructures[0];
@@ -152,6 +158,8 @@ class ViewModel implements IViewModel {
                 console.log("resources", this.resources);
                 this.openedBooking.resource = this.resources[0];
 
+                this.numberOfAvailableItems = this.availableResourceQuantity();
+                this.numberOfTotalItems = this.resourceQuantity();
             } else {
                 this.openedBooking.resource = undefined;
             }
@@ -175,8 +183,8 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     availableResourceQuantity(booking ? : Booking): number {
-        let currentBooking = booking ? this.prepareBookingForAvailabilityCheck(booking)
-            : this.prepareBookingForAvailabilityCheck();
+        let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+            : this.prepareBookingStartAndEnd();
 
         return AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
             currentBooking);
@@ -187,8 +195,8 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     resourceQuantity(booking ? : Booking) : number {
-        let currentBooking = booking ? this.prepareBookingForAvailabilityCheck(booking)
-            : this.prepareBookingForAvailabilityCheck();
+        let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+            : this.prepareBookingStartAndEnd();
 
         return AvailabilityUtil.getResourceQuantityByTimeslot(currentBooking, currentBooking.resource, null);
     }
@@ -199,7 +207,7 @@ class ViewModel implements IViewModel {
      * Prepares the booking to get its availabilities
      * @param booking the booking that must be prepared
      */
-    prepareBookingForAvailabilityCheck(booking ? : Booking) : Booking {
+    prepareBookingStartAndEnd(booking ? : Booking) : Booking {
         let createdBooking : Booking = booking ? booking : this.openedBooking;
 
         createdBooking.startDate = this.calendarEvent.startMoment.toDate();
@@ -212,6 +220,39 @@ class ViewModel implements IViewModel {
         //     $scope.booking.end.set('hour', $scope.selectedSlotStart.endHour.split(':')[0]);
         //     $scope.booking.endTime.set('minute',$scope.selectedSlotStart.endHour.split(':')[1]);
         // }
+
+        if(createdBooking.type.slotProfile) {
+            let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
+            let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
+            console.log(this.calendarEvent);
+            console.log(eventStartTime);
+            console.log(eventEndTime);
+            let closestStartTime = undefined;
+            let closestEndTime = undefined;
+            this.bookingService.getSlots(createdBooking.type.slotProfile)
+                .then(slotList => {
+                    console.log(slotList);
+                    slotList.forEach((slot : Slot) => {
+                        if((!closestEndTime || slot.startHour > closestStartTime.startHour)
+                            && slot.startHour <= eventStartTime) closestStartTime = slot;
+                        if((!closestEndTime || slot.endHour < closestEndTime.endHour)
+                            && slot.endHour >= eventEndTime) closestEndTime = slot;
+                    });
+                    console.log(this.calendarEvent);
+                    console.log("slot start", closestStartTime);
+                    console.log("slot end", closestEndTime);
+
+                    // this.openedBooking.startDate;
+
+                    // slots.reduce(
+                    //     (closestSlot, currentSlot) => {
+                    //         (currentSlot.startHour < closestSlot.startHour
+                    //             && currentSlot.startHour >= eventStartTime) ? closestSlot = currentSlot
+                    //     },
+                    //     undefined //initialValue
+                    // );
+                });
+        }
 
         return createdBooking;
     }

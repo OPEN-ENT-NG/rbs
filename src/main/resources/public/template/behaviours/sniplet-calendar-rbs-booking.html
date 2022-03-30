@@ -122,20 +122,22 @@
 
 
                     <!-- Booking quantity -->
-                    <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isResourceAvailable()">
-                        <b><i18n>rbs.booking.edit.quantity.none</i18n></b>
-                    </div>
-                    <div class="bottom-spacing-three default-fontsize" ng-if="vm.isResourceAvailable()">
-                        <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
-                        <b>[[vm.availableResourceQuantity()]]</b>
-                        <i18n>rbs.booking.edit.quantity.availability.on</i18n>
-                        <b>[[vm.resourceQuantity()]]</b>
-                        <i18n>rbs.booking.edit.quantity.availability.text</i18n>
-                    </div>
-                    <div class="bottom-spacing-three">
-                        <label class="right-spacing cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
-                        <input class="input-size" type="number" ng-model="vm.openedBooking.quantity"
-                               min="1" max="[[vm.availableResourceQuantity()]]"/>
+                    <div ng-if="vm.openedBooking.resource.is_available != undefined">
+                        <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isResourceAvailable()">
+                            <b><i18n>rbs.booking.edit.quantity.none</i18n></b>
+                        </div>
+                        <div class="bottom-spacing-three default-fontsize" ng-if="vm.isResourceAvailable()">
+                            <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
+                            <b>[[vm.numberOfAvailableItems]]</b>
+                            <i18n>rbs.booking.edit.quantity.availability.on</i18n>
+                            <b>[[vm.numberOfTotalItems]]</b>
+                            <i18n>rbs.booking.edit.quantity.availability.text</i18n>
+                        </div>
+                        <div class="bottom-spacing-three">
+                            <label class="right-spacing cell"><i18n>rbs.booking.edit.quantity.label</i18n></label>
+                            <input class="input-size" type="number" ng-model="vm.openedBooking.quantity"
+                                   min="1" max="[[vm.numberOfAvailableItems]]"/>
+                        </div>
                     </div>
 
                     <!-- Errors -->
