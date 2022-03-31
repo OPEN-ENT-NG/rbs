@@ -1,6 +1,6 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
-import {model, idiom, angular, notify, moment} from "entcore";
+import {model, idiom, angular, notify, moment, Behaviours} from "entcore";
 import {Booking, Bookings} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
 import {ResourceType, Structure} from "../models/resource-type.model";
@@ -59,9 +59,7 @@ class ViewModel implements IViewModel {
         console.log("scope angular: ", scope);
         this.openedBooking = new Booking();
 
-        let eventForm : any = angular.element(document.getElementById("event-form")).scope();
-        this.calendarEvent = eventForm.calendarEvent;
-        console.log(eventForm);
+        this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
         console.log(this.calendarEvent);
 
         this.userStructures = this.onGetStructures();
@@ -120,10 +118,14 @@ class ViewModel implements IViewModel {
     async autoSelectResourceType(): Promise<void> {
         this.bookingService.getResourceTypes(this.openedBooking.structure.id)
             .then(async (resourcesTypes: Array<ResourceType>) => {
-                console.log("types", resourcesTypes);
-                this.resourceTypes = resourcesTypes;
                 if (resourcesTypes && resourcesTypes.length > 0) {
-                    this.openedBooking.type = resourcesTypes[0];
+                    resourcesTypes.forEach((type : ResourceType) => {
+                        Behaviours.applicationsBehaviours.rbs.resourceRights(type);
+                        console.log(type);
+                    });
+                    this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
+                    console.log("types", this.resourceTypes);
+                    this.openedBooking.type = this.resourceTypes[0];
 
                     await this.autoSelectResource();
                 } else {

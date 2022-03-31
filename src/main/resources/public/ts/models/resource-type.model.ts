@@ -34,6 +34,8 @@ export class ResourceType {
     validation: boolean;
     visibility: boolean;
 
+    myRights: any;
+
     build(data: IResourceTypeResponse): ResourceType {
         this.id = data.id;
         this.color = data.color;
