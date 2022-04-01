@@ -32,6 +32,7 @@ interface IViewModel {
     prepareBookingStartAndEnd() : void;
     availableResourceQuantity() : number;
     resourceQuantity() : number;
+    calendarEventIsBeforeToday() : boolean;
     isResourceAvailable() : boolean;
 
 }
@@ -60,7 +61,6 @@ class ViewModel implements IViewModel {
         this.openedBooking = new Booking();
 
         this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
-        console.log(this.calendarEvent);
 
         this.userStructures = this.onGetStructures();
         this.openedBooking.structure = this.userStructures[0];
@@ -83,7 +83,6 @@ class ViewModel implements IViewModel {
     //         console.error(e);
     //     }
     // };
-
 
     /**
      * Returns true if user has at least 1 structure and if there are the same number of structure ids and structure names
@@ -172,6 +171,12 @@ class ViewModel implements IViewModel {
         this.scope.$apply();
     }
 
+    calendarEventIsBeforeToday() : boolean {
+        console.log(this.calendarEvent);
+        console.log(moment(this.calendarEvent.startMoment).isBefore(Date.now()));
+        return (moment(this.calendarEvent.startMoment).isBefore(Date.now()));
+    }
+
     /**
      * Returns true if the resource has a set quantity that is available
      */
@@ -210,6 +215,9 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be prepared
      */
     prepareBookingStartAndEnd(booking ? : Booking) : Booking {
+        this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
+        console.log(this.calendarEvent);
+
         let createdBooking : Booking = booking ? booking : this.openedBooking;
 
         createdBooking.startDate = this.calendarEvent.startMoment.toDate();
@@ -222,11 +230,9 @@ class ViewModel implements IViewModel {
         //     $scope.booking.end.set('hour', $scope.selectedSlotStart.endHour.split(':')[0]);
         //     $scope.booking.endTime.set('minute',$scope.selectedSlotStart.endHour.split(':')[1]);
         // }
-
         if(createdBooking.type.slotProfile) {
             let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
             let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
-            console.log(this.calendarEvent);
             console.log(eventStartTime);
             console.log(eventEndTime);
             let closestStartTime = undefined;
@@ -240,7 +246,6 @@ class ViewModel implements IViewModel {
                         if((!closestEndTime || slot.endHour < closestEndTime.endHour)
                             && slot.endHour >= eventEndTime) closestEndTime = slot;
                     });
-                    console.log(this.calendarEvent);
                     console.log("slot start", closestStartTime);
                     console.log("slot end", closestEndTime);
 
@@ -260,8 +265,8 @@ class ViewModel implements IViewModel {
     }
 
 
-    // this.$watch('calendarEvent', function(){
-    //     this.getAvailability()
+    // this.scope.$watch('calendarEvent', function(){
+    //     console.log("watched");
     // });
 }
 
