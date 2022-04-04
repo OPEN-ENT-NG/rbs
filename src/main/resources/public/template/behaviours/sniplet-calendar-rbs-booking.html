@@ -61,7 +61,7 @@
                                         </select>
                                         <!-- a rajouter apres ng-options vm.resources -->
                                         <!-- .filterAvailable(vm.editedBooking.is_periodic) -->
-                                        <div class="six cell warning" ng-if="!(vm.resources && vm.resources.length)">
+                                        <div class="six cell warning" ng-if="!(vm.resources || vm.resources.length)">
                                             <i18n>rbs.booking.warning.no.resources</i18n>
                                         </div>
                                     </div>

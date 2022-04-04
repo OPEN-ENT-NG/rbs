@@ -14,6 +14,7 @@ import {Slot} from "../models/slot.model";
 console.log("bookingsniplet");
 
 interface IViewModel {
+    hasBookingRight : boolean;
     openedBooking : Booking;
     loading: boolean;
 
@@ -25,8 +26,9 @@ interface IViewModel {
     numberOfAvailableItems : number;
     numberOfTotalItems : number;
 
+    autoSelectStructure(structure ? : Structure) : void;
     areStructuresValid() : boolean;
-    onGetStructures(): Array<Structure>;
+    // getStructures(): Array<Structure>;
     autoSelectResourceType() : Promise<void>;
     autoSelectResource() :  Promise<void>;
     prepareBookingStartAndEnd() : void;
@@ -40,6 +42,7 @@ interface IViewModel {
 class ViewModel implements IViewModel {
     private scope: any;
     loading: boolean;
+    hasBookingRight : boolean;
     openedBooking: Booking;
 
     userStructures: Array<Structure>;
@@ -62,11 +65,7 @@ class ViewModel implements IViewModel {
 
         this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
 
-        this.userStructures = this.onGetStructures();
-        this.openedBooking.structure = this.userStructures[0];
-        console.log(this.openedBooking.structure);
-
-        this.autoSelectResourceType();
+        this.autoSelectStructure();
 
         this.openedBooking.quantity = 1;
 
@@ -74,15 +73,21 @@ class ViewModel implements IViewModel {
         this.loading = false;
     }
 
-    // async build() {
-    //     try {
-    //         await this.autoSelectResourceType();
-    //         this.scope.$apply();
-    //         this.loading = false;
-    //     } catch (e) {
-    //         console.error(e);
-    //     }
-    // };
+    autoSelectStructure(structure ? : Structure) {
+        // if(structure) { //filter structure with no resource types with createBooking right
+        //     this.userStructures = this.userStructures.filter((s : Structure) => s.id == structure.id);
+        //     if(this.userStructures.length == 0) {
+        //         this.hasBookingRight = false;
+        //         this.scope.$apply();
+        //     }
+        // } else {
+            this.userStructures = this.getStructures();
+        // }
+        this.openedBooking.structure = this.userStructures[0];
+        console.log(this.openedBooking.structure);
+
+        this.autoSelectResourceType();
+    }
 
     /**
      * Returns true if user has at least 1 structure and if there are the same number of structure ids and structure names
@@ -95,7 +100,7 @@ class ViewModel implements IViewModel {
     /**
      * Gets the id + name if the structures the user is part of
      */
-    onGetStructures(): Array<Structure> {
+    private getStructures(): Array<Structure> {
         let structuresWithNames : Array<Structure> = [];
 
         if (this.areStructuresValid()) { //warning in html if structures are not valid
@@ -118,11 +123,11 @@ class ViewModel implements IViewModel {
         this.bookingService.getResourceTypes(this.openedBooking.structure.id)
             .then(async (resourcesTypes: Array<ResourceType>) => {
                 if (resourcesTypes && resourcesTypes.length > 0) {
-                    resourcesTypes.forEach((type : ResourceType) => {
-                        Behaviours.applicationsBehaviours.rbs.resourceRights(type);
-                        console.log(type);
-                    });
-                    this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
+                    // this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
+                    this.resourceTypes = resourcesTypes;
+                    if(this.resourceTypes.length == 0) {
+                        this.autoSelectStructure(this.openedBooking.structure);
+                    }
                     console.log("types", this.resourceTypes);
                     this.openedBooking.type = this.resourceTypes[0];
 
@@ -141,39 +146,45 @@ class ViewModel implements IViewModel {
      * Gets all resources for one resource type + selects the first one.
      */
     async autoSelectResource(): Promise<void> {
-        try {
-            this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
-            if (this.resources && this.resources.length > 0) {
-                for (const resource of this.resources) {
+        if(!this.openedBooking.type.myRights.contrib) {
+            this.resources = undefined;
+        } else {
+            try {
+                this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
+                if (this.resources && this.resources.length > 0) {
+                    for (const resource of this.resources) {
 
-                    //availabilities
-                    resource.availabilities = new Availabilities();
-                    resource.availabilities.sync(resource.id, false);
-                    resource.unavailabilities = new Availabilities();
-                    resource.unavailabilities.sync(resource.id, true);
+                        //availabilities
+                        resource.availabilities = new Availabilities();
+                        resource.availabilities.sync(resource.id, false);
+                        resource.unavailabilities = new Availabilities();
+                        resource.unavailabilities.sync(resource.id, true);
 
-                    // resource.bookings;
-                    resource.bookings = new Bookings();
-                    resource.bookings.all = await this.bookingService.getBookings(resource.id);
+                        // resource.bookings;
+                        resource.bookings = new Bookings();
+                        resource.bookings.all = await this.bookingService.getBookings(resource.id);
+                    }
+                    console.log("resources", this.resources);
+                    this.openedBooking.resource = this.resources[0];
+
+                    console.log(this.scope);
+
+                    this.numberOfAvailableItems = this.availableResourceQuantity();
+                    this.numberOfTotalItems = this.resourceQuantity();
+                } else {
+                    this.openedBooking.resource = undefined;
                 }
-                console.log("resources", this.resources);
-                this.openedBooking.resource = this.resources[0];
-
-                this.numberOfAvailableItems = this.availableResourceQuantity();
-                this.numberOfTotalItems = this.resourceQuantity();
-            } else {
-                this.openedBooking.resource = undefined;
+            } catch (e) {
+                console.error(e);
             }
-        } catch (e) {
-            console.error(e);
         }
 
         this.scope.$apply();
     }
 
     calendarEventIsBeforeToday() : boolean {
-        console.log(this.calendarEvent);
-        console.log(moment(this.calendarEvent.startMoment).isBefore(Date.now()));
+        // console.log(this.calendarEvent);
+        // console.log(moment(this.calendarEvent.startMoment).isBefore(Date.now()));
         return (moment(this.calendarEvent.startMoment).isBefore(Date.now()));
     }
 
@@ -216,7 +227,7 @@ class ViewModel implements IViewModel {
      */
     prepareBookingStartAndEnd(booking ? : Booking) : Booking {
         this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
-        console.log(this.calendarEvent);
+        // console.log(this.calendarEvent);
 
         let createdBooking : Booking = booking ? booking : this.openedBooking;
 
@@ -265,9 +276,9 @@ class ViewModel implements IViewModel {
     }
 
 
-    // this.scope.$watch('calendarEvent', function(){
+    // this.scope.$watch('calendarEvent', () => {
     //     console.log("watched");
-    // });
+    // }, true);
 }
 
 export const calendarRbsBooking = {

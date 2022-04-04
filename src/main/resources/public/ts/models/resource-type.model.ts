@@ -1,4 +1,5 @@
 import {Resource} from "./resource.model";
+import {Behaviours} from "entcore";
 
 export class Structure {
     id: string;
@@ -49,6 +50,9 @@ export class ResourceType {
         this.slotProfile = data.slotprofile;
         this.validation = data.validation;
         this.visibility = data.visibility;
+
+        Behaviours.applicationsBehaviours.rbs.resourceRights(this);
+
         return this;
     }
 }
