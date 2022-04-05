@@ -1,4 +1,4 @@
-<article id="calendar-booking" class="sniplet rbs calendarBooking">
+<article id="calendar-booking" class="sniplet rbs calendarBooking" ng-if="vm.hasBookingRight">
     <h2 class="backgroundBlueTitle">
         <i18n>calendar.rbs.booking</i18n>
     </h2>
@@ -51,7 +51,7 @@
                                         </div>
                                     </div>
                                     <!-- Resources -->
-                                    <div class="row" ng-if="vm.resourceTypes && vm.resourceTypes.length">
+                                    <div class="row" ng-if="vm.resourceTypes && (vm.resourceTypes.length >0)">
                                         <label class="three cell">
                                             <i18n>rbs.booking.edit.resource.label</i18n>
                                         </label>
@@ -61,7 +61,7 @@
                                         </select>
                                         <!-- a rajouter apres ng-options vm.resources -->
                                         <!-- .filterAvailable(vm.editedBooking.is_periodic) -->
-                                        <div class="six cell warning" ng-if="!(vm.resources || vm.resources.length)">
+                                        <div class="six cell warning" ng-if="!vm.resources || (vm.resources.length <= 0)">
                                             <i18n>rbs.booking.warning.no.resources</i18n>
                                         </div>
                                     </div>

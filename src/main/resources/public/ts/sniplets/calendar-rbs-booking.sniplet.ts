@@ -10,6 +10,7 @@ import {calendar} from "entcore/types/src/ts/calendar";
 import {AvailabilityUtil} from "../utilities/availability.util";
 import {Availabilities} from "../models/Availability";
 import {Slot} from "../models/slot.model";
+import {safeApply} from "../utilities/safe-apply";
 
 console.log("bookingsniplet");
 
@@ -31,6 +32,7 @@ interface IViewModel {
     // getStructures(): Array<Structure>;
     autoSelectResourceType() : Promise<void>;
     autoSelectResource() :  Promise<void>;
+    userIsAdml() : boolean;
     prepareBookingStartAndEnd() : void;
     availableResourceQuantity() : number;
     resourceQuantity() : number;
@@ -69,7 +71,7 @@ class ViewModel implements IViewModel {
 
         this.openedBooking.quantity = 1;
 
-        this.scope.$apply();
+        // this.scope.$apply();
         this.loading = false;
     }
 
@@ -123,19 +125,28 @@ class ViewModel implements IViewModel {
         this.bookingService.getResourceTypes(this.openedBooking.structure.id)
             .then(async (resourcesTypes: Array<ResourceType>) => {
                 if (resourcesTypes && resourcesTypes.length > 0) {
-                    // this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
-                    this.resourceTypes = resourcesTypes;
-                    if(this.resourceTypes.length == 0) {
-                        this.autoSelectStructure(this.openedBooking.structure);
-                    }
+                    // if(this.userIsAdml()) {
+                        this.resourceTypes = resourcesTypes;
+                    // } else {
+                    //     this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
+                    // }
+                    // if(this.resourceTypes.length == 0) {
+                    //     this.autoSelectStructure(this.openedBooking.structure);
+                    // }
                     console.log("types", this.resourceTypes);
                     this.openedBooking.type = this.resourceTypes[0];
 
-                    await this.autoSelectResource();
-                } else {
-                    this.openedBooking.type = undefined;
-                    this.scope.$apply();
+                    if(this.resourceTypes.filter((type : ResourceType) => type.myRights.contrib).length > 0 || this.userIsAdml()) {
+                        await this.autoSelectResource();
+                    } else {
+                        this.hasBookingRight = false;
+                    }
+
                 }
+                // else {
+                //     this.openedBooking.type = undefined;
+                //     this.scope.$apply();
+                // }
             })
             .catch (e => {
                 console.error(e);
@@ -146,9 +157,8 @@ class ViewModel implements IViewModel {
      * Gets all resources for one resource type + selects the first one.
      */
     async autoSelectResource(): Promise<void> {
-        if(!this.openedBooking.type.myRights.contrib) {
-            this.resources = undefined;
-        } else {
+        if(this.openedBooking.type.myRights.contrib || this.userIsAdml()) {
+            this.hasBookingRight = true;
             try {
                 this.resources = await this.bookingService.getResources(this.openedBooking.type.id);
                 if (this.resources && this.resources.length > 0) {
@@ -177,10 +187,18 @@ class ViewModel implements IViewModel {
             } catch (e) {
                 console.error(e);
             }
+        } else {
+            // this.hasBookingRight = false;
+            this.resources = undefined;
         }
 
-        this.scope.$apply();
+        safeApply(this.scope);
     }
+
+    userIsAdml() : boolean {
+        console.log(model.me.functions.ADMIN_LOCAL && (model.me.functions.ADMIN_LOCAL.scope.find((structure : String) => structure == this.openedBooking.structure.id) != undefined));
+        return model.me.functions.ADMIN_LOCAL && (model.me.functions.ADMIN_LOCAL.scope.find((structure : String) => structure == this.openedBooking.structure.id) != undefined);
+    };
 
     calendarEventIsBeforeToday() : boolean {
         // console.log(this.calendarEvent);
