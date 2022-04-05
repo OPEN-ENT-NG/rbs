@@ -73,6 +73,11 @@ class ViewModel implements IViewModel {
 
         // this.scope.$apply();
         this.loading = false;
+
+        this.scope.$watch('editEvent', (newEvent, oldEvent) => {
+            if(oldEvent == newEvent) return;
+            console.log("watched", newEvent);
+        });
     }
 
     autoSelectStructure(structure ? : Structure) {
@@ -127,7 +132,6 @@ class ViewModel implements IViewModel {
                     } else {
                         this.hasBookingRight = false;
                     }
-
                 }
             })
             .catch (e => {
@@ -273,11 +277,6 @@ class ViewModel implements IViewModel {
 
         return createdBooking;
     }
-
-
-    // this.scope.$watch('calendarEvent', () => {
-    //     console.log("watched");
-    // }, true);
 }
 
 export const calendarRbsBooking = {
@@ -287,8 +286,11 @@ export const calendarRbsBooking = {
     // controllerAs: vm,
     controller: {
         init: async function (): Promise<void> {
+            idiom.addBundle('/rbs/i18n', async () => {
+                this.vm = new ViewModel(this, new BookingService());
+            });
+
             // this.vm = new ViewModel(this, new BookingService());
-            this.vm = new ViewModel(this, new BookingService());
 
 //         this.source.asObservable().subscribe((calendarEvent) => {
 //             this.vm.calendarEvent = calendarEvent;
