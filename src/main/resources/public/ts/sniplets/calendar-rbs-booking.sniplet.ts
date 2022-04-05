@@ -76,15 +76,7 @@ class ViewModel implements IViewModel {
     }
 
     autoSelectStructure(structure ? : Structure) {
-        // if(structure) { //filter structure with no resource types with createBooking right
-        //     this.userStructures = this.userStructures.filter((s : Structure) => s.id == structure.id);
-        //     if(this.userStructures.length == 0) {
-        //         this.hasBookingRight = false;
-        //         this.scope.$apply();
-        //     }
-        // } else {
-            this.userStructures = this.getStructures();
-        // }
+        this.userStructures = this.getStructures();
         this.openedBooking.structure = this.userStructures[0];
         console.log(this.openedBooking.structure);
 
@@ -125,14 +117,8 @@ class ViewModel implements IViewModel {
         this.bookingService.getResourceTypes(this.openedBooking.structure.id)
             .then(async (resourcesTypes: Array<ResourceType>) => {
                 if (resourcesTypes && resourcesTypes.length > 0) {
-                    // if(this.userIsAdml()) {
-                        this.resourceTypes = resourcesTypes;
-                    // } else {
-                    //     this.resourceTypes = resourcesTypes.filter((type : ResourceType) => type.myRights.contrib);
-                    // }
-                    // if(this.resourceTypes.length == 0) {
-                    //     this.autoSelectStructure(this.openedBooking.structure);
-                    // }
+                    this.resourceTypes = resourcesTypes;
+
                     console.log("types", this.resourceTypes);
                     this.openedBooking.type = this.resourceTypes[0];
 
@@ -143,10 +129,6 @@ class ViewModel implements IViewModel {
                     }
 
                 }
-                // else {
-                //     this.openedBooking.type = undefined;
-                //     this.scope.$apply();
-                // }
             })
             .catch (e => {
                 console.error(e);
@@ -188,7 +170,6 @@ class ViewModel implements IViewModel {
                 console.error(e);
             }
         } else {
-            // this.hasBookingRight = false;
             this.resources = undefined;
         }
 
