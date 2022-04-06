@@ -439,6 +439,6 @@
   "rbs.availability.service.list.error": "Une erreur est survenue lors de la récupération des périodes de disponibilité",
   "rbs.availability.service.listByResource.error": "Une erreur est survenue lors de la récupération des périodes de disponibilité pour cette ressource",
   "rbs.availability.service.create.error": "Une erreur est survenue lors de la création de la période de disponibilité",
-  "rbs.availability.service.update.error": "Une erreur est survenue lors de la modifciation de la période de disponibilité",
+  "rbs.availability.service.update.error": "Une erreur est survenue lors de la modification de la période de disponibilité",
   "rbs.availability.service.delete.error": "Une erreur est survenue lors de la suppression de la période de disponibilité"
 }
