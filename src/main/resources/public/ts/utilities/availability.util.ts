@@ -3,6 +3,7 @@ import moment from "../moment";
 import {Moment} from "moment";
 import {BookingUtil} from "./booking.util";
 import {Availability} from "../models/Availability";
+import {Booking} from "../models/booking.model";
 
 export class AvailabilityUtil {
     /**
@@ -137,6 +138,7 @@ export class AvailabilityUtil {
      * @return number       quantity used by the bookings using this timeslot
      */
     static getBookingsQuantityUsedOnTimeslot = (booking: any, resource: any, exception?: any) : number => {
+        console.log(booking);
         let bookings = resource.bookings.all;
         let bookingsQuantityUsed = 0;
         let exceptionId = (exception && exception.id) ? exception.id : -1;
@@ -159,6 +161,7 @@ export class AvailabilityUtil {
      * @return boolean
      */
     static isBookingOverlappingAvailability = (booking: any, availability: any) : boolean => {
+        console.log(booking);
         return !booking.is_periodic &&
             !booking.isPast() &&
             AvailabilityUtil.isCheckedDay(booking, availability) &&

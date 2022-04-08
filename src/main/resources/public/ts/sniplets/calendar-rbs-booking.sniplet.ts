@@ -27,6 +27,7 @@ interface IViewModel {
     numberOfAvailableItems : number;
     numberOfTotalItems : number;
 
+    setHandler(): void;
     autoSelectStructure(structure ? : Structure) : void;
     areStructuresValid() : boolean;
     // getStructures(): Array<Structure>;
@@ -69,13 +70,28 @@ class ViewModel implements IViewModel {
 
         // this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
 
-        this.autoSelectStructure();
+        this.setHandler();
+        // this.autoSelectStructure();
 
         this.openedBooking.quantity = 1;
 
         // this.scope.$apply();
         this.loading = false;
 
+    }
+
+    setHandler(): void {
+        this.scope.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
+            console.log("$on calevent init", calendarEvent);
+            this.handleCalendarEventChange(event, calendarEvent);
+
+        });
+
+        this.scope.$on("updateBookingInfos", (event : IAngularEvent, calendarEvent) => {
+            console.log("$on calevent update", calendarEvent);
+            this.handleCalendarEventChange(event, calendarEvent);
+
+        });
     }
 
     autoSelectStructure(structure ? : Structure) {
@@ -163,8 +179,8 @@ class ViewModel implements IViewModel {
 
                     console.log(this.scope);
 
-                    this.numberOfAvailableItems = this.availableResourceQuantity();
-                    this.numberOfTotalItems = this.resourceQuantity();
+                    // this.numberOfAvailableItems = this.availableResourceQuantity();
+                    // this.numberOfTotalItems = this.resourceQuantity();
                 } else {
                     this.openedBooking.resource = undefined;
                 }
@@ -190,6 +206,7 @@ class ViewModel implements IViewModel {
             case "updateBookingInfos" :
                 this.calendarEvent = calendarEvent;
                 this.getAvailability();
+                safeApply(this.scope);
                 break;
             case "closeBooking" :
                 this.calendarEvent = undefined;
@@ -244,13 +261,13 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be prepared
      */
     prepareBookingStartAndEnd(booking ? : Booking) : Booking {
-        this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
-        // console.log(this.calendarEvent);
+        // this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
 
-        let createdBooking : Booking = booking ? booking : this.openedBooking;
+        console.log(this.calendarEvent);
+        let createdBooking: Booking = booking ? booking : this.openedBooking;
 
-        createdBooking.startDate = this.calendarEvent.startMoment.toDate();
-        createdBooking.endDate = this.calendarEvent.endMoment.toDate();
+        createdBooking.startMoment = moment(this.calendarEvent.startMoment);
+        createdBooking.endMoment = moment(this.calendarEvent.endMoment);
 
         //handle slots
         // if ($scope.selectedSlotStart) {
@@ -294,8 +311,7 @@ class ViewModel implements IViewModel {
     }
 
     getAvailability() : void {
-        this.calendarEventIsBeforeToday();
-        this.prepareBookingStartAndEnd();
+        // this.calendarEventIsBeforeToday();
         // this.availableResourceQuantity();
         // this.resourceQuantity();
 
@@ -312,7 +328,6 @@ export const calendarRbsBooking = {
     controller: {
         init: async function (): Promise<void> {
             idiom.addBundle('/rbs/i18n', async () => {
-                this.setHandler();
                 this.vm = new ViewModel(this, new BookingService());
             });
 
@@ -322,29 +337,17 @@ export const calendarRbsBooking = {
 //         })
         },
 
-        setHandler: function (): void {
-            this.$on("initBookingInfos", (event : IAngularEvent, calendarEvent) => {
-                console.log("$on calevent init", calendarEvent);
-                this.vm.handleCalendarEventChange(event, calendarEvent);
 
-            });
 
-            this.$on("updateBookingInfos", (event : IAngularEvent, calendarEvent) => {
-                console.log("$on calevent update", calendarEvent);
-                this.vm.handleCalendarEventChange(event, calendarEvent);
-
-            });
-        },
-
-        getAvailability: function (): void {
-            if(this.vm.openedBooking.resource) {
-                try {
-                    this.vm.getAvailability();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        },
+        // getAvailability: function (): void {
+        //     if(this.vm.openedBooking.resource) {
+        //         try {
+        //             this.vm.getAvailability();
+        //         } catch (e) {
+        //             console.error(e);
+        //         }
+        //     }
+        // },
 
     }
 

@@ -2,6 +2,7 @@ import {Moment} from "moment";
 import {Resource} from "./resource.model";
 import {Data, ResourceType, Structure} from "./resource-type.model";
 import Bytes = jest.Bytes;
+import {moment} from "entcore";
 
 export interface IBookingResponse {
     id : number;
@@ -41,7 +42,7 @@ export class Booking {
     days : Bytes;
     periodicity : number;
     occurrences : number;
-    isPeriodic : boolean;
+    is_periodic : boolean;
     quantity : number;
     ownerName : String;
     moderatorName : String;
@@ -49,6 +50,14 @@ export class Booking {
     type: ResourceType;
     resource: Resource;
     structure: Structure;
+    startMoment: Moment;
+    endMoment: Moment;
+    startTime: Moment;
+    endTime: Moment;
+    beginning: Moment;
+    end: Moment;
+    display: DisplayBooking;
+    // iana: Moment;
 
     build(data: IBookingResponse): Booking {
         this.id = data.id;
@@ -66,11 +75,19 @@ export class Booking {
         this.days = data.days;
         this.periodicity = data.periodicity;
         this.occurrences = data.occurrences;
-        this.isPeriodic = data.is_periodic;
+        this.is_periodic = data.is_periodic;
         this.quantity = data.quantity;
         this.ownerName = data.owner_name;
         this.moderatorName = data.moderator_name;
+
+        // if(data.is_periodic) {
+        //     this.iana = moment.tz.guess();
+        // }
         return this;
+    }
+
+    isPast(): boolean {
+        return moment(this.startMoment).isBefore(moment());
     }
 }
 

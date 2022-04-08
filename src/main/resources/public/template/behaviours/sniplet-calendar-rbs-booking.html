@@ -143,9 +143,9 @@
                                     </div>
                                     <div class="bottom-spacing-three default-fontsize" ng-if="vm.isResourceAvailable()">
                                         <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
-                                        <b>[[vm.numberOfAvailableItems]]</b>
+                                        <b>[[vm.availableResourceQuantity()]]</b>
                                         <i18n>rbs.booking.edit.quantity.availability.on</i18n>
-                                        <b>[[vm.numberOfTotalItems]]</b>
+                                        <b>[[vm.resourceQuantity()]]</b>
                                         <i18n>rbs.booking.edit.quantity.availability.text</i18n>
                                     </div>
                                     <div class="bottom-spacing-three">
