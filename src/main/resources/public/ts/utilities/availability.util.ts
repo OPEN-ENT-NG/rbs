@@ -160,7 +160,6 @@ export class AvailabilityUtil {
      * @return boolean
      */
     static isBookingOverlappingAvailability = (booking: any, availability: any) : boolean => {
-        console.log(booking);
         return !booking.is_periodic &&
             !booking.isPast() &&
             AvailabilityUtil.isCheckedDay(booking, availability) &&
@@ -207,7 +206,6 @@ export class AvailabilityUtil {
     };
 
     static getRightList = (resource) : Availability[] => {
-        // console.log(resource);
         return resource && resource.is_available ? resource.unavailabilities.all : resource.availabilities.all;
     };
 }
