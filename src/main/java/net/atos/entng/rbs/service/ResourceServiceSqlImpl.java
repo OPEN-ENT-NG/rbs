@@ -53,11 +53,6 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		listResources(groupsAndUserIds,user, null, handler);
 	}
 
-//	@Override
-//	public void listResources(final UserInfos user, String resourceTypeId,
-//							  final Handler<Either<String, JsonArray>> handler) {
-//		listResources(null,user, resourceTypeId, handler);
-//	}
 
 	@Override
 	public void listResources(final List<String> groupsAndUserIds, final UserInfos user, String resourceTypeId,

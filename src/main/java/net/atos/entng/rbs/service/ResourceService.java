@@ -48,15 +48,6 @@ public interface ResourceService extends CrudService {
 	 */
 	void listResources(List<String> groupsAndUserIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
 
-//	/**
-//	 * Get all resources for one resource type
-//	 *
-//	 * @param user {@link UserInfos} information of current user logged
-//	 * @param resourceTypeId {@link String} id of the target resource type
-//	 * @param handler handler which contains the response
-//	 */
-//	void listResources(UserInfos user, String resourceTypeId, Handler<Either<String, JsonArray>> handler);
-
 	/**
 	 * Get all resources for one resource type
 	 *

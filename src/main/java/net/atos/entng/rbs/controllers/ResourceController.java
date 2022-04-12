@@ -324,25 +324,6 @@ public class ResourceController extends ControllerHelper {
 		});
 	}
 
-//	@Get("/type/:id/resources")
-//	@ApiDoc("Get resources from one resource type")
-////	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-////	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
-//	public void getResourcesFromType(final HttpServerRequest request) {
-//		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-//			@Override
-//			public void handle(final UserInfos user) {
-//				if (user != null) {
-//					String resourceTypeId = request.params().get("id");
-//
-//					resourceService.listResources(user, resourceTypeId, arrayResponseHandler(request));
-//				} else {
-//					log.debug("User not found in session.");
-//					unauthorized(request);
-//				}
-//			}
-//		});
-//	}
 
 	@Post("/resource/notification/add/:id")
 	@ApiDoc("Add notification")
