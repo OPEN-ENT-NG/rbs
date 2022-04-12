@@ -152,5 +152,5 @@ class DisplayBooking {
 // }
 
 export class Bookings {
-    all: Array<Bookings>;
+    all: Array<Booking>;
 }

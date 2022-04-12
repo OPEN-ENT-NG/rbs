@@ -1,6 +1,6 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
-import {model, idiom, angular, notify, moment, Behaviours} from "entcore";
+import {model, idiom, angular, notify, Behaviours} from "entcore";
 import {Booking, Bookings} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
 import {ResourceType, Structure} from "../models/resource-type.model";
@@ -11,6 +11,8 @@ import {AvailabilityUtil} from "../utilities/availability.util";
 import {Availabilities} from "../models/Availability";
 import {Slot} from "../models/slot.model";
 import {safeApply} from "../utilities/safe-apply";
+import moment from '../moment';
+
 
 console.log("bookingsniplet");
 
@@ -166,13 +168,19 @@ class ViewModel implements IViewModel {
 
                         //availabilities
                         resource.availabilities = new Availabilities();
-                        resource.availabilities.sync(resource.id, false);
+                        await resource.availabilities.sync(resource.id, false);
                         resource.unavailabilities = new Availabilities();
-                        resource.unavailabilities.sync(resource.id, true);
+                        await resource.unavailabilities.sync(resource.id, true);
 
                         // resource.bookings;
                         resource.bookings = new Bookings();
                         resource.bookings.all = await this.bookingService.getBookings(resource.id);
+                        resource.bookings.all.forEach((booking : Booking) =>  {
+                            booking.startMoment = moment(moment.utc(booking.startDate).toISOString());
+                            booking.endMoment = moment(moment.utc(booking.endDate).toISOString());
+                            // booking.endMoment = moment(booking.endMoment.toISOString());
+                        });
+
                     }
                     console.log("resources", this.resources);
                     this.openedBooking.resource = this.resources[0];
@@ -241,6 +249,8 @@ class ViewModel implements IViewModel {
         let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
             : this.prepareBookingStartAndEnd();
 
+        console.log("available", AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
+            currentBooking));
         return AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
             currentBooking);
     }
@@ -253,6 +263,7 @@ class ViewModel implements IViewModel {
         let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
             : this.prepareBookingStartAndEnd();
 
+        console.log("qtity", AvailabilityUtil.getResourceQuantityByTimeslot(currentBooking, currentBooking.resource, null));
         return AvailabilityUtil.getResourceQuantityByTimeslot(currentBooking, currentBooking.resource, null);
     }
 
@@ -263,11 +274,39 @@ class ViewModel implements IViewModel {
     prepareBookingStartAndEnd(booking ? : Booking) : Booking {
         // this.calendarEvent = angular.element(document.getElementById("event-form")).scope().calendarEvent;
 
-        console.log(this.calendarEvent);
         let createdBooking: Booking = booking ? booking : this.openedBooking;
 
-        createdBooking.startMoment = moment(this.calendarEvent.startMoment);
-        createdBooking.endMoment = moment(this.calendarEvent.endMoment);
+        // createdBooking.startMoment = moment(this.calendarEvent.startTime)
+        //     .day(this.calendarEvent.startMoment.date())
+        //     .month(this.calendarEvent.startMoment.month())
+        //     .year(this.calendarEvent.startMoment.year());
+        // createdBooking.endMoment = moment(this.calendarEvent.endTime)
+        //     .day(this.calendarEvent.endMoment.date())
+        //     .month(this.calendarEvent.endMoment.month())
+        //     .year(this.calendarEvent.endMoment.year());
+
+        createdBooking.startMoment = moment(this.calendarEvent.startMoment)
+            .hours(this.calendarEvent.startTime.getHours())
+            .minutes(this.calendarEvent.startTime.getMinutes())
+            .utc();
+        createdBooking.endMoment = moment(this.calendarEvent.endMoment)
+            .hours(this.calendarEvent.endTime.getHours())
+            .minutes(this.calendarEvent.endTime.getMinutes())
+            .utc();
+
+
+        // let offset: number = this.calendarEvent.startTime.getTimezoneOffset();
+        // if(this.calendarEvent.allday) {
+        //     createdBooking.startMoment = createdBooking.startMoment
+        //         .hours(7).minutes(0).second(0).millisecond(0)
+        //         .add(offset, "minutes");
+        //     createdBooking.endMoment = createdBooking.endMoment
+        //         .hours(7).minutes(0).second(0).millisecond(0)
+        //         .add(offset, "minutes");
+        // } else {
+        //     createdBooking.startMoment = createdBooking.startMoment.add(offset, "minutes");
+        //     createdBooking.endMoment = createdBooking.endMoment.add(offset, "minutes");
+        // }
 
         //handle slots
         // if ($scope.selectedSlotStart) {
