@@ -33,8 +33,8 @@ export class Booking {
     bookingReason : String;
     created : String;
     modified : String;
-    startDate : String;
-    endDate : String;
+    start_date : String;
+    end_date : String;
     status : number;
     moderatorId : String;
     refusalReason : String;
@@ -66,8 +66,8 @@ export class Booking {
         this.bookingReason = data.booking_reason;
         this.created = data.created;
         this.modified = data.modified;
-        this.startDate = data.start_date;
-        this.endDate = data.end_date;
+        this.start_date = data.start_date;
+        this.end_date = data.end_date;
         this.status = data.status;
         this.moderatorId = data.moderator_id;
         this.refusalReason = data.refusal_reason;
