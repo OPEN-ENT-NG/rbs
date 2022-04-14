@@ -70,7 +70,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 				.append(" LEFT JOIN rbs.resource_type_shares AS ts ON t.id = ts.resource_id")
 				.append(" LEFT JOIN rbs.members AS m ON (rs.member_id = m.id AND m.group_id IS NOT NULL)");
 
-		if(resourceTypeId != null) {
+		if (resourceTypeId != null) {
 			query.append(" WHERE r.type_id = ? ");
 			values.add(resourceTypeId);
 		} else if (groupsAndUserIds != null) {
@@ -83,9 +83,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			values.add(user.getUserId());
 
 			query.append(" OR ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
-			for (String groupOruser : groupsAndUserIds) {
-				values.add(groupOruser);
-			}
+			values.addAll(new JsonArray(groupsAndUserIds));
 
 			query.append(" OR t.owner = ?");
 			values.add(user.getUserId());

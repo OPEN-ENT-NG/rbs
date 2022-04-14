@@ -31,6 +31,7 @@ import java.util.Set;
 
 import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.Rbs;
+import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
@@ -99,10 +100,10 @@ public class ResourceController extends ControllerHelper {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					String typeid = request.params().get("typeid");
+					String typeid = request.params().get(Field.typeid);
 
 					final List<String> groupsAndUserIds = (typeid == null) ? new ArrayList<>() : null;
-					if(groupsAndUserIds != null) {
+					if (groupsAndUserIds != null) {
 						groupsAndUserIds.add(user.getUserId());
 						if (user.getGroupsIds() != null) {
 							groupsAndUserIds.addAll(user.getGroupsIds());

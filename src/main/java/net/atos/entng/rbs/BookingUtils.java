@@ -190,7 +190,7 @@ public class BookingUtils {
 	 */
 	public static List<String> getLocalAdminScope(final UserInfos user) {
 		Map<String, UserInfos.Function> functions = user.getFunctions();
-		if(isLocalAdmin(user)) {
+		if (isLocalAdmin(user)) {
 			Function adminLocal = functions.get(DefaultFunctions.ADMIN_LOCAL);
 			if (adminLocal != null) {
 				return adminLocal.getScope();
