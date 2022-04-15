@@ -9,13 +9,16 @@
         <div class="content" ng-if="!vm.calendarEventIsBeforeToday()">
             <div class="row">
                 <input type="checkbox"
-                       ng-model="vm.calendarEvent.hasBooking"/>
+                       ng-model="vm.hasBooking" ng-change="vm.updateCalendarEvent()"/>
                 <label>
                     <i18n>calendar.rbs.booking</i18n>
                 </label>
             </div>
-            <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-class="{'display-hidden' : !vm.calendarEvent.hasBooking}">
+            <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-show="vm.hasBooking">
                 <section class="twelve cell sniplet calendarBooking-bookingFormBody">
+                    <div ng-if="vm.hasBooking && !vm.bookingPossible" class="info">
+                        <i18n>rbs.calendar.sniplet.conditions</i18n>
+                    </div>
                     <div class="row accordions">
                         <!-- Resource description -->
                         <div class="toggle">

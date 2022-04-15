@@ -32,5 +32,6 @@
     "rbs.push.notif.periodic-booking-updated": "Réservation de ressources: Mise à jour d'une réservation périodique",
     "rbs.push.notif.periodic-booking-deleted": "Réservation de ressources: Suppression d'une réservation périodique",
     "rbs.push.notif.resource-available": "Réservation de ressources: Disponibilité d'une ressource",
-    "rbs.push.notif.resource-unavailable": "Réservation de ressources: Indisponibilité d'une ressource"
+    "rbs.push.notif.resource-unavailable": "Réservation de ressources: Indisponibilité d'une ressource",
+    "rbs.calendar.sniplet.conditions": "L'évènement ne doit pas etre récurrent ni sur plusieurs jours"
 }
