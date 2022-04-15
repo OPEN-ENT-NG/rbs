@@ -21,12 +21,14 @@ enum ALL_DAY {
 }
 
 interface IViewModel {
+    loading: boolean;
     hasBooking: boolean;
     bookingValid: boolean;
     bookingPossible: boolean;
     hasBookingRight: boolean;
     editedBooking: Booking;
-    loading: boolean;
+    bookings: Bookings;
+
 
     userStructures: Array<Structure>;
     resourceTypes: Array<ResourceType>;
@@ -63,6 +65,7 @@ class ViewModel implements IViewModel {
     hasBookingRight: boolean;
     bookingPossible: boolean;
     editedBooking: Booking;
+    bookings: Bookings;
 
     userStructures: Array<Structure>;
     resourceTypes: Array<ResourceType>;
@@ -106,6 +109,13 @@ class ViewModel implements IViewModel {
         this.scope.$on("bookingPossible", (event: IAngularEvent, bookingPossible:boolean) => {
             console.log("rbs booking possible", bookingPossible);
             this.bookingPossible = bookingPossible;
+        });
+
+        this.scope.$on("saveCalendarEvent", (event: IAngularEvent, needBookingsInfos:boolean) => {
+            if(needBookingsInfos) {
+                this.bookings.all.push(this.editedBooking);
+                this.scope.$emit("bookingInfo", this.bookings);
+            }
         });
     }
 
