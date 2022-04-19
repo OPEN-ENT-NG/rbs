@@ -7,45 +7,45 @@ import {moment} from "entcore";
 export interface IBookingResponse {
     id : number;
     resource_id : number;
-    owner : String;
-    booking_reason : String;
-    created : String;
-    modified : String;
-    start_date : String;
-    end_date : String;
+    owner : string;
+    booking_reason : string;
+    created : string;
+    modified : string;
+    start_date : string;
+    end_date : string;
     status : number;
-    moderator_id : String;
-    refusal_reason : String;
+    moderator_id : string;
+    refusal_reason : string;
     parent_booking_id : number;
     days : Bytes;
     periodicity : number;
     occurrences : number;
     is_periodic : boolean;
     quantity : number;
-    owner_name : String;
-    moderator_name : String;
+    owner_name : string;
+    moderator_name : string;
 }
 
 export class Booking {
     id : number;
     resourceId : number;
-    owner : String;
-    bookingReason : String;
-    created : String;
-    modified : String;
-    start_date : String;
-    end_date : String;
+    owner : string;
+    bookingReason : string;
+    created : string;
+    modified : string;
+    start_date : string;
+    end_date : string;
     status : number;
-    moderatorId : String;
-    refusalReason : String;
+    moderatorId : string;
+    refusalReason : string;
     parentBookingId : number;
     days : Bytes;
     periodicity : number;
     occurrences : number;
     is_periodic : boolean;
     quantity : number;
-    ownerName : String;
-    moderatorName : String;
+    ownerName : string;
+    moderatorName : string;
 
     type: ResourceType;
     resource: Resource;
@@ -57,6 +57,7 @@ export class Booking {
     beginning: Moment;
     end: Moment;
     display: DisplayBooking;
+    opened: boolean;
 
     build(data: IBookingResponse): Booking {
         this.id = data.id;
@@ -96,4 +97,8 @@ class DisplayBooking {
 
 export class Bookings {
     all: Array<Booking>;
+
+    constructor(bookings?: Booking[]) {
+        this.all = !!bookings ? bookings : [];
+    }
 }

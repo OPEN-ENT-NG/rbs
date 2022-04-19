@@ -1,15 +1,15 @@
 export interface ISlotResponse {
-    id: String;
-    endHour: String;
-    name: String;
-    startHour: String;
+    id: string;
+    endHour: string;
+    name: string;
+    startHour: string;
 }
 
 export class Slot {
-    id: String;
-    endHour: String;
-    name: String;
-    startHour: String;
+    id: string;
+    endHour: string;
+    name: string;
+    startHour: string;
 
     build(data: ISlotResponse): Slot {
         this.id = data.id;
@@ -27,7 +27,7 @@ export class SlotLit {
 
 export class SlotsForAPI {
     end_date: Date;
-    iana: String;
+    iana: string;
     start_date: Date;
 }
 

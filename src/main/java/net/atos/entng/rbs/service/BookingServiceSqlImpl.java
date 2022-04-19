@@ -21,6 +21,11 @@ package net.atos.entng.rbs.service;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.CompositeFutureImpl;
+import net.atos.entng.rbs.helpers.PromiseHelper;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.models.Slots;
@@ -65,6 +70,38 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	static String toSQLTimestamp(Long timestamp) {
 		return timestamp == null ? null : sqlFormatter.format(Instant.ofEpochSecond(timestamp));
+	}
+	@Override
+	public Future<JsonArray> createBookings(final List<String> types, final List<Booking> bookings, final UserInfos user) {
+		// promise
+		Promise<JsonArray> promise = Promise.promise();
+
+		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
+
+		for (Booking booking : bookings) {
+			Promise<JsonArray> bookingPromise = Promise.promise();
+			String bookingResourceId = types.get(bookings.indexOf(booking));
+			createBooking(bookingResourceId, booking, user, PromiseHelper.handlerJsonArray(bookingPromise));
+			bookingsFuture.add(bookingPromise.future());
+		}
+
+		PromiseHelper.all(bookingsFuture)
+				.onSuccess((res) -> {
+					JsonArray savedBookings = new JsonArray();
+					bookingsFuture.stream()
+							.map((Future::result))
+							.forEach((savedBooking) -> savedBooking.add(savedBooking.getValue(0)));
+
+					promise.complete(savedBookings);
+				})
+				.onFailure((err) -> {
+					String message = String.format("[Rbs@%s::createBookings]: an error has occurred while saving bookings: %s",
+							this.getClass().getSimpleName(), err.getMessage());
+					log.error(message);
+					promise.fail(err.getMessage());
+				});
+
+		return promise.future();
 	}
 
 	@Override

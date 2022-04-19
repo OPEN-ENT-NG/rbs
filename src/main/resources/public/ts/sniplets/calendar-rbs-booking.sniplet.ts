@@ -32,27 +32,44 @@ interface IViewModel {
 
     userStructures: Array<Structure>;
     resourceTypes: Array<ResourceType>;
-    resources: Array<any>;
+    resources: Array<Resource>;
     slots: Array<Slot>;
     calendarEvent: any;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
 
     setHandler(): void;
-    updateCalendarEvent(): void;
-    autoSelectStructure(structure ?: Structure): void;
+
+    // updateCalendarEvent(): void;
+
+    prepareBookingsToSave(): Array<Booking>;
+
+    autoSelectStructure(structure?: Structure): void;
+
     areStructuresValid(): boolean;
+
     autoSelectResourceType(): Promise<void>;
-    autoSelectResource():  Promise<void>;
+
+    autoSelectResource(): Promise<void>;
+
     handleCalendarEventChange(event: IAngularEvent, calendarEvent: any): void;
+
     userIsAdml(): boolean;
+
     prepareBookingStartAndEnd(): void;
+
     availableResourceQuantity(): number;
+
     resourceQuantity(): number;
+
     calendarEventIsBeforeToday(): boolean;
+
     isResourceAvailable(): boolean;
+
     getRightList(resource: Resource): Availability[];
-    displayTime(date) : void;
+
+    displayTime(date): void;
+
     displayDate(date): void;
 
 }
@@ -82,13 +99,14 @@ class ViewModel implements IViewModel {
         this.scope = scope;
         this.bookingService = bookingService;
         this.hasBooking = false;
+        this.bookings = new Bookings();
 
         this.editedBooking = new Booking();
+        this.editedBooking.opened = true;
         this.editedBooking.quantity = 1;
 
-        // this.updateCalendarEvent();
         this.setHandler();
-        this.updateCalendarEvent();
+        // this.updateCalendarEvent();
         this.loading = false;
     }
 
@@ -98,42 +116,52 @@ class ViewModel implements IViewModel {
     setHandler(): void {
         this.scope.$on("initBookingInfos", (event: IAngularEvent, calendarEvent: any) => {
             this.handleCalendarEventChange(event, calendarEvent);
-
         });
 
         this.scope.$on("updateBookingInfos", (event: IAngularEvent, calendarEvent: any) => {
             this.handleCalendarEventChange(event, calendarEvent);
-
         });
 
-        this.scope.$on("bookingPossible", (event: IAngularEvent, bookingPossible:boolean) => {
-            console.log("rbs booking possible", bookingPossible);
+        this.scope.$on("bookingPossible", (event: IAngularEvent, bookingPossible: boolean) => {
             this.bookingPossible = bookingPossible;
         });
 
-        this.scope.$on("saveCalendarEvent", (event: IAngularEvent, needBookingsInfos:boolean) => {
-            if(needBookingsInfos) {
-                this.bookings.all.push(this.editedBooking);
-                this.scope.$emit("bookingInfo", this.bookings);
-            }
-        });
+        // this.scope.$on("saveCalendarEvent", (event: IAngularEvent, needBookingsInfos: boolean) => {
+        //     console.log("save calevent", needBookingsInfos);
+        //     if (needBookingsInfos) {
+        //         this.bookings.all.push(this.editedBooking);
+        //
+        //     }
+        // });
     }
 
+    // /**
+    //  * Updates calendarEvent changes to Calendar
+    //  */
+    // updateCalendarEvent(): void {
+    //     this.scope.$emit("hasBooking", this.hasBooking);
+    //     this.bookingValid = this.areStructuresValid() && (this.resourceTypes && this.resourceTypes.length > 0)
+    //         && (this.resources && this.resources.length > 0) && this.isResourceAvailable();
+    //     this.scope.$emit("isBookingValid", this.bookingValid);
+    //     this.scope.$emit("updateBookingInfos", this.bookings);
+    // }
+
     /**
-     * Updates calendarEvent changes back
+     * Updates this.bookings.all and transmits changes to Calendar
      */
-    updateCalendarEvent(): void {
-        this.scope.$emit("hasBooking",  this.hasBooking);
-        this.bookingValid = this.areStructuresValid() && (this.resourceTypes && this.resourceTypes.length > 0)
-            && (this.resources && this.resources.length > 0) && this.isResourceAvailable();
-        this.scope.$emit("isBookingValid", this.bookingValid);
+    prepareBookingsToSave(): Array<Booking> {
+        if(!this.bookings.all.find((booking: Booking) => booking.opened == true)){
+            this.bookings.all.push(this.editedBooking);
+        }
+
+        return this.bookings.all;
     }
 
     /**
      * Gets all the user's structures + selects the first one.
      * Calls the method that does the same for resource types.
      */
-    autoSelectStructure(structure ?: Structure) {
+    autoSelectStructure(structure?: Structure) {
         this.userStructures = this.getStructures();
         this.editedBooking.structure = this.userStructures[0];
 
@@ -146,9 +174,9 @@ class ViewModel implements IViewModel {
     private getStructures(): Array<Structure> {
         let structuresWithNames: Array<Structure> = [];
 
-        if (this.areStructuresValid()) { //warning in html if structures are not valid
-            for(let i=0; i < model.me.structures.length; i++) {
-                let newStructure = new Structure();
+        if (this.areStructuresValid()) { // warning in html if structures are not valid
+            for (let i = 0; i < model.me.structures.length; i++) {
+                let newStructure: Structure = new Structure();
                 newStructure.id = model.me.structures[i];
                 newStructure.name = model.me.structureNames[i];
                 structuresWithNames.push(newStructure);
@@ -162,10 +190,8 @@ class ViewModel implements IViewModel {
      * Returns true if user has at least 1 structure and if there are the same number of structure ids and structure names
      */
     areStructuresValid(): boolean {
-        let areStructuresValid = (model.me.structures.length > 0)
+        let areStructuresValid: boolean = (model.me.structures.length > 0)
             && (model.me.structures.length == model.me.structureNames.length);
-
-        // this.scope.$emit("structuresValid",  areStructuresValid); //inform calendar of structure acceptability
 
         return areStructuresValid;
     };
@@ -177,22 +203,21 @@ class ViewModel implements IViewModel {
     async autoSelectResourceType(): Promise<void> {
         this.bookingService.getResourceTypes(this.editedBooking.structure.id)
             .then(async (resourcesTypes: Array<ResourceType>) => {
-                // let areTypesValid = resourcesTypes && resourcesTypes.length > 0;
-                // this.scope.$emit("typesValid",  areTypesValid); //inform calendar of types acceptability
 
                 if (resourcesTypes && resourcesTypes.length > 0) {
                     this.resourceTypes = resourcesTypes;
                     this.editedBooking.type = this.resourceTypes[0];
 
-                    if(this.resourceTypes.filter((type: ResourceType) => type.myRights.contrib).length > 0
+                    if (this.resourceTypes.filter((type: ResourceType) => type.myRights.contrib).length > 0
                         || this.userIsAdml()) {
+                        this.hasBookingRight = true;
                         await this.autoSelectResource();
                     } else {
                         this.hasBookingRight = false;
                     }
                 }
             })
-            .catch (e => {
+            .catch(e => {
                 console.error(e);
             })
     }
@@ -202,26 +227,24 @@ class ViewModel implements IViewModel {
      */
     async autoSelectResource(): Promise<void> {
         if (this.editedBooking.type.myRights.contrib || this.userIsAdml()) { //user has booking creation right
-            this.hasBookingRight = true;
             try {
                 this.resources = await this.bookingService.getResources(this.editedBooking.type.id);
-                // let areResourcesValid = this.resources && this.resources.length > 0;
-                // this.scope.$emit("resourcesValid",  areResourcesValid); //inform calendar of types acceptability
-
 
                 if (this.resources && this.resources.length > 0) {
                     for (const resource of this.resources) {
 
                         // availabilities
                         resource.availabilities = new Availabilities();
-                        await resource.availabilities.sync(resource.id, false);
                         resource.unavailabilities = new Availabilities();
-                        await resource.unavailabilities.sync(resource.id, true);
+                        await Promise.all([
+                            resource.availabilities.sync(resource.id, false),
+                            resource.unavailabilities.sync(resource.id, true),
+                        ]);
 
                         // get and format resource bookings
                         resource.bookings = new Bookings();
                         resource.bookings.all = await this.bookingService.getBookings(resource.id);
-                        resource.bookings.all.forEach((booking : Booking) =>  {
+                        resource.bookings.all.forEach((booking: Booking) => {
                             //set start and end moment so they can be use by the availability util
                             booking.startMoment = moment(moment.utc(booking.start_date).toISOString());
                             booking.endMoment = moment(moment.utc(booking.end_date).toISOString());
@@ -229,6 +252,7 @@ class ViewModel implements IViewModel {
 
                     }
                     this.editedBooking.resource = this.resources[0];
+                    // this.updateCalendarEvent();
 
                 } else {
                     this.editedBooking.resource = undefined;
@@ -269,7 +293,7 @@ class ViewModel implements IViewModel {
      * Returns true if the user is ADML (Local Admin)
      */
     userIsAdml(): boolean {
-        return model.me.functions.ADMIN_LOCAL && (model.me.functions.ADMIN_LOCAL.scope.find((structure : String) => structure == this.editedBooking.structure.id) != undefined);
+        return model.me.functions.ADMIN_LOCAL && (model.me.functions.ADMIN_LOCAL.scope.find((structure: String) => structure == this.editedBooking.structure.id) != undefined);
     }
 
     /**
@@ -283,10 +307,6 @@ class ViewModel implements IViewModel {
      * Returns true if the resource has a set quantity that is available
      */
     isResourceAvailable(): boolean {
-        // let isResourceAvailable = (this.editedBooking.quantity && this.editedBooking.quantity <= this.availableResourceQuantity()
-        //     && this.availableResourceQuantity() > 0);
-        // this.scope.$emit("resourceAvailable",  isResourceAvailable); //inform calendar of resources availability
-
         return (this.editedBooking.quantity && this.editedBooking.quantity <= this.availableResourceQuantity()
             && this.availableResourceQuantity() > 0);
     }
@@ -336,10 +356,10 @@ class ViewModel implements IViewModel {
         if (createdBooking.type.slotProfile) {
             let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
             let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
-            let closestStartTime = undefined;
-            let closestEndTime = undefined;
+            let closestStartTime: any = undefined;
+            let closestEndTime: any = undefined;
             this.bookingService.getSlots(createdBooking.type.slotProfile)
-                .then(slotList => {
+                .then((slotList: Array<Slot>) => {
                     slotList.forEach((slot: Slot) => {
                         if ((!closestEndTime || slot.startHour > closestStartTime.startHour)
                             && slot.startHour <= eventStartTime) closestStartTime = slot;
@@ -380,7 +400,6 @@ class ViewModel implements IViewModel {
     displayDate(date): void {
         return DateUtils.displayDate(date);
     };
-
 
 }
 

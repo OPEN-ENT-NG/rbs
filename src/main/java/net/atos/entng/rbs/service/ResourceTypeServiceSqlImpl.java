@@ -66,7 +66,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 
 		// Local admin targeting one structure
 		// A local administrator of a given school can see its types, even if he is not owner or manager of these types
-		if(Boolean.TRUE.equals(isLocalAdmin) && (structureId != null)) {
+		if (Boolean.TRUE.equals(isLocalAdmin) && (structureId != null)) {
 			query.append(" WHERE t.school_id = ?");
 			values.add(structureId);
 		} else {
@@ -78,11 +78,11 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 			query.append(" OR t.owner = ?");
 			values.add(user.getUserId());
 
-			//Local admin targeting all structures
+			// Local admin targeting all structures
 			// A local administrator of a given school can see its types, even if he is not owner or manager of these types
-			if(Boolean.TRUE.equals(isLocalAdmin)) {
+			if (Boolean.TRUE.equals(isLocalAdmin)) {
 				List<String> scope = getLocalAdminScope(user);
-				if (scope!=null && !scope.isEmpty()) {
+				if (scope != null && !scope.isEmpty()) {
 					query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
 					for (String schoolId : scope) {
 						values.add(schoolId);

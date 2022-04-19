@@ -3,16 +3,16 @@ import {Bookings} from "./booking.model";
 
 export interface IResourceResponse {
     id: number;
-    color: String;
-    created: String;
-    description: String; //HTML
+    color: string;
+    created: string;
+    description: string; //HTML
     icon: any;
     is_available: boolean;
     max_delay: number;
     min_delay: number;
-    modified: String;
-    name: String;
-    owner: String;
+    modified: string;
+    name: string;
+    owner: string;
     periodic_booking: boolean;
     quantity: number;
     shared: Array<any>;
@@ -23,16 +23,16 @@ export interface IResourceResponse {
 
 export class Resource {
     id: number;
-    color: String;
-    created: String;
-    description: String; //HTML
+    color: string;
+    created: string;
+    description: string; //HTML
     icon: any;
     is_available: boolean;
     maxDelay: number;
     minDelay: number;
-    modified: String;
-    name: String;
-    owner: String;
+    modified: string;
+    name: string;
+    owner: string;
     periodicBooking: boolean;
     quantity: number;
     shared: Array<any>;

@@ -58,35 +58,35 @@ export class ResourceType {
 }
 
 export class Data {
-    color: String;
-    created: String;
+    color: string;
+    created: string;
     extendcolor: boolean;
     id: number;
-    modified: String;
-    name: String;
-    owner: String;
-    school_id: String;
+    modified: string;
+    name: string;
+    owner: string;
+    school_id: string;
     shared: Array<any>;
-    slotprofile: String;
+    slotprofile: string;
     structure: Structure;
     validation: boolean;
     _id: number;
 
-    booking_reason: String;
-    end_date: String;
+    booking_reason: string;
+    end_date: string;
     isBookingInstance: boolean;
     is_periodic: boolean;
-    owner_name: String;
+    owner_name: string;
     parent_booking_id: number;
     quantity: number;
     resource_id: number;
-    start_date: String;
+    start_date: string;
     status: number;
 }
 
 export class Moderator {
-    id: String;
-    login: String;
-    type: String;
-    username: String;
+    id: string;
+    login: string;
+    type: string;
+    username: string;
 }
