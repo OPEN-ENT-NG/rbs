@@ -3,6 +3,7 @@ import {Resource} from "./resource.model";
 import {Data, ResourceType, Structure} from "./resource-type.model";
 import Bytes = jest.Bytes;
 import {moment} from "entcore";
+import {SlotsForAPI} from "./slot.model";
 
 export interface IBookingResponse {
     id : number;
@@ -58,6 +59,7 @@ export class Booking {
     end: Moment;
     display: DisplayBooking;
     opened: boolean;
+    slots: Array<SlotsForAPI>;
 
     build(data: IBookingResponse): Booking {
         this.id = data.id;

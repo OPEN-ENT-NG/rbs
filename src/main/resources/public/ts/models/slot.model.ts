@@ -26,8 +26,8 @@ export class SlotLit {
 }
 
 export class SlotsForAPI {
-    end_date: Date;
+    end_date: number;
     iana: string;
-    start_date: Date;
+    start_date: number;
 }
 

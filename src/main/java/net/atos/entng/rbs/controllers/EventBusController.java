@@ -28,7 +28,6 @@ public class EventBusController extends ControllerHelper {
     }
 
     @BusAddress("net.atos.entng.rbs")
-    @SuppressWarnings("unchecked")
     public void bus(final Message<JsonObject> message) {
         JsonObject body = message.body();
         String action = body.getString("action");
@@ -45,8 +44,8 @@ public class EventBusController extends ControllerHelper {
                                     return new Booking(((JsonObject) bookingObject), new Resource(((JsonObject)bookingObject).getJsonObject("resource")));
                                 })
                                 .collect(Collectors.toList());
-                        List<String> typesId = bookingsArray.stream()
-                                .map((booking) -> ((JsonObject)booking).getJsonObject("type").getString("id"))
+                        List<Integer> typesId = bookingsArray.stream()
+                                .map((booking) -> ((JsonObject)booking).getJsonObject("type").getInteger("id"))
                                 .collect(Collectors.toList());
 
                         bookingService.createBookings(typesId, bookings, user);

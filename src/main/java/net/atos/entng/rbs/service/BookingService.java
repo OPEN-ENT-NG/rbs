@@ -42,7 +42,7 @@ public interface BookingService extends CrudService {
 	 * @param user
 	 * @return
 	 */
-	Future<JsonArray> createBookings(final List<String> types, final List<Booking> bookings, final UserInfos user);
+	Future<JsonArray> createBookings(final List<Integer> types, final List<Booking> bookings, final UserInfos user);
 
 
 		/**

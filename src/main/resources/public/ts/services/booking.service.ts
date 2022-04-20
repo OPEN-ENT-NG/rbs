@@ -7,10 +7,11 @@ import {Booking, IBookingResponse} from "../models/booking.model";
 import {SlotLit, Slot, ISlotResponse} from "../models/slot.model";
 
 export interface IBookingService {
-    getResourceTypes(structureId : String) : Promise<Array<ResourceType>>;
-    getResources(structureId : String) : Promise<Array<Resource>>;
-    getBookings(structureId : String) : Promise<Array<Booking>>;
-    getSlots(slotProfileId : String) : Promise<SlotLit>;
+    getResourceTypes(structureId: String): Promise<Array<ResourceType>>;
+    getResources(structureId: String): Promise<Array<Resource>>;
+    getBookings(structureId: String): Promise<Array<Booking>>;
+    getSlots(slotProfileId: String): Promise<SlotLit>;
+    getStructureSlots(structureId: String): Promise<SlotLit>;
 }
 
 export class BookingService implements IBookingService {
@@ -34,6 +35,11 @@ export class BookingService implements IBookingService {
         return http.get(`/rbs/slotprofiles/${slotProfileId}/slots`)
             .then((slotList : AxiosResponse) => slotList.data.slots.map((slot : ISlotResponse) => new Slot().build(slot)));
     };
+
+    async getStructureSlots(structureId : String): Promise<SlotLit> {
+        return http.get(`/rbs/slotprofiles/schools/${structureId}`)
+            .then((slotList : AxiosResponse) => slotList.data.slots.map((slot : ISlotResponse) => new Slot().build(slot)));
+    }
 }
 
 
