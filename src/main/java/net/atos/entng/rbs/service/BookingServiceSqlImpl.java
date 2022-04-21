@@ -94,7 +94,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					JsonArray savedBookings = new JsonArray();
 					bookingsFuture.stream()
 							.map((Future::result))
-							.forEach((savedBooking) -> savedBooking.add(savedBooking.getValue(0)));
+							.forEach((savedBooking) -> savedBookings.add(savedBooking.getValue(0)));
 
 					promise.complete(savedBookings);
 				})

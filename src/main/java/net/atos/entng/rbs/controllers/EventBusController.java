@@ -1,6 +1,7 @@
 package net.atos.entng.rbs.controllers;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -9,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Resource;
 import net.atos.entng.rbs.service.BookingService;
+import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -41,15 +43,17 @@ public class EventBusController extends ControllerHelper {
                         List<Booking> bookings = bookingsArray
                                 .stream()
                                 .map((bookingObject) -> {
-                                    return new Booking(((JsonObject) bookingObject), new Resource(((JsonObject)bookingObject).getJsonObject("resource")));
+                                    return new Booking(((JsonObject) bookingObject),
+                                            new Resource(((JsonObject)bookingObject).getJsonObject("resource")));
                                 })
                                 .collect(Collectors.toList());
                         List<Integer> typesId = bookingsArray.stream()
                                 .map((booking) -> ((JsonObject)booking).getJsonObject("type").getInteger("id"))
                                 .collect(Collectors.toList());
 
-                        bookingService.createBookings(typesId, bookings, user);
-//                        bookingService.create(structure, student, busResponseHandler(message));
+                        bookingService.createBookings(typesId, bookings, user)
+                            .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(res)))
+                            .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
                     }
                 });
 
@@ -61,14 +65,14 @@ public class EventBusController extends ControllerHelper {
         }
     }
 
-    private static <T> Handler<AsyncResult<T>> busResponseHandler(final Message<T> message) {
-        return event -> {
-            if (event.succeeded()) {
-                message.reply((new JsonObject()).put("status", "ok").put("result", true));
-            } else {
-                JsonObject error = (new JsonObject()).put("status", "error").put("message", event.cause().getMessage());
-                message.reply(error);
-            }
-        };
-    }
+//    private static <T> Handler<AsyncResult<T>> busResponseHandler(final Message<T> message) {
+//        return event -> {
+//            if (event.succeeded()) {
+//                message.reply((new JsonObject()).put("status", "ok").put("result", true));
+//            } else {
+//                JsonObject error = (new JsonObject()).put("status", "error").put("message", event.cause().getMessage());
+//                message.reply(error);
+//            }
+//        };
+//    }
 }
