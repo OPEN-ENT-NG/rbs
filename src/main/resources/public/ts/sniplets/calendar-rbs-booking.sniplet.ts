@@ -9,7 +9,7 @@ import {IAngularEvent} from "angular";
 import {calendar} from "entcore/types/src/ts/calendar";
 import {AvailabilityUtil} from "../utilities/availability.util";
 import {Availabilities, Availability} from "../models/Availability";
-import {Slot, SlotLit} from "../models/slot.model";
+import {Slot, SlotLit, SlotsForAPI} from "../models/slot.model";
 import {safeApply} from "../utilities/safe-apply";
 import moment from '../moment';
 import {DateUtils} from "../utilities/date.util";
@@ -344,11 +344,17 @@ class ViewModel implements IViewModel {
             this.bookingService.getSlots(createdBooking.type.slotProfile)
                 .then((slotList: Array<Slot>) => {
                     this.handleSlots(slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime, createdBooking);
+                })
+                .catch((e) => {
+                    console.error(e);
                 });
         } else {
             this.bookingService.getStructureSlots(createdBooking.structure.id)
                 .then((slotList: Array<Slot>) => {
                     this.handleSlots(slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime, createdBooking);
+                })
+                .catch((e) => {
+                    console.error(e);
                 });
         }
 
@@ -365,12 +371,15 @@ class ViewModel implements IViewModel {
 
         createdBooking.startMoment.set('hour', closestStartTime.startHour.split(':')[0]);
         createdBooking.startMoment.set('minute', closestStartTime.startHour.split(':')[1]);
-        createdBooking.endMoment.set('hour', closestEndTime.startHour.split(':')[0]);
-        createdBooking.endMoment.set('minute', closestEndTime.startHour.split(':')[1]);
+        createdBooking.endMoment.set('hour', closestEndTime.endHour.split(':')[0]);
+        createdBooking.endMoment.set('minute', closestEndTime.endHour.split(':')[1]);
 
-        createdBooking.slots[0].start_date = moment(createdBooking.startMoment).valueOf();
-        createdBooking.slots[0].end_date = moment(createdBooking.endMoment).valueOf();
-        createdBooking.slots[0].iana = moment.tz.guess();
+        let bookingSlot: SlotsForAPI = {
+            start_date : moment(createdBooking.startMoment).unix(),
+            end_date : moment(createdBooking.endMoment).unix(),
+            iana : moment.tz.guess()
+        };
+        createdBooking.slots = [bookingSlot];
     }
 
     /**

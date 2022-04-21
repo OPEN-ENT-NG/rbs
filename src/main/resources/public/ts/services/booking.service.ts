@@ -19,17 +19,17 @@ export class BookingService implements IBookingService {
     async getResourceTypes(structureId : String): Promise<Array<ResourceType>> {
         return http.get(`rbs/types?structureid=${structureId}`)
             .then((res: AxiosResponse) => res.data.map((type: IResourceTypeResponse) => new ResourceType().build(type)));
-    }
+    };
 
     async getResources(typeId : String) : Promise<Array<Resource>> {
         return http.get(`rbs/resources?typeid=${typeId}`)
             .then((res: AxiosResponse) => res.data.map((resource: IResourceResponse) => new Resource().build(resource)));
-    }
+    };
 
     async getBookings(resourceId : String) : Promise<Array<Booking>> {
         return http.get(`rbs/resource/${resourceId}/bookings`)
             .then((res: AxiosResponse) => res.data.map((booking : IBookingResponse) => new Booking().build(booking)));
-    }
+    };
 
     async getSlots(slotProfileId : String) : Promise<SlotLit> {
         return http.get(`/rbs/slotprofiles/${slotProfileId}/slots`)
@@ -38,8 +38,8 @@ export class BookingService implements IBookingService {
 
     async getStructureSlots(structureId : String): Promise<SlotLit> {
         return http.get(`/rbs/slotprofiles/schools/${structureId}`)
-            .then((slotList : AxiosResponse) => slotList.data.slots.map((slot : ISlotResponse) => new Slot().build(slot)));
-    }
+            .then((slotList : AxiosResponse) => slotList.data[0].slots.map((slot: ISlotResponse) => new Slot().build(slot)));
+    };
 }
 
 

@@ -47,6 +47,8 @@ import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.time.*;
+import java.util.stream.Collectors;
+
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Slot;
 import net.atos.entng.rbs.models.Slot.SlotIterable;
@@ -78,9 +80,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
 
 		for (Booking booking : bookings) {
-			final Slots bookingSlots = new Slots();
-			bookingSlots = booking.getJson().getJsonArray("slots").forEach((slot) -> {slot = new Slot((JsonObject) slot);
-			booking.setSlots(bookingSlots);
+			JsonArray bookingSlotsArray = booking.getJson().getJsonArray("slots");
+
+			booking.setSlots(new Slots(bookingSlotsArray));
 			Promise<JsonArray> bookingPromise = Promise.promise();
 			String bookingResourceId = types.get(bookings.indexOf(booking)).toString();
 			createBooking(bookingResourceId, booking, user, PromiseHelper.handlerJsonArray(bookingPromise));

@@ -23,7 +23,7 @@ public class PromiseHelper {
             if (event.isRight()) {
                 promise.complete(event.right().getValue());
             } else {
-                String message = String.format("[PresencesCommon@%s::handlerJsonArray]: %s",
+                String message = String.format("[RBS@%s::handlerJsonArray]: %s",
                         PromiseHelper.class.getSimpleName(), event.left().getValue());
                 LOGGER.error(message);
                 promise.fail(event.left().getValue());
