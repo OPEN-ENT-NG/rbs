@@ -48,7 +48,7 @@ public class EventBusController extends ControllerHelper {
                                 })
                                 .collect(Collectors.toList());
                         List<Integer> typesId = bookingsArray.stream()
-                                .map((booking) -> ((JsonObject)booking).getJsonObject("type").getInteger("id"))
+                                .map((booking) -> ((JsonObject)booking).getJsonObject("resource").getInteger("id"))
                                 .collect(Collectors.toList());
 
                         bookingService.createBookings(typesId, bookings, user)

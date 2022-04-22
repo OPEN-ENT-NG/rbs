@@ -358,6 +358,8 @@ class ViewModel implements IViewModel {
                 });
         }
 
+        console.log(createdBooking);
+        console.log(this.editedBooking);
         return createdBooking;
     }
 

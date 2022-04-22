@@ -74,7 +74,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		return timestamp == null ? null : sqlFormatter.format(Instant.ofEpochSecond(timestamp));
 	}
 	@Override
-	public Future<JsonArray> createBookings(final List<Integer> types, final List<Booking> bookings, final UserInfos user) {
+	public Future<JsonArray> createBookings(final List<Integer> resources, final List<Booking> bookings, final UserInfos user) {
 		Promise<JsonArray> promise = Promise.promise();
 
 		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
@@ -84,7 +84,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 			booking.setSlots(new Slots(bookingSlotsArray));
 			Promise<JsonArray> bookingPromise = Promise.promise();
-			String bookingResourceId = types.get(bookings.indexOf(booking)).toString();
+			String bookingResourceId = resources.get(bookings.indexOf(booking)).toString();
 			createBooking(bookingResourceId, booking, user, PromiseHelper.handlerJsonArray(bookingPromise));
 			bookingsFuture.add(bookingPromise.future());
 		}
