@@ -421,5 +421,6 @@
     "rbs.availability.service.update.error": "Une erreur est survenue lors de la modifciation de la période de disponibilité",
     "rbs.availability.service.delete.error": "Une erreur est survenue lors de la suppression de la période de disponibilité",
 
-    "rbs.calendar.sniplet.conditions": "The event must not be periodic nor on multiple days"
+    "rbs.calendar.sniplet.conditions": "The event must not be periodic nor on multiple days",
+    "rbs.calendar.sniplet.booking.reason": "This booking was carried out using the Calendar module"
 }

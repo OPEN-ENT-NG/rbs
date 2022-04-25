@@ -31,7 +31,7 @@ export class Booking {
     id : number;
     resourceId : number;
     owner : string;
-    bookingReason : string;
+    booking_reason : string;
     created : string;
     modified : string;
     start_date : string;
@@ -65,7 +65,7 @@ export class Booking {
         this.id = data.id;
         this.resourceId = data.resource_id;
         this.owner = data.owner;
-        this.bookingReason = data.booking_reason;
+        this.booking_reason = data.booking_reason;
         this.created = data.created;
         this.modified = data.modified;
         this.start_date = data.start_date;

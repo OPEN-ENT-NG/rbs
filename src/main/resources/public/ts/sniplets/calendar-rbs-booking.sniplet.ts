@@ -99,11 +99,13 @@ class ViewModel implements IViewModel {
         this.scope = scope;
         this.bookingService = bookingService;
         this.hasBooking = false;
+        this.hasBookingRight = false;
         this.bookings = new Bookings();
 
         this.editedBooking = new Booking();
         this.editedBooking.opened = true;
         this.editedBooking.quantity = 1;
+        this.editedBooking.booking_reason = idiom.translate("rbs.calendar.sniplet.booking.reason");
 
         this.setHandler();
         // this.updateCalendarEvent();
@@ -191,12 +193,15 @@ class ViewModel implements IViewModel {
                     this.resourceTypes = resourcesTypes;
                     this.editedBooking.type = this.resourceTypes[0];
 
+                    console.log(resourcesTypes);
                     if (this.resourceTypes.filter((type: ResourceType) => type.myRights.contrib).length > 0
                         || this.userIsAdml()) {
                         this.hasBookingRight = true;
                         await this.autoSelectResource();
+                        console.log(this.hasBookingRight);
                     } else {
                         this.hasBookingRight = false;
+                        console.log(this.hasBookingRight);
                     }
                 }
             })
