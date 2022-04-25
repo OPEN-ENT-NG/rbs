@@ -325,15 +325,14 @@ class ViewModel implements IViewModel {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be used by the availability util
-        createdBooking.startMoment = moment(this.calendarEvent.startMoment)
-            .hours(this.calendarEvent.allday ? ALL_DAY.startHour : this.calendarEvent.startTime.getHours())
-            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.startTime.getMinutes())
-            .utc();
-        createdBooking.endMoment = moment(this.calendarEvent.endMoment)
-            .hours(this.calendarEvent.allday ? ALL_DAY.endHour : this.calendarEvent.endTime.getHours())
-            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.endTime.getMinutes())
-            .utc();
+        createdBooking.startMoment = moment(this.calendarEvent.startMoment.format("YYYY-MM-DD HH:mm"));
+        createdBooking.endMoment= moment(this.calendarEvent.endMoment.format("YYYY-MM-DD HH:mm"));
 
+        // handle all day event
+        if(this.calendarEvent.allday) {
+            createdBooking.startMoment.hours(ALL_DAY.startHour).minutes(ALL_DAY.minutes).utc();
+            createdBooking.endMoment.hours(ALL_DAY.endHour).minutes(ALL_DAY.minutes).utc();
+        }
 
         // handle slots
         let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
@@ -343,42 +342,36 @@ class ViewModel implements IViewModel {
         if (createdBooking.type.slotProfile) {
             this.bookingService.getSlots(createdBooking.type.slotProfile)
                 .then((slotList: Array<Slot>) => {
-                    this.handleSlots(slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime, createdBooking);
+                    this.handleSlots(createdBooking, slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime);
                 })
                 .catch((e) => {
                     console.error(e);
                 });
         } else {
-            this.bookingService.getStructureSlots(createdBooking.structure.id)
-                .then((slotList: Array<Slot>) => {
-                    this.handleSlots(slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime, createdBooking);
-                })
-                .catch((e) => {
-                    console.error(e);
-                });
+            this.handleSlots(createdBooking);
         }
 
-        console.log(createdBooking);
-        console.log(this.editedBooking);
         return createdBooking;
     }
 
-    private handleSlots(slotList: Array<Slot>, closestEndTime: any, closestStartTime: any, eventStartTime: string, eventEndTime: string, createdBooking: Booking) {
-        slotList.forEach((slot: Slot) => {
-            if ((!closestEndTime || slot.startHour > closestStartTime.startHour)
-                && slot.startHour <= eventStartTime) closestStartTime = slot;
-            if ((!closestEndTime || slot.endHour < closestEndTime.endHour)
-                && slot.endHour >= eventEndTime) closestEndTime = slot;
-        });
+    private handleSlots(createdBooking: Booking, slotList?: Array<Slot>, closestEndTime?: any, closestStartTime?: any, eventStartTime?: string, eventEndTime?: string) {
+        if(createdBooking.type.slotProfile && closestEndTime && closestStartTime && eventStartTime && eventEndTime) {
+            slotList.forEach((slot: Slot) => {
+                if ((!closestEndTime || slot.startHour > closestStartTime.startHour)
+                    && slot.startHour <= eventStartTime) closestStartTime = slot;
+                if ((!closestEndTime || slot.endHour < closestEndTime.endHour)
+                    && slot.endHour >= eventEndTime) closestEndTime = slot;
+            });
 
-        createdBooking.startMoment.set('hour', closestStartTime.startHour.split(':')[0]);
-        createdBooking.startMoment.set('minute', closestStartTime.startHour.split(':')[1]);
-        createdBooking.endMoment.set('hour', closestEndTime.endHour.split(':')[0]);
-        createdBooking.endMoment.set('minute', closestEndTime.endHour.split(':')[1]);
+            createdBooking.startMoment.set('hour', closestStartTime.startHour.split(':')[0]);
+            createdBooking.startMoment.set('minute', closestStartTime.startHour.split(':')[1]);
+            createdBooking.endMoment.set('hour', closestEndTime.endHour.split(':')[0]);
+            createdBooking.endMoment.set('minute', closestEndTime.endHour.split(':')[1]);
+        }
 
         let bookingSlot: SlotsForAPI = {
-            start_date : moment(createdBooking.startMoment).unix(),
-            end_date : moment(createdBooking.endMoment).unix(),
+            start_date : createdBooking.startMoment.utc().unix(),
+            end_date : createdBooking.endMoment.utc().unix(),
             iana : moment.tz.guess()
         };
         createdBooking.slots = [bookingSlot];

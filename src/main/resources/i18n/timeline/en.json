@@ -15,6 +15,5 @@
     "timeline.rbs.on.resource": " sur la ressource ",
     "timeline.rbs.periodic.booking": "demande de réservation périodique",
     "timeline.rbs.resource": "La ressource",
-    "timeline.rbs.to": "au",
-    "rbs.calendar.sniplet.conditions": "The event must not be periodic nor on multiple days"
+    "timeline.rbs.to": "au"
 }
