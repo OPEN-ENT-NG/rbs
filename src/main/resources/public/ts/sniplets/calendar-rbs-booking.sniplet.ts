@@ -271,6 +271,7 @@ class ViewModel implements IViewModel {
                 break;
             case "updateBookingInfos":
                 this.calendarEvent = calendarEvent;
+                this.prepareBookingStartAndEnd();
                 safeApply(this.scope);
                 break;
 
@@ -337,14 +338,19 @@ class ViewModel implements IViewModel {
         if(this.calendarEvent.allday) {
             createdBooking.startMoment.hours(ALL_DAY.startHour).minutes(ALL_DAY.minutes).utc();
             createdBooking.endMoment.hours(ALL_DAY.endHour).minutes(ALL_DAY.minutes).utc();
+        } else {
+            createdBooking.startMoment.hours(this.calendarEvent.startTime.getHours())
+                .minutes(this.calendarEvent.startTime.getMinutes());
+            createdBooking.endMoment.hours(this.calendarEvent.endTime.getHours())
+                .minutes(this.calendarEvent.endTime.getMinutes());
         }
 
         // handle slots
-        let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
-        let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
-        let closestStartTime: any = undefined;
-        let closestEndTime: any = undefined;
         if (createdBooking.type.slotProfile) {
+            let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
+            let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
+            let closestStartTime: any = undefined;
+            let closestEndTime: any = undefined;
             this.bookingService.getSlots(createdBooking.type.slotProfile)
                 .then((slotList: Array<Slot>) => {
                     this.handleSlots(createdBooking, slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime);
