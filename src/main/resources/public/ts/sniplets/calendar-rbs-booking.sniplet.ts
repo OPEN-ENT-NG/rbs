@@ -1,7 +1,7 @@
 import {bookingService, BookingService, IBookingService} from "../services";
 import {RbsController} from "../controllers/controller";
 import {model, idiom, angular, notify, Behaviours} from "entcore";
-import {Booking, Bookings} from "../models/booking.model";
+import {Booking, Bookings, IBookingResponse} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
 import {ResourceType, Structure} from "../models/resource-type.model";
 import {lang, Moment} from "moment";
@@ -13,6 +13,7 @@ import {Slot, SlotLit, SlotsForAPI} from "../models/slot.model";
 import {safeApply} from "../utilities/safe-apply";
 import moment from '../moment';
 import {DateUtils} from "../utilities/date.util";
+import {BOOKING_STATUS} from "../core/const/booking-status.const";
 
 enum ALL_DAY {
     startHour = 7,
@@ -73,6 +74,8 @@ interface IViewModel {
 
     displayDate(date): void;
 
+    bookingStatus(bookingStatus: number): string;
+
 }
 
 class ViewModel implements IViewModel {
@@ -129,6 +132,10 @@ class ViewModel implements IViewModel {
 
         this.scope.$on("bookingPossible", (event: IAngularEvent, bookingPossible: boolean) => {
             this.bookingPossible = bookingPossible;
+        });
+
+        this.scope.$on("closeBookingInfos", (event: IAngularEvent, calendarEvent: boolean) => {
+            this.handleCalendarEventChange(event, calendarEvent);
         });
     }
 
@@ -263,12 +270,24 @@ class ViewModel implements IViewModel {
      * @param event the event sent
      * @param calendarEvent the data needed
      */
-    handleCalendarEventChange(event: IAngularEvent, calendarEvent: any): void {
+    handleCalendarEventChange(event: IAngularEvent, calendarEvent: any):void {
         switch (event.name) {
             case "initBookingInfos":
                 this.loading = true;
                 this.calendarEvent = calendarEvent;
-                if (this.calendarEvent._id && (this.calendarEvent.bookings.length > 0)) this.canViewBooking = true;
+                if (this.calendarEvent._id && (this.calendarEvent.bookings.length > 0)) {
+                    this.canViewBooking = true;
+                    this.calendarEvent.bookings.forEach((booking: IBookingResponse) => {
+                        this.bookingService.getBooking(booking.id)
+                            .then( async (booking: Booking) => {
+                                booking.resource = await this.bookingService.getResource(booking.resourceId);
+                                this.bookings.all.push(booking);
+                            })
+                            .catch((e) => {
+                                console.error(e);
+                            });
+                    })
+                }
                 this.autoSelectStructure();
                 this.editedBooking.quantity = 1;
                 this.loading = false;
@@ -277,6 +296,11 @@ class ViewModel implements IViewModel {
                 this.calendarEvent = calendarEvent;
                 this.prepareBookingStartAndEnd();
                 this.isResourceAvailable();
+                safeApply(this.scope);
+                break;
+            case "closeBookingInfos":
+                this.hasBooking = false;
+                this.canViewBooking = false;
                 safeApply(this.scope);
                 break;
 
@@ -442,6 +466,20 @@ class ViewModel implements IViewModel {
     displayDate(date): void {
         return DateUtils.displayDate(date);
     };
+
+    /**
+     * Returns the string corresponding to the status number using i18n
+     */
+    bookingStatus(bookingStatus: number): string {
+        return idiom.translate(BOOKING_STATUS[bookingStatus]);
+    }
+
+    /**
+     * Returns the start and end dates both in format DD-MM-YYYY HH:mm
+     */
+    // formatBookingDates(bookingStartDate: string, bookingEndDate: string): string {
+    //     return
+    // }
 
 }
 

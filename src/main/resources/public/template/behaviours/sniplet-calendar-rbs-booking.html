@@ -1,22 +1,36 @@
-<article id="calendar-booking" class="sniplet rbs calendarBooking" ng-if="vm.hasBookingRight">
+<article id="calendar-booking" class="sniplet rbs calendarBooking" ng-if="vm.hasBookingRight || vm.canViewBooking">
     <h2 class="backgroundBlueTitle">
         <i18n>calendar.rbs.booking</i18n>
     </h2>
     <div class="toggle">
-        <div ng-if="vm.calendarEventIsBeforeToday()" class="info">
+        <!-- Invalid date warning -->
+        <div ng-if="vm.calendarEventIsBeforeToday() && !vm.canViewBooking" class="info">
             <i18n>rbs.booking.invalid.datetimes.past</i18n>
         </div>
-        <div class="content" ng-if="!vm.calendarEventIsBeforeToday()">
-            <div class="row">
+        <div class="content" ng-if="!vm.calendarEventIsBeforeToday() || vm.canViewBooking">
+            <!-- Booking checkbox -->
+            <div class="row" ng-show="vm.hasBookingRight && !vm.calendarEvent._id">
                 <input type="checkbox"
                        ng-model="vm.hasBooking" ng-change="vm.updateCalendarEvent()"/>
                 <label>
                     <i18n>calendar.rbs.booking</i18n>
                 </label>
             </div>
-            <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-show="vm.hasBooking">
+            <!-- Booking summary -->
+            <div ng-repeat="booking in vm.bookings.all" ng-show="vm.calendarEvent._id">
+                <div class="row block-container sniplet calendarBooking-bookingInfoBox calendarBooking-bookingFormBody
+                twelve cell">
+                    <div class="four cell">[[booking.resource.name]]</div>
+                    <div class="one cell">[[booking.quantity]]</div>
+                    <div class="five cell">[[booking.start_date]]</div>
+                    <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
+                </div>
+            </div>
+
+            <!-- Booking form -->
+            <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-show="vm.hasBooking && vm.hasBookingRight">
                 <section class="twelve cell sniplet calendarBooking-bookingFormBody">
-                    <div ng-if="vm.hasBooking && !vm.bookingPossible" class="info">
+                    <div ng-if="vm.canViewBooking" class="info">
                         <i18n>rbs.calendar.sniplet.conditions</i18n>
                     </div>
                     <div class="row accordions">
