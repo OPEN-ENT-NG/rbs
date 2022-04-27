@@ -28,6 +28,7 @@ interface IViewModel {
     hasBookingRight: boolean;
     editedBooking: Booking;
     bookings: Bookings;
+    canViewBooking: boolean;
 
 
     userStructures: Array<Structure>;
@@ -56,7 +57,7 @@ interface IViewModel {
 
     userIsAdml(): boolean;
 
-    prepareBookingStartAndEnd(): void;
+    prepareBookingStartAndEnd(booking?: Booking, bookingToSave?: boolean): void;
 
     availableResourceQuantity(): number;
 
@@ -83,6 +84,7 @@ class ViewModel implements IViewModel {
     bookingPossible: boolean;
     editedBooking: Booking;
     bookings: Bookings;
+    canViewBooking: boolean;
 
     userStructures: Array<Structure>;
     resourceTypes: Array<ResourceType>;
@@ -100,6 +102,7 @@ class ViewModel implements IViewModel {
         this.bookingService = bookingService;
         this.hasBooking = false;
         this.hasBookingRight = false;
+        this.canViewBooking = false;
         this.bookings = new Bookings();
 
         this.editedBooking = new Booking();
@@ -265,6 +268,7 @@ class ViewModel implements IViewModel {
             case "initBookingInfos":
                 this.loading = true;
                 this.calendarEvent = calendarEvent;
+                if (this.calendarEvent._id && (this.calendarEvent.bookings.length > 0)) this.canViewBooking = true;
                 this.autoSelectStructure();
                 this.editedBooking.quantity = 1;
                 this.loading = false;
@@ -272,6 +276,7 @@ class ViewModel implements IViewModel {
             case "updateBookingInfos":
                 this.calendarEvent = calendarEvent;
                 this.prepareBookingStartAndEnd();
+                this.isResourceAvailable();
                 safeApply(this.scope);
                 break;
 
@@ -308,6 +313,8 @@ class ViewModel implements IViewModel {
         let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
             : this.prepareBookingStartAndEnd();
 
+        this.prepareBookingForAvailabilityCheck(currentBooking);
+
         return AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
             currentBooking);
     }
@@ -320,23 +327,41 @@ class ViewModel implements IViewModel {
         let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
             : this.prepareBookingStartAndEnd();
 
+        this.prepareBookingForAvailabilityCheck(currentBooking);
+
         return AvailabilityUtil.getResourceQuantityByTimeslot(currentBooking, currentBooking.resource, null);
+    }
+
+    /**
+     * Formats the start and end dates so they can be used by the availability util
+     * @param currentBooking the formatted booking
+     * @private
+     */
+    private prepareBookingForAvailabilityCheck(currentBooking: Booking) {
+        currentBooking.startMoment = moment(this.calendarEvent.startMoment)
+            .hours(this.calendarEvent.allday ? ALL_DAY.startHour : this.calendarEvent.startTime.getHours())
+            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.startTime.getMinutes())
+            .utc();
+        currentBooking.endMoment = moment(this.calendarEvent.endMoment)
+            .hours(this.calendarEvent.allday ? ALL_DAY.endHour : this.calendarEvent.endTime.getHours())
+            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.endTime.getMinutes())
+            .utc();
     }
 
     /**
      * Prepares the booking to get its availabilities
      * @param booking the booking that must be prepared
      */
-    prepareBookingStartAndEnd(booking ?: Booking): Booking {
+    prepareBookingStartAndEnd(booking ?: Booking, bookingToSave?: boolean): Booking {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
-        // set start and end moment so they can be used by the availability util
+        // set start and end moment so they can be saved correctly
         createdBooking.startMoment = moment(this.calendarEvent.startMoment.format("YYYY-MM-DD HH:mm"));
         createdBooking.endMoment= moment(this.calendarEvent.endMoment.format("YYYY-MM-DD HH:mm"));
 
         // handle all day event
-        if(this.calendarEvent.allday) {
-            createdBooking.startMoment.hours(ALL_DAY.startHour).minutes(ALL_DAY.minutes).utc();
+        if (this.calendarEvent.allday) {
+             createdBooking.startMoment.hours(ALL_DAY.startHour).minutes(ALL_DAY.minutes).utc();
             createdBooking.endMoment.hours(ALL_DAY.endHour).minutes(ALL_DAY.minutes).utc();
         } else {
             createdBooking.startMoment.hours(this.calendarEvent.startTime.getHours())
@@ -347,45 +372,51 @@ class ViewModel implements IViewModel {
 
         // handle slots
         if (createdBooking.type.slotProfile) {
-            let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
-            let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
-            let closestStartTime: any = undefined;
-            let closestEndTime: any = undefined;
-            this.bookingService.getSlots(createdBooking.type.slotProfile)
-                .then((slotList: Array<Slot>) => {
-                    this.handleSlots(createdBooking, slotList, closestEndTime, closestStartTime, eventStartTime, eventEndTime);
-                })
-                .catch((e) => {
-                    console.error(e);
-                });
-        } else {
-            this.handleSlots(createdBooking);
+            this.handleBookingSlots(createdBooking);
         }
 
-        return createdBooking;
-    }
-
-    private handleSlots(createdBooking: Booking, slotList?: Array<Slot>, closestEndTime?: any, closestStartTime?: any, eventStartTime?: string, eventEndTime?: string) {
-        if(createdBooking.type.slotProfile && closestEndTime && closestStartTime && eventStartTime && eventEndTime) {
-            slotList.forEach((slot: Slot) => {
-                if ((!closestEndTime || slot.startHour > closestStartTime.startHour)
-                    && slot.startHour <= eventStartTime) closestStartTime = slot;
-                if ((!closestEndTime || slot.endHour < closestEndTime.endHour)
-                    && slot.endHour >= eventEndTime) closestEndTime = slot;
-            });
-
-            createdBooking.startMoment.set('hour', closestStartTime.startHour.split(':')[0]);
-            createdBooking.startMoment.set('minute', closestStartTime.startHour.split(':')[1]);
-            createdBooking.endMoment.set('hour', closestEndTime.endHour.split(':')[0]);
-            createdBooking.endMoment.set('minute', closestEndTime.endHour.split(':')[1]);
-        }
 
         let bookingSlot: SlotsForAPI = {
             start_date : createdBooking.startMoment.utc().unix(),
             end_date : createdBooking.endMoment.utc().unix(),
             iana : moment.tz.guess()
         };
+
+        console.log(createdBooking.startMoment.utc());
+
+        console.log(createdBooking);
         createdBooking.slots = [bookingSlot];
+
+        return createdBooking;
+    }
+
+    /**
+     * Handles the case where the resource type uses booking slots
+     * @param createdBooking the booking
+     * @private
+     */
+    private handleBookingSlots(createdBooking: Booking) {
+        let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
+        let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
+        let closestStartTime: any = undefined;
+        let closestEndTime: any = undefined;
+        this.bookingService.getSlots(createdBooking.type.slotProfile)
+            .then((slotList: Array<Slot>) => {
+                slotList.forEach((slot: Slot) => {
+                    if ((!closestEndTime || slot.startHour > closestStartTime.startHour)
+                        && slot.startHour <= eventStartTime) closestStartTime = slot;
+                    if ((!closestEndTime || slot.endHour < closestEndTime.endHour)
+                        && slot.endHour >= eventEndTime) closestEndTime = slot;
+                });
+
+                createdBooking.startMoment.set('hour', closestStartTime.startHour.split(':')[0]);
+                createdBooking.startMoment.set('minute', closestStartTime.startHour.split(':')[1]);
+                createdBooking.endMoment.set('hour', closestEndTime.endHour.split(':')[0]);
+                createdBooking.endMoment.set('minute', closestEndTime.endHour.split(':')[1]);
+            })
+            .catch((e) => {
+                console.error(e);
+            });
     }
 
     /**
