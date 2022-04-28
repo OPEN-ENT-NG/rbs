@@ -39,8 +39,6 @@ interface IViewModel {
 
     setHandler(): void;
 
-    // updateCalendarEvent(): void;
-
     prepareBookingsToSave(): Array<Booking>;
 
     autoSelectStructure(structure?: Structure): void;
@@ -115,7 +113,6 @@ class ViewModel implements IViewModel {
         this.editedBooking.booking_reason = idiom.translate("rbs.calendar.sniplet.booking.reason");
 
         this.setHandler();
-        // this.updateCalendarEvent();
         this.loading = false;
     }
 
@@ -248,7 +245,6 @@ class ViewModel implements IViewModel {
 
                     }
                     this.editedBooking.resource = this.resources[0];
-                    // this.updateCalendarEvent();
 
                 } else {
                     this.editedBooking.resource = undefined;
@@ -387,8 +383,8 @@ class ViewModel implements IViewModel {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly
-        createdBooking.startMoment = moment(this.calendarEvent.startMoment.format("YYYY-MM-DD HH:mm"));
-        createdBooking.endMoment= moment(this.calendarEvent.endMoment.format("YYYY-MM-DD HH:mm"));
+        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format("YYYY-MM-DD HH:mm"));
+        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format("YYYY-MM-DD HH:mm"));
 
         // handle all day event
         if (this.calendarEvent.allday) {

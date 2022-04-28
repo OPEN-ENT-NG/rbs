@@ -36,7 +36,8 @@
             <!-- Booking form -->
             <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-show="vm.hasBooking && vm.hasBookingRight">
                 <section class="twelve cell sniplet calendarBooking-bookingFormBody">
-                    <div ng-if="vm.canViewBooking" class="info">
+                    <!-- Warning : no multi days or recurrent events -->
+                    <div ng-if="vm.hasBooking && !vm.bookingPossible && !vm.canViewBooking" class="info">
                         <i18n>rbs.calendar.sniplet.conditions</i18n>
                     </div>
                     <div class="row accordions">
