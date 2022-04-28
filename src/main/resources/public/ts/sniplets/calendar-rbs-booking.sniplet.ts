@@ -482,14 +482,8 @@ class ViewModel implements IViewModel {
      * Returns the start and end dates both in format DD-MM-YYYY HH:mm
      */
     formatBookingDates(bookingStartDate: string, bookingEndDate: string): string {
-        console.log(bookingStartDate);
         let bookingStart: string = bookingStartDate + "Z";
         let bookingEnd: string = bookingEndDate + "Z";
-
-        console.log(moment(bookingStart));
-
-        console.log(moment(bookingStart).format("DD/MM/YYYY HH:mm")
-            + " - " + moment(bookingEnd).format("DD/MM/YYYY HH:mm"));
 
         return moment(bookingStart).format("DD/MM/YYYY HH:mm")
             + " - " + moment(bookingEnd).format("DD/MM/YYYY HH:mm");

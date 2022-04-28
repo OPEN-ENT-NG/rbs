@@ -24,7 +24,7 @@
                     <div ng-if="booking.canBeDisplayed">
                         <div class="three cell">[[booking.resource.name]]</div>
                         <div class="one cell">[[booking.quantity]]</div>
-                        <div class="three cell">[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        <div class="four cell">[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
                         <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
                     </div>
                     <div ng-if="!booking.canBeDisplayed">
