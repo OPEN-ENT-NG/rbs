@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-
 public class EventBusController extends ControllerHelper {
 
     private final BookingService bookingService;
@@ -29,6 +27,10 @@ public class EventBusController extends ControllerHelper {
         this.bookingService = bookingService;
     }
 
+    /**
+     * Handles the event bus
+     * @param message {@link Message<JsonObject>} the information recieved
+     */
     @BusAddress("net.atos.entng.rbs")
     public void bus(final Message<JsonObject> message) {
         JsonObject body = message.body();
@@ -65,14 +67,4 @@ public class EventBusController extends ControllerHelper {
         }
     }
 
-//    private static <T> Handler<AsyncResult<T>> busResponseHandler(final Message<T> message) {
-//        return event -> {
-//            if (event.succeeded()) {
-//                message.reply((new JsonObject()).put("status", "ok").put("result", true));
-//            } else {
-//                JsonObject error = (new JsonObject()).put("status", "error").put("message", event.cause().getMessage());
-//                message.reply(error);
-//            }
-//        };
-//    }
 }

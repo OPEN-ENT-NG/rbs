@@ -18,6 +18,11 @@ public class PromiseHelper {
     private PromiseHelper() {
     }
 
+    /**
+     * Handles the JsonArray response of the promise
+     * @param promise {@link Promise<JsonArray>} the promise
+     * @return the handled promise
+     */
     public static Handler<Either<String, JsonArray>> handlerJsonArray(Promise<JsonArray> promise) {
         return event -> {
             if (event.isRight()) {

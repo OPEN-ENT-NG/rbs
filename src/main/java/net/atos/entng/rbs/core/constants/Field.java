@@ -9,7 +9,7 @@ public class Field {
     // Common
 
     //id
-    public static final String id = "_id";
+    public static final String _id = "_id";
 
     // structure
     public static final String structureid = "structureid";

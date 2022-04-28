@@ -325,7 +325,6 @@ public class ResourceController extends ControllerHelper {
 		});
 	}
 
-
 	@Post("/resource/notification/add/:id")
 	@ApiDoc("Add notification")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)

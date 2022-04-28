@@ -106,6 +106,7 @@
   "rbs.booking.edit.periodic_booking.true": "Oui",
   "rbs.booking.edit.quantity.label": "Quantité",
   "rbs.booking.edit.quantity.none": "Il n'y a plus de ressource disponible pour ce créneau",
+  "rbs.booking.edit.quantity.null": "Veuillez saisir une quantité valide",
   "rbs.booking.edit.availabilities.resource.is": "La ressource est",
   "rbs.booking.edit.availabilities.available": " disponible ",
   "rbs.booking.edit.availabilities.unavailable": " indisponible ",

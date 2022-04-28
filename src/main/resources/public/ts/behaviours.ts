@@ -27,9 +27,12 @@ var rbsBehaviours = {
         validator: 'net.atos.entng.rbs.controllers.BookingController|listUnprocessedBookings',
     }
 };
-
+// Behaviours.applicationsBehaviours.rbs.eventerRbs.initBookingInfo
 Behaviours.register('rbs', {
     behaviours: rbsBehaviours,
+    // eventerRbs: {
+    //   initBookingInfo: eventer.initbookinginfos // "initBookingInfos"
+    // },
     sniplets: {
         'calendar-rbs-booking': calendarRbsBooking
     },

@@ -73,8 +73,17 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	static String toSQLTimestamp(Long timestamp) {
 		return timestamp == null ? null : sqlFormatter.format(Instant.ofEpochSecond(timestamp));
 	}
+
+	/**
+	 * Iterates through an array of bookings to save them
+	 * The index of the resource ids must be the same as the corresponding booking
+	 * @param resourceIds {@link List<Integer>} the array of resource ids
+	 * @param bookings {@link List<Booking>} the array of bookings
+	 * @param user {@link UserInfos} the user
+	 * @return {@link Future<JsonArray>} an array of saved bookings
+	 */
 	@Override
-	public Future<JsonArray> createBookings(final List<Integer> resources, final List<Booking> bookings, final UserInfos user) {
+	public Future<JsonArray> createBookings(final List<Integer> resourceIds, final List<Booking> bookings, final UserInfos user) {
 		Promise<JsonArray> promise = Promise.promise();
 
 		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
@@ -84,7 +93,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 			booking.setSlots(new Slots(bookingSlotsArray));
 			Promise<JsonArray> bookingPromise = Promise.promise();
-			String bookingResourceId = resources.get(bookings.indexOf(booking)).toString();
+			String bookingResourceId = resourceIds.get(bookings.indexOf(booking)).toString();
 			createBooking(bookingResourceId, booking, user, PromiseHelper.handlerJsonArray(bookingPromise));
 			bookingsFuture.add(bookingPromise.future());
 		}

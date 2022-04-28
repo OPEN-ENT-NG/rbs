@@ -45,14 +45,14 @@ public interface BookingService extends CrudService {
 	Future<JsonArray> createBookings(final List<Integer> types, final List<Booking> bookings, final UserInfos user);
 
 
-		/**
-         * Create a booking
-         *
-         * @param resourceId : id of current resource
-         * @param data       : object which contains information of booking
-         * @param user       : information of current user logged
-         * @param handler    : handler which contains the response
-         */
+	/**
+	 * Create a booking
+	 *
+	 * @param resourceId : id of current resource
+	 * @param data       : object which contains information of booking
+	 * @param user       : information of current user logged
+	 * @param handler    : handler which contains the response
+	 */
     void createBooking(final String resourceId, final Booking data, final UserInfos user, final Handler<Either<String, JsonArray>> handler);
 
     /**

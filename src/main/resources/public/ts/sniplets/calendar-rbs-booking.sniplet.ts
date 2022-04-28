@@ -11,6 +11,8 @@ import {safeApply} from "../utilities/safe-apply";
 import moment from '../moment';
 import {DateUtils} from "../utilities/date.util";
 import {BOOKING_STATUS} from "../core/const/booking-status.const";
+import {FORMAT} from "../core/const/date-format.const";
+import {CalendarEvent} from "../models/calendarEvent.model";
 
 enum ALL_DAY {
     startHour = 7,
@@ -33,7 +35,7 @@ interface IViewModel {
     resourceTypes: Array<ResourceType>;
     resources: Array<Resource>;
     slots: Array<Slot>;
-    calendarEvent: any;
+    calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
 
@@ -49,7 +51,7 @@ interface IViewModel {
 
     autoSelectResource(): Promise<void>;
 
-    handleCalendarEventChange(event: IAngularEvent, calendarEvent: any): void;
+    handleCalendarEventChange(event: IAngularEvent, calendarEvent: CalendarEvent): void;
 
     userIsAdml(): boolean;
 
@@ -61,7 +63,9 @@ interface IViewModel {
 
     calendarEventIsBeforeToday(): boolean;
 
-    isResourceAvailable(): boolean;
+    isResourceQuantityNotNull(): boolean;
+
+    isResourceQuantityValid(): boolean;
 
     getRightList(resource: Resource): Availability[];
 
@@ -73,7 +77,7 @@ interface IViewModel {
 
     formatBookingDates(bookingStartDate: string, bookingEndDate: string): string;
 
-    eventHasBooking(calendarEvent?: any): boolean;
+    eventHasBooking(calendarEvent?: CalendarEvent): boolean;
 
 }
 
@@ -92,7 +96,7 @@ class ViewModel implements IViewModel {
     resourceTypes: Array<ResourceType>;
     resources: Array<Resource>;
     slots: Array<Slot>;
-    calendarEvent: any;
+    calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
 
@@ -120,11 +124,11 @@ class ViewModel implements IViewModel {
      * Get calendarEvent change and change form accordingly
      */
     setHandler(): void {
-        this.scope.$on("initBookingInfos", (event: IAngularEvent, calendarEvent: any) => {
+        this.scope.$on("initBookingInfos", (event: IAngularEvent, calendarEvent: CalendarEvent) => {
             this.handleCalendarEventChange(event, calendarEvent);
         });
 
-        this.scope.$on("updateBookingInfos", (event: IAngularEvent, calendarEvent: any) => {
+        this.scope.$on("updateBookingInfos", (event: IAngularEvent, calendarEvent: CalendarEvent) => {
             this.handleCalendarEventChange(event, calendarEvent);
         });
 
@@ -132,8 +136,8 @@ class ViewModel implements IViewModel {
             this.bookingPossible = bookingPossible;
         });
 
-        this.scope.$on("closeBookingInfos", (event: IAngularEvent, calendarEvent: boolean) => {
-            this.handleCalendarEventChange(event, calendarEvent);
+        this.scope.$on("closeBookingInfos", (event: IAngularEvent) => {
+            this.handleCalendarEventChange(event);
         });
     }
 
@@ -181,12 +185,8 @@ class ViewModel implements IViewModel {
      * Returns true if user has at least 1 structure and if there are the same number of structure ids and structure names
      */
     areStructuresValid(): boolean {
-        let areStructuresValid: boolean = (model.me.structures.length > 0)
-            && (model.me.structures.length == model.me.structureNames.length);
-
-
-
-        return areStructuresValid;
+      return ((model.me.structures.length > 0)
+            && (model.me.structures.length == model.me.structureNames.length));
     };
 
     /**
@@ -264,7 +264,7 @@ class ViewModel implements IViewModel {
      * @param event the event sent
      * @param calendarEvent the data needed
      */
-    handleCalendarEventChange(event: IAngularEvent, calendarEvent: any):void {
+    handleCalendarEventChange(event: IAngularEvent, calendarEvent?: CalendarEvent):void {
         switch (event.name) {
             case "initBookingInfos":
                 this.loading = true;
@@ -296,7 +296,7 @@ class ViewModel implements IViewModel {
             case "updateBookingInfos":
                 this.calendarEvent = calendarEvent;
                 this.prepareBookingStartAndEnd();
-                this.isResourceAvailable();
+                this.isResourceQuantityValid();
                 safeApply(this.scope);
                 break;
             case "closeBookingInfos":
@@ -314,7 +314,8 @@ class ViewModel implements IViewModel {
      * Returns true if the user is ADML (Local Admin)
      */
     userIsAdml(): boolean {
-        return model.me.functions.ADMIN_LOCAL && (model.me.functions.ADMIN_LOCAL.scope.find((structure: String) => structure == this.editedBooking.structure.id) != undefined);
+        return model.me.functions.ADMIN_LOCAL
+            && (model.me.functions.ADMIN_LOCAL.scope.find((structure: String) => structure == this.editedBooking.structure.id) != undefined);
     }
 
     /**
@@ -325,10 +326,17 @@ class ViewModel implements IViewModel {
     }
 
     /**
+     * Returns true if the resource quantity is defined and not 0
+     */
+    isResourceQuantityNotNull(): boolean {
+        return (this.editedBooking.quantity && this.editedBooking.quantity > 0);
+    }
+
+    /**
      * Returns true if the resource has a set quantity that is available
      */
-    isResourceAvailable(): boolean {
-        return (this.editedBooking.quantity && this.editedBooking.quantity <= this.availableResourceQuantity()
+    isResourceQuantityValid(): boolean {
+        return (this.isResourceQuantityNotNull() && this.editedBooking.quantity <= this.availableResourceQuantity()
             && this.availableResourceQuantity() > 0);
     }
 
@@ -383,8 +391,8 @@ class ViewModel implements IViewModel {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly
-        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format("YYYY-MM-DD HH:mm"));
-        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format("YYYY-MM-DD HH:mm"));
+        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(FORMAT.formattedDateTimeNoSeconds));
+        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(FORMAT.formattedDateTimeNoSeconds));
 
         // handle all day event
         if (this.calendarEvent.allday) {
@@ -420,8 +428,8 @@ class ViewModel implements IViewModel {
      * @private
      */
     private handleBookingSlots(createdBooking: Booking) {
-        let eventStartTime = moment(this.calendarEvent.startTime).format("HH:mm");
-        let eventEndTime = moment(this.calendarEvent.endTime).format("HH:mm");
+        let eventStartTime = moment(this.calendarEvent.startTime).format(FORMAT.displayTime);
+        let eventEndTime = moment(this.calendarEvent.endTime).format(FORMAT.displayTime);
         let closestStartTime: any = undefined;
         let closestEndTime: any = undefined;
         this.bookingService.getSlots(createdBooking.type.slotProfile)
@@ -471,7 +479,7 @@ class ViewModel implements IViewModel {
      * Returns the string corresponding to the status number using i18n
      */
     bookingStatus(bookingStatus: number): string {
-        return idiom.translate(BOOKING_STATUS[bookingStatus]);
+        return idiom.translate("rbs.errors.objects.booking") + " " + idiom.translate(BOOKING_STATUS[bookingStatus]);
     }
 
     /**
@@ -481,14 +489,14 @@ class ViewModel implements IViewModel {
         let bookingStart: string = bookingStartDate + "Z";
         let bookingEnd: string = bookingEndDate + "Z";
 
-        return moment(bookingStart).format("DD/MM/YYYY HH:mm")
-            + " - " + moment(bookingEnd).format("DD/MM/YYYY HH:mm");
+        return moment(bookingStart).format(FORMAT.formattedDateTimeNoSeconds)
+            + " - " + moment(bookingEnd).format(FORMAT.formattedDateTimeNoSeconds);
     }
 
     /**
      * Returns true if the calendarEvent has a booking
      */
-    eventHasBooking(calendarEvent?: any): boolean {
+    eventHasBooking(calendarEvent?: CalendarEvent): boolean {
         let checkedEvent = calendarEvent ? calendarEvent : this.calendarEvent;
 
         return (checkedEvent.hasBooking && checkedEvent.bookings && (checkedEvent.bookings.length > 0));

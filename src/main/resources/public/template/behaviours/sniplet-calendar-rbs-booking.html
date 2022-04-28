@@ -40,6 +40,10 @@
                     <div ng-if="vm.hasBooking && !vm.bookingPossible && !vm.canViewBooking" class="info">
                         <i18n>rbs.calendar.sniplet.conditions</i18n>
                     </div>
+                    <!-- Warning : booking quantity problem -->
+                    <div ng-if="!vm.isResourceQuantityNotNull()" class="info">
+                        <i18n>rbs.booking.edit.quantity.null</i18n>
+                    </div>
                     <div class="row accordions">
                         <!-- Resource description -->
                         <div class="toggle">
