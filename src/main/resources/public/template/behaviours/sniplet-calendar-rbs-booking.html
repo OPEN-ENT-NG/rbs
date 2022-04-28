@@ -1,7 +1,7 @@
 <article id="calendar-booking" class="sniplet rbs calendarBooking"
          ng-if="(vm.hasBookingRight && !vm.calendarEvent._id) || vm.canViewBooking">
     <h2 class="backgroundBlueTitle">
-        <i18n>calendar.rbs.booking</i18n>
+        <i18n>rbs.title</i18n>
     </h2>
     <div class="toggle">
         <!-- Invalid date warning -->
@@ -14,7 +14,7 @@
                 <input type="checkbox"
                        ng-model="vm.hasBooking" ng-change="vm.updateCalendarEvent()"/>
                 <label>
-                    <i18n>calendar.rbs.booking</i18n>
+                    <i18n>rbs.title</i18n>
                 </label>
             </div>
             <!-- Booking summary -->

@@ -153,6 +153,7 @@
     "rbs.booking.status.validated": "Validée",
     "rbs.booking.status.suspended": "Suspendue",
     "rbs.booking.status.deleted": "Supprimée",
+    "rbs.boooking.status.awaiting.validation": "Awaiting validation",
     "rbs.booking.title": "Demande de réservation",
     "rbs.booking.title.booking": "Détails de la demande : ",
     "rbs.booking.title.periodic": "Créneaux réservés : ",

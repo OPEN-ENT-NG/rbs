@@ -1,5 +1,5 @@
 export const BOOKING_STATUS = {
-    1: "rbs.booking.status.created",
+    1: "rbs.boooking.status.awaiting.validation",
     2: "rbs.booking.status.validated",
     3: "rbs.booking.status.refused",
     4: "rbs.booking.status.suspended",
