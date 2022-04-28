@@ -1,4 +1,5 @@
-<article id="calendar-booking" class="sniplet rbs calendarBooking" ng-if="vm.hasBookingRight || vm.canViewBooking">
+<article id="calendar-booking" class="sniplet rbs calendarBooking"
+         ng-if="(vm.hasBookingRight && !vm.calendarEvent._id) || vm.canViewBooking">
     <h2 class="backgroundBlueTitle">
         <i18n>calendar.rbs.booking</i18n>
     </h2>
@@ -20,10 +21,15 @@
             <div ng-repeat="booking in vm.bookings.all" ng-show="vm.calendarEvent._id">
                 <div class="row block-container sniplet calendarBooking-bookingInfoBox calendarBooking-bookingFormBody
                 twelve cell">
-                    <div class="four cell">[[booking.resource.name]]</div>
-                    <div class="one cell">[[booking.quantity]]</div>
-                    <div class="five cell">[[booking.start_date]]</div>
-                    <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
+                    <div ng-if="booking.canBeDisplayed">
+                        <div class="three cell">[[booking.resource.name]]</div>
+                        <div class="one cell">[[booking.quantity]]</div>
+                        <div class="three cell">[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
+                    </div>
+                    <div ng-if="!booking.canBeDisplayed">
+                        <i18n>rbs.calendar.sniplet.booking.deleted</i18n>
+                    </div>
                 </div>
             </div>
 

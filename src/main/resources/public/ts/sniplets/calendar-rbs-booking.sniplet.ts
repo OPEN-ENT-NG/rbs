@@ -1,15 +1,12 @@
-import {bookingService, BookingService, IBookingService} from "../services";
-import {RbsController} from "../controllers/controller";
-import {model, idiom, angular, notify, Behaviours} from "entcore";
+import {BookingService, IBookingService} from "../services";
+import {idiom, model} from "entcore";
 import {Booking, Bookings, IBookingResponse} from "../models/booking.model";
 import {Resource} from "../models/resource.model";
 import {ResourceType, Structure} from "../models/resource-type.model";
-import {lang, Moment} from "moment";
 import {IAngularEvent} from "angular";
-import {calendar} from "entcore/types/src/ts/calendar";
 import {AvailabilityUtil} from "../utilities/availability.util";
 import {Availabilities, Availability} from "../models/Availability";
-import {Slot, SlotLit, SlotsForAPI} from "../models/slot.model";
+import {Slot, SlotsForAPI} from "../models/slot.model";
 import {safeApply} from "../utilities/safe-apply";
 import moment from '../moment';
 import {DateUtils} from "../utilities/date.util";
@@ -75,6 +72,10 @@ interface IViewModel {
     displayDate(date): void;
 
     bookingStatus(bookingStatus: number): string;
+
+    formatBookingDates(bookingStartDate: string, bookingEndDate: string): string;
+
+    eventHasBooking(calendarEvent?: any): boolean;
 
 }
 
@@ -203,15 +204,12 @@ class ViewModel implements IViewModel {
                     this.resourceTypes = resourcesTypes;
                     this.editedBooking.type = this.resourceTypes[0];
 
-                    console.log(resourcesTypes);
                     if (this.resourceTypes.filter((type: ResourceType) => type.myRights.contrib).length > 0
                         || this.userIsAdml()) {
                         this.hasBookingRight = true;
                         await this.autoSelectResource();
-                        console.log(this.hasBookingRight);
                     } else {
                         this.hasBookingRight = false;
-                        console.log(this.hasBookingRight);
                     }
                 }
             })
@@ -275,13 +273,20 @@ class ViewModel implements IViewModel {
             case "initBookingInfos":
                 this.loading = true;
                 this.calendarEvent = calendarEvent;
-                if (this.calendarEvent._id && (this.calendarEvent.bookings.length > 0)) {
+                if (this.calendarEvent._id && this.eventHasBooking()) {
                     this.canViewBooking = true;
                     this.calendarEvent.bookings.forEach((booking: IBookingResponse) => {
                         this.bookingService.getBooking(booking.id)
-                            .then( async (booking: Booking) => {
-                                booking.resource = await this.bookingService.getResource(booking.resourceId);
-                                this.bookings.all.push(booking);
+                            .then( async (databaseBooking: Booking) => {
+                                if (databaseBooking.id == undefined) {
+                                    databaseBooking = new Booking().build(booking);
+                                    databaseBooking.canBeDisplayed = false;
+                                } else {
+                                    databaseBooking.resource = await this.bookingService.getResource(databaseBooking.resourceId);
+                                    databaseBooking.canBeDisplayed = true;
+                                }
+
+                                this.bookings.all.push(databaseBooking);
                             })
                             .catch((e) => {
                                 console.error(e);
@@ -300,7 +305,9 @@ class ViewModel implements IViewModel {
                 break;
             case "closeBookingInfos":
                 this.hasBooking = false;
+                this.hasBookingRight = false;
                 this.canViewBooking = false;
+                this.bookings.all = [];
                 safeApply(this.scope);
                 break;
 
@@ -339,8 +346,8 @@ class ViewModel implements IViewModel {
 
         this.prepareBookingForAvailabilityCheck(currentBooking);
 
-        return AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
-            currentBooking);
+        return (currentBooking.resource ? AvailabilityUtil.getTimeslotQuantityAvailable(currentBooking, currentBooking.resource, null,
+            currentBooking) : 0);
     }
 
     /**
@@ -406,9 +413,6 @@ class ViewModel implements IViewModel {
             iana : moment.tz.guess()
         };
 
-        console.log(createdBooking.startMoment.utc());
-
-        console.log(createdBooking);
         createdBooking.slots = [bookingSlot];
 
         return createdBooking;
@@ -477,9 +481,28 @@ class ViewModel implements IViewModel {
     /**
      * Returns the start and end dates both in format DD-MM-YYYY HH:mm
      */
-    // formatBookingDates(bookingStartDate: string, bookingEndDate: string): string {
-    //     return
-    // }
+    formatBookingDates(bookingStartDate: string, bookingEndDate: string): string {
+        console.log(bookingStartDate);
+        let bookingStart: string = bookingStartDate + "Z";
+        let bookingEnd: string = bookingEndDate + "Z";
+
+        console.log(moment(bookingStart));
+
+        console.log(moment(bookingStart).format("DD/MM/YYYY HH:mm")
+            + " - " + moment(bookingEnd).format("DD/MM/YYYY HH:mm"));
+
+        return moment(bookingStart).format("DD/MM/YYYY HH:mm")
+            + " - " + moment(bookingEnd).format("DD/MM/YYYY HH:mm");
+    }
+
+    /**
+     * Returns true if the calendarEvent has a booking
+     */
+    eventHasBooking(calendarEvent?: any): boolean {
+        let checkedEvent = calendarEvent ? calendarEvent : this.calendarEvent;
+
+        return (checkedEvent.hasBooking && checkedEvent.bookings && (checkedEvent.bookings.length > 0));
+    }
 
 }
 

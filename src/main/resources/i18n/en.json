@@ -152,6 +152,7 @@
     "rbs.booking.status.refused": "Refusée",
     "rbs.booking.status.validated": "Validée",
     "rbs.booking.status.suspended": "Suspendue",
+    "rbs.booking.status.deleted": "Supprimée",
     "rbs.booking.title": "Demande de réservation",
     "rbs.booking.title.booking": "Détails de la demande : ",
     "rbs.booking.title.periodic": "Créneaux réservés : ",
@@ -422,5 +423,6 @@
     "rbs.availability.service.delete.error": "Une erreur est survenue lors de la suppression de la période de disponibilité",
 
     "rbs.calendar.sniplet.conditions": "The event must not be periodic nor on multiple days",
-    "rbs.calendar.sniplet.booking.reason": "This booking was carried out using the Calendar module"
+    "rbs.calendar.sniplet.booking.reason": "This booking was carried out using the Calendar module",
+    "rbs.calendar.sniplet.booking.deleted": "This booking is no longer available"
 }

@@ -60,6 +60,7 @@ export class Booking {
     display: DisplayBooking;
     opened: boolean;
     slots: Array<SlotsForAPI>;
+    canBeDisplayed: boolean;
 
     build(data: IBookingResponse): Booking {
         this.id = data.id;

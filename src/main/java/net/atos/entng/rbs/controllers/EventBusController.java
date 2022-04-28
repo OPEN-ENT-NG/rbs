@@ -47,11 +47,11 @@ public class EventBusController extends ControllerHelper {
                                             new Resource(((JsonObject)bookingObject).getJsonObject("resource")));
                                 })
                                 .collect(Collectors.toList());
-                        List<Integer> typesId = bookingsArray.stream()
+                        List<Integer> resourceIds = bookingsArray.stream()
                                 .map((booking) -> ((JsonObject)booking).getJsonObject("resource").getInteger("id"))
                                 .collect(Collectors.toList());
 
-                        bookingService.createBookings(typesId, bookings, user)
+                        bookingService.createBookings(resourceIds, bookings, user)
                             .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(res)))
                             .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
                     }
