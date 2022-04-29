@@ -55,7 +55,7 @@ interface IViewModel {
 
     userIsAdml(): boolean;
 
-    prepareBookingStartAndEnd(booking?: Booking, bookingToSave?: boolean): void;
+    prepareBookingStartAndEnd(booking?: Booking): void;
 
     availableResourceQuantity(): number;
 
@@ -387,7 +387,7 @@ class ViewModel implements IViewModel {
      * Prepares the booking to get its availabilities
      * @param booking the booking that must be prepared
      */
-    prepareBookingStartAndEnd(booking ?: Booking, bookingToSave?: boolean): Booking {
+    prepareBookingStartAndEnd(booking ?: Booking): Booking {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly

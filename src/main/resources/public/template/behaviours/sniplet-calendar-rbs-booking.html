@@ -166,10 +166,10 @@
 
                                 <!-- Booking quantity -->
                                 <div ng-if="vm.editedBooking.resource.is_available != undefined">
-                                    <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isResourceAvailable()">
+                                    <div class="bottom-spacing-three default-fontsize" ng-if="!vm.isResourceQuantityValid()">
                                         <b><i18n>rbs.booking.edit.quantity.none</i18n></b>
                                     </div>
-                                    <div class="bottom-spacing-three default-fontsize" ng-if="vm.isResourceAvailable()">
+                                    <div class="bottom-spacing-three default-fontsize" ng-if="vm.isResourceQuantityValid()">
                                         <i18n>rbs.booking.edit.quantity.availability.thereis</i18n>
                                         <b>[[vm.availableResourceQuantity()]]</b>
                                         <i18n>rbs.booking.edit.quantity.availability.on</i18n>

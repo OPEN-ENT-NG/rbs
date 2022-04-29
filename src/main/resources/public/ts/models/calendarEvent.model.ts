@@ -1,4 +1,5 @@
 import {Booking, Bookings, IBookingResponse} from "./booking.model";
+import {Moment} from "moment";
 
 export interface ICalendarEventResponse {
     _id: string;
@@ -14,9 +15,9 @@ export interface ICalendarEventResponse {
 export class CalendarEvent {
     _id: string;
     bookings: Array<IBookingResponse|Bookings>;
-    startMoment: Date;
+    startMoment: any|Date;
     startTime: Date;
-    endMoment: Date;
+    endMoment:  any|Date;
     endTime: Date;
     allday: boolean;
     hasBooking: boolean;
