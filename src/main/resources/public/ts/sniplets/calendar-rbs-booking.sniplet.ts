@@ -391,8 +391,21 @@ class ViewModel implements IViewModel {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly
-        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(FORMAT.formattedDateTimeNoSeconds));
-        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(FORMAT.formattedDateTimeNoSeconds));
+        // createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(FORMAT.formattedDateTimeNoSeconds));
+        // createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(FORMAT.formattedDateTimeNoSeconds));
+
+        // set start and end moment so they can be saved correctly
+        if (this.calendarEvent.startMoment instanceof Date) {
+            console.log("isdate");
+            // handles date format which happens when date is changed in event form
+            createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format("YYYY-MM-DD HH:mm"));
+            createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format("YYYY-MM-DD HH:mm"));
+        } else {
+            //handles initial date format of the calendarEvent
+            const start: any = this.calendarEvent.startMoment;
+            createdBooking.startMoment = moment(start.format(FORMAT.formattedDateTimeNoSeconds));
+            createdBooking.endMoment = moment(this.calendarEvent.endMoment.format(FORMAT.formattedDateTimeNoSeconds));
+        }
 
         // handle all day event
         if (this.calendarEvent.allday) {
