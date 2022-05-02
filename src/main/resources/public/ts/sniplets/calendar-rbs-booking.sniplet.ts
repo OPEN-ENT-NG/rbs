@@ -296,7 +296,7 @@ class ViewModel implements IViewModel {
             case "updateBookingInfos":
                 this.calendarEvent = calendarEvent;
                 this.prepareBookingStartAndEnd();
-                this.isResourceQuantityValid();
+                // this.isResourceQuantityValid();
                 safeApply(this.scope);
                 break;
             case "closeBookingInfos":
@@ -345,8 +345,17 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     availableResourceQuantity(booking ?: Booking): number {
-        let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-            : this.prepareBookingStartAndEnd();
+        // let currentBooking: Booking;
+        // if (this.editedBooking) {
+        //     currentBooking = this.editedBooking;
+        // } else {
+        //     currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+        //         : this.prepareBookingStartAndEnd();
+        // }
+        // let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+        //     : this.prepareBookingStartAndEnd();
+
+        let currentBooking = booking ? booking : this.editedBooking;
 
         this.prepareBookingForAvailabilityCheck(currentBooking);
 
@@ -359,8 +368,17 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     resourceQuantity(booking ?: Booking): number {
-        let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-            : this.prepareBookingStartAndEnd();
+        // let currentBooking: Booking;
+        // if (this.editedBooking) {
+        //     currentBooking = this.editedBooking;
+        // } else {
+        //     currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+        //         : this.prepareBookingStartAndEnd();
+        // }
+        // let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
+        //     : this.prepareBookingStartAndEnd();
+
+        let currentBooking = booking ? booking : this.editedBooking;
 
         this.prepareBookingForAvailabilityCheck(currentBooking);
 
@@ -375,27 +393,25 @@ class ViewModel implements IViewModel {
     private prepareBookingForAvailabilityCheck(currentBooking: Booking) {
 
         // set start and end moment so they can be saved correctly
-        // if (this.calendarEvent.startMoment instanceof Date) {
-        //     console.log("isdate");
-        //     // handles date format which happens when date is changed in event form
-        //     currentBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format("YYYY-MM-DD HH:mm"));
-        //     currentBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format("YYYY-MM-DD HH:mm"));
-        // } else {
-        //     //handles initial date format of the calendarEvent
-        //     const start: any = this.calendarEvent.startMoment;
-        //     currentBooking.startMoment = moment(start.format(FORMAT.formattedDateTimeNoSeconds));
-        //     currentBooking.endMoment = moment(this.calendarEvent.endMoment.format(FORMAT.formattedDateTimeNoSeconds));
-        // }
-
-        console.log(currentBooking);
-        currentBooking.startMoment = moment(this.calendarEvent.startMoment)
-            .hours(this.calendarEvent.allday ? ALL_DAY.startHour : this.calendarEvent.startTime.getHours())
-            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.startTime.getMinutes())
-            .utc();
-        currentBooking.endMoment = moment(this.calendarEvent.endMoment)
-            .hours(this.calendarEvent.allday ? ALL_DAY.endHour : this.calendarEvent.endTime.getHours())
-            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.endTime.getMinutes())
-            .utc();
+        if (this.calendarEvent.startMoment instanceof Date  || this.calendarEvent.endMoment instanceof Date) {
+            currentBooking.startMoment = moment(this.calendarEvent.startMoment)
+                .utc(true)
+                .hours(this.calendarEvent.startTime.getHours())
+                .minutes(this.calendarEvent.startTime.getMinutes());
+            currentBooking.endMoment = moment(this.calendarEvent.endMoment)
+                .utc(true)
+                .hours(this.calendarEvent.endTime.getHours())
+                .minutes(this.calendarEvent.endTime.getMinutes());
+        } else {
+            currentBooking.startMoment = moment(this.calendarEvent.startMoment)
+                .hours(this.calendarEvent.allday ? ALL_DAY.startHour : this.calendarEvent.startTime.getHours())
+                .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.startTime.getMinutes())
+                .utc();
+            currentBooking.endMoment = moment(this.calendarEvent.endMoment)
+                .hours(this.calendarEvent.allday ? ALL_DAY.endHour : this.calendarEvent.endTime.getHours())
+                .minutes(this.calendarEvent.allday ? ALL_DAY.minutes : this.calendarEvent.endTime.getMinutes())
+                .utc();
+        }
     }
 
     /**
@@ -408,7 +424,6 @@ class ViewModel implements IViewModel {
         // set start and end moment so they can be saved correctly
         createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(FORMAT.formattedDateTimeNoSeconds));
         createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(FORMAT.formattedDateTimeNoSeconds));
-
 
         // handle all day event
         if (this.calendarEvent.allday) {
