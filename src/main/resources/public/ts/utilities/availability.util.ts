@@ -108,7 +108,6 @@ export class AvailabilityUtil {
      * @return number       resource quantity available on this timeslot
      */
     static getResourceQuantityByTimeslot = (booking: any, resource: any, exception?: any) : number => {
-        console.log(booking);
         let resourceQuantityDispo = resource.is_available ? resource.quantity : 0;
         let exceptionId = (exception && exception.id) ? exception.id : -1;
 

@@ -345,16 +345,7 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     availableResourceQuantity(booking ?: Booking): number {
-        // let currentBooking: Booking;
-        // if (this.editedBooking) {
-        //     currentBooking = this.editedBooking;
-        // } else {
-        //     currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-        //         : this.prepareBookingStartAndEnd();
-        // }
-        // let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-        //     : this.prepareBookingStartAndEnd();
-
+        console.trace();
         let currentBooking = booking ? booking : this.editedBooking;
 
         this.prepareBookingForAvailabilityCheck(currentBooking);
@@ -368,16 +359,7 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be checked
      */
     resourceQuantity(booking ?: Booking): number {
-        // let currentBooking: Booking;
-        // if (this.editedBooking) {
-        //     currentBooking = this.editedBooking;
-        // } else {
-        //     currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-        //         : this.prepareBookingStartAndEnd();
-        // }
-        // let currentBooking = booking ? this.prepareBookingStartAndEnd(booking)
-        //     : this.prepareBookingStartAndEnd();
-
+       console.trace();
         let currentBooking = booking ? booking : this.editedBooking;
 
         this.prepareBookingForAvailabilityCheck(currentBooking);
@@ -419,6 +401,7 @@ class ViewModel implements IViewModel {
      * @param booking the booking that must be prepared
      */
     prepareBookingStartAndEnd(booking ?: Booking): Booking {
+        console.trace();
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly
