@@ -204,7 +204,11 @@ class ViewModel implements IViewModel {
                     if (this.resourceTypes.filter((type: ResourceType) => type.myRights.contrib).length > 0
                         || this.userIsAdml()) {
                         this.hasBookingRight = true;
-                        await this.autoSelectResource();
+                        try {
+                            await this.autoSelectResource();
+                        } catch (e) {
+                            console.error(e);
+                        }
                     } else {
                         this.hasBookingRight = false;
                     }

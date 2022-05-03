@@ -46,11 +46,11 @@ public class EventBusController extends ControllerHelper {
                                 .stream()
                                 .map((bookingObject) -> {
                                     return new Booking(((JsonObject) bookingObject),
-                                            new Resource(((JsonObject)bookingObject).getJsonObject("resource")));
+                                            new Resource(((JsonObject)bookingObject).getJsonObject("resource", new JsonObject())));
                                 })
                                 .collect(Collectors.toList());
                         List<Integer> resourceIds = bookingsArray.stream()
-                                .map((booking) -> ((JsonObject)booking).getJsonObject("resource").getInteger("id"))
+                                .map((booking) -> ((JsonObject)booking).getJsonObject("resource", new JsonObject()).getInteger("id", null))
                                 .collect(Collectors.toList());
 
                         bookingService.createBookings(resourceIds, bookings, user)
