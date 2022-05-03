@@ -89,7 +89,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		List<Future<JsonArray>> bookingsFuture = new ArrayList<>();
 
 		for (Booking booking : bookings) {
-			JsonArray bookingSlotsArray = booking.getJson().getJsonArray("slots");
+			JsonArray bookingSlotsArray = booking.getJson().getJsonArray("slots", new JsonArray());
 
 			booking.setSlots(new Slots(bookingSlotsArray));
 			Promise<JsonArray> bookingPromise = Promise.promise();

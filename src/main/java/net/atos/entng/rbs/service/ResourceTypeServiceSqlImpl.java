@@ -72,9 +72,8 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 		} else {
 			//Not local admin targeting all structures
 			query.append(" WHERE ts.member_id IN ").append(Sql.listPrepared(groupsAndUserIds.toArray()));
-			for (String groupOruser : groupsAndUserIds) {
-				values.add(groupOruser);
-			}
+			values.addAll(new JsonArray(groupsAndUserIds));
+
 			query.append(" OR t.owner = ?");
 			values.add(user.getUserId());
 
@@ -84,9 +83,7 @@ public class ResourceTypeServiceSqlImpl implements ResourceTypeService {
 				List<String> scope = getLocalAdminScope(user);
 				if (scope != null && !scope.isEmpty()) {
 					query.append(" OR t.school_id IN ").append(Sql.listPrepared(scope.toArray()));
-					for (String schoolId : scope) {
-						values.add(schoolId);
-					}
+					values.addAll(new JsonArray(scope));
 				}
 			}
 

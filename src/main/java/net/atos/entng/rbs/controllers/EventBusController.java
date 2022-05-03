@@ -38,25 +38,22 @@ public class EventBusController extends ControllerHelper {
         switch (action) {
             case "save-bookings":
                 String userId = body.getString("userId");
-                UserUtils.getUserInfos(eb, userId, new Handler<UserInfos>() {
-                    @Override
-                    public void handle(final UserInfos user) {
-                        JsonArray bookingsArray = body.getJsonArray("bookings");
-                        List<Booking> bookings = bookingsArray
-                                .stream()
-                                .map((bookingObject) -> {
-                                    return new Booking(((JsonObject) bookingObject),
-                                            new Resource(((JsonObject)bookingObject).getJsonObject("resource", new JsonObject())));
-                                })
-                                .collect(Collectors.toList());
-                        List<Integer> resourceIds = bookingsArray.stream()
-                                .map((booking) -> ((JsonObject)booking).getJsonObject("resource", new JsonObject()).getInteger("id", null))
-                                .collect(Collectors.toList());
+                UserUtils.getUserInfos(eb, userId, user -> {
+                    JsonArray bookingsArray = body.getJsonArray("bookings");
+                    List<Booking> bookings = bookingsArray
+                            .stream()
+                            .map((bookingObject) -> {
+                                return new Booking(((JsonObject) bookingObject),
+                                        new Resource(((JsonObject)bookingObject).getJsonObject("resource", new JsonObject())));
+                            })
+                            .collect(Collectors.toList());
+                    List<Integer> resourceIds = bookingsArray.stream()
+                            .map((booking) -> ((JsonObject)booking).getJsonObject("resource", new JsonObject()).getInteger("id", null))
+                            .collect(Collectors.toList());
 
-                        bookingService.createBookings(resourceIds, bookings, user)
-                            .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(res)))
-                            .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
-                    }
+                    bookingService.createBookings(resourceIds, bookings, user)
+                        .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(res)))
+                        .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
                 });
 
                 break;
