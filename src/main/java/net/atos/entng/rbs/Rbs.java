@@ -24,6 +24,7 @@ import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
+import net.atos.entng.rbs.service.BookingServiceSqlImpl;
 import net.atos.entng.rbs.service.IcalExportService;
 import net.atos.entng.rbs.service.pdf.PdfExportService;
 import org.entcore.common.http.BaseServer;
@@ -114,6 +115,7 @@ public class Rbs extends BaseServer {
 
 		addController(new BookingController(eb));
 		addController(new AvailabilityController());
+		addController(new EventBusController(new BookingServiceSqlImpl()));
 
 		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());
 	}

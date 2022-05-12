@@ -3,6 +3,7 @@ import moment from "../moment";
 import {Moment} from "moment";
 import {BookingUtil} from "./booking.util";
 import {Availability} from "../models/Availability";
+import {Booking} from "../models/booking.model";
 
 export class AvailabilityUtil {
     /**

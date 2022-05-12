@@ -2,6 +2,7 @@ export const FORMAT = {
     formattedDate: 'YYYY-MM-DD',
     formattedTime: 'HH:mm:ss',
     formattedDateTime: 'YYYY-MM-DD HH:mm:ss',
+    formattedDateTimeNoSeconds: 'YYYY-MM-DD HH:mm',
     displayDate: 'DD/MM/YYYY',
     displayTime: 'HH:mm',
     displayDateTime: 'DD/MM/YYYY HH:mm',

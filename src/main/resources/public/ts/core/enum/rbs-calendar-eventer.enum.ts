@@ -1,4 +1,6 @@
 export enum RBS_CALENDAR_EVENTER {
-    OPEN = 'rbs-calendar:open-new-item',
-    EDIT = 'rbs-calendar:edit-item',
+    INIT_BOOKING_INFOS = 'initBookingInfos',
+    UPDATE_BOOKING_INFOS = 'updateBookingInfos',
+    CLOSE_BOOKING_INFOS = 'closeBookingInfos',
+    CAN_EDIT_EVENT = "canEditEvent"
 }
