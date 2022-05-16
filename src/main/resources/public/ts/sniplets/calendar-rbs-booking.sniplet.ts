@@ -16,6 +16,7 @@ import {CalendarEvent} from "../models/calendarEvent.model";
 import {AxiosResponse} from "axios";
 import {RBS_CALENDAR_EVENTER} from "../core/enum/rbs-calendar-eventer.enum";
 import {BookingDelayUtil} from "../utilities/booking-delay.util";
+import {Moment} from "moment";
 
 enum ALL_DAY {
     startHour = 7,
@@ -46,6 +47,7 @@ interface IViewModel {
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
     minMaxDelaysCompliant: boolean;
+    dateFormat: any;
 
     setHandler(): void;
 
@@ -111,9 +113,13 @@ interface IViewModel {
 
     recurrenceOrMultidaysAdded(): boolean;
 
+    hasRecurrenceBeenAdded(): boolean;
+
     isOneDayEvent(calendarEvent: CalendarEvent): boolean;
 
     isBookingPossible(excludeBookingFormInfos?: boolean): boolean;
+
+    formatDate(moment: Moment, format: string): string;
 }
 
 class ViewModel implements IViewModel {
@@ -128,6 +134,7 @@ class ViewModel implements IViewModel {
     hasResourceTypes: boolean;
     hasResourceRights: boolean;
     canEditEvent: boolean;
+    dateFormat: any;
 
     userStructures: Array<Structure>;
     resourceTypes: Array<ResourceType>;
@@ -151,6 +158,7 @@ class ViewModel implements IViewModel {
         this.hasResourceTypes = false;
         this.canEditEvent = false;
         this.bookings = new Bookings();
+        this.dateFormat = FORMAT;
 
         this.editedBooking = new Booking();
         this.editedBooking.opened = true;
@@ -322,7 +330,7 @@ class ViewModel implements IViewModel {
                 this.loading = true;
                 this.initialCalendarEvent = angular.copy(calendarEvent);
                 this.calendarEvent = calendarEvent;
-                if (this.calendarEvent._id && this.eventHasBooking()) {
+                if (this.calendarEvent._id && this.eventHasBooking() && this.loading) {
                     this.canViewBooking = true;
                     this.calendarEvent.bookings.forEach((booking: IBookingResponse) => {
                         this.bookingService.getBooking(booking.id)
@@ -334,7 +342,6 @@ class ViewModel implements IViewModel {
                                     databaseBooking.resource = await this.bookingService.getResource(databaseBooking.resourceId);
                                     databaseBooking.hasBeenDeleted = false;
                                 }
-
                                 this.hasResourceRights = true;
                                 this.bookings.all.push(databaseBooking);
                             })
@@ -388,7 +395,7 @@ class ViewModel implements IViewModel {
      */
     calendarEventIsBeforeToday(): boolean {
         let checkedStartMoment = moment(moment(this.calendarEvent.startMoment)
-            .format(FORMAT.formattedDateTimeNoSeconds))
+            .format(this.dateFormat.formattedDateTimeNoSeconds))
             .hours(this.calendarEvent.allday ? ALL_DAY.startHour :this.calendarEvent.startTime.getHours())
             .minutes(this.calendarEvent.allday ? ALL_DAY.startHour :this.calendarEvent.startTime.getMinutes());
         let startMomentIsBeforeNow: boolean = checkedStartMoment.isBefore(Date.now(), 'minutes');
@@ -482,8 +489,8 @@ class ViewModel implements IViewModel {
         let createdBooking: Booking = booking ? booking : this.editedBooking;
 
         // set start and end moment so they can be saved correctly
-        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(FORMAT.formattedDateTimeNoSeconds));
-        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(FORMAT.formattedDateTimeNoSeconds));
+        createdBooking.startMoment = moment(moment(this.calendarEvent.startMoment).format(this.dateFormat.formattedDateTimeNoSeconds));
+        createdBooking.endMoment= moment(moment(this.calendarEvent.endMoment).format(this.dateFormat.formattedDateTimeNoSeconds));
 
         // handle all day event
         if (this.calendarEvent.allday) {
@@ -568,8 +575,8 @@ class ViewModel implements IViewModel {
      * @private
      */
     private handleBookingSlots(createdBooking: Booking): void {
-        let eventStartTime = moment(this.calendarEvent.startTime).format(FORMAT.displayTime);
-        let eventEndTime = moment(this.calendarEvent.endTime).format(FORMAT.displayTime);
+        let eventStartTime = moment(this.calendarEvent.startTime).format(this.dateFormat.displayTime);
+        let eventEndTime = moment(this.calendarEvent.endTime).format(this.dateFormat.displayTime);
         let closestStartTime: any = undefined;
         let closestEndTime: any = undefined;
         this.bookingService.getSlots(createdBooking.type.slotProfile)
@@ -629,8 +636,8 @@ class ViewModel implements IViewModel {
         let bookingStart: string = bookingStartDate + "Z";
         let bookingEnd: string = bookingEndDate + "Z";
 
-        return moment(bookingStart).format(FORMAT.displayDateTime)
-            + " - " + moment(bookingEnd).format(FORMAT.displayDateTime);
+        return moment(bookingStart).format(this.dateFormat.displayDateTime)
+            + " - " + moment(bookingEnd).format(this.dateFormat.displayDateTime);
     }
 
     /**
@@ -667,9 +674,15 @@ class ViewModel implements IViewModel {
      * Returns true if the calendarEvent has been edited with a recurrence or a multi-day change
      */
     recurrenceOrMultidaysAdded(): boolean {
-        let hasNewRecurrence = !this.initialCalendarEvent.isRecurrent && this.calendarEvent.isRecurrent;
         let hasNewMultiDay = this.isOneDayEvent(this.initialCalendarEvent) && !this.isOneDayEvent(this.calendarEvent);
-        return (this.calendarEvent._id && this.eventHasBooking() && !this.isBookingPossible() && (hasNewRecurrence || hasNewMultiDay));
+        return (this.calendarEvent._id && this.eventHasBooking() && !this.isBookingPossible() && (this.hasRecurrenceBeenAdded() || hasNewMultiDay));
+    }
+
+    /**
+     * Returns true if the calendarEvent has been edited with a recurrence or a multi-day change
+     */
+    hasRecurrenceBeenAdded(): boolean {
+        return !this.initialCalendarEvent.isRecurrent && this.calendarEvent.isRecurrent;
     }
 
     /**
@@ -694,6 +707,10 @@ class ViewModel implements IViewModel {
             && ((this.hasBooking && this.isResourceQuantityValid() && this.bookingDelaysValid()) || !this.hasBooking));
 
         return <boolean>((isBookingValid && bookingFormValid) || this.calendarEvent._id);
+    }
+
+    formatDate(moment: Moment, format: string): string {
+        return DateUtils.format(moment.local(), format);
     }
 
 }

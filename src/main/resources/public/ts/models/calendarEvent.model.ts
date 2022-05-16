@@ -11,6 +11,7 @@ export interface ICalendarEventResponse {
     allday: boolean;
     hasBooking: boolean;
     isRecurrent: boolean;
+    editAllRecurrence: boolean;
 }
 
 export class CalendarEvent {
@@ -23,6 +24,7 @@ export class CalendarEvent {
     allday: boolean;
     hasBooking: boolean;
     isRecurrent: boolean;
+    editAllRecurrence: boolean;
 
     build(data: ICalendarEventResponse): CalendarEvent {
         this._id = data._id;
@@ -34,6 +36,7 @@ export class CalendarEvent {
         this.allday = data.allday;
         this.hasBooking = data.hasBooking;
         this.isRecurrent = data.isRecurrent;
+        this.editAllRecurrence = data.editAllRecurrence;
 
         return this;
     }
