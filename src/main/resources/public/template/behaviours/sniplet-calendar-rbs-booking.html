@@ -54,6 +54,17 @@
                     <div ng-if="!vm.isResourceQuantityAllowingBooking() && vm.isBookingPossible(true)" class="info">
                         <i18n>rbs.booking.edit.quantity.null</i18n>
                     </div>
+
+                    <!-- Min delay not respected warning -->
+                    <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="info">
+                        <i18n>rbs.calendar.sniplet.min.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.minDelay)]]
+                        <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+                    </div>
+                    <!-- Max delay not respected warning -->
+                    <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="info">
+                        <i18n>rbs.calendar.sniplet.max.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.maxDelay)]]
+                        <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+                    </div>
                     <div class="row accordions">
                         <!-- Resource description -->
                         <div class="toggle">

@@ -15,6 +15,7 @@ import {FORMAT} from "../core/const/date-format.const";
 import {CalendarEvent} from "../models/calendarEvent.model";
 import {AxiosResponse} from "axios";
 import {RBS_CALENDAR_EVENTER} from "../core/enum/rbs-calendar-eventer.enum";
+import {BookingDelayUtil} from "../utilities/booking-delay.util";
 
 enum ALL_DAY {
     startHour = 7,
@@ -44,6 +45,7 @@ interface IViewModel {
     calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
+    minMaxDelaysCompliant: boolean;
 
     setHandler(): void;
 
@@ -60,6 +62,8 @@ interface IViewModel {
     handleCalendarEventChange(event: IAngularEvent, calendarEvent: CalendarEvent): void;
 
     userIsAdml(): boolean;
+
+    userIsSuperAdmin(): boolean;
 
     prepareBookingStartAndEnd(booking?: Booking): void;
 
@@ -84,6 +88,18 @@ interface IViewModel {
     bookingStatus(bookingStatus: number): string;
 
     formatBookingDates(bookingStartDate: string, bookingEndDate: string): string;
+
+    resourceHasMinDelay(): boolean;
+
+    resourceHasMaxDelay(): boolean;
+
+    checkMinDelay(): boolean;
+
+    checkMaxDelay(): boolean;
+
+    displayDelayDays(delay: number): number;
+
+    bookingDelaysValid(): boolean;
 
     eventHasBooking(calendarEvent?: CalendarEvent): boolean;
 
@@ -121,6 +137,7 @@ class ViewModel implements IViewModel {
     calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
+    minMaxDelaysCompliant: boolean;
 
     private bookingService;
 
@@ -360,6 +377,13 @@ class ViewModel implements IViewModel {
     }
 
     /**
+     * Returns true if the user is Super Admin
+     */
+    userIsSuperAdmin(): boolean {
+        return model.me.functions.SUPER_ADMIN;
+    }
+
+    /**
      * Returns true if the event takes place in the past
      */
     calendarEventIsBeforeToday(): boolean {
@@ -487,6 +511,55 @@ class ViewModel implements IViewModel {
         createdBooking.slots = [bookingSlot];
 
         return createdBooking;
+    }
+
+    /**
+     * Returns true if the resource has a minimum delay
+     */
+    resourceHasMinDelay(): boolean {
+        return (this.editedBooking && this.editedBooking.resource && this.editedBooking.resource.minDelay != null);
+    }
+
+    /**
+     * Returns true if the resource has a maximum delay
+     */
+    resourceHasMaxDelay(): boolean {
+        return (this.editedBooking && this.editedBooking.resource && this.editedBooking.resource.maxDelay != null);
+    }
+
+    /**
+     * Returns true if the minimum delay is compliant
+     */
+    checkMinDelay(): boolean {
+        let delaybooking: Booking = angular.copy(this.editedBooking);
+        this.prepareBookingStartAndEnd(delaybooking);
+
+        return (BookingDelayUtil.checkMinDelay(delaybooking) || this.userIsAdml() || this.userIsSuperAdmin());
+    }
+
+    /**
+     * Returns true if the maximum delay is compliant
+     */
+    checkMaxDelay(): boolean {
+        let delaybooking: Booking = angular.copy(this.editedBooking);
+        this.prepareBookingStartAndEnd(delaybooking);
+
+       return (BookingDelayUtil.checkMaxDelay(delaybooking) || this.userIsAdml() || this.userIsSuperAdmin());
+    }
+
+    /**
+     * Returns the number of days of the delay
+     */
+    displayDelayDays(delay: number): number {
+        return BookingDelayUtil.displayDelayDays(delay);
+    }
+
+    /**
+     * Returns true if the booking delays are compliant
+     */
+    bookingDelaysValid(): boolean {
+        return ((this.resourceHasMinDelay()? this.checkMinDelay() : true)
+            && (this.resourceHasMaxDelay()? this.checkMaxDelay() : true));
     }
 
     /**
@@ -618,7 +691,7 @@ class ViewModel implements IViewModel {
             :(this.areStructuresValid()
             && (this.resourceTypes && this.resourceTypes.length > 0)
             && (this.resources && this.resources.length > 0)
-            && ((this.hasBooking && this.isResourceQuantityValid()) || !this.hasBooking));
+            && ((this.hasBooking && this.isResourceQuantityValid() && this.bookingDelaysValid()) || !this.hasBooking));
 
         return <boolean>((isBookingValid && bookingFormValid) || this.calendarEvent._id);
     }
