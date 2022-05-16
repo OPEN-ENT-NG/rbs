@@ -15,6 +15,7 @@ import {FORMAT} from "../core/const/date-format.const";
 import {CalendarEvent} from "../models/calendarEvent.model";
 import {AxiosResponse} from "axios";
 import {RBS_CALENDAR_EVENTER} from "../core/enum/rbs-calendar-eventer.enum";
+import {BookingDelayUtil} from "../utilities/booking-delay.util";
 
 enum ALL_DAY {
     startHour = 7,
@@ -44,6 +45,7 @@ interface IViewModel {
     calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
+    minMaxDelaysCompliant: boolean;
 
     setHandler(): void;
 
@@ -85,6 +87,18 @@ interface IViewModel {
 
     formatBookingDates(bookingStartDate: string, bookingEndDate: string): string;
 
+    resourceHasMinDelay(): boolean;
+
+    resourceHasMaxDelay(): boolean;
+
+    checkMinDelay(): boolean;
+
+    checkMaxDelay(): boolean;
+
+    displayDelayDays(delay: number): number;
+
+    bookingDelaysValid(): boolean;
+
     eventHasBooking(calendarEvent?: CalendarEvent): boolean;
 
     hasRbsAccess(): boolean;
@@ -121,6 +135,7 @@ class ViewModel implements IViewModel {
     calendarEvent: CalendarEvent;
     numberOfAvailableItems: number;
     numberOfTotalItems: number;
+    minMaxDelaysCompliant: boolean;
 
     private bookingService;
 
@@ -490,6 +505,49 @@ class ViewModel implements IViewModel {
     }
 
     /**
+     * Returns true if the resource has a minimum delay
+     */
+    resourceHasMinDelay(): boolean {
+        return (this.editedBooking && this.editedBooking.resource && this.editedBooking.resource.minDelay != null);
+    }
+
+    /**
+     * Returns true if the resource has a maximum delay
+     */
+    resourceHasMaxDelay(): boolean {
+        return (this.editedBooking && this.editedBooking.resource && this.editedBooking.resource.maxDelay != null);
+    }
+
+    /**
+     * Returns true if the minimum delay is compliant
+     */
+    checkMinDelay(): boolean {
+        return BookingDelayUtil.checkMinDelay(this.editedBooking);
+    }
+
+    /**
+     * Returns true if the maximum delay is compliant
+     */
+    checkMaxDelay(): boolean {
+       return BookingDelayUtil.checkMaxDelay(this.editedBooking);
+    }
+
+    /**
+     * Returns the number of days of the delay
+     */
+    displayDelayDays(delay: number): number {
+        return BookingDelayUtil.displayDelayDays(delay);
+    }
+
+    /**
+     * Returns true if the booking delays are compliant
+     */
+    bookingDelaysValid(): boolean {
+        return ((this.resourceHasMinDelay()? this.checkMinDelay() : true)
+            && (this.resourceHasMaxDelay()? this.checkMaxDelay() : true));
+    }
+
+    /**
      * Handles the case where the resource type uses booking slots
      * @param createdBooking the booking
      * @private
@@ -618,7 +676,7 @@ class ViewModel implements IViewModel {
             :(this.areStructuresValid()
             && (this.resourceTypes && this.resourceTypes.length > 0)
             && (this.resources && this.resources.length > 0)
-            && ((this.hasBooking && this.isResourceQuantityValid()) || !this.hasBooking));
+            && ((this.hasBooking && this.isResourceQuantityValid() && this.bookingDelaysValid()) || !this.hasBooking));
 
         return <boolean>((isBookingValid && bookingFormValid) || this.calendarEvent._id);
     }

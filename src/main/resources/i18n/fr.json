@@ -461,5 +461,8 @@
   "rbs.calendar.sniplet.booking.owner.is": "Des ressources ont été réservées par",
   "rbs.calendar.sniplet.for.this.event": "pour cet évènement.",
   "rbs.calendar.sniplet.booking.deletion.advice.no.access": "La suppression de l'évènement ne supprimera pas les réservations.",
-  "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Les ressources ne seront pas réservées pour les autres occurrences de cet évènement"
+  "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Les ressources ne seront pas réservées pour les autres occurrences de cet évènement",
+  "rbs.calendar.sniplet.min.delay.not.respected": "Cette ressource doit être réservée au minimum",
+  "rbs.calendar.sniplet.max.delay.not.respected": "Cette ressource doit être réservée au maximum",
+  "rbs.calendar.sniplet.days.in.advance": "jours à l'avance."
 }
