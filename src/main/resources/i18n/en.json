@@ -440,6 +440,9 @@
     "rbs.calendar.sniplet.booking.owner.is": "Resources were booked by",
     "rbs.calendar.sniplet.for.this.event": "for this event.",
     "rbs.calendar.sniplet.booking.deletion.advice.no.access": "The deletion of this event will not delete the bookings.",
-    "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Resources will not be booked for the other occurrences of this event"
+    "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Resources will not be booked for the other occurrences of this event",
+    "rbs.calendar.sniplet.min.delay.not.respected": "This resource must be booked at least",
+    "rbs.calendar.sniplet.max.delay.not.respected": "This resource must be booked at most",
+    "rbs.calendar.sniplet.days.in.advance": "days in advance."
 
 }

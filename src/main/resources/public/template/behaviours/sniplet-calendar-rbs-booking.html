@@ -12,6 +12,16 @@
         <div ng-if="vm.recurrenceOrMultidaysAdded()" class="info">
             <i18n>rbs.calendar.sniplet.recurrence.multiday.edition.warning</i18n>
         </div>
+        <!-- Min delay not respected warning -->
+        <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="info">
+            <i18n>rbs.calendar.sniplet.min.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.minDelay)]]
+            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+        </div>
+        <!-- Max delay not respected warning -->
+        <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="info">
+            <i18n>rbs.calendar.sniplet.max.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.maxDelay)]]
+            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+        </div>
         <div class="content" ng-if="!vm.calendarEventIsBeforeToday() || vm.canViewBooking">
             <!-- Booking checkbox -->
             <div class="row" ng-show="vm.hasBookingRight && !vm.calendarEvent._id">
