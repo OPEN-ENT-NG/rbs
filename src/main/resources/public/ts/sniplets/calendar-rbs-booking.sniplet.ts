@@ -63,6 +63,8 @@ interface IViewModel {
 
     userIsAdml(): boolean;
 
+    userIsSuperAdmin(): boolean;
+
     prepareBookingStartAndEnd(booking?: Booking): void;
 
     availableResourceQuantity(): number;
@@ -375,6 +377,13 @@ class ViewModel implements IViewModel {
     }
 
     /**
+     * Returns true if the user is Super Admin
+     */
+    userIsSuperAdmin(): boolean {
+        return model.me.functions.SUPER_ADMIN;
+    }
+
+    /**
      * Returns true if the event takes place in the past
      */
     calendarEventIsBeforeToday(): boolean {
@@ -522,14 +531,20 @@ class ViewModel implements IViewModel {
      * Returns true if the minimum delay is compliant
      */
     checkMinDelay(): boolean {
-        return BookingDelayUtil.checkMinDelay(this.editedBooking);
+        let delaybooking: Booking = angular.copy(this.editedBooking);
+        this.prepareBookingStartAndEnd(delaybooking);
+
+        return (BookingDelayUtil.checkMinDelay(delaybooking) || this.userIsAdml() || this.userIsSuperAdmin());
     }
 
     /**
      * Returns true if the maximum delay is compliant
      */
     checkMaxDelay(): boolean {
-       return BookingDelayUtil.checkMaxDelay(this.editedBooking);
+        let delaybooking: Booking = angular.copy(this.editedBooking);
+        this.prepareBookingStartAndEnd(delaybooking);
+
+       return (BookingDelayUtil.checkMaxDelay(delaybooking) || this.userIsAdml() || this.userIsSuperAdmin());
     }
 
     /**
