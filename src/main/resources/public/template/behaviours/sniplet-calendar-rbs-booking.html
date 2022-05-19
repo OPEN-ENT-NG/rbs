@@ -1,5 +1,5 @@
 <article id="calendar-booking" class="sniplet rbs calendarBooking"
-         ng-if="(vm.hasBookingRight && !vm.calendarEvent._id) || vm.canViewBooking">
+         ng-if="(vm.hasRbsAccess() && (vm.hasBookingRight && !vm.calendarEvent._id) || vm.canViewBooking)">
     <h2 class="backgroundBlueTitle" ng-if="vm.canEditEvent">
         <i18n>rbs.title</i18n>
     </h2>
