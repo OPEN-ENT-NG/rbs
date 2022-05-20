@@ -464,5 +464,6 @@
   "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Les ressources ne seront pas réservées pour les autres occurrences de cet évènement",
   "rbs.calendar.sniplet.min.delay.not.respected": "Cette ressource doit être réservée au minimum",
   "rbs.calendar.sniplet.max.delay.not.respected": "Cette ressource doit être réservée au maximum",
-  "rbs.calendar.sniplet.days.in.advance": "jours à l'avance."
+  "rbs.calendar.sniplet.days.in.advance": "jours à l'avance.",
+  "rbs.calendar.sniplet.booking.add.new.recurrence.warning": "Les ressources ne seront réservées que pour cet évènement"
 }

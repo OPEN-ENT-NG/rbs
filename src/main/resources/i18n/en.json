@@ -87,7 +87,7 @@
     "rbs.booking.edit.period.end.after": "après",
     "rbs.booking.edit.period.end.label": "Fin du créneau périodique",
     "rbs.booking.edit.period.end.occurrences": "occurences",
-    "rbs.booking.edit.period.end.on": "le",
+    "rbs.booking.edit.period.end.on": "the",
     "rbs.booking.edit.period.label": "Répéter toutes les ",
     "rbs.booking.edit.period.start.label": "Début du créneau périodique",
     "rbs.booking.edit.period.unit": "semaines",
@@ -397,8 +397,8 @@
     "rbs.period.occurences.slots.many": "occurences",
     "rbs.period.date.until": "jusqu'au",
     "rbs.period.error.nodays": "Veuillez sélectionner au moins un jour de la semaine",
-    "to": "à",
-    "from": "de",
+    "to": "to",
+    "from": "from",
     "type.form.validation.required": "Les demandes de réservation doivent être validées",
     "VALIDATION_ERROR": "Données non valides.",
     "rbs.search.title" : "Réservation du {0} au {1} sur la ressource {2} ({3})",
@@ -443,6 +443,7 @@
     "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Resources will not be booked for the other occurrences of this event",
     "rbs.calendar.sniplet.min.delay.not.respected": "This resource must be booked at least",
     "rbs.calendar.sniplet.max.delay.not.respected": "This resource must be booked at most",
-    "rbs.calendar.sniplet.days.in.advance": "days in advance."
+    "rbs.calendar.sniplet.days.in.advance": "days in advance.",
+    "rbs.calendar.sniplet.booking.add.new.recurrence.warning": "Resources will be booked for this event only"
 
 }
