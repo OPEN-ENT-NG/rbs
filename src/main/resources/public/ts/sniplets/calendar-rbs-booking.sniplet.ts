@@ -632,12 +632,13 @@ class ViewModel implements IViewModel {
     /**
      * Returns the start and end dates both in format DD-MM-YYYY HH:mm
      */
-    formatBookingDates(bookingStartDate: string, bookingEndDate: string): string {
+    formatBookingDates(bookingStartDate: string, bookingEndDate?: string): string {
         let bookingStart: string = bookingStartDate + "Z";
-        let bookingEnd: string = bookingEndDate + "Z";
+        let bookingEnd: string = bookingEndDate ? bookingEndDate + "Z" : "";
 
-        return moment(bookingStart).format(this.dateFormat.displayDateTime)
-            + " - " + moment(bookingEnd).format(this.dateFormat.displayDateTime);
+        return bookingEndDate ?
+            moment(bookingStart).format(this.dateFormat.displayTime) + " - " + moment(bookingEnd).format(this.dateFormat.displayTime)
+            : moment(bookingStart).format(this.dateFormat.displayDate);
     }
 
     /**
