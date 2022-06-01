@@ -4,6 +4,8 @@
         <i18n>rbs.title</i18n>
     </h2>
     <div class="toggle">
+
+        <!-- WARNINGS -->
         <!-- Invalid date warning -->
         <div ng-if="vm.calendarEventIsBeforeToday() && !vm.canViewBooking" class="info">
             <i18n>rbs.booking.invalid.datetimes.past</i18n>
@@ -12,6 +14,25 @@
         <div ng-if="vm.recurrenceOrMultidaysAdded()" class="info">
             <i18n>rbs.calendar.sniplet.recurrence.multiday.edition.warning</i18n>
         </div>
+        <!-- Min delay not respected warning -->
+        <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="info">
+            <i18n>rbs.calendar.sniplet.min.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.minDelay)]]
+            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+        </div>
+        <!-- Max delay not respected warning -->
+        <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="info">
+            <i18n>rbs.calendar.sniplet.max.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.maxDelay)]]
+            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
+        </div>
+        <!-- Saved booking + new recurrence warning -->
+        <div class="warning" ng-if="vm.calendarEvent._id && vm.hasRecurrenceBeenAdded()">
+            <i18n>rbs.calendar.sniplet.booking.add.new.recurrence.warning</i18n>
+            (<i18n>rbs.booking.edit.period.end.on</i18n> [[vm.formatDate(vm.editedBooking.startMoment, vm.dateFormat.displayDate)]],
+            <i18n>from</i18n> [[vm.formatDate(vm.editedBooking.startMoment, vm.dateFormat.displayTime)]]
+            <i18n>to</i18n> [[vm.formatDate(vm.editedBooking.endMoment, vm.dateFormat.displayTime)]])
+        </div>
+
+        <!-- BOOKING -->
         <div class="content" ng-if="!vm.calendarEventIsBeforeToday() || vm.canViewBooking">
             <!-- Booking checkbox -->
             <div class="row" ng-show="vm.hasBookingRight && !vm.calendarEvent._id">
@@ -27,14 +48,18 @@
                 twelve cell" ng-if="!vm.hasAccessToSavedBookings()">
                 <i18n>rbs.calendar.sniplet.booking.no.access</i18n>
             </div>
+
             <!-- Booking summary -->
             <div ng-repeat="booking in vm.bookings.all" ng-if="vm.calendarEvent._id && vm.hasAccessToSavedBookings()">
                 <div class="row block-container sniplet calendarBooking-bookingInfoBox calendarBooking-bookingFormBody
                 twelve cell">
                     <div ng-if="!booking.hasBeenDeleted">
-                        <div class="three cell">[[booking.resource.name]]</div>
-                        <div class="one cell">[[booking.quantity]]</div>
-                        <div class="four cell right-spacing-small">[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        <div class="three cell right-spacing">[[booking.resource.name]]</div>
+                        <div class="one cell right-spacing">[[booking.quantity]]</div>
+                        <div class="two cell right-spacing">
+                            <div>[[vm.formatBookingDates(booking.start_date)]]</div>
+                            <div>[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        </div>
                         <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
                     </div>
                     <div ng-if="booking.hasBeenDeleted">
