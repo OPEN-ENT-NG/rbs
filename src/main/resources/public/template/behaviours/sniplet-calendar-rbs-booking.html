@@ -57,7 +57,10 @@
                     <div ng-if="!booking.hasBeenDeleted">
                         <div class="three cell right-spacing">[[booking.resource.name]]</div>
                         <div class="one cell right-spacing">[[booking.quantity]]</div>
-                        <div class="three cell right-spacing">[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        <div class="two cell right-spacing">
+                            <div>[[vm.formatBookingDates(booking.start_date)]]</div>
+                            <div>[[vm.formatBookingDates(booking.start_date, booking.end_date)]]</div>
+                        </div>
                         <div class="two cell">[[vm.bookingStatus(booking.status)]]</div>
                     </div>
                     <div ng-if="booking.hasBeenDeleted">
