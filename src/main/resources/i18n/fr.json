@@ -455,7 +455,7 @@
   "rbs.calendar.sniplet.conditions": "L'évènement ne doit pas être récurrent ni sur plusieurs jours",
   "rbs.calendar.sniplet.booking.reason": "Cette réservation a été effectuée depuis l'application Agenda",
   "rbs.calendar.sniplet.booking.deleted": "La réservation de ressource effectuée pour cet évènement n'est plus disponible",
-  "rbs.calendar.sniplet.booking.warning" : "Une réservation de ressource à été effectuée pour le(s) créneau(x) suivant(s) :",
+  "rbs.calendar.sniplet.booking.warning" : "Une réservation de ressources a été effectuée pour le(s) créneau(x) suivant(s) :",
   "rbs.calendar.sniplet.booking.deletion.advice": "Si vous n'avez plus besoin de cette réservation, pensez à la supprimer dans l'application Réservation de ressources.",
   "rbs.calendar.sniplet.booking.no.access": "Des ressources ont été réservées pour cet évènement",
   "rbs.calendar.sniplet.booking.owner.is": "Des ressources ont été réservées par",
