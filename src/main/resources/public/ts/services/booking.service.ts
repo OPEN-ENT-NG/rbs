@@ -23,6 +23,11 @@ export class BookingService implements IBookingService {
             .then((res: AxiosResponse) => res.data.map((type: IResourceTypeResponse) => new ResourceType().build(type)));
     };
 
+    async getResourceType(typeId: string): Promise<ResourceType> {
+        return http.get(`/rbs/type/${typeId}`)
+            .then((res: AxiosResponse) => new ResourceType().build(res.data));
+    };
+
     async getResources(typeId: string): Promise<Array<Resource>> {
         return http.get(`/rbs/resources?typeid=${typeId}`)
             .then((res: AxiosResponse) => res.data.map((resource: IResourceResponse) => new Resource().build(resource)));

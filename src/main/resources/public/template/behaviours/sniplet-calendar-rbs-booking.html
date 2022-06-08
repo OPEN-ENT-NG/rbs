@@ -14,16 +14,6 @@
         <div ng-if="vm.recurrenceOrMultidaysAdded()" class="info">
             <i18n>rbs.calendar.sniplet.recurrence.multiday.edition.warning</i18n>
         </div>
-        <!-- Min delay not respected warning -->
-        <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="info">
-            <i18n>rbs.calendar.sniplet.min.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.minDelay)]]
-            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
-        </div>
-        <!-- Max delay not respected warning -->
-        <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="info">
-            <i18n>rbs.calendar.sniplet.max.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.maxDelay)]]
-            <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
-        </div>
         <!-- Saved booking + new recurrence warning -->
         <div class="warning" ng-if="vm.calendarEvent._id && vm.hasRecurrenceBeenAdded()">
             <i18n>rbs.calendar.sniplet.booking.add.new.recurrence.warning</i18n>
