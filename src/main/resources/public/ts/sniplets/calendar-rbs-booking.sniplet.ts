@@ -338,6 +338,7 @@ class ViewModel implements IViewModel {
                                     databaseBooking.hasBeenDeleted = true;
                                 } else {
                                     databaseBooking.resource = await this.bookingService.getResource(databaseBooking.resourceId);
+                                    databaseBooking.type = await this.bookingService.getResourceType(databaseBooking.resource.typeId);
                                     databaseBooking.hasBeenDeleted = false;
                                 }
                                 this.hasResourceRights = true;
@@ -355,6 +356,7 @@ class ViewModel implements IViewModel {
                 this.autoSelectStructure();
                 this.editedBooking.quantity = 1;
                 this.loading = false;
+                safeApply(this.scope);
                 break;
             case RBS_CALENDAR_EVENTER.UPDATE_BOOKING_INFOS:
                 this.calendarEvent = calendarEvent;

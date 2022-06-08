@@ -455,14 +455,13 @@
   "rbs.calendar.sniplet.conditions": "L'évènement ne doit pas être récurrent ni sur plusieurs jours",
   "rbs.calendar.sniplet.booking.reason": "Cette réservation a été effectuée depuis l'application Agenda",
   "rbs.calendar.sniplet.booking.deleted": "La réservation de ressource effectuée pour cet évènement n'est plus disponible",
-  "rbs.calendar.sniplet.booking.warning" : "Une réservation de ressources a été effectuée pour le(s) créneau(x) suivant(s) :",
   "rbs.calendar.sniplet.booking.deletion.advice": "Si vous n'avez plus besoin de cette réservation, pensez à la supprimer dans l'application Réservation de ressources.",
   "rbs.calendar.sniplet.booking.no.access": "Des ressources ont été réservées pour cet évènement",
-  "rbs.calendar.sniplet.booking.owner.is": "Des ressources ont été réservées par",
-  "rbs.calendar.sniplet.for.this.event": "pour cet évènement.",
-  "rbs.calendar.sniplet.booking.deletion.advice.no.access": "La suppression de l'évènement ne supprimera pas les réservations.",
   "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Les ressources ne seront pas réservées pour les autres occurrences de cet évènement",
   "rbs.calendar.sniplet.min.delay.not.respected": "Cette ressource doit être réservée au minimum",
   "rbs.calendar.sniplet.max.delay.not.respected": "Cette ressource doit être réservée au maximum",
   "rbs.calendar.sniplet.days.in.advance": "jours à l'avance."
+
+
+
 }
