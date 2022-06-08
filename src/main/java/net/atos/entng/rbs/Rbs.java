@@ -23,6 +23,7 @@ import io.vertx.core.DeploymentOptions;
 import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
+import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.BookingServiceSqlImpl;
 import net.atos.entng.rbs.service.IcalExportService;
@@ -115,7 +116,7 @@ public class Rbs extends BaseServer {
 
 		addController(new BookingController(eb));
 		addController(new AvailabilityController());
-		addController(new EventBusController(new BookingServiceSqlImpl()));
+		addController(new EventBusController(new BookingServiceSqlImpl(), new TypeAndResourceAppendPolicy()));
 
 		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());
 	}
