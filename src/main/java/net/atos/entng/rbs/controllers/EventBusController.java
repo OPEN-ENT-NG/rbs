@@ -2,8 +2,6 @@ package net.atos.entng.rbs.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -13,10 +11,8 @@ import net.atos.entng.rbs.models.Resource;
 import net.atos.entng.rbs.service.BookingService;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,9 +32,9 @@ public class EventBusController extends ControllerHelper {
     public void bus(final Message<JsonObject> message) {
         JsonObject body = message.body();
         String action = body.getString(Field.ACTION);
+        String userId = body.getString(Field.USERID);
         switch (action) {
             case "save-bookings":
-                String userId = body.getString(Field.USERID);
                 UserUtils.getUserInfos(eb, userId, user -> {
                     JsonArray bookingsArray = body.getJsonArray(Field.BOOKINGS);
                     List<Booking> bookings = bookingsArray
@@ -55,6 +51,15 @@ public class EventBusController extends ControllerHelper {
                     bookingService.createBookings(resourceIds, bookings, user)
                         .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(res)))
                         .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
+                });
+
+                break;
+            case "delete-bookings":
+                UserUtils.getUserInfos(eb, userId, user -> {
+                    List<Integer> bookings = body.getJsonArray(Field.BOOKINGS).getList();
+                    bookingService.checkRightsAndDeleteBookings(bookings, user);
+//                        .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(String.valueOf(res))))
+//                        .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
                 });
 
                 break;

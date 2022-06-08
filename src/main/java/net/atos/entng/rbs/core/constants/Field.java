@@ -26,14 +26,23 @@ public class Field {
 
     // resource
     public static final String RESOURCE = "resource";
+    public static final String RESOURCE_ID = "resource_id";
 
     // slots
     public static final String SLOTS = "slots";
 
+    // request results
+    public static final String STATUS = "status";
+    public static final String MESSAGE = "message";
+    public static final String UNAUTHORIZED = "Unauthorized";
+    public static final String ERROR = "error";
+    public static final String OK = "ok";
 
     // USER
 
     // userId
     public static final String USERID = "userId";
+
+    public static final String ISOWNER = "isOwner";
 
 }

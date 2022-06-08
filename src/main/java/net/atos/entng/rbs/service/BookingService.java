@@ -209,4 +209,13 @@ public interface BookingService extends CrudService {
 	 * @param handler       : handler which contains the response
 	 */
 	void getBookingsForExport(ExportRequest exportRequest, Handler<Either<String, List<ExportBooking>>> handler);
+
+	/**
+	 * Iterates through an array of bookings to save them
+	 * The index of the resource ids must be the same as the corresponding booking
+	 * @param bookingIds {@link List<Integer>} the array of resource ids
+	 * @param user {@link UserInfos} the user
+	 * @return {@link Future<JsonObject>} an array of saved bookings
+	 */
+	Future<List<JsonObject>> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user);
 }
