@@ -29,11 +29,9 @@ import java.util.stream.Collectors;
 public class EventBusController extends ControllerHelper {
 
     private final BookingService bookingService;
-    private final TypeAndResourceAppendPolicy typeAndResourceAppendPolicy;
 
-    public EventBusController(BookingService bookingService, TypeAndResourceAppendPolicy typeAndResourceAppendPolicy) {
+    public EventBusController(BookingService bookingService) {
         this.bookingService = bookingService;
-        this.typeAndResourceAppendPolicy = typeAndResourceAppendPolicy;
     }
 
     /**
@@ -70,7 +68,7 @@ public class EventBusController extends ControllerHelper {
                 UserUtils.getUserInfos(eb, userId, user -> {
                     List<Integer> bookings = body.getJsonArray(Field.BOOKINGS).getList();
                     Boolean isBookingOwner = body.getBoolean(Field.ISOWNER, null);
-                    bookings.stream().forEach((bookingId) -> {
+                    bookings.forEach(bookingId -> {
                         String bookingStringId = String.valueOf(bookingId);
                         if (Boolean.TRUE.equals(isBookingOwner)) {
 //                            bookingService.delete(bookingStringId, user, res -> {
@@ -87,7 +85,7 @@ public class EventBusController extends ControllerHelper {
                                     try {
                                         String method = BookingController.class.getName() +"|deleteBooking";
                                         Binding binding = new Binding(HttpMethod.DELETE, Pattern.compile(""), method, ActionType.RESOURCE);
-                                        typeAndResourceAppendPolicy.authorize(resourceId, bookingStringId, binding, user, result -> {
+                                        new TypeAndResourceAppendPolicy().authorize(resourceId, bookingStringId, binding, user, result -> {
                                             if (Boolean.TRUE.equals(result)) {
 //                                                bookingService.delete(bookingStringId, user, res -> {
 //                                                    if (res.isRight()) {
@@ -98,18 +96,18 @@ public class EventBusController extends ControllerHelper {
 //                                                });
                                             } else {
                                                 BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(String.valueOf(result)));
-                                                log.info(String.format("[RBS@%s::bus] An error has occured: %s",
-                                                        this.getClass().getSimpleName(), booking.left().getValue()), booking.left().getValue());
+                                                log.info(String.format("[RBS@%s::bus] No deletion right: %s",
+                                                        this.getClass().getSimpleName(), booking.left().getValue()));
                                             }
                                         });
 
                                     } catch (ClassCastException e) {
                                         log.error(String.format("[RBS@%s::bus] An error has occured when retrieving deletion rights: %s",
-                                                this.getClass().getSimpleName(), booking.left().getValue()), booking.left().getValue());
+                                                this.getClass().getSimpleName(), booking.left().getValue()));
                                     }
                                 } else if (booking.isLeft()){
                                     log.info(String.format("[RBS@%s::bus] An error has occured: %s",
-                                            this.getClass().getSimpleName(), booking.left().getValue()), booking.left().getValue());
+                                            this.getClass().getSimpleName(), booking.left().getValue()));
                                 }
                             });
                         }
