@@ -2,28 +2,18 @@ package net.atos.entng.rbs.controllers;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.http.HttpMethod;
-import fr.wseduc.webutils.security.ActionType;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.core.constants.Field;
-import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Resource;
 import net.atos.entng.rbs.service.BookingService;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EventBusController extends ControllerHelper {
