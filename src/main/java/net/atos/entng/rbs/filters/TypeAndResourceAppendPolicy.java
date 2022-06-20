@@ -160,7 +160,7 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 	public Future<Boolean> authorize(String resourceId, String bookingId, final Binding binding, final UserInfos user) {
 		Promise<Boolean> promise = Promise.promise();
-		authorize(resourceId, bookingId, binding, user, FutureHelper.handlerBoolean(promise));
+		authorize(resourceId, bookingId, binding, user, promise::complete);
 		return promise.future();
 	}
 

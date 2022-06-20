@@ -217,5 +217,5 @@ public interface BookingService extends CrudService {
 	 * @param user {@link UserInfos} the user
 	 * @return {@link Future<JsonObject>} an array of saved bookings
 	 */
-	Future<JsonObject> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user);
+	Future<List<JsonObject>> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user);
 }

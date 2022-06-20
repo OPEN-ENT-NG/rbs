@@ -54,6 +54,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.time.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Slot;
@@ -1031,7 +1032,13 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	public Future<JsonObject> getBooking(final String bookingId) {
 		Promise<JsonObject> promise = Promise.promise();
-		delete(bookingId, FutureHelper.handlerJsonObject(promise));
+		retrieve(bookingId, FutureHelper.handlerJsonObject(promise));
+		return promise.future();
+	}
+
+	public Future<JsonObject> deleteBooking(String id, UserInfos user) {
+		Promise<JsonObject> promise = Promise.promise();
+		delete(id, user, FutureHelper.handlerJsonObject(promise));
 		return promise.future();
 	}
 
@@ -1043,45 +1050,99 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @return {@link Future<JsonObject>} an array of saved bookings
 	 */
 	@Override
-	public Future<JsonObject> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user) {
-		Promise<JsonObject> promise = Promise.promise();
+	public Future<List<JsonObject>> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user) {
+		Promise<List<JsonObject>> promise = Promise.promise();
 
 		List<Future<JsonObject>> bookingsFuture = new ArrayList<>();
 
 		for (Integer bookingId : bookingIds) {
 			String bookingStringId = String.valueOf(bookingId);
-			this.getBooking(bookingStringId)
-					.compose(booking -> {
-						String resourceId = booking.getLong(Field.RESOURCE_ID).toString();
-						String method = BookingController.class.getName() + "|deleteBooking";
-						Binding binding = new Binding(HttpMethod.DELETE, Pattern.compile(""), method, ActionType.RESOURCE);
-						return new TypeAndResourceAppendPolicy().authorize(resourceId, bookingStringId, binding, user);
-					})
-					.compose(hasRight -> {
-
-						if (Boolean.TRUE.equals(hasRight)) {
-//                      		return this.delete(bookingStringId, user, res -> {
-//                      	if (res.isRight()) {
-//                          		BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(String.valueOf(result)));
-//                              } else  {
-//                              	BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(String.valueOf(result)));
-//                              }
-//                          });
-						} else {
-//							BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(String.valueOf(hasRight)));
-//							log.info(String.format("[RBS@%s::bus] No deletion right: %s",
-//									this.getClass().getSimpleName(), booking.left().getValue()));
-						}
-					})
-					.onSuccess(result -> {
-						//...
-					})
-					.onFailure(error -> {
-						//...
-					});
+			bookingsFuture.add(checkRightsAndDeleteBooking(bookingStringId, user));
 		}
+
+		FutureHelper.all(bookingsFuture)
+			.onSuccess((res) -> {
+				promise.complete(bookingsFuture.stream().map(Future::result).collect(Collectors.toList()));
+			})
+			.onFailure((err) -> {
+				String message = String.format("[Rbs@%s::createBookings]: an error has occurred while saving bookings: %s",
+						this.getClass().getSimpleName(), err.getMessage());
+				log.error(message);
+				promise.fail(err.getMessage());
+			});
+
 
 		return promise.future();
 	}
+
+
+	/**
+	 * This methods checks if the user has the right to delete the booking and if so deletes it
+	 * All cases lead to completed promises in order for checkRightsAndDeleteBookings() to gather all the booking deletion info
+	 * and send it back to Calendar Module using event bus response.
+	 * Example of completed promise :
+	 * {
+	 *     "id": "000",
+	 *     "status": "NOT DELETED",
+	 *     "message": "Unauthorized"
+	 * }
+	 * @param bookingStringId {@link String} the id of the booking
+	 * @param user {@link UserInfos} the user
+	 * @return {@link Future<JsonObject>} (see example above)
+	 */
+	Future<JsonObject> checkRightsAndDeleteBooking(String bookingStringId, UserInfos user) {
+		Promise<JsonObject> promise = Promise.promise();
+		this.getBooking(bookingStringId)
+				.compose(booking -> {
+					String resourceId = booking.getLong(Field.RESOURCE_ID).toString();
+					String method = BookingController.class.getName() + "|deleteBooking";
+					Binding binding = new Binding(HttpMethod.DELETE, Pattern.compile(""), method, ActionType.RESOURCE);
+					return new TypeAndResourceAppendPolicy().authorize(resourceId, bookingStringId, binding, user);
+				})
+				.onSuccess(hasRight -> {
+					if (Boolean.TRUE.equals(hasRight)) {
+						promise.complete(new JsonObject()
+								.put(Field.ID, bookingStringId)
+								.put(Field.STATUS, "NOT DELETED")
+								.put(Field.MESSAGE, "Temporary result")
+						);
+//						this.deleteBooking(bookingStringId, user)
+//								.onSuccess(res -> {
+//									promise.complete(new JsonObject()
+//											.put(Field.ID, bookingStringId)
+//											.put(Field.STATUS, "DELETED")
+//											.put(Field.MESSAGE, "Successfully deleted")
+//									);
+//								})
+//								.onFailure(err -> {
+//									promise.complete(new JsonObject()
+//											.put(Field.ID, bookingStringId)
+//											.put(Field.STATUS, "NOT DELETED")
+//											.put(Field.MESSAGE, "Could not delete booking")
+//									);
+//								});
+					} else {
+						promise.complete(new JsonObject()
+								.put(Field.ID, bookingStringId)
+								.put(Field.STATUS, "NOT DELETED")
+								.put(Field.MESSAGE, "Unauthorized")
+						);
+					}
+				})
+				.onFailure(error -> {
+					String message = String.format("[Rbs@%s::checkRightsAndDeleteBooking]: an error has occurred while deleting booking: %s",
+							this.getClass().getSimpleName(), error.getMessage());
+					log.error(message);
+					promise.complete(new JsonObject()
+							.put(Field.ID, bookingStringId)
+							.put(Field.STATUS, "NOT DELETED")
+							.put(Field.MESSAGE, "Could not retrieve booking rights")
+					);
+				});
+
+		return promise.future();
+	}
+
+
 
 }

@@ -31,8 +31,9 @@ public class Field {
     // slots
     public static final String SLOTS = "slots";
 
-    // request
-    public static final String REQUESTMETHOD = "requestMethod";
+    // request results
+    public static final String STATUS = "status";
+    public static final String MESSAGE = "message";
 
     // USER
 

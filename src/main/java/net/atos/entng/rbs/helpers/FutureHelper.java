@@ -48,19 +48,6 @@ public class FutureHelper {
         };
     }
 
-    public static Handler<Either<String, Boolean>> handlerBoolean(Promise<Boolean> promise) {
-        return event -> {
-            if (event.isRight()) {
-                promise.complete(event.right().getValue());
-            } else {
-                String message = String.format("[Calendar@%s::handlerJsonObject]: %s",
-                        FutureHelper.class.getSimpleName(), event.left().getValue());
-                LOGGER.error(message);
-                promise.fail(event.left().getValue());
-            }
-        };
-    }
-
     public static <T> CompositeFuture all(List<Future<T>> futures) {
         return CompositeFutureImpl.all(futures.toArray(new Future[futures.size()]));
     }
