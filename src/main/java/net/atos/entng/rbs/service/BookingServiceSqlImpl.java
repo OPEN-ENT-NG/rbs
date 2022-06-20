@@ -1043,7 +1043,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @return {@link Future<JsonObject>} an array of saved bookings
 	 */
 	@Override
-	public Future<JsonObject> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final Boolean isBookingOwner, final UserInfos user) {
+	public Future<JsonObject> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final UserInfos user) {
 		Promise<JsonObject> promise = Promise.promise();
 
 		List<Future<JsonObject>> bookingsFuture = new ArrayList<>();

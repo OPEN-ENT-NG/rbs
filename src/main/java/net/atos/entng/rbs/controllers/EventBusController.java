@@ -67,8 +67,7 @@ public class EventBusController extends ControllerHelper {
             case "delete-bookings":
                 UserUtils.getUserInfos(eb, userId, user -> {
                     List<Integer> bookings = body.getJsonArray(Field.BOOKINGS).getList();
-                    Boolean isBookingOwner = body.getBoolean(Field.ISOWNER, null);
-                    bookingService.checkRightsAndDeleteBookings(bookings, isBookingOwner, user);
+                    bookingService.checkRightsAndDeleteBookings(bookings, user);
 //                    bookings.forEach(bookingId -> {
 //                        String bookingStringId = String.valueOf(bookingId);
 //                        if (Boolean.TRUE.equals(isBookingOwner)) {
