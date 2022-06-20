@@ -21,13 +21,20 @@ package net.atos.entng.rbs.service;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
+import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.HttpMethod;
+import fr.wseduc.webutils.security.ActionType;
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.Promise;
+import net.atos.entng.rbs.controllers.BookingController;
 import net.atos.entng.rbs.core.constants.Field;
+import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.helpers.FutureHelper;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.models.Slots;
+import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -46,6 +53,7 @@ import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.time.*;
+import java.util.regex.Pattern;
 
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Slot;
@@ -1019,6 +1027,61 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 	public void getBooking(final String bookingId, final Handler<Either<String, JsonObject>> handler) {
 		this.retrieve(bookingId, handler);
+	}
+
+	public Future<JsonObject> getBooking(final String bookingId) {
+		Promise<JsonObject> promise = Promise.promise();
+		delete(bookingId, FutureHelper.handlerJsonObject(promise));
+		return promise.future();
+	}
+
+	/**
+	 * Iterates through an array of bookings to save them
+	 * The index of the resource ids must be the same as the corresponding booking
+	 * @param bookingIds {@link List<Integer>} the array of resource ids
+	 * @param user {@link UserInfos} the user
+	 * @return {@link Future<JsonObject>} an array of saved bookings
+	 */
+	@Override
+	public Future<JsonObject> checkRightsAndDeleteBookings(final List<Integer> bookingIds, final Boolean isBookingOwner, final UserInfos user) {
+		Promise<JsonObject> promise = Promise.promise();
+
+		List<Future<JsonObject>> bookingsFuture = new ArrayList<>();
+
+		for (Integer bookingId : bookingIds) {
+			String bookingStringId = String.valueOf(bookingId);
+			this.getBooking(bookingStringId)
+					.compose(booking -> {
+						String resourceId = booking.getLong(Field.RESOURCE_ID).toString();
+						String method = BookingController.class.getName() + "|deleteBooking";
+						Binding binding = new Binding(HttpMethod.DELETE, Pattern.compile(""), method, ActionType.RESOURCE);
+						return new TypeAndResourceAppendPolicy().authorize(resourceId, bookingStringId, binding, user);
+					})
+					.compose(hasRight -> {
+
+						if (Boolean.TRUE.equals(hasRight)) {
+//                      		return this.delete(bookingStringId, user, res -> {
+//                      	if (res.isRight()) {
+//                          		BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(String.valueOf(result)));
+//                              } else  {
+//                              	BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(String.valueOf(result)));
+//                              }
+//                          });
+						} else {
+//							BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(String.valueOf(hasRight)));
+//							log.info(String.format("[RBS@%s::bus] No deletion right: %s",
+//									this.getClass().getSimpleName(), booking.left().getValue()));
+						}
+					})
+					.onSuccess(result -> {
+						//...
+					})
+					.onFailure(error -> {
+						//...
+					});
+		}
+
+		return promise.future();
 	}
 
 }

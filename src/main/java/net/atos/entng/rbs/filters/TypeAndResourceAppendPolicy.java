@@ -26,8 +26,11 @@ import static org.entcore.common.sql.Sql.parseId;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import net.atos.entng.rbs.controllers.ResourceController;
 
+import net.atos.entng.rbs.helpers.FutureHelper;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlConf;
@@ -155,8 +158,14 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 		}
 	}
 
+	public Future<Boolean> authorize(String resourceId, String bookingId, final Binding binding, final UserInfos user) {
+		Promise<Boolean> promise = Promise.promise();
+		authorize(resourceId, bookingId, binding, user, FutureHelper.handlerBoolean(promise));
+		return promise.future();
+	}
+
+
 	public void authorize(String resourceId, String bookingId, final Binding binding, final UserInfos user, final Handler<Boolean> handler) {
-		SqlConf conf = SqlConfs.getConf(ResourceController.class.getName());
 		boolean hasBooking = (bookingId != null && !bookingId.trim().isEmpty());
 
 		if (resourceId != null && !resourceId.trim().isEmpty() && (parseId(resourceId) instanceof Integer)) {
