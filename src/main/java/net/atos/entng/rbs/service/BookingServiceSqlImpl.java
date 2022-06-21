@@ -1101,28 +1101,28 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					if (Boolean.TRUE.equals(hasRight)) {
 						promise.complete(new JsonObject()
 								.put(Field.ID, bookingStringId)
-								.put(Field.STATUS, Field.NOT_DELETED)
+								.put(Field.STATUS, Field.ERROR)
 								.put(Field.MESSAGE, "Temporary result")
 						);
 //						this.deleteBooking(bookingStringId, user)
 //								.onSuccess(res -> {
 //									promise.complete(new JsonObject()
 //											.put(Field.ID, bookingStringId)
-//											.put(Field.STATUS, Field.DELETED)
+//											.put(Field.STATUS, Field.OK)
 //											.put(Field.MESSAGE, "Successfully deleted")
 //									);
 //								})
 //								.onFailure(err -> {
 //									promise.complete(new JsonObject()
 //											.put(Field.ID, bookingStringId)
-//											.put(Field.STATUS, Field.NOT_DELETED)
+//											.put(Field.STATUS, Field.ERROR)
 //											.put(Field.MESSAGE, err.getMessage())
 //									);
 //								});
 					} else {
 						promise.complete(new JsonObject()
 								.put(Field.ID, bookingStringId)
-								.put(Field.STATUS, Field.NOT_DELETED)
+								.put(Field.STATUS, Field.ERROR)
 								.put(Field.MESSAGE, Field.UNAUTHORIZED)
 						);
 					}
@@ -1133,7 +1133,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					log.error(message);
 					promise.complete(new JsonObject()
 							.put(Field.ID, bookingStringId)
-							.put(Field.STATUS, Field.NOT_DELETED)
+							.put(Field.STATUS, Field.ERROR)
 							.put(Field.MESSAGE, error.getMessage())
 					);
 				});
