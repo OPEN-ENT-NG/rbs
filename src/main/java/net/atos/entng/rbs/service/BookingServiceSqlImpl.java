@@ -1061,9 +1061,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		}
 
 		FutureHelper.all(bookingsFuture)
-			.onSuccess((res) -> {
-				promise.complete(bookingsFuture.stream().map(Future::result).collect(Collectors.toList()));
-			})
+			.onSuccess((res) -> promise.complete(bookingsFuture.stream().map(Future::result).collect(Collectors.toList())))
 			.onFailure((err) -> {
 				String message = String.format("[Rbs@%s::createBookings]: an error has occurred while saving bookings: %s",
 						this.getClass().getSimpleName(), err.getMessage());
@@ -1103,29 +1101,29 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					if (Boolean.TRUE.equals(hasRight)) {
 						promise.complete(new JsonObject()
 								.put(Field.ID, bookingStringId)
-								.put(Field.STATUS, "NOT DELETED")
+								.put(Field.STATUS, Field.NOT_DELETED)
 								.put(Field.MESSAGE, "Temporary result")
 						);
 //						this.deleteBooking(bookingStringId, user)
 //								.onSuccess(res -> {
 //									promise.complete(new JsonObject()
 //											.put(Field.ID, bookingStringId)
-//											.put(Field.STATUS, "DELETED")
+//											.put(Field.STATUS, Field.DELETED)
 //											.put(Field.MESSAGE, "Successfully deleted")
 //									);
 //								})
 //								.onFailure(err -> {
 //									promise.complete(new JsonObject()
 //											.put(Field.ID, bookingStringId)
-//											.put(Field.STATUS, "NOT DELETED")
-//											.put(Field.MESSAGE, "Could not delete booking")
+//											.put(Field.STATUS, Field.NOT_DELETED)
+//											.put(Field.MESSAGE, err.getMessage())
 //									);
 //								});
 					} else {
 						promise.complete(new JsonObject()
 								.put(Field.ID, bookingStringId)
-								.put(Field.STATUS, "NOT DELETED")
-								.put(Field.MESSAGE, "Unauthorized")
+								.put(Field.STATUS, Field.NOT_DELETED)
+								.put(Field.MESSAGE, Field.UNAUTHORIZED)
 						);
 					}
 				})
@@ -1135,14 +1133,12 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					log.error(message);
 					promise.complete(new JsonObject()
 							.put(Field.ID, bookingStringId)
-							.put(Field.STATUS, "NOT DELETED")
-							.put(Field.MESSAGE, "Could not retrieve booking rights")
+							.put(Field.STATUS, Field.NOT_DELETED)
+							.put(Field.MESSAGE, error.getMessage())
 					);
 				});
 
 		return promise.future();
 	}
-
-
 
 }

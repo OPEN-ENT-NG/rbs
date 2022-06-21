@@ -34,6 +34,9 @@ public class Field {
     // request results
     public static final String STATUS = "status";
     public static final String MESSAGE = "message";
+    public static final String UNAUTHORIZED = "Unauthorized";
+    public static final String NOT_DELETED = "NOT DELETED";
+    public static final String DELETED = "DELETED";
 
     // USER
 
