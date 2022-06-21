@@ -57,9 +57,9 @@ public class EventBusController extends ControllerHelper {
             case "delete-bookings":
                 UserUtils.getUserInfos(eb, userId, user -> {
                     List<Integer> bookings = body.getJsonArray(Field.BOOKINGS).getList();
-                    bookingService.checkRightsAndDeleteBookings(bookings, user);
-//                        .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(String.valueOf(res))))
-//                        .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
+                    bookingService.checkRightsAndDeleteBookings(bookings, user)
+                        .onSuccess((res) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Right<>(new JsonArray(res))))
+                        .onFailure((err) -> BusResponseHandler.busArrayHandler(message).handle(new Either.Left<>(err.getMessage())));
                 });
 
                 break;
