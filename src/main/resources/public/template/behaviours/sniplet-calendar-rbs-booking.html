@@ -7,11 +7,11 @@
 
         <!-- WARNINGS -->
         <!-- Invalid date warning -->
-        <div ng-if="vm.calendarEventIsBeforeToday() && !vm.canViewBooking" class="info">
+        <div ng-if="vm.calendarEventIsBeforeToday() && !vm.canViewBooking" class="warning">
             <i18n>rbs.booking.invalid.datetimes.past</i18n>
         </div>
         <!-- Saved event becomes recurrent or multi day warning -->
-        <div ng-if="vm.recurrenceOrMultidaysAdded()" class="info">
+        <div ng-if="vm.recurrenceOrMultidaysAdded()" class="warning">
             <i18n>rbs.calendar.sniplet.recurrence.multiday.edition.warning</i18n>
         </div>
         <!-- Saved booking + new recurrence warning -->
@@ -62,21 +62,21 @@
             <div id="calendar-rbs-booking" class="calendar-rbs-booking" ng-show="vm.hasBooking && vm.hasBookingRight">
                 <section class="twelve cell sniplet calendarBooking-bookingFormBody">
                     <!-- Warning : no multi days or recurrent events -->
-                    <div ng-if="vm.hasBooking && !vm.isBookingPossible(true) && !vm.canViewBooking" class="info">
+                    <div ng-if="vm.hasBooking && !vm.isBookingPossible(true) && !vm.canViewBooking" class="warning">
                         <i18n>rbs.calendar.sniplet.conditions</i18n>
                     </div>
                     <!-- Warning : booking quantity problem -->
-                    <div ng-if="!vm.isResourceQuantityAllowingBooking() && vm.isBookingPossible(true)" class="info">
+                    <div ng-if="!vm.isResourceQuantityAllowingBooking() && vm.isBookingPossible(true)" class="warning">
                         <i18n>rbs.booking.edit.quantity.null</i18n>
                     </div>
 
                     <!-- Min delay not respected warning -->
-                    <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="info">
+                    <div ng-if="vm.resourceHasMinDelay() && !vm.checkMinDelay()" class="warning">
                         <i18n>rbs.calendar.sniplet.min.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.minDelay)]]
                         <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
                     </div>
                     <!-- Max delay not respected warning -->
-                    <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="info">
+                    <div ng-if="vm.resourceHasMaxDelay() && !vm.checkMaxDelay()" class="warning">
                         <i18n>rbs.calendar.sniplet.max.delay.not.respected</i18n> [[vm.displayDelayDays(vm.editedBooking.resource.maxDelay)]]
                         <i18n>rbs.calendar.sniplet.days.in.advance</i18n>
                     </div>
