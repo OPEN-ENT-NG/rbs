@@ -25,6 +25,7 @@ enum ALL_DAY {
 }
 
 const rbsViewRight: string = "rbs.view";
+const editionSniplet: string = "editEvent";
 
 interface IViewModel {
     loading: boolean;
@@ -89,7 +90,7 @@ interface IViewModel {
 
     bookingStatus(bookingStatus: number): string;
 
-    formatBookingDates(bookingStartDate: string, bookingEndDate: string): string;
+    formatBookingDates(bookingStartDate: string, bookingEndDate?: string): string;
 
     resourceHasMinDelay(): boolean;
 
@@ -122,6 +123,7 @@ interface IViewModel {
 
 class ViewModel implements IViewModel {
     private scope: any;
+    private source: string;
     loading: boolean;
     hasBooking: boolean;
     bookingValid: boolean;
@@ -146,10 +148,11 @@ class ViewModel implements IViewModel {
 
     private bookingService;
 
-    constructor(scope, bookingService: IBookingService) {
+    constructor(scope, bookingService: IBookingService, source: string) {
         this.loading = true;
         this.scope = scope;
         this.bookingService = bookingService;
+        this.source = source;
         this.hasBooking = false;
         this.hasBookingRight = false;
         this.canViewBooking = false;
@@ -171,20 +174,17 @@ class ViewModel implements IViewModel {
      * Get calendarEvent change and change form accordingly
      */
     setHandler(): void {
-        this.scope.$on(RBS_CALENDAR_EVENTER.INIT_BOOKING_INFOS, (event: IAngularEvent, calendarEvent: CalendarEvent) => {
+        this.scope.$on(this.source + RBS_CALENDAR_EVENTER.INIT_BOOKING_INFOS, (event: IAngularEvent, calendarEvent: CalendarEvent) => {
+            this.canEditEvent = (this.source == editionSniplet);
             this.handleCalendarEventChange(event, calendarEvent);
         });
 
-        this.scope.$on(RBS_CALENDAR_EVENTER.UPDATE_BOOKING_INFOS, (event: IAngularEvent, calendarEvent: CalendarEvent) => {
+        this.scope.$on(this.source + RBS_CALENDAR_EVENTER.UPDATE_BOOKING_INFOS, (event: IAngularEvent, calendarEvent: CalendarEvent) => {
             this.handleCalendarEventChange(event, calendarEvent);
         });
 
-        this.scope.$on(RBS_CALENDAR_EVENTER.CLOSE_BOOKING_INFOS, (event: IAngularEvent) => {
+        this.scope.$on(this.source + RBS_CALENDAR_EVENTER.CLOSE_BOOKING_INFOS, (event: IAngularEvent) => {
             this.handleCalendarEventChange(event);
-        });
-
-        this.scope.$on(RBS_CALENDAR_EVENTER.CAN_EDIT_EVENT, (event: IAngularEvent, canEditEvent: boolean) => {
-            this.canEditEvent = canEditEvent;
         });
     }
 
@@ -324,7 +324,7 @@ class ViewModel implements IViewModel {
      */
     handleCalendarEventChange(event: IAngularEvent, calendarEvent?: CalendarEvent): void {
         switch (event.name) {
-            case RBS_CALENDAR_EVENTER.INIT_BOOKING_INFOS:
+            case (this.source + RBS_CALENDAR_EVENTER.INIT_BOOKING_INFOS):
                 this.loading = true;
                 this.initialCalendarEvent = angular.copy(calendarEvent);
                 this.calendarEvent = calendarEvent;
@@ -356,22 +356,23 @@ class ViewModel implements IViewModel {
                 this.autoSelectStructure();
                 this.editedBooking.quantity = 1;
                 this.loading = false;
-                safeApply(this.scope);
+
                 break;
-            case RBS_CALENDAR_EVENTER.UPDATE_BOOKING_INFOS:
+            case (this.source + RBS_CALENDAR_EVENTER.UPDATE_BOOKING_INFOS):
                 this.calendarEvent = calendarEvent;
                 this.prepareBookingStartAndEnd();
                 safeApply(this.scope);
+
                 break;
-            case RBS_CALENDAR_EVENTER.CLOSE_BOOKING_INFOS:
+            case (this.source + RBS_CALENDAR_EVENTER.CLOSE_BOOKING_INFOS):
                 this.hasBooking = false;
                 this.hasBookingRight = false;
                 this.canViewBooking = false;
                 this.canEditEvent = false;
                 this.bookings.all = [];
                 safeApply(this.scope);
-                break;
 
+                break;
         }
     }
 
@@ -397,7 +398,7 @@ class ViewModel implements IViewModel {
         let checkedStartMoment = moment(moment(this.calendarEvent.startMoment)
             .format(this.dateFormat.formattedDateTimeNoSeconds))
             .hours(this.calendarEvent.allday ? ALL_DAY.startHour :this.calendarEvent.startTime.getHours())
-            .minutes(this.calendarEvent.allday ? ALL_DAY.startHour :this.calendarEvent.startTime.getMinutes());
+            .minutes(this.calendarEvent.allday ? ALL_DAY.minutes :this.calendarEvent.startTime.getMinutes());
         let startMomentIsBeforeNow: boolean = checkedStartMoment.isBefore(Date.now(), 'minutes');
         return (checkedStartMoment.isBefore(Date.now(), 'minutes'));
     }
@@ -709,7 +710,6 @@ class ViewModel implements IViewModel {
 
         return <boolean>((isBookingValid && bookingFormValid) || this.calendarEvent._id);
     }
-
 }
 
 export const calendarRbsBooking = {
@@ -717,9 +717,11 @@ export const calendarRbsBooking = {
     public: false,
     controller: {
         init: async function (): Promise<void> {
-            idiom.addBundle('/rbs/i18n', async () => {
-                this.vm = new ViewModel(this, new BookingService());
-            });
+            if (this.source) {
+                idiom.addBundle('/rbs/i18n', async () => {
+                    this.vm = new ViewModel(this, new BookingService(), this.source);
+                });
+            }
         },
     }
 
