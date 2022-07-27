@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import io.vertx.core.buffer.Buffer;
 import net.atos.entng.rbs.BookingUtils;
 import net.atos.entng.rbs.Rbs;
+import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.models.Slots;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
@@ -124,7 +125,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Create booking of a given resource")
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="CREATE_BOOKING")
+	@Trace(Actions.CREATE_BOOKING)
 	public void createBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -284,7 +285,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Create periodic booking of a given resource")
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="CREATE_PERIODIC_BOOKING")
+	@Trace(Actions.CREATE_PERIODIC_BOOKING)
 	public void createPeriodicBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -587,7 +588,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Update booking")
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="UPDATE_BOOKING")
+	@Trace(Actions.UPDATE_BOOKING)
 	public void updateBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -604,7 +605,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Update periodic booking")
 	@SecuredAction(value = "rbs.contrib", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="UPDATE_PERIODIC_BOOKING")
+	@Trace(Actions.UPDATE_PERIODIC_BOOKING)
 	public void updatePeriodicBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -621,7 +622,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Validate or refuse booking")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="PROCESS_BOOKING")
+	@Trace(Actions.PROCESS_BOOKING)
 	public void processBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -741,7 +742,7 @@ public class BookingController extends ControllerHelper {
 	@ApiDoc("Delete booking")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
-	@Trace(value="DELETE_BOOKING")
+	@Trace(Actions.DELETE_BOOKING)
 	public void deleteBooking(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
@@ -1052,7 +1053,7 @@ public class BookingController extends ControllerHelper {
 	@Post("/bookings/export")
 	@ApiDoc("Export bookings in requested format")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-	@Trace(value="EXPORT_ICAL")
+	@Trace(Actions.EXPORT_ICAL)
 	public void exportICal(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "exportBookings", json -> {
 			UserUtils.getUserInfos(eb, request, user -> {
