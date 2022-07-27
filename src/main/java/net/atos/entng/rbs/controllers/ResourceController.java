@@ -398,7 +398,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Add rights for a given resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
-	@Trace(Actions.SHARE_SUBMIT)
+	@Trace(Actions.SHARE_RESOURCE_SUBMIT)
 	public void shareSubmit(final HttpServerRequest request) {
 		super.shareJsonSubmit(request, null, false);
 	}
@@ -407,7 +407,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Remove rights for a given resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
-	@Trace(Actions.SHARE_REMOVE)
+	@Trace(Actions.SHARE_RESOURCE_REMOVE)
 	public void shareRemove(final HttpServerRequest request) {
 		super.removeShare(request, false);
 	}

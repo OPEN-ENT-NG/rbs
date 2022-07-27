@@ -266,7 +266,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Put("/share/json/:id")
 	@ApiDoc("Add rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
-	@Trace(Actions.SHARE_JSON_SUBMIT)
+	@Trace(Actions.SHARE_RESOURCE_TYPE_SUBMIT)
 	public void shareJsonSubmit(final HttpServerRequest request){
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.shareJsonSubmit(request, null, false);
@@ -276,7 +276,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Put("/share/remove/:id")
 	@ApiDoc("Remove rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
-	@Trace(Actions.REMOVE_SHARE)
+	@Trace(Actions.SHARE_RESOURCE_TYPE_REMOVE)
 	public void removeShare(final HttpServerRequest request){
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.removeShare(request, false);
@@ -354,7 +354,7 @@ public class ResourceTypeController extends ControllerHelper {
 	}
 	@Put("/share/resource/:id")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
-	@Trace(Actions.SHARE_RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_TYPE)
 	public void shareResource(final HttpServerRequest request) {
 		super.shareResource(request, null, false, null, null);
 	}

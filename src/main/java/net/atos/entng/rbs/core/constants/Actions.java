@@ -27,15 +27,15 @@ public class Actions {
     public static final String DELETE_RESOURCE = "DELETE_RESOURCE";
     public static final String ADD_NOTIFICATION = "ADD_NOTIFICATION";
     public static final String REMOVE_NOTIFICATION = "REMOVE_NOTIFICATION";
-    public static final String SHARE_SUBMIT = "SHARE_SUBMIT";
-    public static final String SHARE_REMOVE = "SHARE_REMOVE";
+    public static final String SHARE_RESOURCE_SUBMIT = "SHARE_RESOURCE_SUBMIT";
+    public static final String SHARE_RESOURCE_REMOVE = "SHARE_RESOURCE_REMOVE";
 
     public static final String CREATE_RESOURCE_TYPE = "CREATE_RESOURCE_TYPE";
     public static final String UPDATE_RESOURCE_TYPE = "UPDATE_RESOURCE_TYPE";
     public static final String DELETE_RESOURCE_TYPE = "DELETE_RESOURCE_TYPE";
-    public static final String SHARE_JSON_SUBMIT = "SHARE_JSON_SUBMIT";
-    public static final String REMOVE_SHARE = "REMOVE_SHARE";
+    public static final String SHARE_RESOURCE_TYPE_SUBMIT = "SHARE_RESOURCE_TYPE_SUBMIT";
+    public static final String SHARE_RESOURCE_TYPE_REMOVE = "SHARE_RESOURCE_TYPE_REMOVE";
     public static final String ADD_NOTIFICATIONS = "ADD_NOTIFICATIONS";
     public static final String REMOVE_NOTIFICATIONS = "REMOVE_NOTIFICATIONS";
-    public static final String SHARE_RESOURCE = "SHARE_RESOURCE";
+    public static final String SHARE_RESOURCE_TYPE = "SHARE_RESOURCE_TYPE";
 }
