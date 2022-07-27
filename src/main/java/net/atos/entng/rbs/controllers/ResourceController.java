@@ -31,6 +31,7 @@ import java.util.Set;
 
 import fr.wseduc.webutils.I18n;
 import net.atos.entng.rbs.Rbs;
+import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
@@ -42,6 +43,7 @@ import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
@@ -140,6 +142,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Create resource")
 	@ResourceFilter(TypeOwnerSharedOrLocalAdmin.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.CREATE_RESOURCE)
 	public void create(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -172,6 +175,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Update resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
+	@Trace(Actions.UPDATE_RESOURCE)
 	public void update(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -310,6 +314,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Delete resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.DELETE_RESOURCE)
 	public void delete(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -329,6 +334,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Add notification")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	@Trace(Actions.ADD_NOTIFICATION)
 	public void addNotification (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -348,6 +354,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Remove notification")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	@Trace(Actions.REMOVE_NOTIFICATION)
 	public void removeNotification (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -391,6 +398,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Add rights for a given resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_SUBMIT)
 	public void shareSubmit(final HttpServerRequest request) {
 		super.shareJsonSubmit(request, null, false);
 	}
@@ -399,6 +407,7 @@ public class ResourceController extends ControllerHelper {
 	@ApiDoc("Remove rights for a given resource")
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_REMOVE)
 	public void shareRemove(final HttpServerRequest request) {
 		super.removeShare(request, false);
 	}

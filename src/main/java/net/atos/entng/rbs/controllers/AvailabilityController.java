@@ -26,9 +26,11 @@ import fr.wseduc.rs.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.models.Availability;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.user.UserUtils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -107,6 +109,7 @@ public class AvailabilityController extends ControllerHelper {
 	@ApiDoc("Create an availability for a given resource")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@Trace(Actions.CREATE_AVAILABILITY)
 	public void createAvailability(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user == null) {
@@ -128,6 +131,7 @@ public class AvailabilityController extends ControllerHelper {
 	@ApiDoc("Update an availability")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@Trace(Actions.UPDATE_AVAILABILITY)
 	public void updateAvailability(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user == null) {
@@ -149,6 +153,7 @@ public class AvailabilityController extends ControllerHelper {
 	@ApiDoc("Delete an availability")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@Trace(Actions.DELETE_AVAILABILITY)
 	public void deleteAvailability(final HttpServerRequest request) {
 		Integer availabilityId = Integer.parseInt(request.params().get("availabilityId"));
 		availabilityService.deleteAvailability(availabilityId, defaultResponseHandler(request));
@@ -158,6 +163,7 @@ public class AvailabilityController extends ControllerHelper {
 	@ApiDoc("Delete all (un)availabilities of a resource")
 	@SecuredAction(value = "rbs.publish", type = ActionType.RESOURCE)
 	@ResourceFilter(TypeAndResourceAppendPolicy.class)
+	@Trace(Actions.DELETE_ALL_AVAILABILITY)
 	public void deleteAllAvailability(final HttpServerRequest request) {
 		Integer resourceId = Integer.parseInt(request.params().get("id"));
 		String areUnavailability = request.params().get("areUnavailability");
