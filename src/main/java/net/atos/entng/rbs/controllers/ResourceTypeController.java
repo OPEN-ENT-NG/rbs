@@ -31,6 +31,7 @@ import java.util.List;
 
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
+import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.service.ResourceTypeService;
 import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
@@ -38,6 +39,7 @@ import net.atos.entng.rbs.service.UserService;
 import net.atos.entng.rbs.service.UserServiceDirectoryImpl;
 
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -105,6 +107,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Post("/type")
 	@ApiDoc("Create resource type")
 	@SecuredAction("rbs.type.create")
+	@Trace(Actions.CREATE_RESOURCE_TYPE)
 	public void createResourceType(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -131,6 +134,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Put("/type/:id")
 	@ApiDoc("Update resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.UPDATE_RESOURCE_TYPE)
 	public void updateResourceType(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -187,6 +191,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Delete("/type/:id")
 	@ApiDoc("Delete resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.DELETE_RESOURCE_TYPE)
 	public void deleteResourceType(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -261,6 +266,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Put("/share/json/:id")
 	@ApiDoc("Add rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_TYPE_SUBMIT)
 	public void shareJsonSubmit(final HttpServerRequest request){
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.shareJsonSubmit(request, null, false);
@@ -270,6 +276,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Put("/share/remove/:id")
 	@ApiDoc("Remove rights for a given resource type")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_TYPE_REMOVE)
 	public void removeShare(final HttpServerRequest request){
 		// TODO Improve : temporary unique share url to match Front-end ShareController urls
 		super.removeShare(request, false);
@@ -311,6 +318,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Post("/type/notification/add/:id")
 	@ApiDoc("Add notifications")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	@Trace(Actions.ADD_NOTIFICATIONS)
 	public void addNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -329,6 +337,7 @@ public class ResourceTypeController extends ControllerHelper {
 	@Delete("/type/notification/remove/:id")
 	@ApiDoc("Remove notifications")
 	@SecuredAction(value = "rbs.read", type = ActionType.RESOURCE)
+	@Trace(Actions.REMOVE_NOTIFICATIONS)
 	public void removeNotifications (final HttpServerRequest request){
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -345,6 +354,7 @@ public class ResourceTypeController extends ControllerHelper {
 	}
 	@Put("/share/resource/:id")
 	@SecuredAction(value = "rbs.manager", type = ActionType.RESOURCE)
+	@Trace(Actions.SHARE_RESOURCE_TYPE)
 	public void shareResource(final HttpServerRequest request) {
 		super.shareResource(request, null, false, null, null);
 	}
