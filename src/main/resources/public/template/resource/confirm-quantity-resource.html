@@ -1,16 +1,16 @@
 <lightbox show="displayLightbox.saveQuantity" on-close="displayLightbox.saveQuantity = false">
     <div class="row form-section">
         <h2>
-            <i18n><span class="no-style">Modification d'une resource</span></i18n>
+            <i18n><span class="no-style"><i18n>rbs.updating.resource</i18n></span></i18n>
         </h2>
         <section class="twelve cell">
             <label>
-                <b class="centered-text">Attention</b>
-                <div>Des réservations supérieures à cette quantité ont été prévues.</div>
-                <div>Cela entrainera la suspension des réservations concernées.</div>
-                <div>Les gestionnaires devront définir les réservations à conserver.</div>
-                <p>Quantité : <b>[[editedResource.quantity]]</b></p>
-                <p>Réservations concernées</p>
+                <b class="centered-text"><i18n>rbs.availability.save.warning</i18n></b>
+                <div><i18n>rbs.resource.edit.quantity.warning</i18n>&#46; </div>
+                <div><i18n>rbs.booking.suspended</i18n></div>
+                <div><i18n>rbs.booking.save</i18n></div>
+                <p><i18n>rbs.booking.details.quantity</i18n> &#58; <b>[[editedResource.quantity]]</b></p>
+                <p><i18n>rbs.booking.concerned</i18n></p>
             </label>
 
             <table class="resource-table">

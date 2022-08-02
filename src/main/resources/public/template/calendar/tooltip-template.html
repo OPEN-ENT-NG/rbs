@@ -12,25 +12,25 @@
         <div ng-if="item.isSlot()">
             <p>[[getPeriodicSummary(item)]]</p>
         </div>
-        <p class="quantity">Quantité : [[formatTextTooltipQuantity(item)]]</p>
-        <p class="author">Par [[item.owner_name]] </p>
+        <p class="quantity"><i18n>rbs.booking.details.quantity</i18n> &#58; [[formatTextTooltipQuantity(item)]]</p>
+        <p class="author"><i18n>rbs.by</i18n> [[item.owner_name]] </p>
         <div ng-if="item.booking_reason">
             <p>[[item.booking_reason]]</p>
         </div>
         <div ng-if="item.isPending()" class="validation-label">
-            <span class="orange-text">En attente de validation</span>
+            <span class="orange-text"><i18n>rbs.boooking.status.awaiting.validation</i18n></span>
             <i class="orange-text pending-action"></i>
         </div>
         <div ng-if="item.isValidated()" class="validation-label">
-            <span class="green-text">Réservation validée</span>
+            <span class="green-text"><i18n>rbs.errors.objects.booking</i18n> <i18n>rbs.booking.status.validated.lowercase</i18n></span>
             <i class="green-text validated-status"></i>
         </div>
         <div ng-if="item.isRefused()" class="validation-label">
-            <span class="red-text">Réservation refusée</span>
+            <span class="red-text"><i18n>rbs.errors.objects.booking</i18n> <i18n>rbs.booking.status.refused.lowercase</i18n></span>
             <i class="red-text refused-status"></i>
         </div>
         <div ng-if="item.isSuspended()" class="validation-label">
-            <span class="yellow-text">Réservation suspendue</span>
+            <span class="yellow-text"><i18n>rbs.errors.objects.booking</i18n> <i18n>rbs.booking.status.suspended.lowercase</i18n></span>
             <i class="yellow-text suspended-status"></i>
         </div>
     </div>
