@@ -444,7 +444,7 @@
     "rbs.by": "Par",
     "rbs.uppercase": "RBS",
     "rbs.booking.suspended": "Cela entrainera la suspension des réservations concernées.",
-    "rbs.booking.save": "Les gestionnaires devront définir les réservations à conserver.",
+    "rbs.booking.manager.decision": "Les gestionnaires devront définir les réservations à conserver.",
     "rbs.booking.concerned": "Réservations concernées",
     "rbs.updating.resource": "Modification d'une resource"
 }
