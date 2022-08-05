@@ -460,8 +460,13 @@
   "rbs.calendar.sniplet.recurrence.multiday.edition.warning": "Les ressources ne seront pas réservées pour les autres occurrences de cet évènement",
   "rbs.calendar.sniplet.min.delay.not.respected": "Cette ressource doit être réservée au minimum",
   "rbs.calendar.sniplet.max.delay.not.respected": "Cette ressource doit être réservée au maximum",
-  "rbs.calendar.sniplet.days.in.advance": "jours à l'avance."
+  "rbs.calendar.sniplet.days.in.advance": "jours à l'avance.",
 
-
+  "rbs.by": "Par",
+  "rbs.title.uppercase": "RBS",
+  "rbs.booking.suspended": "Cela entrainera la suspension des réservations concernées.",
+  "rbs.booking.manager.decision": "Les gestionnaires devront définir les réservations à conserver.",
+  "rbs.booking.concerned": "Réservations concernées",
+  "rbs.updating.resource": "Modification d'une resource"
 
 }
