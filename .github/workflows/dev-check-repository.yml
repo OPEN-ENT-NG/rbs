@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: opendigitaleducation/node
+      image: opendigitaleducation/node:10-alpine
       options: --user root -v ${{ github.workspace }}:/home/node/:rw
 
     steps:
