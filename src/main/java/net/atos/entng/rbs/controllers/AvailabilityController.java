@@ -31,6 +31,7 @@ import net.atos.entng.rbs.models.Availability;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.filter.Trace;
 import org.entcore.common.user.UserUtils;
 import fr.wseduc.security.ActionType;
@@ -56,7 +57,7 @@ public class AvailabilityController extends ControllerHelper {
 
 	@Get("/config")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(AdminFilter.class)
+	@ResourceFilter(SuperAdminFilter.class)
 	public void getConfig(final HttpServerRequest request) {
 		renderJson(request, config);
 	}
