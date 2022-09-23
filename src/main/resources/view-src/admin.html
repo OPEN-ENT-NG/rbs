@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <title></title>
     <script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
-    <script src="/rbs/public/dist/entcore/ng-app.js" id="context" type="text/javascript"></script>
-    <script src="/rbs/public/dist/application.js" type="text/javascript"></script>
+
+    <script src="/assets/js/entcore/ng-app.js?v=@@VERSION" id="context" type="text/javascript"></script>
+    <script type="text/javascript" src="/rbs/public/dist/application.js?v=@@VERSION"></script>
 </head>
 <body ng-controller="RbsController" class="rbs">
 <admin-portal>
