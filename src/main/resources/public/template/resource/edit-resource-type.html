@@ -64,7 +64,7 @@
 			<hr />
 
 			<div ng-if="editedResourceType.id !== undefined" class="row">
-				<share-panel app-prefix="'rbs'" resources="editedResourceType"></share-panel>
+				<share-panel app-prefix="'rbs'" resources="[editedResourceType]"></share-panel>
 			</div>
 
 			<div class="warning" ng-repeat="actionError in currentErrors" translate content="[[actionError.error]]">
