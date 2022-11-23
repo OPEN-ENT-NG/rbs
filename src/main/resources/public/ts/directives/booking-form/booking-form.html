@@ -7,8 +7,9 @@
     <section class="twelve cell">
 
         <div class="row accordions">
-            <!-- Resource description -->
+            <!-- 1. Resource choice and description -->
             <article class="accordion" ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_RESOURCE }">
+                <!-- Title -->
                 <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_RESOURCE;">
                             <span ng-if="vm.editedBooking.display.state === vm.editedBooking.display.STATE_RESOURCE">
                                 <i18n>rbs.header.resource.pick</i18n>
@@ -20,8 +21,10 @@
                                 </span>
                             </span>
                 </h2>
+                <!-- Body -->
                 <div class="toggle">
                     <div class="content">
+                        <!-- CASE new booking -->
                         <div class="row" ng-if="vm.editedBooking.id === undefined">
                             <div class="row">
                                 <label class="three cell">
@@ -65,6 +68,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- CASE edit booking -->
                         <div class="row" ng-if="vm.editedBooking.id">
                             <div class="row">
                                 <label class="three cell">
@@ -81,25 +85,24 @@
                                        value="[[vm.editedBooking.resource.name]]" input-guard/>
                             </div>
                         </div>
+                        <!-- Errors displaying -->
                         <div ng-include="template.containers.editBookingErrors"></div>
+                        <!-- Resource description -->
                         <div ng-if="vm.editedBooking.resource !== undefined && vm.editedBooking.resource.description"
                              bind-html="vm.editedBooking.resource.description" class="horizontal-spacing-twice"></div>
-                        <div class="row"
-                             ng-if="vm.editedBooking.resource !== undefined && (!vm.editedBooking.resource.description)">
-                            <p>
-                                <i18n>rbs.booking.edit.description.empty</i18n>
-                            </p>
+                        <div class="row" ng-if="vm.editedBooking.resource !== undefined && (!vm.editedBooking.resource.description)">
+                            <p><i18n>rbs.booking.edit.description.empty</i18n></p>
                         </div>
+                        <!-- Resource moderators -->
                         <div class="row" ng-if="vm.editedBooking.type && vm.editedBooking.type.moderators">
-                            <label class="row">
-                                <i18n>rbs.booking.details.moderators</i18n>
-                            </label>
-                            <p class="row">
-								<span ng-repeat="moderator in vm.editedBooking.type.moderators"
-                                      class="cell four cell-ellipsis horizontal-spacing-twice"
+                            <label class="row" ng-if="!vm.editedBooking.type.validation"><i18n>rbs.booking.details.no.validation</i18n></label>
+                            <label class="row" ng-if="vm.editedBooking.type.validation"><i18n>rbs.booking.details.moderators</i18n></label>
+                            <p class="row" ng-if="vm.editedBooking.type.validation">
+                                <span ng-repeat="moderator in vm.editedBooking.type.moderators"
+                                      class="cell twelve cell-ellipsis horizontal-spacing-twice"
                                       title="[[moderator.username+' ('+vm.translate(moderator.type)+')']]">
-										[[moderator.username]] <em class="small-text">([[vm.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
-								</span>
+                                        [[moderator.username]] <em class="small-text">([[vm.translate(moderator.type)]])</em>[[$last ? '' : ', ']]
+                                </span>
                             </p>
                         </div>
                     </div>
@@ -107,7 +110,7 @@
                 </div>
             </article>
 
-            <!-- Booking base slot dates and hours -->
+            <!-- 2. Booking base slot dates and hours -->
             <article class="accordion"
                      ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_BOOKING }">
                 <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_BOOKING;">
@@ -305,7 +308,7 @@
                 </div>
             </article>
 
-            <!-- Periodicity configuration -->
+            <!-- 3. Periodicity configuration -->
             <article class="accordion" ng-if="vm.editedBooking.is_periodic"
                      ng-class="{ opened: vm.editedBooking.display.state === vm.editedBooking.display.STATE_PERIODIC }">
                 <h2 ng-click="vm.editedBooking.display.state = vm.editedBooking.display.STATE_PERIODIC;">
@@ -409,6 +412,7 @@
             </article>
         </div>
 
+        <!-- Buttons -->
         <div class="row">
             <authorize name="contrib" resource="vm.editedBooking.resource" ng-if="vm.editedBooking.resource !== undefined">
                 <button class="right-magnet"
