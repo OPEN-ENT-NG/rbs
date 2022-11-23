@@ -4,6 +4,7 @@
     </h2>
 
     <div class="row accordions">
+        <!-- 1. Booking details -->
         <article class="accordion" ng-class="{ opened: vm.selectedBooking.displaySection === 1 }">
 
             <h2 ng-click="vm.selectedBooking.displaySection = 1;">
@@ -67,6 +68,7 @@
             </div>
         </article>
 
+        <!-- 2. Resource details -->
         <article class="accordion" ng-class="{ opened: vm.selectedBooking.displaySection === 2 }">
 
             <h2 ng-click="vm.selectedBooking.displaySection = 2;">
@@ -115,9 +117,11 @@
             </div>
         </article>
 
+        <!-- 3. Validation process details -->
         <article ng-if="vm.selectedBooking.is_periodic === true" class="accordion"
                  ng-class="{ opened: vm.selectedBooking.displaySection === 3 }">
 
+            <!-- Title -->
             <h2 ng-click="vm.selectedBooking.displaySection = 3;">
                 <i18n>rbs.booking.title.periodic</i18n>
                 <span class="right-magnet" ng-if="vm.countRefusedSlots(vm.selectedBooking._slots) <= 1">
@@ -140,6 +144,7 @@
 				</span>
             </h2>
 
+            <!-- Body -->
             <div class="toggle">
                 <div class="content">
                     <div class="warning row details" ng-if="vm.selectedBooking.hasAtLeastOneSuspendedSlot()">
@@ -237,6 +242,7 @@
         <article ng-if="vm.selectedBooking.is_periodic !== true" class="accordion"
                  ng-class="{ opened: vm.selectedBooking.displaySection === 3 }">
 
+            <!-- Title -->
             <h2 ng-click="vm.selectedBooking.displaySection = 3;">
                 <i18n>rbs.booking.title.process</i18n>
                 <span class="right-magnet" ng-if="vm.selectedBooking.isPending()"><i18n>rbs.booking.status.created</i18n></span>
@@ -245,12 +251,15 @@
                 <span class="right-magnet" ng-if="vm.selectedBooking.isSuspended()"><i18n>rbs.booking.status.suspended</i18n></span>
             </h2>
 
+            <!-- Body -->
             <div class="toggle">
                 <div class="content">
+                    <!-- CASE suspended -->
                     <div class="warning row details" ng-if="vm.selectedBooking.isSuspended()">
                         <i18n>rbs.booking.details.suspended.booking</i18n>
                     </div>
 
+                    <!-- CASE pending -->
                     <div class="row details" ng-if="vm.selectedBooking.isPending()">
                         <p class="four cell">
                             <i18n>rbs.booking.details.pending</i18n>
@@ -264,47 +273,45 @@
                         </div>
                     </div>
 
+                    <!-- CASE validated -->
                     <div class="row details" ng-if="vm.selectedBooking.isValidated()">
                         <div class="six cell">
-                            <label class="row">
+                            <label class="row" ng-if="!vm.selectedBooking.type.validation">
+                                <i18n>rbs.booking.details.validated.auto</i18n>
+                            </label>
+                            <label class="row" ng-if="vm.selectedBooking.type.validation">
                                 <i18n>rbs.booking.details.validated.moderator.label</i18n>
                             </label>
-                            <p>[[vm.selectedBooking.moderator_name]]</p>
+                            <p ng-if="vm.selectedBooking.type.validation">[[vm.selectedBooking.moderator_name]]</p>
                         </div>
                         <div class="six cell">
-                            <label class="row">
-                                <i18n>rbs.booking.details.validated.date.label</i18n>
-                            </label>
+                            <label class="row"><i18n>rbs.booking.details.validated.date.label</i18n></label>
                             <p>[[vm.formatDateLong(vm.selectedBooking.modified)]]</p>
                         </div>
                     </div>
 
-                    <div class="row details" ng-if="vm.selectedBooking.isRefused()">
-                        <div class="six cell">
-                            <label class="row">
-                                <i18n>rbs.booking.details.refused.moderator.label</i18n>
-                            </label>
-                            <p>[[vm.selectedBooking.moderator_name]]</p>
+                    <!-- CASE refused -->
+                    <div ng-if="vm.selectedBooking.isRefused()">
+                        <div class="row details"> <!-- WHO and WHEN it was refused -->
+                            <div class="six cell">
+                                <label class="row"><i18n>rbs.booking.details.refused.moderator.label</i18n></label>
+                                <p>[[vm.selectedBooking.moderator_name]]</p>
+                            </div>
+                            <div class="six cell">
+                                <label class="row"><i18n>rbs.booking.details.refused.date.label</i18n></label>
+                                <p>[[vm.formatDateLong(vm.selectedBooking.modified)]]</p>
+                            </div>
                         </div>
-                        <div class="six cell">
-                            <label class="row">
-                                <i18n>rbs.booking.details.refused.date.label</i18n>
-                            </label>
-                            <p>[[vm.formatDateLong(vm.selectedBooking.modified)]]</p>
+                        <div class="row details"> <!-- WHY it was refused -->
+                            <label class="twelve cell"><i18n>rbs.booking.details.refused.reason</i18n></label>
+                            <p class="twelve cell"
+                               ng-if="vm.selectedBooking.refusal_reason && vm.selectedBooking.refusal_reason !== ''"
+                               bind-html="vm.selectedBooking.refusal_reason"></p>
+                            <p class="twelve cell placeholder"
+                               ng-if="!(vm.selectedBooking.refusal_reason && vm.selectedBooking.refusal_reason !== '')">
+                                <i18n>rbs.booking.details.refused.reason.empty</i18n>
+                            </p>
                         </div>
-                    </div>
-
-                    <div class="row details" ng-if="vm.selectedBooking.isRefused()">
-                        <label class="twelve cell">
-                            <i18n>rbs.booking.details.refused.reason</i18n>
-                        </label>
-                        <p class="twelve cell"
-                           ng-if="vm.selectedBooking.refusal_reason && vm.selectedBooking.refusal_reason !== ''"
-                           bind-html="vm.selectedBooking.refusal_reason"></p>
-                        <p class="twelve cell placeholder"
-                           ng-if="!(vm.selectedBooking.refusal_reason && vm.selectedBooking.refusal_reason !== '')">
-                            <i18n>rbs.booking.details.refused.reason.empty</i18n>
-                        </p>
                     </div>
                 </div>
             </div>
@@ -312,6 +319,7 @@
     </div>
     <hr/>
 
+    <!-- Buttons -->
     <div class="row" ng-if="vm.canDeleteBookingDateCheck(vm.currentBookingSelected.end_date)">
         <div ng-if="vm.hasResourceRight(vm.selectedBooking.resource, 'process')">
             <button class="right-magnet" ng-if="vm.selectedBooking.isPending()" ng-click="vm.refuseBookingSelection()">
