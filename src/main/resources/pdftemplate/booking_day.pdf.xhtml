@@ -30,8 +30,8 @@
 				padding-right: 0;
 	        	text-align: center;
 	        	border: 1px solid #cccccc;
-	        	height: {{slot_height}}{{slot_height_unit}}; 
-	        }
+				height: {{slot_height}}{{slot_height_unit}};
+			}
 	        
 	        .calendar tr:nth-child(even) { background-color: #fafafa; }
 	        
@@ -55,7 +55,6 @@
 	        	border: 1px solid #333333;
 	        	color: #ffffff;
 	        	left: 129px;
-	        	width: {{booking_width}}{{booking_width_unit}};  
 	        	text-align: center;
 	        }
 	        
@@ -83,6 +82,8 @@
 			        	.{{booking_class_id}} {
 			        		top: {{booking_top}}{{booking_top_unit}};
 			        		height: {{booking_height}}{{booking_height_unit}};
+							width: {{booking_width}}{{booking_width_unit}};
+							left: {{booking_left}}{{booking_left_unit}};
 			        	}
 			        	
 			        	.{{booking_class_id}} .booking-container .nbsp-full-height-{{booking_class_id}} { line-height: {{booking_height}}{{booking_height_unit}}; }
@@ -100,12 +101,18 @@
 			<h2 class="title">{{resource_name}}</h2>
 			<div class="calendar-container">
 				<table class="calendar">
-					<tr><th><!-- Empty --></th><th>{{name}} - {{date}}</th></tr>
+					<tr>
+						<th><!-- Empty --></th>
+						<th>{{name}} - {{date}}</th>
+					</tr>
 					{{#slot_raw_title}}
-						<tr><td class="raw-title">{{value}}</td><td></td></tr>
+					<tr>
+						<td class="raw-title">{{value}}</td>
+						<td></td>
+					</tr>
 					{{/slot_raw_title}}
 				</table>
-				
+
 				{{#bookings}}
 					<div class="booking {{booking_class_id}}">
 						<div class="booking-container">
