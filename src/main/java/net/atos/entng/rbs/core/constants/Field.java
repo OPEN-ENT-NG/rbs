@@ -38,6 +38,15 @@ public class Field {
     public static final String ERROR = "error";
     public static final String OK = "ok";
 
+    // date
+    public static final String DD_MM_YYYY = "dd/MM/YYYY";
+
+    // other
+    public static final String VALUE = "value";
+    public static final String EXPORT = "export";
+    public static final String NAME = "name";
+    public static final String DATE = "date";
+
     // USER
 
     // userId

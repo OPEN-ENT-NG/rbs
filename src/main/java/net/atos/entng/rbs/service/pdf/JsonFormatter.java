@@ -5,12 +5,16 @@ import net.atos.entng.rbs.model.ExportResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+
+import static net.atos.entng.rbs.core.constants.Field.EXPORT;
+import static net.atos.entng.rbs.core.constants.Field.VALUE;
+import static net.atos.entng.rbs.model.ExportBooking.*;
+import static net.atos.entng.rbs.model.ExportBooking.BOOKING_END_DATE;
 
 public abstract class JsonFormatter {
 	protected static final String EDITION_DATE_FIELD_NAME = "edition_date";
@@ -38,6 +42,7 @@ public abstract class JsonFormatter {
 	protected static final String DAY_LIST_FIELD_NAME = "days";
 	protected static final String BOOKING_WIDTH_FIELD_NAME = "booking_width";
 	protected static final String BOOKING_WIDTH_UNIT_FIELD_NAME = "booking_width_unit";
+	protected static final String SLOT_INDEX = "slot_index";
 	protected static final int DECIMAL_PRECISION = 2;
 	protected static final String I18N_TITLE = "i18n_title";
 	protected static final String I18N_HEADER_OWNER = "i18n_owner";
@@ -69,11 +74,11 @@ public abstract class JsonFormatter {
 	
 
 	protected JsonFormatter(JsonObject jsonFileObject, String host, Locale locale, String userTimeZone) {
-		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray jsonFileArray = new JsonArray();
 		jsonFileArray.add(jsonFileObject);
 
-		this.jsonExport = new JsonObject().put("export", jsonFileArray);
-		JsonArray exportArrayElement = jsonExport.getJsonArray("export");
+		this.jsonExport = new JsonObject().put(EXPORT, jsonFileArray);
+		JsonArray exportArrayElement = jsonExport.getJsonArray(EXPORT);
 		exportObject = exportArrayElement.getJsonObject(0);
 
 		this.locale = locale;
@@ -129,5 +134,66 @@ public abstract class JsonFormatter {
 				break;
 		}
 		return formatter;
+	}
+
+	// Utils functions for Formatters
+
+	/**
+	 * Build the slot raw title list
+	 *
+	 * @param firstSlotOfADay: First time slot begin time
+	 * @param lastSlotOfADay:  Last time slot end time
+	 * @return The slot raw title list
+	 */
+	protected static JsonArray buildSlotRawTitles(DateTime firstSlotOfADay, DateTime lastSlotOfADay) {
+		JsonArray slotRawTitles = new JsonArray();
+		for (int i = firstSlotOfADay.getHourOfDay(); i < lastSlotOfADay.getHourOfDay(); i++) {
+			slotRawTitles.add(new JsonObject().put(VALUE, i + ":00 - " + (i + 1) + ":00"));
+		}
+		return slotRawTitles;
+	}
+
+	protected List<JsonObject> getSiblings(JsonObject booking, List<JsonObject> bookingsList) {
+		DateTime startDate = toUserTimeZone(booking.getString(BOOKING_START_DATE));
+		DateTime endDate = toUserTimeZone(booking.getString(BOOKING_END_DATE));
+		Long resourceId = booking.getLong(RESOURCE_ID);
+		int bookingId = booking.getInteger(BOOKING_ID);
+
+		return bookingsList.stream()
+				.filter(b -> b.getLong(RESOURCE_ID).equals(resourceId)
+						&& !b.getInteger(BOOKING_ID).equals(bookingId)
+						&& isOverlapping(startDate, endDate, b))
+				.collect(Collectors.toList());
+	}
+
+	protected List<JsonObject> getSiblings(JsonObject booking, JsonArray bookings) {
+		List<JsonObject> bookingsList = new ArrayList<>();
+		bookingsList.addAll(bookings.getList());
+		return getSiblings(booking, bookingsList);
+	}
+
+	protected int getSlotIndex(DateTime startDate, DateTime endDate, List<JsonObject> siblings) {
+		int maxSlotIndex = siblings.stream()
+				.filter(b -> isOverlapping(startDate, endDate, b) && b.getInteger(SLOT_INDEX) != null)
+				.mapToInt(b -> b.getInteger(SLOT_INDEX))
+				.max()
+				.orElse(-1);
+		return maxSlotIndex + 1;
+	}
+
+	protected int getNbMaxSiblings(List<JsonObject> siblings) {
+		int nbMaxSiblings = 0;
+		for (JsonObject sibling : siblings) {
+			int localNbMaxSibling = getSiblings(sibling, siblings).size() + 1;
+			if (localNbMaxSibling > nbMaxSiblings) nbMaxSiblings = localNbMaxSibling;
+		}
+
+		return nbMaxSiblings;
+	}
+
+	private boolean isOverlapping(DateTime startDate, DateTime endDate, JsonObject booking) {
+		DateTime bookingStartDate = toUserTimeZone(booking.getString(BOOKING_START_DATE));
+		DateTime bookingEndDate = toUserTimeZone(booking.getString(BOOKING_END_DATE));
+		return startDate.isBefore(bookingEndDate) && endDate.isAfter(bookingStartDate);
 	}
 }
