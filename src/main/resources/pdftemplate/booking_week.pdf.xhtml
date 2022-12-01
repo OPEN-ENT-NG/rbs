@@ -54,26 +54,28 @@
 	        	background-color: #444444;
 	        	border: 1px solid #333333;
 	        	color: #ffffff;
-	        	width: 11%; 
+	        	width: 11%;
 	        	text-align: left;
 	        }
-	        
-	        .booking-container .nbsp-full-height { 
-	        	display: inline-block; 
-	        	width: 0px; 
-	        	margin-left: -4px;
-	        }
-	        
-	        .booking-container .booking-content { 
-	        	display: inline-block; 
-	        	vertical-align: middle; 
-	        	text-align: center;
-	        }
 
-			.booking-container .booking-quantity {
+			.booking-quantity {
 				position: absolute;
 				top: 0;
 				right: 3px;
+			}
+	        
+	        .booking-content {
+				position: absolute;
+				top: 50%;
+				width: 100%;
+				text-align: center;
+				padding: 0 5%;
+	        }
+
+			.ellipsis {
+				font-size: 12px;
+				overflow: hidden;
+				box-sizing: border-box;
 			}
 	        
 	        {{#weeks}}
@@ -83,9 +85,8 @@
 			        		top: {{booking_top}}{{booking_top_unit}};
 			        		left: {{booking_left}}{{booking_left_unit}};
 			        		height: {{booking_height}}{{booking_height_unit}};
+							width: {{booking_width}}{{booking_width_unit}};
 			        	}
-			        	
-			        	.{{booking_class_id}} .booking-container .nbsp-full-height-{{booking_class_id}} { line-height: {{booking_height}}{{booking_height_unit}}; }
 			        {{/bookings}}
 		        {{/resources}}
 	        {{/weeks}}
@@ -109,9 +110,8 @@
 				{{#bookings}}
 					<div class="booking {{booking_class_id}}">
 						<div class="booking-container">
-							<div class="nbsp-full-height nbsp-full-height-{{booking_class_id}}">&nbsp;</div>
-							<div class="booking-content">{{owner_name}}</div>
-							<div class="booking-quantity">x{{quantity}}</div>
+							<div class="booking-quantity"><span class="ellipsis">x{{quantity}}</span></div>
+							<div class="booking-content ellipsis">{{owner_name}}</div>
 						</div>
 					</div>
 				{{/bookings}}
