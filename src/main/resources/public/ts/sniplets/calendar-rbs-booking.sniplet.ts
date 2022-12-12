@@ -263,6 +263,9 @@ class ViewModel implements IViewModel {
                     this.resourceTypes = [];
                     this.editedBooking.resource = undefined;
                     this.resources = [];
+                    if (resourcesTypes && resourcesTypes.length == 0) {
+                        this.hasBookingRight = true;
+                    }
                     safeApply(this.scope);
                 }
             })
