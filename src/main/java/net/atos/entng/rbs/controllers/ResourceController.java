@@ -36,7 +36,7 @@ import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.filters.TypeOwnerSharedOrLocalAdmin;
 import net.atos.entng.rbs.service.ResourceService;
-import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.ResourceServiceSqlImpl;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;

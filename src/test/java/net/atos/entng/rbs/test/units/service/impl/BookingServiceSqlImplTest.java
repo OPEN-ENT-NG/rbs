@@ -7,7 +7,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.atos.entng.rbs.models.Booking;
-import net.atos.entng.rbs.service.BookingServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.BookingServiceSqlImpl;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.junit.Before;

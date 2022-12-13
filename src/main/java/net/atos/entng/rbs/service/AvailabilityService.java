@@ -32,10 +32,9 @@ public interface AvailabilityService extends CrudService {
 	 * List all the (un)availabilities of a user
 	 *
 	 * @param resourceIds : resources' id
-	 * @param user     : information of current user logged
 	 * @param handler  : handler which contains the response
 	 */
-	void listAvailabilities(JsonArray resourceIds, UserInfos user, Handler<Either<String, JsonArray>> handler);
+	void listAvailabilities(JsonArray resourceIds, Handler<Either<String, JsonArray>> handler);
 
 	/**
 	 * List all the (un)availabilities of a resource

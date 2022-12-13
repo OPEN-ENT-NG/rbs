@@ -17,11 +17,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package net.atos.entng.rbs.service;
+package net.atos.entng.rbs.service.impl;
 
 import fr.wseduc.webutils.Either;
 import net.atos.entng.rbs.Rbs;
 import net.atos.entng.rbs.models.Availability;
+import net.atos.entng.rbs.service.AvailabilityService;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -30,10 +31,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.time.*;
-
 
 public class AvailabilityServiceSqlImpl extends SqlCrudService implements AvailabilityService {
 	public AvailabilityServiceSqlImpl() {
@@ -41,7 +38,7 @@ public class AvailabilityServiceSqlImpl extends SqlCrudService implements Availa
 	}
 
 	@Override
-	public void listAvailabilities(JsonArray resourceIds, UserInfos user, Handler<Either<String, JsonArray>> handler) {
+	public void listAvailabilities(JsonArray resourceIds, Handler<Either<String, JsonArray>> handler) {
 		String query =  "SELECT * FROM " + Rbs.AVAILABILITY_TABLE + " WHERE resource_id IN " + Sql.listPrepared(resourceIds) +
 				" ORDER BY start_date ASC";
 		JsonArray params = new JsonArray().addAll(resourceIds);
