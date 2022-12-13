@@ -17,7 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package net.atos.entng.rbs.service;
+package net.atos.entng.rbs.service.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Either.Right;
@@ -34,7 +34,7 @@ import net.atos.entng.rbs.helpers.FutureHelper;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.models.Slots;
-import org.entcore.common.bus.BusResponseHandler;
+import net.atos.entng.rbs.service.BookingService;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -43,7 +43,6 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
