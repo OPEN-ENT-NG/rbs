@@ -17,7 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package net.atos.entng.rbs.service;
+package net.atos.entng.rbs.service.impl;
 
 import static net.atos.entng.rbs.BookingUtils.*;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
@@ -27,6 +27,7 @@ import static org.entcore.common.sql.SqlResult.*;
 import java.util.List;
 
 import fr.wseduc.webutils.http.Renders;
+import net.atos.entng.rbs.service.ResourceTypeService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;

@@ -17,7 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package net.atos.entng.rbs.service;
+package net.atos.entng.rbs.service.impl;
 
 import static net.atos.entng.rbs.BookingStatus.CREATED;
 import static net.atos.entng.rbs.BookingStatus.REFUSED;
@@ -31,6 +31,7 @@ import java.util.List;
 
 import net.atos.entng.rbs.BookingStatus;
 
+import net.atos.entng.rbs.service.ResourceService;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;

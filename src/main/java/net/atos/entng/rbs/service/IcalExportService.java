@@ -24,6 +24,7 @@ import io.vertx.core.AbstractVerticle;
 import net.atos.entng.rbs.BookingUtils;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportResponse;
+import net.atos.entng.rbs.service.impl.UserServiceDirectoryImpl;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.DateTime;

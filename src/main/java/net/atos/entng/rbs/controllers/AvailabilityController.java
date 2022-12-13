@@ -27,9 +27,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.rbs.core.constants.Actions;
+import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.models.Availability;
+import net.atos.entng.rbs.service.impl.AvailabilityServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.ResourceServiceSqlImpl;
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.filter.Trace;
@@ -89,10 +91,10 @@ public class AvailabilityController extends ControllerHelper {
 				JsonArray resources = listResource.right().getValue();
 				JsonArray resourceIds = new JsonArray();
 				for (int i = 0; i < resources.size(); i++) {
-					resourceIds.add(resources.getJsonObject(i).getInteger("id"));
+					resourceIds.add(resources.getJsonObject(i).getInteger(Field.ID));
 				}
 
-				availabilityService.listAvailabilities(resourceIds, user, arrayResponseHandler(request));
+				availabilityService.listAvailabilities(resourceIds, arrayResponseHandler(request));
 			});
 		});
 	}

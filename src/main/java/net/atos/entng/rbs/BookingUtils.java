@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.atos.entng.rbs.service.BookingServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.BookingServiceSqlImpl;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;

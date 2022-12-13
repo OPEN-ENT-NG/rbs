@@ -34,9 +34,9 @@ import fr.wseduc.webutils.http.Renders;
 import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.core.constants.Field;
 import net.atos.entng.rbs.service.ResourceTypeService;
-import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.ResourceTypeServiceSqlImpl;
 import net.atos.entng.rbs.service.UserService;
-import net.atos.entng.rbs.service.UserServiceDirectoryImpl;
+import net.atos.entng.rbs.service.impl.UserServiceDirectoryImpl;
 
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.Trace;
