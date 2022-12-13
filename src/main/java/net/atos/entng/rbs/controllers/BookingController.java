@@ -39,6 +39,7 @@ import net.atos.entng.rbs.BookingUtils;
 import net.atos.entng.rbs.Rbs;
 import net.atos.entng.rbs.core.constants.Actions;
 import net.atos.entng.rbs.models.Slots;
+import net.atos.entng.rbs.service.*;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -68,7 +69,6 @@ import net.atos.entng.rbs.filters.TypeAndResourceAppendPolicy;
 import net.atos.entng.rbs.model.ExportBooking;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.model.ExportResponse;
-import net.atos.entng.rbs.service.*;
 import net.atos.entng.rbs.service.pdf.PdfExportService;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -80,10 +80,8 @@ import static net.atos.entng.rbs.BookingUtils.*;
 
 import net.atos.entng.rbs.models.Booking;
 import net.atos.entng.rbs.models.Resource;
-import net.atos.entng.rbs.service.BookingService;
-import net.atos.entng.rbs.service.BookingServiceSqlImpl;
-import net.atos.entng.rbs.service.ResourceService;
-import net.atos.entng.rbs.service.ResourceServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.BookingServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.ResourceServiceSqlImpl;
 
 public class BookingController extends ControllerHelper {
 	static final String RESOURCE_NAME = "resource_booking";

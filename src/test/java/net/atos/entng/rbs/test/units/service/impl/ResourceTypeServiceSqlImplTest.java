@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import net.atos.entng.rbs.service.ResourceTypeServiceSqlImpl;
+import net.atos.entng.rbs.service.impl.ResourceTypeServiceSqlImpl;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;

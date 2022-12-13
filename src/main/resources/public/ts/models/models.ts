@@ -1,7 +1,8 @@
 import {_, angular, Behaviours, http, Model, notify} from 'entcore';
 import moment from '../moment';
 import {BookingUtil} from "../utilities/booking.util";
-import {Availabilities} from "./Availability";
+import {Availabilities, Availability} from "./Availability";
+import {availabilityService} from "../services/AvailabilityService";
 
 declare let window: any;
 declare let model: any;
@@ -857,21 +858,31 @@ model.build = function () {
     this.makeModels(RBS);
     // Model.prototype.inherits(Booking, window.calendar.ScheduleItem);
 
-    model.loadStructures()
-    ;
+    model.loadStructures();
     // ResourceTypes collection with embedded Resources
     this.collection(RBS.ResourceType, {
         sync: function () {
-            var collection = this;
+            let collection = this;
+
             // Load the ResourceTypes
-            http().get('/rbs/types').done(function (resourceTypes) {
-                var index = 0;
+            http().get('/rbs/types').done(async function (resourceTypes) {
+                let index = 0;
+
+                // Get all availability and unavailability for the user and parse them
+                let allAvailabilities = new Availabilities();
+                let { data, status } = await availabilityService.list();
+                if (status == 200) {
+                    for (let a of data) {
+                        let tempAvailability = new Availability();
+                        tempAvailability.setFromJson(a);
+                        allAvailabilities.all.push(tempAvailability);
+                    }
+                }
+
                 // Auto-associate colors to Types
-                _.each(resourceTypes, function (resourceType) {
+                for (let resourceType of resourceTypes) {
                     // Resolve the structure if possible
-                    var structure = _.find(model.structures, function (s) {
-                        return s.id === resourceType.school_id;
-                    });
+                    let structure = model.structures.find(s => s.id === resourceType.school_id);
                     resourceType.structure = structure || model.DETACHED_STRUCTURE;
                     // Auto-associate colors to Types
 
@@ -879,13 +890,14 @@ model.build = function () {
                         resourceType.color = model.findColor(index);
                         model.LAST_DEFAULT_COLOR = resourceType.color;
                         index++;
-                    } else {
-                        var nbCouleur = 0;
-                        resourceTypes.forEach(function (resourceType) {
+                    }
+                    else {
+                        let nbCouleur = 0;
+                        for (let resourceType of resourceTypes) {
                             if (model.colors.indexOf(resourceType.color) !== -1) {
                                 nbCouleur++;
                             }
-                        });
+                        }
                         model.LAST_DEFAULT_COLOR = model.findColor(nbCouleur);
                         index = nbCouleur + 1;
                     }
@@ -893,11 +905,11 @@ model.build = function () {
                     if (resourceType.slotprofile === null) {
                         resourceType.slotprofile = undefined;
                     }
-                });
+                }
 
                 // Fill the ResourceType collection and prepare the index
                 this.all = [];
-                var resourceTypeIndex = {};
+                let resourceTypeIndex = {};
                 this.addRange(resourceTypes, function (resourceType) {
                     resourceType.resources.all = [];
                     resourceTypeIndex[resourceType.id] = resourceType;
@@ -905,22 +917,28 @@ model.build = function () {
 
                 // Load the Resources in each ResourceType
                 http().get('/rbs/resources').done(function (resources) {
-                    var actions = (resources !== undefined ? resources.length : 0);
+                    let actions = (resources !== undefined ? resources.length : 0);
                     if (resources.length === 0) {
                         collection.trigger('sync');
                         return;
                     }
 
-                    _.each(resources, async function (resource) {
+                    for (let resource of resources) {
                         // Load the ResourceType's collection with associated Resource
-                        var resourceType = resourceTypeIndex[resource.type_id];
+                        let resourceType = resourceTypeIndex[resource.type_id];
                         if (resourceType !== undefined) {
                             resource.type = resourceType;
                             if (resource.color === null) {
                                 resource.color = resourceType.color;
                             }
                             let res = new Resource(resource);
-                            await res.syncResourceAvailabilities();
+
+                            this.availabilities = new Availabilities();
+                            this.unavailabilities = new Availabilities();
+
+                            this.availabilities.all = allAvailabilities.all.filter((a: Availability) => a.resource_id == resource.id && !a.is_unavailability);
+                            this.unavailabilities.all = allAvailabilities.all.filter((a: Availability) => a.resource_id == resource.id && a.is_unavailability);
+
                             Behaviours.applicationsBehaviours.rbs.resourceRights(res);
                             resourceType.resources.all.push(res);
                         }
@@ -934,9 +952,8 @@ model.build = function () {
                             collection.trigger('sync');
                             model.bookings.applyFilters();
                         }
-                    });
+                    }
                 });
-
             }.bind(this));
         },
         filterAvailable: function (periodic) {
