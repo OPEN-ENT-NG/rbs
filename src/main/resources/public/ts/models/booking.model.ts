@@ -39,7 +39,7 @@ export class Booking {
     status: number;
     moderatorId: string;
     refusalReason: string;
-    parentBookingId: number;
+    parent_booking_id: number;
     days: Bytes;
     periodicity: number;
     occurrences: number;
@@ -74,7 +74,7 @@ export class Booking {
         this.status = data.status;
         this.moderatorId = data.moderator_id;
         this.refusalReason = data.refusal_reason;
-        this.parentBookingId = data.parent_booking_id;
+        this.parent_booking_id = data.parent_booking_id;
         this.days = data.days;
         this.periodicity = data.periodicity;
         this.occurrences = data.occurrences;

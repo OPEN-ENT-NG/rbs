@@ -1,6 +1,9 @@
 import {_, Behaviours} from "entcore";
 import moment from "../moment";
 import {Moment} from "moment";
+import {DateUtils} from "./date.util";
+import {Resource} from "../models/resource.model";
+import {Booking} from "../models/booking.model";
 
 export class BookingUtil {
 
@@ -8,7 +11,7 @@ export class BookingUtil {
      * Method that update/set `myRights` resource if data booking is not updated properly
      * @param booking Booking
      */
-    static setRightsResourceBooking(booking: any): void {
+    static setRightsResourceBooking = (booking: any): void => {
         if (booking && booking.myRights && _.isEmpty(booking.myRights)) {
             Behaviours.applicationsBehaviours.rbs.resourceRights(booking);
         }
@@ -18,7 +21,7 @@ export class BookingUtil {
      * Method that certified this item is a 'Booking' type data
      * @param bookings Array<Bookings> (Supposedly)
      */
-    static setTagBookingInstance(bookings: any): void {
+    static setTagBookingInstance = (bookings: any): void => {
         bookings.forEach(b => b.isBookingInstance = true);
     }
 
@@ -30,7 +33,7 @@ export class BookingUtil {
      * @param currentErrors     (optional) array that should be containing error to push in any controller
      * @return boolean  (true if has error (supposedly is past), false if booking can be opened/edited
      */
-    static checkEditedBookingMoments(booking: any, today: Moment, currentErrors?: Array<any>) : boolean {
+    static checkEditedBookingMoments = (booking: any, today: Moment, currentErrors?: Array<any>) : boolean => {
         let hasErrors = false;
         if ((booking.startDate.getFullYear() < today.year() ||
             (booking.startDate.getFullYear() == today.year() &&
@@ -76,14 +79,29 @@ export class BookingUtil {
      * @param booking2    booking to check if it overlaps booking1
      * @return boolean
      */
-    static isBookingsOverlapping(booking1: any, booking2: any): boolean {
+    static isBookingsOverlapping= (booking1: any, booking2: any) : boolean => {
         let test1 = moment(booking1.startMoment).format("YYYY/MM/DD HH:mm:ss") < moment(booking2.endMoment).format("YYYY/MM/DD HH:mm:ss");
         let test2 = moment(booking1.endMoment).format("YYYY/MM/DD HH:mm:ss") > moment(booking2.startMoment).format("YYYY/MM/DD HH:mm:ss");
         return test1 && test2;
     };
 
 
-    static isNotPast = function(booking) : boolean {
+    static isNotPast = (booking: Booking) : boolean => {
         return(moment(booking.startMoment).isAfter(moment()));
+    };
+
+    static getSiblings = (booking: Booking, resource: Resource) : Booking[] => {
+        return resource.bookings.all.filter((b: Booking) =>
+            b.id != booking.id
+            && !b.is_periodic
+            && DateUtils.isNotPast(b.startMoment)
+            && BookingUtil.isBookingsOverlapping(booking, b)
+            && b.quantity);
+    };
+
+    static getSiblingsAndMe = (booking: Booking, resource: Resource) : Booking[] => {
+        let siblingsAndMe: Booking[] = BookingUtil.getSiblings(booking, resource);
+        siblingsAndMe.push(booking);
+        return siblingsAndMe;
     };
 }
