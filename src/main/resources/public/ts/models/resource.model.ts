@@ -1,5 +1,6 @@
 import {Availabilities} from "./Availability";
 import {Bookings} from "./booking.model";
+import {ResourceType} from "./resource-type.model";
 
 export interface IResourceResponse {
     id: number;
@@ -40,6 +41,7 @@ export class Resource {
     validation: boolean;
     visibility: boolean;
 
+    type: ResourceType;
     availabilities: Availabilities;
     bookings: Bookings;
     unavailabilities: Availabilities;

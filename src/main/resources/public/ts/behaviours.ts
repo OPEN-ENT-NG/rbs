@@ -1,10 +1,8 @@
 import {_, Behaviours, model} from 'entcore';
-import {RBS} from './models/models';
 import {calendarRbsBooking} from "./sniplets/calendar-rbs-booking.sniplet";
-import {bookingService} from "./services";
 import {RBS_CALENDAR_EVENTER} from "./core/enum/rbs-calendar-eventer.enum";
-
-const {Resource, Booking} = RBS;
+import {Resource} from "./models/resource.model";
+import {Booking} from "./models/booking.model";
 
 console.log('RBS behaviours loaded');
 

@@ -4,6 +4,7 @@ import {Moment} from "moment";
 import {BookingUtil} from "./booking.util";
 import {Availability} from "../models/Availability";
 import {Booking} from "../models/booking.model";
+import {Resource} from "../models/resource.model";
 
 export class AvailabilityUtil {
     /**
@@ -130,23 +131,30 @@ export class AvailabilityUtil {
     };
 
     /**
-     * Calculate quantity used by the bookings overlapping our given timeslot
+     * Calculate max quantity used by the bookings overlapping our given timeslot
      *
      * @param booking       booking giving timeslot to check
      * @param resource      resource of the booking
      * @param exception     booking not to count for calculus
      * @return number       quantity used by the bookings using this timeslot
      */
-    static getBookingsQuantityUsedOnTimeslot = (booking: any, resource: any, exception?: any) : number => {
-        let bookings = resource.bookings.all;
-        let bookingsQuantityUsed = 0;
-        let exceptionId = (exception && exception.id) ? exception.id : -1;
+    static getBookingsQuantityUsedOnTimeslot = (booking: Booking, resource: Resource, exception?: Booking) : number => {
+        let bookingsQuantityUsed: number = 0;
+        let exceptionId: number = (exception && exception.id) ? exception.id : -1;
+        let siblings: Booking[] = BookingUtil.getSiblings(booking, resource)
+            .filter((sibling: Booking) => sibling.id != exceptionId
+            && sibling.parent_booking_id != exceptionId
+            && sibling.status != 3);
 
-        for (let b of bookings) {
-            if (b.id != exceptionId && b.parent_booking_id != exceptionId &&
-                b.status != 3 && !b.is_periodic && BookingUtil.isBookingsOverlapping(booking, b)) {
-                    bookingsQuantityUsed += b.quantity;
-            }
+        for (let sibling of siblings) {
+            let localMaxQuantityUsed: number = BookingUtil.getSiblings(sibling, resource)
+                .filter((localSibling: Booking) => localSibling.id != exceptionId
+                    && localSibling.id != booking.id
+                    && localSibling.parent_booking_id != exceptionId && localSibling.status != 3
+                    && BookingUtil.isBookingsOverlapping(localSibling, booking))
+                .map((localSibling: Booking) => localSibling.quantity)
+                .reduce((accumulator: number, currentValue: number) => accumulator + currentValue, sibling.quantity);
+            if (localMaxQuantityUsed > bookingsQuantityUsed) bookingsQuantityUsed = localMaxQuantityUsed;
         }
 
         return bookingsQuantityUsed;

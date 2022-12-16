@@ -1,5 +1,7 @@
 package net.atos.entng.rbs.service.pdf;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import net.atos.entng.rbs.model.ExportRequest;
 import net.atos.entng.rbs.model.ExportResponse;
 import io.vertx.core.json.JsonArray;
@@ -17,6 +19,7 @@ import static net.atos.entng.rbs.model.ExportBooking.*;
 import static net.atos.entng.rbs.model.ExportBooking.BOOKING_END_DATE;
 
 public abstract class JsonFormatter {
+	private static final Logger log = LoggerFactory.getLogger(JsonFormatter.class);
 	protected static final String EDITION_DATE_FIELD_NAME = "edition_date";
 	protected static final String CALENDAR_HEIGHT_FIELD_NAME = "calendar_height";
 	protected static final String CALENDAR_HEIGHT_UNIT_FIELD_NAME = "calendar_height_unit";
@@ -173,12 +176,25 @@ public abstract class JsonFormatter {
 	}
 
 	protected int getSlotIndex(DateTime startDate, DateTime endDate, List<JsonObject> siblings) {
-		int maxSlotIndex = siblings.stream()
+		// Get all the slot_index of the siblings and sort them
+		List<Integer> slotIndexes = siblings.stream()
 				.filter(b -> isOverlapping(startDate, endDate, b) && b.getInteger(SLOT_INDEX) != null)
-				.mapToInt(b -> b.getInteger(SLOT_INDEX))
-				.max()
-				.orElse(-1);
-		return maxSlotIndex + 1;
+				.map(b -> b.getInteger(SLOT_INDEX))
+				.sorted()
+				.collect(Collectors.toList());
+
+		if (slotIndexes.isEmpty()) return 0;
+
+		// Try to find the minimal unused slot_index
+		int finalSlotIndex = 0;
+		int i = 0;
+		while (i < slotIndexes.size() && i == slotIndexes.get(i)) {
+			finalSlotIndex = i;
+			i++;
+		}
+
+		int maxSlotIndex = slotIndexes.get(slotIndexes.size() - 1);
+		return finalSlotIndex == maxSlotIndex ? i : finalSlotIndex;
 	}
 
 	protected int getNbMaxSiblings(List<JsonObject> siblings) {

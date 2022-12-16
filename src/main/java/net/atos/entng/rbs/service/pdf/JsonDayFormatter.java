@@ -162,9 +162,9 @@ public class JsonDayFormatter extends JsonFormatter {
 				double bookingWidth = (slotWidth - 2) / nbMaxBookingPerSlot;
 				double leftOffset = (slotIndex * bookingWidth) + 125;
 
-				booking.put(SLOT_INDEX, slotIndex);
-				booking.put(BOOKING_OWNER_NAME, booking.getString(BOOKING_OWNER_NAME));
-				booking.put(QUANTITY, booking.getLong(QUANTITY).toString());
+				exportBooking.put(SLOT_INDEX, slotIndex);
+				booking.put(BOOKING_OWNER_NAME, exportBooking.getString(BOOKING_OWNER_NAME));
+				booking.put(QUANTITY, exportBooking.getLong(QUANTITY).toString());
 				booking.put(BOOKING_CLASS_ID_FIELD_NAME, classId);
 				booking.put(BOOKING_TOP_FIELD_NAME, round(topOffset, DECIMAL_PRECISION));
 				booking.put(BOOKING_TOP_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);

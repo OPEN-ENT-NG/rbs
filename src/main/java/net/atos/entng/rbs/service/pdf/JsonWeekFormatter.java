@@ -209,8 +209,6 @@ public class JsonWeekFormatter extends JsonFormatter {
 				booking.put(BOOKING_WIDTH_UNIT_FIELD_NAME, DEFAULT_SIZE_UNIT);
 				booking.put(SLOT_INDEX, slotIndex);
 
-				log.info(booking);
-
 				bookingList.add(booking);
 			}
 		}
