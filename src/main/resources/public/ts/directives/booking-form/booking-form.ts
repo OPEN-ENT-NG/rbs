@@ -1120,6 +1120,7 @@ export const bookingForm = ng.directive('bookingForm', ['BookingEventService', '
                     vm.currentErrors.push({error: 'rbs.error.technical'});
                     throw e;
                 }
+                $scope.$apply();
             };
 
             vm.updateEditedBookingSlots = function() : void {
