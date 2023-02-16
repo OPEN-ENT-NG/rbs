@@ -39,9 +39,13 @@ public class AvailabilityServiceSqlImpl extends SqlCrudService implements Availa
 
 	@Override
 	public void listAvailabilities(JsonArray resourceIds, Handler<Either<String, JsonArray>> handler) {
-		String query =  "SELECT * FROM " + Rbs.AVAILABILITY_TABLE + " WHERE resource_id IN " + Sql.listPrepared(resourceIds) +
-				" ORDER BY start_date ASC";
-		JsonArray params = new JsonArray().addAll(resourceIds);
+		String query =  "SELECT * FROM " + Rbs.AVAILABILITY_TABLE;
+		JsonArray params = new JsonArray();
+		if (resourceIds != null && !resourceIds.isEmpty()) {
+			query += " WHERE resource_id IN " + Sql.listPrepared(resourceIds);
+			params.addAll(resourceIds);
+		}
+		query += " ORDER BY start_date ASC";
 		Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
 	}
 
