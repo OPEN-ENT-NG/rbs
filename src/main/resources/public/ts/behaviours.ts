@@ -37,8 +37,8 @@ Behaviours.register('rbs', {
     },
     resourceRights: function (resource) {
         var rightsContainer = resource;
-        if (resource instanceof Resource && resource.type) {
-            rightsContainer = resource.type;
+        if (resource instanceof Resource && (<any> resource).type) {
+            rightsContainer = (<any> resource).type;
         }
         if ((resource && (resource instanceof Booking || resource.isBookingInstance)) && resource.resource && resource.resource.type) {
             rightsContainer = resource.resource.type;
