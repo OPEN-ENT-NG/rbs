@@ -172,7 +172,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Insert query
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		query.append("INSERT INTO rbs.booking")
 				.append("(resource_id, owner, booking_reason, quantity, status, start_date, end_date)")
@@ -209,14 +209,14 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		SqlStatementsBuilder statementsBuilder = new SqlStatementsBuilder();
 		statementsBuilder.prepared(UPSERT_USER_QUERY,
-				new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUsername()));
+				new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
 
 		Slots slots = booking.getSlots() ;
 		// create a periodic reservation dedicated to each slot
 		for (Slot slot: slots) {
             StringBuilder query = new StringBuilder();
-            JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+            JsonArray values = new JsonArray();
 
             Object rId = parseId(resourceId);
             final long endDate = booking.getPeriodicEndDateAsUTCSeconds();
@@ -337,10 +337,10 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	 * @param values
 	 * @param lastSlotEndDate
 	 * @param endDateIndex
-	 * @return new fr.wseduc.webutils.collections.JsonArray, with proper end date
+	 * @return new JsonArray, with proper end date
 	 */
 	private JsonArray getValuesWithProperEndDate(JsonArray values, String lastSlotEndDate, int endDateIndex) {
-		JsonArray newValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray newValues = new JsonArray();
 		int i = 0;
 		for (Object object : values) {
 			if (i == endDateIndex) {
@@ -366,7 +366,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
 		// Update query
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		StringBuilder sb = new StringBuilder();
 
 
@@ -415,7 +415,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 2. Update parent booking
 		StringBuilder parentQuery = new StringBuilder();
-		JsonArray parentValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray parentValues = new JsonArray();
 		parentQuery.append("UPDATE rbs.booking").append(" SET booking_reason = ?, quantity = ?, start_date = ?, end_date = ?,");
 		parentValues.add(booking.getBookingReason()).add(booking.getBookingQuantity()).add(toSQLTimestamp(slot.getStartUTC()))
 				.add(endDate > 0L ? toSQLTimestamp(endDate) : null); // the null value will be replaced by the last slot's end date
@@ -433,7 +433,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 4. Create new child bookings
 		StringBuilder insertQuery = new StringBuilder();
-		JsonArray insertValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray insertValues = new JsonArray();
 		final long lastSlotEndDate = appendInsertChildBookingsQuery(insertQuery, insertValues, rId, booking,booking.getSlots().get(0), user, bId);
 
 		// Update end_date value in JsonArray parentValues
@@ -443,7 +443,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Add queries to SqlStatementsBuilder
 		statementsBuilder.prepared(parentQuery.toString(), parentValues);
-		statementsBuilder.prepared(deleteQuery, new fr.wseduc.webutils.collections.JsonArray().add(bId));
+		statementsBuilder.prepared(deleteQuery, new JsonArray().add(bId));
 		statementsBuilder.prepared(insertQuery.toString(), insertValues);
 
 		// Send queries to event bus
@@ -459,7 +459,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 		// 2. Delete child bookings
 		StringBuilder deleteQuery = new StringBuilder();
-		JsonArray deleteValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray deleteValues = new JsonArray();
 		deleteQuery.append("DELETE FROM rbs.booking")
 				.append(" WHERE parent_booking_id = ?")
 				.append(" AND start_date >= to_timestamp(?)");
@@ -469,7 +469,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// 3. Update parent booking with last end date slot
 		StringBuilder parentQuery = new StringBuilder();
-		JsonArray parentValues = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray parentValues = new JsonArray();
 		parentQuery.append("UPDATE rbs.booking")
 				.append(" SET end_date = (SELECT CASE WHEN MAX(end_date) IS NULL THEN (SELECT end_date FROM rbs.booking WHERE id = ?) ELSE MAX(end_date) END FROM rbs.booking WHERE parent_booking_id = ?)")
 				.append(" , modified = NOW()")
@@ -500,7 +500,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		final List<String> groupsAndUserIds = getUserIdAndGroupIds(user);
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		// find all booking without periodic booking parents
 		query.append("SELECT b.").append(ExportBooking.BOOKING_ID);
@@ -667,7 +667,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	public void listAllBookings(final UserInfos user, final List<String> groupsAndUserIds,
 			final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
 				.append(" FROM rbs.booking AS b").append(" LEFT JOIN rbs.resource AS r ON r.id = b.resource_id")
@@ -767,7 +767,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				if (ei.isRight()) {
 					final Set<Number> setIdsPeriodicBooking = new HashSet<Number>();
 					final JsonArray jsonBookingResult = ei.right().getValue();
-					final JsonArray jsonAllBookingResult = new fr.wseduc.webutils.collections.JsonArray();
+					final JsonArray jsonAllBookingResult = new JsonArray();
 					for (final Object o : jsonBookingResult) {
 						if (!(o instanceof JsonObject)) {
 							continue;
@@ -815,7 +815,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 								.append(" FROM rbs.booking AS b").append(" LEFT JOIN rbs.users AS u ON u.id = b.owner")
 								.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id").append(" WHERE b.id IN ")
 								.append(Sql.listPrepared(setIdsPeriodicBooking.toArray()));
-						final JsonArray values = new fr.wseduc.webutils.collections.JsonArray(
+						final JsonArray values = new JsonArray(
 								new ArrayList<>(setIdsPeriodicBooking));
 
 						Sql.getInstance().prepared(queryPeriodicBooking.toString(), values,
@@ -866,7 +866,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 	@Override
 	public void listFullSlotsBooking(final String bookingId, final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		// find all booking without periodic booking
 		query.append("SELECT b.*, u.username AS owner_name, m.username AS moderator_name")
@@ -887,7 +887,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" LEFT JOIN rbs.users AS m on b.moderator_id = m.id").append(" WHERE b.resource_id = ?")
 				.append(" ORDER BY b.start_date, b.end_date");
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(parseId(resourceId));
 
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
@@ -899,7 +899,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 
 		// Query
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		query.append("SELECT DISTINCT b.*, u.username AS owner_name").append(" FROM rbs.booking AS b")
 				.append(" INNER JOIN rbs.users AS u ON b.owner = u.id")
@@ -947,7 +947,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 			final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		Object bId = parseId(bookingId);
 
 		// Resource owner is a moderator
@@ -1006,7 +1006,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" WHERE b.id = ?");
 
 		Sql.getInstance().prepared(query.toString(),
-				new fr.wseduc.webutils.collections.JsonArray().add(parseId(bookingId)),
+				new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 
@@ -1021,7 +1021,7 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" INNER JOIN rbs.resource AS r ON b.resource_id = r.id").append(" WHERE b.id = ?");
 
 		Sql.getInstance().prepared(query.toString(),
-				new fr.wseduc.webutils.collections.JsonArray().add(parseId(bookingId)),
+				new JsonArray().add(parseId(bookingId)),
 				validUniqueResultHandler(handler));
 	}
 

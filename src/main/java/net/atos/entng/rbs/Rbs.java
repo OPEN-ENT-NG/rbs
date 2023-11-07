@@ -20,6 +20,7 @@
 package net.atos.entng.rbs;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
@@ -57,8 +58,8 @@ public class Rbs extends BaseServer {
 	public static String USERS_TABLE;
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		final EventBus eb = getEventBus(vertx);
 
 		// Set RepositoryEvents implementation used to process events published for transition
@@ -90,7 +91,7 @@ public class Rbs extends BaseServer {
 		confType.setSchema(getSchema());
 		ResourceTypeController typeController = new ResourceTypeController(eb);
 		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE_NAME, RESOURCE_TYPE_SHARE_TABLE_NAME,
-				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
+				new JsonArray().add("*"), new JsonArray().add("*"), true);
 		typeController.setCrudService(typeSqlCrudService);
 		typeController.setShareService(new SqlShareService(getSchema(), RESOURCE_TYPE_SHARE_TABLE_NAME,
 				eb, securedActions, null));
@@ -102,7 +103,7 @@ public class Rbs extends BaseServer {
 		confResource.setSchema(getSchema());
 		ResourceController resourceController = new ResourceController();
 		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE_NAME, RESOURCE_SHARE_TABLE_NAME,
-				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
+				new JsonArray().add("*"), new JsonArray().add("*"), true);
 		resourceController.setCrudService(resourceSqlCrudService);
 		resourceController.setShareService(new SqlShareService(getSchema(), RESOURCE_SHARE_TABLE_NAME,
 				eb, securedActions, null));

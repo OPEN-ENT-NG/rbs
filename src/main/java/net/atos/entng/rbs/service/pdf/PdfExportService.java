@@ -103,7 +103,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 				if (node == null) {
 					node = "";
 				}
-				vertx.eventBus().send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(reply -> {
+				vertx.eventBus().request(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(reply -> {
 					JsonObject pdfResponse = reply.body();
 					if (!"ok".equals(pdfResponse.getString("status"))) {
 						String pdfResponseString = pdfResponse.getString("message");
@@ -138,7 +138,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse, host, locale, userTimeZone);
 
 		JsonObject convertedJson = formatter.format();
-		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray jsonFileArray = new JsonArray();
 		jsonFileArray.add(convertedJson);
 
 		return new JsonObject().put("export", jsonFileArray);

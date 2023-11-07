@@ -221,8 +221,8 @@ public class ResourceTypeController extends ControllerHelper {
 						renderJson(request, event.right().getValue());
 					}
 					else {
-						JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
-						JsonArray groupIds = new fr.wseduc.webutils.collections.JsonArray();
+						JsonArray userIds = new JsonArray();
+						JsonArray groupIds = new JsonArray();
 
 						for (Object m : result) {
 							if(!(m instanceof JsonObject)) continue;
@@ -299,7 +299,7 @@ public class ResourceTypeController extends ControllerHelper {
 				.put("action", "list-slotprofiles")
 				.put("structureId", structureId);
 		Handler<Either<String, JsonArray>> handler = arrayResponseHandler(request);
-		eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(handler)));
+		eb.request(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(handler)));
 	}
 
 	@ApiDoc("Get all slots for a slot profile")
@@ -312,7 +312,7 @@ public class ResourceTypeController extends ControllerHelper {
 				.put("slotProfileId", idSlotProfile);
 
 		Handler<Either<String, JsonObject>> handler = notEmptyResponseHandler(request);
-		eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(MongoDbResult.validResultHandler(handler)));
+		eb.request(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(MongoDbResult.validResultHandler(handler)));
 	}
 
 	@Post("/type/notification/add/:id")

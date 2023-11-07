@@ -2,7 +2,6 @@ package net.atos.entng.rbs.helpers;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.*;
-import io.vertx.core.impl.CompositeFutureImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -49,7 +48,7 @@ public class FutureHelper {
     }
 
     public static <T> CompositeFuture all(List<Future<T>> futures) {
-        return CompositeFutureImpl.all(futures.toArray(new Future[futures.size()]));
+        return Future.all(futures);
     }
 
 }

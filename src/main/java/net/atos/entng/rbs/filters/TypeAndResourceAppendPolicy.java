@@ -72,7 +72,7 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 			// Query
 			StringBuilder query = new StringBuilder();
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray values = new JsonArray();
 			query.append("SELECT count(*)")
 				.append(" FROM rbs.resource AS r")
 				.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");
@@ -181,7 +181,7 @@ public class TypeAndResourceAppendPolicy implements ResourcesProvider {
 
 			// Query
 			StringBuilder query = new StringBuilder();
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray values = new JsonArray();
 			query.append("SELECT count(*)")
 					.append(" FROM rbs.resource AS r")
 					.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id");

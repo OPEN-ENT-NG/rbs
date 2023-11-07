@@ -44,3 +44,6 @@ rev-manifest.json
 /src/main/resources/public/js/behaviours.js
 /src/main/resources/view
 /coverage/front/cobertura-coverage.xml
+.env
+target
+dependency-reduced-pom.xml

@@ -61,7 +61,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 		JsonArray exportBookings = exportObject.getJsonArray(BOOKINGS);
 
 		DateTime weekIterator = exportStart;
-		JsonArray weekList = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray weekList = new JsonArray();
 
 		while (Weeks.weeksBetween(weekIterator, exportEnd).getWeeks() != 0) {
 
@@ -71,7 +71,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 
 			// Building resource list
 			ArrayList<Long> performedResourceId = new ArrayList<>();
-			JsonArray resourceList = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray resourceList = new JsonArray();
 
 			for (int i = 0; i < exportBookings.size(); i++) {
 				JsonObject bookingIterator = exportBookings.getJsonObject(i);
@@ -130,7 +130,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 	 * @return The slot raw title list
 	 */
 	private JsonArray buildSlotRawTitle(DateTime firstSlotOfADay, DateTime lastSlotOfADay) {
-		JsonArray slotRawTitle = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray slotRawTitle = new JsonArray();
 		for (int i = firstSlotOfADay.getHourOfDay(); i < lastSlotOfADay.getHourOfDay(); i++)
 			slotRawTitle.add(new JsonObject().put(VALUE, i + ":00 - " + (i + 1) + ":00"));
 		return slotRawTitle;
@@ -143,7 +143,7 @@ public class JsonWeekFormatter extends JsonFormatter {
 	 * @return The week day list in which the start date is contained in
 	 */
 	private JsonArray buildDayList(DateTime startDate) {
-		JsonArray dayList = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray dayList = new JsonArray();
 		DateTime firstDayOfWeek = startDate.withDayOfWeek(MONDAY);
 
 		for (int i = 0; i < 7; i++) {

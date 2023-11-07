@@ -43,7 +43,7 @@ public class SchoolService {
 		JsonObject action = new JsonObject()
 				.put("action", "list-structures");
 
-		eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(new Handler<Either<String, JsonArray>>() {
+		eb.request(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(new Handler<Either<String, JsonArray>>() {
 					@Override
 					public void handle(Either<String, JsonArray> event) {
 						if (event.isRight()) {
