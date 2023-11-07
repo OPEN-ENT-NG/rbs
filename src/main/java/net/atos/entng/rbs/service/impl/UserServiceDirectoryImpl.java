@@ -56,7 +56,7 @@ public class UserServiceDirectoryImpl implements UserService {
 				.put("userIds", userIds)
 				.put("groupIds", groupIds);
 
-		eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(handler)));
+		eb.request(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(validResultHandler(handler)));
 	}
     @Override
     public void getUserMails(final Set<String> userIds,
@@ -69,7 +69,7 @@ public class UserServiceDirectoryImpl implements UserService {
                     .put("action", "getUser")
                     .put("userId", userId);
 
-            eb.send(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+            eb.request(DIRECTORY_ADDRESS, action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
                 @Override
                 public void handle(Message<JsonObject> res) {
                     if ("ok".equals(res.body().getString("status"))) {

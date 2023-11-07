@@ -103,7 +103,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 				if (node == null) {
 					node = "";
 				}
-				vertx.eventBus().send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(reply -> {
+				vertx.eventBus().request(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(reply -> {
 					JsonObject pdfResponse = reply.body();
 					if (!"ok".equals(pdfResponse.getString("status"))) {
 						String pdfResponseString = pdfResponse.getString("message");

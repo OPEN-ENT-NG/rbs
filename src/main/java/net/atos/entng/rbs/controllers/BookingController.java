@@ -1110,7 +1110,7 @@ public class BookingController extends ControllerHelper {
 		final JsonObject dataToExport = exportResponse.toJson();
 		conversionRequest.put("data", dataToExport);
 
-		eb.send(IcalExportService.ICAL_HANDLER_ADDRESS, conversionRequest, (Handler<AsyncResult<Message<JsonObject>>>) event -> {
+		eb.request(IcalExportService.ICAL_HANDLER_ADDRESS, conversionRequest, (Handler<AsyncResult<Message<JsonObject>>>) event -> {
 			JsonObject body = event.result().body();
 			Integer status = body.getInteger("status");
 			if (status == 200) {
