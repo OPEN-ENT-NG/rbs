@@ -8,7 +8,7 @@ then
 fi
 
 case `uname -s` in
-  MINGW*)
+  MINGW* | Darwin*)
     USER_UID=1000
     GROUP_UID=1000
     ;;
@@ -20,14 +20,39 @@ case `uname -s` in
     fi
 esac
 
+# Options
+NO_DOCKER=""
+SPRINGBOARD="recette"
+for i in "$@"
+do
+case $i in
+  -s=*|--springboard=*)
+  SPRINGBOARD="${i#*=}"
+  shift
+  ;;
+  --no-docker*)
+  NO_DOCKER="true"
+  shift
+  ;;
+  *)
+  ;;
+esac
+done
+
 init() {
   me=`id -u`:`id -g`
   echo "DEFAULT_DOCKER_USER=$me" > .env
 }
 
 clean () {
-  docker compose run --rm maven mvn $MVN_OPTS clean
-}
+  if [ "$NO_DOCKER" = "true" ] ; then
+    rm -rf node_modules
+    rm -f yarn.lock
+    mvn clean
+  else
+    docker compose run --rm maven mvn $MVN_OPTS clean
+  fi
+ }
 
 install () {
    docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
@@ -54,31 +79,36 @@ buildNode () {
       echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
       case `uname -s` in
         MINGW*)
-          docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
+          if [ "$NO_DOCKER" = "true" ] ; then
+            yarn install --no-bin-links && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build
+          else
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links --legacy-peer-deps --force && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build"
+          fi
           ;;
         *)
-          docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build"
+          if [ "$NO_DOCKER" = "true" ] ; then
+            yarn install && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build
+          else
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --legacy-peer-deps --force && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build"
+          fi
       esac
   else
       echo "[buildNode] Use entcore tag $BRANCH_NAME"
-      entcore_tags=$(npm dist-tags ls entcore)
-      if [[ $entcore_tags == *"$BRANCH_NAME"* ]]; then
-        case `uname -s` in
-          MINGW*)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-                        ;;
-          *)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js build"
-        esac
-      else
-        case `uname -s` in
-           MINGW*)
-             docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build"
-                ;;
-           *)
-             docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js build"
-        esac
-      fi
+      case `uname -s` in
+        MINGW*)
+          if [ "$NO_DOCKER" = "true" ] ; then
+            yarn install && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build
+          else
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --no-bin-links --legacy-peer-deps --force && npm rm --no-save entcore && yarn install --no-save entcore@dev && node_modules/gulp/bin/gulp.js build"
+          fi
+          ;;
+        *)
+          if [ "$NO_DOCKER" = "true" ] ; then
+            yarn install --no-bin-links && yarn upgrade entcore && node_modules/gulp/bin/gulp.js build
+          else
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "yarn install --legacy-peer-deps --force && npm rm --no-save entcore && yarn install --no-save entcore@dev && node_modules/gulp/bin/gulp.js build"
+          fi
+      esac
   fi
 }
 
@@ -93,6 +123,7 @@ testNode () {
       docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js drop-cache && npm test"
   esac
 }
+
 
 publish() {
   version=`docker compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
@@ -129,6 +160,9 @@ do
       ;;
     install)
       buildNode && install
+      ;;
+    watch)
+      watch
       ;;
     publish)
       publish
