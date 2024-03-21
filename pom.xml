@@ -14,7 +14,7 @@
     <artifactId>rbs</artifactId>
     <version>2.0-b2school-SNAPSHOT</version>
 
-    <scm><!-- Adapter avec l'url du repertoire (github, gitlab...) -->
+    <scm>
         <connection>scm:git:https://github.com/OPEN-ENT-NG/rbs.git</connection>
         <developerConnection>scm:git:https://github.com/OPEN-ENT-NG/rbs.git</developerConnection>
         <url>https://github.com/OPEN-ENT-NG/rbs</url>
@@ -38,6 +38,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
