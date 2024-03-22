@@ -20,6 +20,7 @@
 package net.atos.entng.rbs;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
@@ -57,8 +58,8 @@ public class Rbs extends BaseServer {
 	public static String USERS_TABLE;
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		final EventBus eb = getEventBus(vertx);
 
 		// Set RepositoryEvents implementation used to process events published for transition
