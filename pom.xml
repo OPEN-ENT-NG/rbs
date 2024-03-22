@@ -30,11 +30,11 @@
 
     <properties>
         <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
+        <webUtilsVersion>3.0-b2school-SNAPSHOT</webUtilsVersion>
         <junitVersion>4.12</junitVersion>
         <mockitoVersion>4.11.0</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
         <ical4jVersion>2.0.2</ical4jVersion>
-        <gatlingHighchartsVersion>2.2.2</gatlingHighchartsVersion>
     </properties>
 
     <dependencies>
@@ -43,6 +43,12 @@
             <artifactId>vertx-core</artifactId>
             <version>${vertxVersion}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>web-utils</artifactId>
+            <version>${webUtilsVersion}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
@@ -90,6 +96,12 @@
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
             <version>${gatlingHighchartsVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.5.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
