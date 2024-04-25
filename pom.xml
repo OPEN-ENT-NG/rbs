@@ -54,6 +54,7 @@
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
             <version>${entCoreVersion}</version>
+            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <dependency>
