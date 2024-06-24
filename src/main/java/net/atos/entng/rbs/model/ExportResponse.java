@@ -72,7 +72,7 @@ public class ExportResponse {
 		response.put(ExportRequest.END_DATE, request.getEndDate());
 		response.put(ExportRequest.FORMAT, request.getFormat().name());
 		response.put(ExportRequest.VIEW, request.getView().name());
-		JsonArray jsonBookings = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray jsonBookings = new JsonArray();
 		for (ExportBooking booking : bookings) {
 			jsonBookings.add(booking.toJson());
 		}

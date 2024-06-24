@@ -60,7 +60,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 		}
 
 		if (groups.size() > 0){
-			final JsonArray groupsIds = new fr.wseduc.webutils.collections.JsonArray();
+			final JsonArray groupsIds = new JsonArray();
 			for (Object o : groups) {
 				if (!(o instanceof JsonObject)) continue;
 				final JsonObject j = (JsonObject) o;
@@ -104,7 +104,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 		}
 
 		if (users.size() > 0){
-			final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
+			final JsonArray userIds = new JsonArray();
 			for (Object o : users) {
 				if (!(o instanceof JsonObject)) continue;
 				final JsonObject j = (JsonObject) o;

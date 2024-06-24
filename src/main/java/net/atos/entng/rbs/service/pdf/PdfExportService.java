@@ -138,7 +138,7 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 		JsonFormatter formatter = JsonFormatter.buildFormater(jsonExportResponse, host, locale, userTimeZone);
 
 		JsonObject convertedJson = formatter.format();
-		JsonArray jsonFileArray = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray jsonFileArray = new JsonArray();
 		jsonFileArray.add(convertedJson);
 
 		return new JsonObject().put("export", jsonFileArray);

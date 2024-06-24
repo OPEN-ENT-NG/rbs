@@ -71,7 +71,7 @@ public class JsonListFormatter extends JsonFormatter {
 
         // Building resource list
         ArrayList<Long> performedResourceId = new ArrayList<Long>();
-        JsonArray resourceList = new fr.wseduc.webutils.collections.JsonArray();
+        JsonArray resourceList = new JsonArray();
 
         final String i18nTo = I18n.getInstance().translate(MAP_I18N.get(I18N_TO), this.host, this.locale);
 
@@ -103,7 +103,7 @@ public class JsonListFormatter extends JsonFormatter {
                 Collections.sort(bookingList, new BookingComparator());
 
                 int cpt = 0;
-                JsonArray jsonBookingList = new fr.wseduc.webutils.collections.JsonArray();
+                JsonArray jsonBookingList = new JsonArray();
                 for (Booking b: bookingList) {
                     JsonObject jsonBooking = new JsonObject();
 
@@ -123,7 +123,7 @@ public class JsonListFormatter extends JsonFormatter {
                                 jsonBookingList);
 
                         resourceList.add(resource);
-                        jsonBookingList = new fr.wseduc.webutils.collections.JsonArray();
+                        jsonBookingList = new JsonArray();
                     }
                 }
 

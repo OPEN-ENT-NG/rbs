@@ -91,7 +91,7 @@ public class Rbs extends BaseServer {
 		confType.setSchema(getSchema());
 		ResourceTypeController typeController = new ResourceTypeController(eb);
 		SqlCrudService typeSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TYPE_TABLE_NAME, RESOURCE_TYPE_SHARE_TABLE_NAME,
-				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
+				new JsonArray().add("*"), new JsonArray().add("*"), true);
 		typeController.setCrudService(typeSqlCrudService);
 		typeController.setShareService(new SqlShareService(getSchema(), RESOURCE_TYPE_SHARE_TABLE_NAME,
 				eb, securedActions, null));
@@ -103,7 +103,7 @@ public class Rbs extends BaseServer {
 		confResource.setSchema(getSchema());
 		ResourceController resourceController = new ResourceController();
 		SqlCrudService resourceSqlCrudService = new SqlCrudService(getSchema(), RESOURCE_TABLE_NAME, RESOURCE_SHARE_TABLE_NAME,
-				new fr.wseduc.webutils.collections.JsonArray().add("*"), new JsonArray().add("*"), true);
+				new JsonArray().add("*"), new JsonArray().add("*"), true);
 		resourceController.setCrudService(resourceSqlCrudService);
 		resourceController.setShareService(new SqlShareService(getSchema(), RESOURCE_SHARE_TABLE_NAME,
 				eb, securedActions, null));

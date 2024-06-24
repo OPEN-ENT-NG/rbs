@@ -70,7 +70,7 @@ public class ExportRequest {
         checkPeriodValid(startDate, endDate);
 
         try {
-            JsonArray userExportResourceArray = userExportRequest.getJsonArray(RESOURCE_IDS, new fr.wseduc.webutils.collections.JsonArray());
+            JsonArray userExportResourceArray = userExportRequest.getJsonArray(RESOURCE_IDS, new JsonArray());
             for (Object resourceId : userExportResourceArray) {
                 this.resourceIds.add(new Long((Integer) resourceId));
             }

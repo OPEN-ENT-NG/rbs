@@ -60,7 +60,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 							  final Handler<Either<String, JsonArray>> handler) {
 
 		StringBuilder query = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 
 		query.append("SELECT r.*,")
 				.append(" json_agg(row_to_json(row(rs.member_id,rs.action)::rbs.share_tuple)) as shared,")
@@ -106,7 +106,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			final Handler<Either<String, JsonObject>> handler) {
 
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		for (String attr : resource.fieldNames()) {
 			if ("was_available".equals(attr)) {
 				continue;
@@ -145,7 +145,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 				.append(" AND start_date >= now()")
 				.append(" AND is_periodic = false");
 
-			JsonArray bookingValues = new fr.wseduc.webutils.collections.JsonArray().add(parseId(resourceId));
+			JsonArray bookingValues = new JsonArray().add(parseId(resourceId));
 
 			statementsBuilder.prepared(bookingQuery.toString(), bookingValues);
 
@@ -172,7 +172,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" AND start_date >= now()")
 			.append(" AND is_periodic = false");
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(resourceId)
 			.add(REFUSED.status());
 
@@ -195,7 +195,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 			.append(" INNER JOIN rbs.resource_type AS t ON r.type_id = t.id")
 			.append(" WHERE r.id = ?");
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(resourceId);
+		JsonArray values = new JsonArray().add(resourceId);
 
 		Sql.getInstance().prepared(query.toString(), values, validUniqueResultHandler(handler));
 	}
@@ -204,7 +204,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	public void addNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder query = new StringBuilder("INSERT INTO rbs.notifications (resource_id, user_id)" +
 				" SELECT r.id, ? FROM rbs.resource AS r WHERE r.id = ? AND NOT EXISTS (SELECT resource_id, user_id FROM rbs.notifications WHERE user_id = ? AND resource_id = r.id)");
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		values.add(parseId(id));
 		values.add(user.getUserId());
@@ -214,7 +214,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	@Override
 	public void removeNotification(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder query = new StringBuilder("DELETE FROM rbs.notifications WHERE resource_id = CAST (? AS BIGINT) AND user_id = ?");
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(parseId(id));
 		values.add(user.getUserId());
 		Sql.getInstance().prepared(query.toString(), values, validRowsResultHandler(handler));
@@ -223,7 +223,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 	@Override
 	public void getNotifications(UserInfos user, final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder("SELECT resource_id FROM rbs.notifications WHERE user_id = ?");
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));
 	}
@@ -234,7 +234,7 @@ public class ResourceServiceSqlImpl extends SqlCrudService implements ResourceSe
 		query.append("SELECT user_id FROM rbs.notifications")
 				.append(" WHERE resource_id = ?")
 				.append(" AND user_id != ?");
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		values.add(resourceId);
 		values.add(user.getUserId());
 		Sql.getInstance().prepared(query.toString(), values, validResultHandler(handler));

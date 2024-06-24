@@ -221,8 +221,8 @@ public class ResourceTypeController extends ControllerHelper {
 						renderJson(request, event.right().getValue());
 					}
 					else {
-						JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
-						JsonArray groupIds = new fr.wseduc.webutils.collections.JsonArray();
+						JsonArray userIds = new JsonArray();
+						JsonArray groupIds = new JsonArray();
 
 						for (Object m : result) {
 							if(!(m instanceof JsonObject)) continue;

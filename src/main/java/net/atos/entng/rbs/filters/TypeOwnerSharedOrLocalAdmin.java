@@ -68,7 +68,7 @@ public class TypeOwnerSharedOrLocalAdmin implements ResourcesProvider {
 			}
 
 			StringBuilder query = new StringBuilder();
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray values = new JsonArray();
 
 			query.append("SELECT count(*)")
 				.append(" FROM rbs.resource_type AS t")
