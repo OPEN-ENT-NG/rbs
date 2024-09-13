@@ -86,8 +86,15 @@ export class BookingUtil {
     };
 
 
-    static isNotPast = (booking: Booking) : boolean => {
-        return(moment(booking.startMoment).isAfter(moment()));
+    static isNotPast = (booking: Booking): boolean => {
+        const start = moment([
+            booking.startMoment.year(),
+            booking.startMoment.month(),
+            booking.startMoment.date(),
+            booking.startMoment.hour(),
+            booking.startMoment.minute()
+        ])
+        return(moment(start).isAfter(moment()));
     };
 
     static getSiblings = (booking: Booking, resource: Resource) : Booking[] => {
