@@ -1,13 +1,13 @@
 {
   "name": "rbs",
-  "version": "1.9.0",
+  "version": "1.14.9",
   "description": "resource booking system tool for ENT Core.",
   "main": "gulpfile.js",
   "dependencies": {
     "@types/core-js": "0.9.42",
     "axios": "0.16.2",
     "core-js": "2.4.1",
-    "entcore": "~4.8.10-develop-b2school",
+    "entcore": "4.8.10",
     "entcore-toolkit": "1.2.0",
     "gulp": "3.9.1",
     "gulp-clean": "^0.3.2",
