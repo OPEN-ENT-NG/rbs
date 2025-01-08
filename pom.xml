@@ -12,7 +12,7 @@
 
     <groupId>net.atos</groupId>
     <artifactId>rbs</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0-develop-pedago-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/OPEN-ENT-NG/rbs.git</connection>
