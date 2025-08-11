@@ -1,7 +1,7 @@
 # À propos de l'application Rbs
 
 * Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt) - Copyright Région Hauts-de-France (ex Picardie), Département Essonne, Région Nouvelle Aquitaine (ex Poitou-Charente)
-* Développeur(s) : ATOS, CGI, Open Digital Education
+* Développeur(s) : ATOS, CGI, Edifice
 * Financeur(s) : Région Hauts-de-France (ex Picardie), Département Essonne, Région Nouvelle Aquitaine (ex Poitou-Charente)
 * Description : Application de réservation de ressources : salles et matériels.(Remote Booking System)
 
