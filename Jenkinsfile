@@ -17,6 +17,11 @@ pipeline {
           sh './build.sh init clean install publish'
         }
       }
+      stage('Build image') {
+        steps {
+          sh 'edifice image --archs=linux/amd64 --force'
+        }
+      }
     }
   post {
     cleanup {

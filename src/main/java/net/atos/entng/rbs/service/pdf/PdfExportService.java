@@ -23,6 +23,9 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static net.atos.entng.rbs.model.ExportResponse.getView;
 
 public class PdfExportService extends AbstractVerticle implements Handler<Message<JsonObject>> {
+	private final JsonObject skinsConfig;
+	private final String nodeConfig;
+
 	private static final Logger LOG = LoggerFactory.getLogger(PdfExportService.class);
 
 	public static final String PDF_HANDLER_ADDRESS = "rbs.pdf.handler";
@@ -36,6 +39,10 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 	private static final String DAY_HTML_TEMPLATE = "./pdftemplate/booking_day.pdf.xhtml";
 	private static final String LIST_HTML_TEMPLATE = "./pdftemplate/booking_list.pdf.xhtml";
 
+	public PdfExportService(JsonObject skinsConfig, String nodeConfig) {
+		this.skinsConfig = skinsConfig;
+		this.nodeConfig = nodeConfig;
+	}
 
 	@Override
 	public void start() throws Exception {
@@ -93,13 +100,12 @@ public class PdfExportService extends AbstractVerticle implements Handler<Messag
 				JsonObject preparedData = prepareData(exportResponse, host, locale, userTimeZone);
 
 				String filledTemplate = fillTemplate(result.result().toString("UTF-8"), preparedData);
-				LocalMap<Object, Object> skins = vertx.sharedData().getLocalMap("skins");
-				final String baseUrl = scheme + "://" + host + "/assets/themes/" + skins.get(host) + "/img/";
+				final String baseUrl = scheme + "://" + host + "/assets/themes/" + skinsConfig.getString(host) + "/img/";
 				JsonObject actionObject = new JsonObject();
 				actionObject
 						.put("content", filledTemplate.getBytes())
 						.put("baseUrl", baseUrl);
-				String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+				String node = nodeConfig;
 				if (node == null) {
 					node = "";
 				}
