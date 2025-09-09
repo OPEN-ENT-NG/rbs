@@ -19,8 +19,11 @@
 
 package net.atos.entng.rbs;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import net.atos.entng.rbs.controllers.*;
 import net.atos.entng.rbs.events.RbsRepositoryEvents;
 import net.atos.entng.rbs.events.RbsSearchingEvents;
@@ -59,7 +62,16 @@ public class Rbs extends BaseServer {
 
 	@Override
 	public void start(Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().getMulti("server", "skins", "node"))
+				.compose(this::initRbs)
+				.onComplete(startPromise);
+	}
+
+	public Future<Void> initRbs(final java.util.Map<String, Object> configMap) {
+
 		final EventBus eb = getEventBus(vertx);
 
 		// Set RepositoryEvents implementation used to process events published for transition
@@ -111,7 +123,7 @@ public class Rbs extends BaseServer {
 
 
 		DeploymentOptions options = new DeploymentOptions().setWorker(true);
-		vertx.deployVerticle(new PdfExportService(), options);
+		vertx.deployVerticle(new PdfExportService((JsonObject) configMap.get("skins"), (String) configMap.get("node")), options);
 		vertx.deployVerticle(new IcalExportService(), options);
 
 		addController(new BookingController(eb));
@@ -119,6 +131,7 @@ public class Rbs extends BaseServer {
 		addController(new EventBusController(new BookingServiceSqlImpl()));
 
 		setDefaultResourceFilter(new TypeOwnerSharedOrLocalAdmin());
+		return Future.succeededFuture();
 	}
 
 }
