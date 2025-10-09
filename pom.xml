@@ -29,8 +29,8 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.8-SNAPSHOT</entCoreVersion>
-        <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
+        <entCoreVersion>6.9-SNAPSHOT</entCoreVersion>
+        <webUtilsVersion>3.2-SNAPSHOT</webUtilsVersion>
         <junitVersion>4.12</junitVersion>
         <mockitoVersion>4.11.0</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
