@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.9-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.10-SNAPSHOT</entCoreVersion>
         <webUtilsVersion>3.2-SNAPSHOT</webUtilsVersion>
         <junitVersion>4.12</junitVersion>
         <mockitoVersion>4.11.0</mockitoVersion>
