@@ -249,27 +249,27 @@
                             </label>
                             <div class="twelve cell" ng-if="vm.editedBooking.id === undefined">
                                 <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
-                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-options="slot.name + ' - De ' + slot.startHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
                                         ng-change="vm.switchSlotStart(vm.selectedSlotStart); vm.updateEditedBookingMoments()">
                                 </select>
                                 <div class="one cell centered-text">
                                     <i18n>rbs.booking.details.header.at</i18n>
                                 </div>
                                 <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotEnd"
-                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-options="slot.name + ' - À ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
                                         ng-change="vm.switchSlotEnd(vm.selectedSlotEnd); vm.updateEditedBookingMoments()">
                                 </select>
                             </div>
                             <div class="twelve cell" ng-if="vm.editedBooking.id !== undefined">
                                 <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
-                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-options="slot.name + ' - De ' + slot.startHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
                                         ng-change="vm.switchSlotStart(vm.selectedSlotStart); vm.switchSlotEnd(vm.selectedSlotStart); vm.updateEditedBookingMoments()">
                                 </select>
                                 <div class="one cell centered-text">
                                     <i18n>rbs.booking.details.header.at</i18n>
                                 </div>
                                 <select style="border: 1px groove" class="four cell" ng-model="vm.selectedSlotStart"
-                                        ng-options="slot.name + ' de ' + slot.startHour + ' à ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
+                                        ng-options="slot.name + ' - À ' + slot.endHour for slot in vm.editedBooking.slotsLit.slots | orderBy: 'startHour'"
                                         ng-change="vm.switchSlotStart(vm.selectedSlotStart); vm.switchSlotEnd(vm.selectedSlotStart); vm.updateEditedBookingMoments()">
                                 </select>
                             </div>
