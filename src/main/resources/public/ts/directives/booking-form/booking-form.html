@@ -159,7 +159,7 @@
                                          past="true" exp="true" exp-object="booking.endDate"
                                          required></date-picker>
                             <date-picker
-                                    ng-if="editedBooking.id !== undefined && editedBooking.type.slotprofile === undefined"
+                                    ng-if="vm.editedBooking.id !== undefined && vm.editedBooking.type.slotprofile === undefined"
                                     class="two cell horizontal-spacing" ng-model="vm.booking.startDate"
                                     ng-change="vm.booking.endDate = vm.booking.startDate; showDate = true; vm.updateEditedBookingMoments()"
                                     past="true" exp="true" exp-object="vm.booking.endDate"
