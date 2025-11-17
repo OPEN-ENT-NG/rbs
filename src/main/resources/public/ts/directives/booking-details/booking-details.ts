@@ -56,7 +56,7 @@ export const bookingDetails = ng.directive('bookingDetails', function () {
             const vm: IViewModel = <IViewModel>this;
 
             vm.$onInit = async () => {
-
+                vm.selectedBooking.type = vm.selectedBooking.resource.type;
             }
 
         },
