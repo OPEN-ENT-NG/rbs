@@ -22,6 +22,7 @@ package net.atos.entng.rbs.events;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.user.RepositoryEvents;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -41,7 +42,7 @@ public class RbsRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray groups, String exportPath, String locale, String host, final Handler<Boolean> handler) {
+								JsonArray groups, String exportPath, String locale, String host, final Handler<ExportResourceResult> handler) {
 		// TODO Implement export
 		log.error("Event [exportResources] is not implemented");
 	}
