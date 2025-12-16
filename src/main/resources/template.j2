@@ -1,0 +1,21 @@
+{
+  "name": "net.atos~rbs",
+  "config": {
+    "main": "net.atos.entng.rbs.Rbs",
+    "port": 8026,
+    "csrf-token": {{ csrfToken | default('true') }},
+    "sql": true,
+    "mongodb": true,
+    "app-name": "Réservation de ressources",
+    "app-address": "/rbs",
+    "app-icon": "rbs-large",
+    "app-type" : "END_USER",
+    "host": "https://{{ host }}",
+    "ssl": true,
+    {% if overrideTheme %} "override-theme": {{ override2d }}, {% endif %}
+    "auto-redeploy": false,
+    "userbook-host": "https://{{ host }}",
+    "integration-mode": "{{ integration_mode|default('HTTP') }}",
+    "mode": "prod"
+  }
+}
