@@ -29,8 +29,8 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.11-SNAPSHOT</entCoreVersion>
-        <webUtilsVersion>3.2-SNAPSHOT</webUtilsVersion>
+        <entCoreVersion>6.12-develop-b2school-SNAPSHOT</entCoreVersion>
+        <webUtilsVersion>3.2-develop-b2school-SNAPSHOT</webUtilsVersion>
         <junitVersion>4.12</junitVersion>
         <mockitoVersion>4.11.0</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
