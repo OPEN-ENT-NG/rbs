@@ -29,7 +29,7 @@
     </repositories>
 
     <properties>
-        <entCoreVersion>6.13-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.14-develop-b2school-SNAPSHOT</entCoreVersion>
         <junitVersion>4.12</junitVersion>
         <mockitoVersion>4.11.0</mockitoVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
