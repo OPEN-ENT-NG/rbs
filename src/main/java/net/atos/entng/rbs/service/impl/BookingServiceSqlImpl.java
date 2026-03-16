@@ -193,6 +193,26 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		values.add(toSQLTimestamp(slot.getStartUTC()))
 				.add(toSQLTimestamp(slot.getEndUTC()));
 
+		// Capacity check: insert only if resource has room
+		query.append(" WHERE (")
+				.append("  (SELECT COALESCE(r.quantity, 0) FROM rbs.resource r WHERE r.id = ?) -")
+				.append("  COALESCE((")
+				.append("   SELECT SUM(CASE WHEN (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("   THEN COALESCE(b.quantity, 0) ELSE 0 END)")
+				.append("   FROM rbs.booking b")
+				.append("   WHERE b.resource_id = ?")
+				.append("     AND b.status IN (1, 2)")
+				.append("     AND b.start_date < ?")
+				.append("     AND b.end_date > ?")
+				.append("     AND (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("  ), 0)")
+				.append(") >= ?");
+		values.add(rId)
+				.add(rId)
+				.add(toSQLTimestamp(slot.getEndUTC()))
+				.add(toSQLTimestamp(slot.getStartUTC()))
+				.add(booking.getBookingQuantity());
+
 		// Returning result
 		query.append(" RETURNING id, quantity, status, to_char(start_date, '").append(DATE_FORMAT)
 				.append("') AS start_date, to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
@@ -211,147 +231,104 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		statementsBuilder.prepared(UPSERT_USER_QUERY,
 				new JsonArray().add(user.getUserId()).add(user.getUsername()));
 
+		// Acquire lock to prevent race conditions
+		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
-		Slots slots = booking.getSlots() ;
-		// create a periodic reservation dedicated to each slot
-		for (Slot slot: slots) {
-            StringBuilder query = new StringBuilder();
-            JsonArray values = new JsonArray();
+		Slots slots = booking.getSlots();
+		for (Slot slot : slots) {
+			StringBuilder query = new StringBuilder();
+			JsonArray values = new JsonArray();
 
-            Object rId = parseId(resourceId);
-            final long endDate = booking.getPeriodicEndDateAsUTCSeconds();
-            final int occurrences = booking.getOccurrences(0);
+			Object rId = parseId(resourceId);
+			final long endDate = booking.getPeriodicEndDateAsUTCSeconds();
+			final int occurrences = booking.getOccurrences(0);
 
-            // 1. WITH clause to insert the "parent" booking (i.e. the periodic booking)
-            query.append("WITH parent_booking AS (")
-                    .append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, quantity, start_date, end_date,")
-                    .append(" is_periodic, periodicity, occurrences, days)")
-                    .append(" VALUES (?, ?, ?, ?, ?,");
-            values.add(rId)
-                    .add(user.getUserId())
-                    .add(booking.getBookingReason())
+			// Compute all occurrences (first slot + subsequent)
+			List<Slot> allChildSlots = new ArrayList<>();
+			allChildSlots.add(slot);
+			for (Slot childSlot : new SlotIterable(booking, slot)) {
+				allChildSlots.add(childSlot);
+			}
+			final long lastSlotEndDate = allChildSlots.stream()
+					.mapToLong(Slot::getEndUTC)
+					.max()
+					.orElse(slot.getEndUTC());
+
+			// slot_conflicts: capacity check across all occurrences
+			query.append("WITH slot_conflicts AS (")
+					.append(" SELECT 1 FROM (VALUES ");
+			boolean firstItem = true;
+			for (Slot childSlot : allChildSlots) {
+				if (!firstItem) query.append(", ");
+				query.append("(?::timestamp, ?::timestamp)");
+				values.add(toSQLTimestamp(childSlot.getStartUTC()))
+						.add(toSQLTimestamp(childSlot.getEndUTC()));
+				firstItem = false;
+			}
+			query.append(") AS s(rstart, rend)")
+					.append(" WHERE (")
+					.append("  SELECT COALESCE(SUM(")
+					.append("   CASE WHEN (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+					.append("   THEN COALESCE(b.quantity, 0) ELSE 0 END), 0)")
+					.append("  FROM rbs.booking b")
+					.append("  WHERE b.resource_id = ?")
+					.append("    AND b.status IN (1, 2)")
+					.append("    AND b.start_date < s.rend")
+					.append("    AND b.end_date > s.rstart")
+					.append("    AND (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+					.append(" ) + ? > (SELECT r.quantity FROM rbs.resource r WHERE r.id = ?)")
+					.append(" LIMIT 1),");
+			values.add(rId)
 					.add(booking.getBookingQuantity())
-                    .add(toSQLTimestamp(slot.getStartUTC()));
+					.add(rId);
 
-            query.append(" ?,");
-            values.add(endDate > 0L ? toSQLTimestamp(endDate) : null); // the null value will be replaced by the last slot's
-            // end date, which
-            // will be computed
-            final int endDateIndex = values.size() - 1;
+			// parent_booking: insert parent if no conflict
+			query.append(" parent_booking AS (")
+					.append(" INSERT INTO rbs.booking (resource_id, owner, booking_reason, quantity, start_date, end_date,")
+					.append(" is_periodic, periodicity, occurrences, days)")
+					.append(" SELECT ?, ?, ?, ?, ?, ?, true, ?, ?,")
+					.append(" B'").append(booking.getSelectedDaysBitString()).append("'")
+					.append(" WHERE NOT EXISTS (SELECT 1 FROM slot_conflicts)")
+					.append(" RETURNING id)");
+			values.add(rId)
+					.add(user.getUserId())
+					.add(booking.getBookingReason())
+					.add(booking.getBookingQuantity())
+					.add(toSQLTimestamp(slot.getStartUTC()))
+					.add(endDate > 0L ? toSQLTimestamp(endDate) : toSQLTimestamp(lastSlotEndDate))
+					.add(booking.getPeriodicity())
+					.add(occurrences != 0 ? occurrences : null);
 
-            query.append(" ?, ?, ?,");
-            values.add(true).add(booking.getPeriodicity())
-                    .add(occurrences != 0 ? occurrences : null);
+			// Insert children (0 rows if conflict)
+			query.append(" INSERT INTO rbs.booking")
+					.append(" (resource_id, owner, booking_reason, quantity, start_date, end_date,")
+					.append(" parent_booking_id, status, refusal_reason)")
+					.append(" SELECT ?, ?, ?, ?, s.rstart, s.rend, pb.id,")
+					.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
+					.append("  FROM rbs.resource AS r WHERE r.id = ?), NULL")
+					.append(" FROM (VALUES ");
+			values.add(rId)
+					.add(user.getUserId())
+					.add(booking.getBookingReason())
+					.add(booking.getBookingQuantity())
+					.add(CREATED.status()).add(VALIDATED.status()).add(rId);
 
-            // NB : Bit string type cannot be used in a preparedStatement
-            query.append(" B'").append(booking.getSelectedDaysBitString()).append("') RETURNING id) ");
-
-            // 2. Insert clause for the child bookings
-            final long lastSlotEndDate = appendInsertChildBookingsQuery(query, values, rId, booking,slot, user, null);
-
-            // Update end_date value in JsonArray values
-            if (endDate <= 0L) {
-                values = getValuesWithProperEndDate(values, toSQLTimestamp(lastSlotEndDate), endDateIndex);
-            }
-
-            statementsBuilder.prepared(query.toString(), values);
-        }
-		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(1, handler));
-
-	}
-
-	/**
-	 * Appends the insert child bookings query to parameter query, and the
-	 * associated values to parameter values
-	 *
-	 * @param bookingId : used when updating a periodic booking
-	 * @return Unix timestamp of the last child booking's end date
-	 */
-	private long appendInsertChildBookingsQuery(StringBuilder query, JsonArray values, final Object resourceId,final Booking booking,
-			final Slot slot, final UserInfos user, final Object bookingId) {
-
-		final boolean isUpdate = (bookingId != null);
-		final long firstSlotStartDate = slot.getStartUTC();
-		final long firstSlotEndDate = slot.getEndUTC();
-		final String bookingReason = booking.getBookingReason();
-		long lastSlotEndDateUTC = firstSlotEndDate;
-
-		// 1. INSERT clause for the first child booking
-		query.append(
-				" INSERT INTO rbs.booking (resource_id, owner, booking_reason, quantity, start_date, end_date, parent_booking_id, status, refusal_reason)")
-				.append(" VALUES(?, ?, ?, ?, ?, ?,");
-		values.add(resourceId)
-				.add(user.getUserId())
-				.add(bookingReason)
-				.add(booking.getBookingQuantity())
-				.add(toSQLTimestamp(firstSlotStartDate))
-				.add(toSQLTimestamp(firstSlotEndDate));
-
-		if (isUpdate) { // Update of a periodic booking
-			query.append(" ?,");
-			values.add(bookingId);
-		} else { // Creation of a periodic booking
-			query.append("(select id from parent_booking),");
-		}
-
-		// Subquery to insert proper status : created if validation is activated. Validated otherwise
-
-		query.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
-				.append(" FROM rbs.resource AS r")
-				.append(" WHERE r.id = ?), ?)");
-		values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
-
-		// 2. Additional VALUES to insert the other child bookings
-		int nbOccurences = booking.getOccurrences(-1);
-
-		if (nbOccurences == -1) {
-			nbOccurences = booking.countOccurrences(slot);
-		}
-
-		SlotIterable it = new SlotIterable(booking,slot);
-		for (Slot slotIt : it) {
-			query.append(", (?, ?, ?, ?, ?, ?,");
-			values.add(resourceId).add(user.getUserId()).add(bookingReason).add(booking.getBookingQuantity())
-					.add(toSQLTimestamp(slotIt.getStartUTC())).add(toSQLTimestamp(slotIt.getEndUTC()));
-
-			if (isUpdate) { // Update of a periodic booking
-				query.append(" ?,");
-				values.add(bookingId);
-			} else { // Creation of a periodic booking
-				query.append("(select id from parent_booking),");
+			firstItem = true;
+			for (Slot childSlot : allChildSlots) {
+				if (!firstItem) query.append(", ");
+				query.append("(?::timestamp, ?::timestamp)");
+				values.add(toSQLTimestamp(childSlot.getStartUTC()))
+						.add(toSQLTimestamp(childSlot.getEndUTC()));
+				firstItem = false;
 			}
+			query.append(") AS s(rstart, rend)")
+					.append(" CROSS JOIN parent_booking pb")
+					.append(" RETURNING id, status, parent_booking_id");
 
-			query.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
-					.append(" FROM rbs.resource AS r")
-					.append(" WHERE r.id = ?), ?)");
-			values.add(CREATED.status()).add(VALIDATED.status()).add(resourceId).addNull();
-			//
-			lastSlotEndDateUTC = lastSlotEndDateUTC < slotIt.getEndUTC() ? slotIt.getEndUTC() : lastSlotEndDateUTC;
+			statementsBuilder.prepared(query.toString(), values);
 		}
-		query.append(" RETURNING id, status");
-
-		return lastSlotEndDateUTC;
-	}
-
-	/**
-	 * @param values
-	 * @param lastSlotEndDate
-	 * @param endDateIndex
-	 * @return new JsonArray, with proper end date
-	 */
-	private JsonArray getValuesWithProperEndDate(JsonArray values, String lastSlotEndDate, int endDateIndex) {
-		JsonArray newValues = new JsonArray();
-		int i = 0;
-		for (Object object : values) {
-			if (i == endDateIndex) {
-				newValues.add(lastSlotEndDate);
-			} else {
-				newValues.add(object);
-			}
-			i++;
-		}
-
-		return newValues;
+		// validResultHandler(2): skip UPSERT(0) and LOCK(1), return CTE result(2)
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(2, handler));
 	}
 
 	@Override
@@ -365,13 +342,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
-		// Update query
 		JsonArray values = new JsonArray();
-		StringBuilder sb = new StringBuilder();
-
-
 		StringBuilder query = new StringBuilder();
-		query.append("UPDATE rbs.booking").append(" SET ").append(sb).append("modified = NOW()")
+		query.append("UPDATE rbs.booking").append(" SET modified = NOW()")
 				.append(", booking_reason = ?")
 				.append(", quantity = ?")
 				.append(", start_date = ?")
@@ -390,8 +363,31 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 				.append(" INNER JOIN rbs.booking AS b on b.resource_id = r.id").append(" WHERE b.id = ?)");
 		values.add(CREATED.status()).add(VALIDATED.status()).add(bId);
 
-		query.append(" WHERE id = ?").append(" AND resource_id = ? RETURNING *");
+		query.append(" WHERE id = ?").append(" AND resource_id = ?");
 		values.add(bId).add(rId);
+
+		// Capacity check: update only if resource has room (excluding self)
+		query.append(" AND (")
+				.append("  (SELECT COALESCE(r.quantity, 0) FROM rbs.resource r WHERE r.id = ?) -")
+				.append("  COALESCE((")
+				.append("   SELECT SUM(CASE WHEN (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("   THEN COALESCE(b.quantity, 0) ELSE 0 END)")
+				.append("   FROM rbs.booking b")
+				.append("   WHERE b.resource_id = ?")
+				.append("     AND b.status IN (1, 2)")
+				.append("     AND b.start_date < ?")
+				.append("     AND b.end_date > ?")
+				.append("     AND (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("     AND b.id != ?")
+				.append("  ), 0)")
+				.append(") >= ?")
+				.append(" RETURNING *");
+		values.add(rId)
+				.add(rId)
+				.add(toSQLTimestamp(slot.getEndUTC()))
+				.add(toSQLTimestamp(slot.getStartUTC()))
+				.add(bId)
+				.add(booking.getBookingQuantity());
 
 		statementsBuilder.prepared(query.toString(), values);
 
@@ -413,41 +409,105 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		// 1. Lock query to avoid race condition
 		statementsBuilder.raw(LOCK_BOOKING_QUERY);
 
-		// 2. Update parent booking
-		StringBuilder parentQuery = new StringBuilder();
-		JsonArray parentValues = new JsonArray();
-		parentQuery.append("UPDATE rbs.booking").append(" SET booking_reason = ?, quantity = ?, start_date = ?, end_date = ?,");
-		parentValues.add(booking.getBookingReason()).add(booking.getBookingQuantity()).add(toSQLTimestamp(slot.getStartUTC()))
-				.add(endDate > 0L ? toSQLTimestamp(endDate) : null); // the null value will be replaced by the last slot's end date
-		final int endDateIndex = parentValues.size() - 1;
-
-		parentQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");
-		parentValues.add(booking.getPeriodicity()).add(occurrences != 0 ? occurrences : null);
-
-		parentQuery.append(" days = B'").append(booking.getSelectedDaysBitString()).append("' WHERE resource_id = ?")
-				.append(" AND id = ?").append(" AND is_periodic = ?");
-		parentValues.add(rId).add(bId).add(true);
-
-		// 3. Delete child bookings
-		String deleteQuery = "DELETE FROM rbs.booking WHERE parent_booking_id = ?";
-
-		// 4. Create new child bookings
-		StringBuilder insertQuery = new StringBuilder();
-		JsonArray insertValues = new JsonArray();
-		final long lastSlotEndDate = appendInsertChildBookingsQuery(insertQuery, insertValues, rId, booking,booking.getSlots().get(0), user, bId);
-
-		// Update end_date value in JsonArray parentValues
-		if (endDate <= 0L) {
-			parentValues = getValuesWithProperEndDate(parentValues, toSQLTimestamp(lastSlotEndDate), endDateIndex);
+		// Compute all occurrences (first slot + subsequent)
+		List<Slot> allChildSlots = new ArrayList<>();
+		allChildSlots.add(slot);
+		for (Slot childSlot : new SlotIterable(booking, slot)) {
+			allChildSlots.add(childSlot);
 		}
+		final long lastSlotEndDate = allChildSlots.stream()
+				.mapToLong(Slot::getEndUTC)
+				.max()
+				.orElse(slot.getEndUTC());
 
-		// Add queries to SqlStatementsBuilder
-		statementsBuilder.prepared(parentQuery.toString(), parentValues);
-		statementsBuilder.prepared(deleteQuery, new JsonArray().add(bId));
-		statementsBuilder.prepared(insertQuery.toString(), insertValues);
+		// Atomic CTE: conflict check → parent update → delete old children → insert new children
+		StringBuilder cteQuery = new StringBuilder();
+		JsonArray cteValues = new JsonArray();
+
+		// slot_conflicts: capacity check (excludes own children being replaced)
+		cteQuery.append("WITH slot_conflicts AS (")
+				.append(" SELECT 1 FROM (VALUES ");
+		boolean firstItem = true;
+		for (Slot childSlot : allChildSlots) {
+			if (!firstItem) cteQuery.append(", ");
+			cteQuery.append("(?::timestamp, ?::timestamp)");
+			cteValues.add(toSQLTimestamp(childSlot.getStartUTC()))
+					.add(toSQLTimestamp(childSlot.getEndUTC()));
+			firstItem = false;
+		}
+		cteQuery.append(") AS s(rstart, rend)")
+				.append(" WHERE (")
+				.append("  SELECT COALESCE(SUM(")
+				.append("   CASE WHEN (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("   THEN COALESCE(b.quantity, 0) ELSE 0 END), 0)")
+				.append("  FROM rbs.booking b")
+				.append("  WHERE b.resource_id = ?")
+				.append("    AND b.status IN (1, 2)")
+				.append("    AND b.start_date < s.rend")
+				.append("    AND b.end_date > s.rstart")
+				.append("    AND (b.is_periodic IS NOT TRUE OR b.parent_booking_id IS NOT NULL)")
+				.append("    AND (b.parent_booking_id IS NULL OR b.parent_booking_id != ?)")
+				.append(" ) + ? > (SELECT r.quantity FROM rbs.resource r WHERE r.id = ?)")
+				.append(" LIMIT 1),");
+		cteValues.add(rId)
+				.add(bId)
+				.add(booking.getBookingQuantity())
+				.add(rId);
+
+		// parent_update: update parent if no conflict
+		cteQuery.append(" parent_update AS (")
+				.append(" UPDATE rbs.booking")
+				.append(" SET booking_reason = ?, quantity = ?, start_date = ?, end_date = ?,");
+		cteValues.add(booking.getBookingReason())
+				.add(booking.getBookingQuantity())
+				.add(toSQLTimestamp(slot.getStartUTC()))
+				.add(endDate > 0L ? toSQLTimestamp(endDate) : toSQLTimestamp(lastSlotEndDate));
+
+		cteQuery.append(" periodicity = ?, occurrences = ?, modified = NOW(),");
+		cteValues.add(booking.getPeriodicity()).add(occurrences != 0 ? occurrences : null);
+
+		// NB: bit string type cannot be used in a prepared statement
+		cteQuery.append(" days = B'").append(booking.getSelectedDaysBitString()).append("'")
+				.append(" WHERE resource_id = ? AND id = ? AND is_periodic = true")
+				.append(" AND NOT EXISTS (SELECT 1 FROM slot_conflicts)")
+				.append(" RETURNING id),");
+		cteValues.add(rId).add(bId);
+
+		// child_delete: remove old children if parent was updated
+		cteQuery.append(" child_delete AS (")
+				.append(" DELETE FROM rbs.booking")
+				.append(" WHERE parent_booking_id IN (SELECT id FROM parent_update))");
+
+		// Insert new children
+		cteQuery.append(" INSERT INTO rbs.booking")
+				.append(" (resource_id, owner, booking_reason, quantity, start_date, end_date,")
+				.append(" parent_booking_id, status, refusal_reason)")
+				.append(" SELECT ?, ?, ?, ?, s.rstart, s.rend, pu.id,")
+				.append(" (SELECT CASE WHEN (r.validation IS true) THEN ? ELSE ? END")
+				.append("  FROM rbs.resource AS r WHERE r.id = ?), NULL")
+				.append(" FROM (VALUES ");
+		cteValues.add(rId)
+				.add(user.getUserId())
+				.add(booking.getBookingReason())
+				.add(booking.getBookingQuantity())
+				.add(CREATED.status()).add(VALIDATED.status()).add(rId);
+
+		firstItem = true;
+		for (Slot childSlot : allChildSlots) {
+			if (!firstItem) cteQuery.append(", ");
+			cteQuery.append("(?::timestamp, ?::timestamp)");
+			cteValues.add(toSQLTimestamp(childSlot.getStartUTC()))
+					.add(toSQLTimestamp(childSlot.getEndUTC()));
+			firstItem = false;
+		}
+		cteQuery.append(") AS s(rstart, rend)")
+				.append(" CROSS JOIN parent_update pu")
+				.append(" RETURNING id, status");
+
+		statementsBuilder.prepared(cteQuery.toString(), cteValues);
 
 		// Send queries to event bus
-		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(3, handler));
+		Sql.getInstance().transaction(statementsBuilder.build(), validResultHandler(1, handler));
 	}
 
 	@Override
@@ -638,6 +698,24 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		processQuery.append("UPDATE rbs.booking").append(" SET ").append(sb).append("modified = NOW() ")
 				.append("WHERE id = ?").append(" AND resource_id = ? ");
 		processValues.add(bId).add(rId);
+
+		// Availability check: only when validating — prevent approving a conflicting booking
+		if (newStatus == VALIDATED.status()) {
+			processQuery.append(" AND (")
+					.append("  SELECT COALESCE(r.quantity, 0) - COALESCE(SUM(")
+					.append("   CASE WHEN (b2.is_periodic IS NOT TRUE OR b2.parent_booking_id IS NOT NULL)")
+					.append("   THEN COALESCE(b2.quantity, 0) ELSE 0 END), 0)")
+					.append("  FROM rbs.resource r")
+					.append("  LEFT JOIN rbs.booking b2 ON b2.resource_id = r.id")
+					.append("    AND b2.id != ?")
+					.append("    AND b2.status = 2")
+					.append("    AND b2.start_date < (SELECT b3.end_date FROM rbs.booking b3 WHERE b3.id = ?)")
+					.append("    AND b2.end_date > (SELECT b3.start_date FROM rbs.booking b3 WHERE b3.id = ?)")
+					.append("    AND (b2.is_periodic IS NOT TRUE OR b2.parent_booking_id IS NOT NULL)")
+					.append("  WHERE r.id = ?")
+					.append(") >= (SELECT b4.quantity FROM rbs.booking b4 WHERE b4.id = ?)");
+			processValues.add(bId).add(bId).add(bId).add(rId).add(bId);
+		}
 
 		StringBuilder returningClause = new StringBuilder(" RETURNING id, status, owner, ")
 				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
