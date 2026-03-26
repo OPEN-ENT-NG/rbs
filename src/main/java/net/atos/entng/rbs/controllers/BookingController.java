@@ -198,7 +198,7 @@ public class BookingController extends ControllerHelper {
 					renderJson(request, event.right().getValue().getJsonObject(0), 200);
 					eventHelper.onCreateResource(request, RESOURCE_NAME);
 				} else {
-					JsonObject error = new JsonObject().put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", "rbs.booking.create.conflict");
 					renderJson(request, error, 409);
 				}
 			} else {
@@ -215,7 +215,7 @@ public class BookingController extends ControllerHelper {
 					renderJson(request, event.right().getValue(), 200);
 					eventHelper.onCreateResource(request, RESOURCE_NAME);
 				} else {
-					JsonObject error = new JsonObject().put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", "rbs.booking.update.conflict");
 					renderJson(request, error, 409);
 				}
 			} else {
@@ -419,9 +419,17 @@ public class BookingController extends ControllerHelper {
 			final HttpServerRequest request, final boolean isCreation) {
 		return event -> {
 			if (event.isRight()) {
-				notifyPeriodicBookingCreatedOrUpdated(request, user, event.right().getValue(), isCreation);
-				Renders.renderJson(request, event.right().getValue());
-				eventHelper.onCreateResource(request, RESOURCE_NAME);
+				JsonArray result = event.right().getValue();
+				if (result != null && result.size() > 0) {
+					notifyPeriodicBookingCreatedOrUpdated(request, user, result, isCreation);
+					Renders.renderJson(request, result);
+					eventHelper.onCreateResource(request, RESOURCE_NAME);
+				} else {
+					JsonObject error = new JsonObject().put("error", isCreation
+							? "rbs.booking.create.conflict"
+							: "rbs.booking.update.conflict");
+					Renders.renderJson(request, error, 409);
+				}
 			} else {
 				badRequest(request, event.left().getValue());
 			}
@@ -642,8 +650,13 @@ public class BookingController extends ControllerHelper {
 							if (processEvent.right().getValue() != null && processEvent.right().getValue().size() >= 3) {
 								final JsonArray results = processEvent.right().getValue();
 
-								try {
-									final JsonObject processedBooking = results.getJsonArray(2).getJsonObject(0);
+							try {
+								final JsonArray updateResult = results.getJsonArray(2);
+								if (updateResult.isEmpty()) {
+									Renders.renderJson(request, new JsonObject().put("error", "rbs.booking.process.conflict"), 409);
+									return;
+								}
+								final JsonObject processedBooking = updateResult.getJsonObject(0);
 
 									Handler<Either<String, JsonObject>> notifHandler = notifyEvent -> {
 										if (notifyEvent.isRight() && notifyEvent.right().getValue() != null
