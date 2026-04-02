@@ -2,6 +2,11 @@
   "name": "net.atos~rbs",
   "config": {
     "main": "net.atos.entng.rbs.Rbs",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.PostgresProbe"
+    ],
     "port": 8026,
     "csrf-token": {{ csrfToken | default('true') }},
     "sql": true,
