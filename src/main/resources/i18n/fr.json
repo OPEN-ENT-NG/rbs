@@ -171,6 +171,7 @@
   "rbs.booking.periodic.delete.details": "Le créneau sélectionné",
   "rbs.booking.periodic.delete.this_and_future_occurrence": "Tout supprimer",
   "rbs.booking.periodic.delete.this_occurrence": "Supprimer",
+  "rbs.booking.process.conflict": "Cette réservation ne peut pas être validée, car elle est en conflit avec une réservation déjà validée sur ce créneau.",
   "rbs.booking.refuse": "Refuser",
   "rbs.booking.refuse.multi.begin": "Refuser les ",
   "rbs.booking.refuse.multi.end": " réservations ?",
