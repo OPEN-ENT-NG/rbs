@@ -712,8 +712,9 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 					.append("    AND b2.start_date < (SELECT b3.end_date FROM rbs.booking b3 WHERE b3.id = ?)")
 					.append("    AND b2.end_date > (SELECT b3.start_date FROM rbs.booking b3 WHERE b3.id = ?)")
 					.append("    AND (b2.is_periodic IS NOT TRUE OR b2.parent_booking_id IS NOT NULL)")
-					.append("  WHERE r.id = ?")
-					.append(") >= (SELECT b4.quantity FROM rbs.booking b4 WHERE b4.id = ?)");
+				.append("  WHERE r.id = ?")
+				.append("  GROUP BY r.id, r.quantity")
+				.append(") >= (SELECT b4.quantity FROM rbs.booking b4 WHERE b4.id = ?)");
 			processValues.add(bId).add(bId).add(bId).add(rId).add(bId);
 		}
 
