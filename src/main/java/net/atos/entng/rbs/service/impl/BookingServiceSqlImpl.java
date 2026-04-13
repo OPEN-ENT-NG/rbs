@@ -640,8 +640,8 @@ public class BookingServiceSqlImpl extends SqlCrudService implements BookingServ
 		processValues.add(bId).add(rId);
 
 		StringBuilder returningClause = new StringBuilder(" RETURNING id, status, owner, ")
-				.append(" to_char(start_date, '").append(DATE_FORMAT).append("') AS start_date,")
-				.append(" to_char(end_date, '").append(DATE_FORMAT).append("') AS end_date");
+				.append(" to_char(start_date AT TIME ZONE 'UTC' AT TIME ZONE 'EUROPE/PARIS', '").append(DATE_FORMAT).append("') AS start_date,")
+				.append(" to_char(end_date AT TIME ZONE 'UTC' AT TIME ZONE 'EUROPE/PARIS', '").append(DATE_FORMAT).append("') AS end_date");
 
 		processQuery.append(returningClause);
 		statementsBuilder.prepared(processQuery.toString(), processValues);
