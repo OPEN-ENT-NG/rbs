@@ -65,7 +65,7 @@ public class Rbs extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().getMulti("server", "skins", "node"))
+				.compose(init -> SharedDataHelper.getInstance().getLocalMulti("server", "skins", "node"))
 				.compose(this::initRbs)
 				.onComplete(startPromise);
 	}
