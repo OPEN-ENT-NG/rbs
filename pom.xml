@@ -29,11 +29,11 @@
     <mockitoVersion>4.11.0</mockitoVersion>
     <powerMockVersion>2.0.2</powerMockVersion>
     <ical4jVersion>2.0.2</ical4jVersion>
-    <entCoreLibsVersion>6.14-separation-SNAPSHOT</entCoreLibsVersion>
+    <entCoreLibsVersion>6.14-SNAPSHOT</entCoreLibsVersion>
     <modMongoVersion>4.1-SNAPSHOT</modMongoVersion>
     <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
     <modJsonSchemaValidatorVersion>2.1-SNAPSHOT</modJsonSchemaValidatorVersion>
-    <modPdfGenerator>2.1-separation-SNAPSHOT</modPdfGenerator>
+    <modPdfGenerator>2.1-SNAPSHOT</modPdfGenerator>
   </properties>
   <dependencies>
     <dependency>
