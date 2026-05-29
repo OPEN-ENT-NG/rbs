@@ -10,7 +10,7 @@
   </parent>
   <groupId>net.atos</groupId>
   <artifactId>rbs</artifactId>
-  <version>2.2.0</version>
+  <version>2.2-SNAPSHOT</version>
   <scm>
     <connection>scm:git:https://github.com/OPEN-ENT-NG/rbs.git</connection>
     <developerConnection>scm:git:https://github.com/OPEN-ENT-NG/rbs.git</developerConnection>
@@ -24,16 +24,16 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.15.0</entCoreVersion>
+    <entCoreVersion>6.15-SNAPSHOT</entCoreVersion>
     <junitVersion>4.12</junitVersion>
     <mockitoVersion>4.11.0</mockitoVersion>
     <powerMockVersion>2.0.2</powerMockVersion>
     <ical4jVersion>2.0.2</ical4jVersion>
-    <entCoreLibsVersion>6.15.0</entCoreLibsVersion>
-    <modMongoVersion>4.2.0</modMongoVersion>
-    <modPostgresVersion>2.2.0</modPostgresVersion>
-    <modJsonSchemaValidatorVersion>2.2.0</modJsonSchemaValidatorVersion>
-    <modPdfGeneratorVersion>2.2.0</modPdfGeneratorVersion>
+    <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
+    <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+    <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+    <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
+    <modPdfGeneratorVersion>2.2-SNAPSHOT</modPdfGeneratorVersion>
   </properties>
   <dependencies>
     <dependency>
