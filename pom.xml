@@ -33,7 +33,7 @@
     <modMongoVersion>4.1-SNAPSHOT</modMongoVersion>
     <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
     <modJsonSchemaValidatorVersion>2.1-SNAPSHOT</modJsonSchemaValidatorVersion>
-    <modPdfGenerator>2.1-SNAPSHOT</modPdfGenerator>
+    <modPdfGeneratorVersion>2.1-SNAPSHOT</modPdfGeneratorVersion>
   </properties>
   <dependencies>
     <dependency>
@@ -126,7 +126,7 @@
     <dependency>
       <groupId>fr.wseduc</groupId>
       <artifactId>mod-pdf-generator</artifactId>
-      <version>${modPdfGenerator}</version>
+      <version>${modPdfGeneratorVersion}</version>
       <scope>runtime</scope>
       <classifier>fat</classifier>
     </dependency>
