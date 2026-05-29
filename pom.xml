@@ -43,12 +43,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.entcore</groupId>
-      <artifactId>common</artifactId>
-      <version>${entCoreVersion}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mnode.ical4j</groupId>
       <artifactId>ical4j</artifactId>
       <version>${ical4jVersion}</version>
