@@ -24,14 +24,14 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.15-SNAPSHOT</entCoreVersion>
+    <entCoreVersion>6.15-develop-b2school-SNAPSHOT</entCoreVersion>
     <junitVersion>4.12</junitVersion>
     <mockitoVersion>4.11.0</mockitoVersion>
     <powerMockVersion>2.0.2</powerMockVersion>
     <ical4jVersion>2.0.2</ical4jVersion>
     <entCoreLibsVersion>6.15-SNAPSHOT</entCoreLibsVersion>
     <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
-    <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
+    <modPostgresVersion>2.2-develop-b2school-SNAPSHOT</modPostgresVersion>
     <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
     <modPdfGeneratorVersion>2.2-SNAPSHOT</modPdfGeneratorVersion>
   </properties>
