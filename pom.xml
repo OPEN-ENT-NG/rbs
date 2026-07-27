@@ -24,7 +24,7 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.16-develop-enabling-SNAPSHOT</entCoreVersion>
+    <entCoreVersion>6.16-SNAPSHOT</entCoreVersion>
     <junitVersion>4.12</junitVersion>
     <mockitoVersion>4.11.0</mockitoVersion>
     <powerMockVersion>2.0.2</powerMockVersion>
