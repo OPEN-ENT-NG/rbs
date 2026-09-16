@@ -1,19 +1,19 @@
 import {idiom, ng, notify} from 'entcore';
-import http, {AxiosResponse} from 'axios';
+import {http, HttpResponse} from 'entcore-toolkit';
 import {Availability} from "../models/Availability";
 
 export interface AvailabilityService {
-    list() : Promise<AxiosResponse>;
-    listByResource(resourceId: number, isUnavailability: boolean) : Promise<AxiosResponse>;
-    save(availability: Availability) : Promise<AxiosResponse>;
-    create(availability: Availability) : Promise<AxiosResponse>;
-    update(availability: Availability) : Promise<AxiosResponse>;
-    delete(availability: Availability) : Promise<AxiosResponse>;
-    deleteAll(resourceId: number, deleteUnavailability: boolean) : Promise<AxiosResponse>;
+    list() : Promise<HttpResponse>;
+    listByResource(resourceId: number, isUnavailability: boolean) : Promise<HttpResponse>;
+    save(availability: Availability) : Promise<HttpResponse>;
+    create(availability: Availability) : Promise<HttpResponse>;
+    update(availability: Availability) : Promise<HttpResponse>;
+    delete(availability: Availability) : Promise<HttpResponse>;
+    deleteAll(resourceId: number, deleteUnavailability: boolean) : Promise<HttpResponse>;
 }
 
 export const availabilityService: AvailabilityService = {
-    async list() : Promise<AxiosResponse> {
+    async list() : Promise<HttpResponse> {
         try {
             return http.get(`/rbs/availability`);
         } catch (err) {
@@ -22,7 +22,7 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async listByResource(resourceId, isUnavailability) : Promise<AxiosResponse> {
+    async listByResource(resourceId, isUnavailability) : Promise<HttpResponse> {
         try {
             return http.get(`/rbs/resource/${resourceId}/availability?is_unavailability=${isUnavailability}`);
         } catch (err) {
@@ -31,11 +31,11 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async save(availability) : Promise<AxiosResponse> {
+    async save(availability) : Promise<HttpResponse> {
         return availability.id ? await this.update(availability) : await this.create(availability);
     },
 
-    async create(availability) : Promise<AxiosResponse> {
+    async create(availability) : Promise<HttpResponse> {
         try {
             availability.formatDateTimeToUnix();
             return http.post(`/rbs/resource/${availability.resource_id}/availability`, availability);
@@ -45,7 +45,7 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async update(availability) : Promise<AxiosResponse> {
+    async update(availability) : Promise<HttpResponse> {
         try {
             availability.formatDateTimeToUnix();
             return http.put(`/rbs/resource/${availability.resource_id}/availability/${availability.id}`, availability);
@@ -55,7 +55,7 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async delete(availability) : Promise<AxiosResponse> {
+    async delete(availability) : Promise<HttpResponse> {
         try {
             return http.delete(`/rbs/resource/${availability.resource_id}/availability/${availability.id}`);
         } catch (e) {
@@ -64,7 +64,7 @@ export const availabilityService: AvailabilityService = {
         }
     },
 
-    async deleteAll(resourceId, deleteUnavailability) : Promise<AxiosResponse> {
+    async deleteAll(resourceId, deleteUnavailability) : Promise<HttpResponse> {
         try {
             return http.delete(`/rbs/resource/${resourceId}/availability/all/${deleteUnavailability}`);
         } catch (e) {
