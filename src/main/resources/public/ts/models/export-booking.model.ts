@@ -1,6 +1,6 @@
 import moment from "../moment";
 import {exportBookingService} from "../services/export-booking.service";
-import {AxiosResponse} from "axios";
+import {HttpResponse} from "entcore-toolkit";
 
 export type ExportBookingBody = {
     format: string,
@@ -46,7 +46,7 @@ export class ExportBooking {
         };
     };
 
-    send(): Promise<AxiosResponse> {
+    send(): Promise<HttpResponse> {
         return exportBookingService.export(this);
     }
 

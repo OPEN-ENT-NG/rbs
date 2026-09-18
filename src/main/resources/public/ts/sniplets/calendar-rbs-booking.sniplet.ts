@@ -13,7 +13,7 @@ import {DateUtils} from "../utilities/date.util";
 import {BOOKING_STATUS} from "../core/const/booking-status.const";
 import {FORMAT} from "../core/const/date-format.const";
 import {CalendarEvent} from "../models/calendarEvent.model";
-import {AxiosResponse} from "axios";
+import {HttpResponse} from "entcore-toolkit";
 import {RBS_CALENDAR_EVENTER} from "../core/enum/rbs-calendar-eventer.enum";
 import {BookingDelayUtil} from "../utilities/booking-delay.util";
 import {Moment} from "moment";
@@ -348,7 +348,7 @@ class ViewModel implements IViewModel {
                                 this.bookings.all.push(databaseBooking);
                             })
                             .catch((e) => {
-                                let error: AxiosResponse = e.response;
+                                let error: HttpResponse = e.response;
                                 if (error.status === 401) {
                                     this.hasResourceRights = false;
                                 }
