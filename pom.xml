@@ -24,13 +24,13 @@
     </repository>
   </repositories>
   <properties>
-    <entCoreVersion>6.17-SNAPSHOT</entCoreVersion>
+    <entCoreVersion>6.17-develop-pedago-SNAPSHOT</entCoreVersion>
     <junitVersion>4.12</junitVersion>
     <mockitoVersion>4.11.0</mockitoVersion>
     <powerMockVersion>2.0.2</powerMockVersion>
     <ical4jVersion>2.0.2</ical4jVersion>
-    <entCoreLibsVersion>6.16-SNAPSHOT</entCoreLibsVersion>
-    <modMongoVersion>4.2-SNAPSHOT</modMongoVersion>
+    <entCoreLibsVersion>6.16-develop-pedago-SNAPSHOT</entCoreLibsVersion>
+    <modMongoVersion>4.2-develop-pedago-SNAPSHOT</modMongoVersion>
     <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
     <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
     <modPdfGeneratorVersion>2.2-SNAPSHOT</modPdfGeneratorVersion>
