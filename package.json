@@ -1,6 +1,6 @@
 {
   "name": "rbs",
-  "version": "2.2.7-dev.0",
+  "version": "2.2.0-develop-pedago.0",
   "description": "resource booking system tool for ENT Core.",
   "main": "gulpfile.js",
   "dependencies": {
