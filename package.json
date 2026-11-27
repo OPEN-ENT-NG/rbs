@@ -8,7 +8,7 @@
     "core-js": "2.4.1",
     "entcore": "dev",
     "entcore-toolkit": "dev",
-    "gulp": "3.9.1",
+    "gulp": "5.0.1",
     "gulp-clean": "^0.3.2",
     "gulp-sourcemaps": "^2.6.0",
     "merge2": "^1.1.0",
